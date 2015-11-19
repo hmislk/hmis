@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.hr;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DateType;
@@ -16,7 +15,6 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
-import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffSalaryComponant;
 import com.divudi.facade.DepartmentFacade;
@@ -29,11 +27,10 @@ import com.divudi.facade.StaffSalaryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -240,10 +237,10 @@ public class SalaryCycleController implements Serializable {
             return true;
         }
 
-        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
-            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
-            return true;
-        }
+//        if (humanResourceBean.checkSalaryCycleDate(current, DateType.OverTimeDate, current.getWorkedFromDate(), current.getWorkedToDate())) {
+//            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
+//            return true;
+//        }
 
         return false;
     }
@@ -256,12 +253,12 @@ public class SalaryCycleController implements Serializable {
         current.processName();
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
 
         //     recreateModel();
@@ -282,7 +279,7 @@ public class SalaryCycleController implements Serializable {
         if (current != null) {
             // removeAll();
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
 
             getFacade().edit(current);
@@ -290,9 +287,9 @@ public class SalaryCycleController implements Serializable {
 //            getFacade().remove(current);
 //            getCurrentRoster().getSalaryCycleList().remove(getCurrent());
 //            getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //   recreateModel();
 
@@ -1249,7 +1246,7 @@ public class SalaryCycleController implements Serializable {
                 + " and spc.blocked=false "
                 + " and spc.department=:dep "
                 + " order by spc.staff.codeInterger ";
-
+        
         m.put("sc", current);
         m.put("dep", d);
 

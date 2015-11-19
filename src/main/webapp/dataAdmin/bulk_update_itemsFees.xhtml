@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel id="panIx"  >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Service"></h:outputLabel>
+                    </f:facet>
+
+                    <h:panelGrid columns="2" styleClass="alignTop" >
+                        <p:panel >
+                            <p:dataTable  value="#{itemController.allItemFees}" 
+                                          var="i"   
+                                          rowKey="#{i.id}" 
+                                          selection="#{itemController.selectedItemFeeList}" 
+                                          rowIndexVar="s"
+                                          rows="20"
+                                          paginator="true"
+                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                          rowsPerPageTemplate="20,50,100"
+                                          >
+
+                                <p:column  selectionMode="multiple" style="width: 10px;">                            
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{s+1}" />
+                                </p:column>
+
+                                <p:column   sortBy="#{i.item.name}"
+                                            filterMatchMode="contains" filterBy="#{i.item.name}" >  
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}"/>
+                                </p:column>
+
+                                <p:column sortBy="#{i.institution.name}"
+                                          filterMatchMode="contains" filterBy="#{i.institution.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institution.name}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column sortBy="#{i.department.name}"
+                                          filterMatchMode="contains" filterBy="#{i.department.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.department.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column sortBy="#{i.feeType}"
+                                          filterMatchMode="contains" filterBy="#{i.feeType}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.feeType}" ></h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Local Fee" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.fee}" ></h:outputLabel>
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Foreign Fee" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.ffee}" ></h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                        <h:panelGrid columns="1" >
+                            <p:panel>
+                                <h:selectOneListbox size="1" value="#{itemController.feeType}" style="width: 120px">
+                                    <f:selectItem itemLabel="Select Fee Type"/>
+                                    <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
+                                </h:selectOneListbox>
+                            </p:panel>
+                            <p:panel >
+                                <p:commandButton ajax="false" value="List All Items" action="#{itemController.createAllItemsFeeList()}" styleClass="noPrintButton" >
+                                </p:commandButton>
+                            </p:panel>
+
+                            <p:panel >
+                                <h:panelGrid columns="2" >
+                                    <h:outputLabel value="Institution" ></h:outputLabel>
+                                    <p:selectOneMenu id="cmbIns" value="#{itemController.instituion}" >
+                                        <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.companies}" var="i"
+                                                       itemLabel="#{i.name}" itemValue="#{i}" ></f:selectItems>
+                                        <f:ajax execute="@this" render="cmbDept" ></f:ajax>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Department" ></h:outputLabel>
+                                    <p:selectOneMenu id="cmbDept" value="#{itemController.department}" >
+                                        <f:selectItem itemLabel="Select Department" ></f:selectItem>
+                                        <f:selectItems value="#{itemController.departments}" 
+                                                       var="d"
+                                                       itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                </h:panelGrid>                               
+
+                                <p:commandButton value="Update Items"
+                                                 action="#{itemController.updateItemsAndFees}" ajax="false" ></p:commandButton>
+                            </p:panel>
+
+                        </h:panelGrid>
+
+
+
+                    </h:panelGrid>
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

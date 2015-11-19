@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
@@ -14,8 +14,8 @@
                             <h:panelGrid columns="1" >
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Add New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser}" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="View Users" action="admin_view_user" onclick="onSubmitButton();"/>
-                               <p:commandButton  styleClass="linkButton" ajax="false" value="Change Passwords" action="admin_change_password" onclick="onSubmitButton();"/>
-                               
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Change Passwords" action="admin_change_password" onclick="onSubmitButton();"/>
+
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Privileges" action="admin_user_privilages" onclick="onSubmitButton();"/>                                
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add PaymentScheme to User" action="admin_user_paymentScheme" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="admin_user_department" onclick="onSubmitButton();"/>
@@ -27,5 +27,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-    </body>
+    </h:body>
 </html>

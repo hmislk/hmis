@@ -20,16 +20,14 @@ import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -585,8 +583,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("labBills = " + labBills);
         labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
-        System.out.println("labBills = " + labBills);
-//        calTotals();
 
         return labBills;
     }
@@ -810,7 +806,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -823,7 +819,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }

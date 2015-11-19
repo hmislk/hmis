@@ -9,21 +9,20 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 
@@ -188,16 +187,16 @@ public class StaffPaySheetComponentController implements Serializable {
         if (getPaysheetComponent() == null) {
             JsfUtil.addErrorMessage("Set Pay Sheet Component");
         }
-
+        HashMap hm = new HashMap();
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
-                + " where ss.retired=false "
-                // + " and ss.staff=:st "
-                + " and ss.fromDate <=:fd "
-                + " and ss.toDate >=:fd ";
-        HashMap hm = new HashMap();
-//        hm.put("td", getToDate());
-        hm.put("fd", getFromDate());
+                + " where ss.retired=false ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
         if (getPaysheetComponent() != null) {
             sql += " and ss.paysheetComponent=:pt ";
@@ -229,7 +228,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

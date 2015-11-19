@@ -7,40 +7,36 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemSupplierPrices;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.facade.AmpFacade;
 import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -73,7 +69,55 @@ public class AmpController implements Serializable {
     List<Amp> listToRemove = null;
     Department department;
     List<Amp> itemList;
-    
+    List<ItemSupplierPrices> itemSupplierPrices;
+    @Inject
+    ItemsDistributorsController itemDistributorsController;
+
+    public void fillItemsForItemSupplierPrices() {
+        List<Amp> amps = getLongCodeItems();
+        itemSupplierPrices = new ArrayList<>();
+        for (Amp a : amps) {
+            ItemSupplierPrices p = new ItemSupplierPrices();
+            p.setItem(a);
+            p.setAmp(a);
+            p.setVmp(a.getVmp());
+            itemSupplierPrices.add(p);
+        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setPp(getPharmacyBean().getLastPurchaseRate(p.getAmp()));
+//        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSp(getPharmacyBean().getLastRetailRate(p.getAmp()));
+//        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+//        }
+    }
+
+    public void fillPricesForItemSupplierPrices() {
+//        List<Amp> amps = getLongCodeItems();
+//        itemSupplierPrices = new ArrayList<>();
+//        for (Amp a : amps) {
+//            ItemSupplierPrices p = new ItemSupplierPrices();
+//            p.setItem(a);
+//            p.setAmp(a);
+//            p.setVmp(a.getVmp());
+//            itemSupplierPrices.add(p);
+//        }
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setPp(getPharmacyBean().getLastPurchaseRate(p.getAmp()));
+            p.setSp(getPharmacyBean().getLastRetailRate(p.getAmp()));
+        }
+//        for (ItemSupplierPrices p : itemSupplierPrices) {
+//            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+//        }
+    }
+
+    public void fillSuppliersForItemSupplierPrices() {
+        for (ItemSupplierPrices p : itemSupplierPrices) {
+            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
+        }
+    }
 
     public List<Amp> getListToRemove() {
         if (listToRemove == null) {
@@ -124,7 +168,6 @@ public class AmpController implements Serializable {
         this.itemList = itemList;
     }
 
-    
     public double fetchStockQty(Item item) {
 
         String sql;
@@ -164,6 +207,7 @@ public class AmpController implements Serializable {
 
         items = getFacade().findBySQL(sql, m);
     }
+
     public void createItemListPharmacy() {
         Map m = new HashMap();
         m.put("dep", DepartmentType.Store);
@@ -181,8 +225,8 @@ public class AmpController implements Serializable {
     public List<Amp> deleteOrNotItem(boolean b, DepartmentType dt) {
         Map m = new HashMap();
         String sql = " select c from Amp c where "
-                    + " (c.departmentType is null"
-                    + " or c.departmentType!=:dt )";
+                + " (c.departmentType is null"
+                + " or c.departmentType!=:dt )";
         if (b) {
             sql += " and c.retired=false ";
         } else {
@@ -191,11 +235,11 @@ public class AmpController implements Serializable {
         m.put("dt", dt);
         return getFacade().findBySQL(sql, m);
     }
-    
+
     public List<Amp> deleteOrNotStoreItem(boolean b, DepartmentType dt) {
         Map m = new HashMap();
         String sql = " select c from Amp c where "
-                    + " c.departmentType=:dt ";
+                + " c.departmentType=:dt ";
         if (b) {
             sql += " and c.retired=false ";
         } else {
@@ -221,8 +265,6 @@ public class AmpController implements Serializable {
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
     }
 
-    
-    
     public void onTabChange(TabChangeEvent event) {
         setTabId(event.getTab().getId());
     }
@@ -235,8 +277,7 @@ public class AmpController implements Serializable {
         }
         return selectedItems;
     }
-    
-    
+
     public List<Amp> completeAmp(String qry) {
         List<Amp> a = null;
         Map m = new HashMap();
@@ -274,9 +315,12 @@ public class AmpController implements Serializable {
         }
         return ampList;
     }
-    
-    
 
+    
+    public void prepareAddNewVmp(){
+        addingVtmInVmp = new VtmsVmps();
+    }
+    
     public List<Amp> completeAmpByCode(String qry) {
 
         Map m = new HashMap();
@@ -302,7 +346,7 @@ public class AmpController implements Serializable {
         String sql = "select c from Amp c where "
                 + " c.retired=false and c.departmentType!=:dep and "
                 + "(upper(c.barcode) like :n ) order by c.barcode";
-     //   //System.out.println("sql = " + sql);
+        //   //System.out.println("sql = " + sql);
         //   //System.out.println("m = " + m);
 
         if (qry != null) {
@@ -343,8 +387,8 @@ public class AmpController implements Serializable {
 //            UtilityController.addErrorMessage("Please Select Manufacturer");
 //            return true;
 //        }
-        
-        if(current.getCategory() == null){
+
+        if (current.getCategory() == null) {
             UtilityController.addErrorMessage("Please Select Category");
             return true;
         }
@@ -414,40 +458,45 @@ public class AmpController implements Serializable {
         }
 
     }
+    
+               
+    
 
     public void saveSelected() {
         if (errorCheck()) {
             return;
         }
-
-        if (getTabId().toString().equals("tabGen")) {
-            if (errorCheckForGen()) {
-                return;
-            }
-
-            saveVmp();
-            getAddingVtmInVmp().setVmp(currentVmp);
-            if (getAddingVtmInVmp().getId() == null || getAddingVtmInVmp().getId() == null) {
-                getVivFacade().create(getAddingVtmInVmp());
-            } else {
-                getVivFacade().edit(getAddingVtmInVmp());
-            }
-
-            getCurrent().setVmp(currentVmp);
-        }
+//
+//        if (getTabId().toString().equals("tabGen")) {
+//            if (errorCheckForGen()) {
+//                return;
+//            }
+//
+//            saveVmp();
+//            getAddingVtmInVmp().setVmp(currentVmp);
+//            if (getAddingVtmInVmp().getId() == null || getAddingVtmInVmp().getId() == null) {
+//                getVivFacade().create(getAddingVtmInVmp());
+//            } else {
+//                getVivFacade().edit(getAddingVtmInVmp());
+//            }
+//
+//            getCurrent().setVmp(currentVmp);
+//        }
 
         if (current.getName() == null || current.getName().equals("")) {
             current.setName(createAmpName());
         }
+        
+        current.setDepartmentType(DepartmentType.Pharmacy);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         // getItems();
@@ -493,12 +542,12 @@ public class AmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -516,6 +565,14 @@ public class AmpController implements Serializable {
             items = getFacade().findAll("name", true);
         }
         return items;
+    }
+
+    public List<Amp> getLongCodeItems() {
+        List<Amp> lst;
+        String sql;
+        sql = "select a from Amp a where a.retired=false and length(a.code) > 5";
+        lst = getFacade().findBySQL(sql);
+        return lst;
     }
 
     public Vtm getVtm() {
@@ -590,6 +647,17 @@ public class AmpController implements Serializable {
         this.department = department;
     }
 
+    public List<ItemSupplierPrices> getItemSupplierPrices() {
+        return itemSupplierPrices;
+    }
+
+    public void setItemSupplierPrices(List<ItemSupplierPrices> itemSupplierPrices) {
+        this.itemSupplierPrices = itemSupplierPrices;
+    }
+
+   
+
+    
     
     /**
      *

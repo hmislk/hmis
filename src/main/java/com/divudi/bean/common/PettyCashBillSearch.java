@@ -20,7 +20,6 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.LazyBill;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -37,12 +36,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
-import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
@@ -220,7 +217,7 @@ public class PettyCashBillSearch implements Serializable {
 
             bC.setBill(can);
             bC.setBillItem(bt);
-            bC.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bC.setCreatedAt(new Date());
             bC.setCreater(getSessionController().getLoggedUser());
             getBillCommponentFacade().create(bC);
         }
@@ -253,9 +250,9 @@ public class PettyCashBillSearch implements Serializable {
 
         }
 
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
@@ -392,7 +389,7 @@ public class PettyCashBillSearch implements Serializable {
             b.setCatId(nB.getCatId());
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             getBillItemFacede().create(b);
@@ -632,7 +629,7 @@ public class PettyCashBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -645,7 +642,7 @@ public class PettyCashBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }

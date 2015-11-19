@@ -10,19 +10,11 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Staff;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -89,12 +81,12 @@ public class StaffGroupController implements Serializable {
 //
 //        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
 //            getFacade().edit(current);
-//            UtilityController.addSuccessMessage("savedOldSuccessfully");
+//            UtilityController.addSuccessMessage("Updated Successfully.");
 //        } else {
-//            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            current.setCreatedAt(new Date());
 //            current.setCreater(getSessionController().getLoggedUser());
 //            getFacade().create(current);
-//            UtilityController.addSuccessMessage("savedNewSuccessfully");
+//            UtilityController.addSuccessMessage("Saved Successfully");
 //        }
 //
 //        recreateModel();
@@ -112,12 +104,12 @@ public class StaffGroupController implements Serializable {
 //        if (current != null) {
 //            removeAll();
 //            current.setRetired(true);
-//            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+//            current.setRetiredAt(new Date());
 //            current.setRetirer(getSessionController().getLoggedUser());
 //            getFacade().edit(current);
-//            UtilityController.addSuccessMessage("DeleteSuccessfull");
+//            UtilityController.addSuccessMessage("Deleted Successfully");
 //        } else {
-//            UtilityController.addSuccessMessage("NothingToDelete");
+//            UtilityController.addSuccessMessage("Nothing to Delete");
 //        }
 //        recreateModel();
 //        getItems();

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -15,7 +16,6 @@ import static com.divudi.data.PaymentMethod.Slip;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -73,7 +73,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -602,15 +601,16 @@ public class BillBeanController implements Serializable {
     }
     
     public List<Object[]> fetchDoctorPayment(Date fromDate, Date toDate, BillType refBillType,Institution i) {
-        String sql = "Select b.referenceBill.toDepartment,sum(b.netValue) "
+        String sql = "Select b.referanceBillItem.bill.toDepartment,sum(b.netValue) "
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.referenceBill.billType=:refType "
+                + " and b.referanceBillItem.bill.billType=:refType "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.bill.institution=:ins "
-                + " group by b.referenceBill.toDepartment "
-                + " order by b.referenceBill.toDepartment.name ";
+                + " group by b.referanceBillItem.bill.toDepartment "
+                + " order by b.referanceBillItem.bill.toDepartment.name ";
+        
         HashMap hm = new HashMap();
         hm.put("bType", BillType.PaymentBill);
         hm.put("refType", refBillType);
@@ -774,7 +774,7 @@ public class BillBeanController implements Serializable {
                 + " FROM BillItem b "
                 + " where b.retired=false "
                 + " and b.bill.billType=:bType "
-                + " and b.referenceBill.billType=:refType "
+                + " and b.referanceBillItem.bill.billType=:refType "
                 + " and b.createdAt between :fromDate and :toDate ";
         HashMap hm = new HashMap();
         hm.put("bType", BillType.PaymentBill);
@@ -1043,7 +1043,6 @@ public class BillBeanController implements Serializable {
 
         List<Object[]> list = getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("Out Side List " + list);
         return list;
     }
 
@@ -1161,7 +1160,7 @@ public class BillBeanController implements Serializable {
         return netTotal;
     }
 
-    public double calInstitutionSale(Date fromDate, Date toDate, Institution institution) {
+    public double calInstitutionSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
                 + " where b.retired=false"
@@ -1173,7 +1172,7 @@ public class BillBeanController implements Serializable {
                 + " or  b.paymentMethod = :pm3 "
                 + " or  b.paymentMethod = :pm4)";
         HashMap hm = new HashMap();
-        hm.put("bType", BillType.PharmacySale);
+        hm.put("bType", billType);
         hm.put("ins", institution);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
@@ -1182,6 +1181,8 @@ public class BillBeanController implements Serializable {
         hm.put("pm3", PaymentMethod.Cheque);
         hm.put("pm4", PaymentMethod.Slip);
         double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("billType"+billType);
+        System.out.println("netTotal"+netTotal);
 
         return netTotal;
     }
@@ -1299,7 +1300,7 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution) {
+    public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
         String sql = "Select b.referenceBill.department,"
@@ -1314,7 +1315,7 @@ public class BillBeanController implements Serializable {
                 + " group by b.referenceBill.department"
                 + " order by b.referenceBill.department.name";
         HashMap hm = new HashMap();
-        hm.put("bType", BillType.PharmacySale);
+        hm.put("bType", billType);
         hm.put("cl", PreBill.class);
         hm.put("ins", institution);
         hm.put("fromDate", fromDate);
@@ -1328,7 +1329,7 @@ public class BillBeanController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
-        String sql = "Select b.department,"
+        String sql = "Select b.toDepartment,"
                 + " sum(b.netTotal) "
                 + " from Bill b "
                 + " where b.retired=false"
@@ -1838,7 +1839,6 @@ public class BillBeanController implements Serializable {
 
         if (priceMatrix != null) {
             discount = priceMatrix.getDiscountPercent();
-            System.err.println("7 " + discount);
         }
 
         if (discountAllowed == false) {
@@ -1908,7 +1908,7 @@ public class BillBeanController implements Serializable {
         f.setDepartment(billItem.getItem().getDepartment());
         f.setBillItem(billItem);
 
-        f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        f.setCreatedAt(new Date());
 
         if (billItem.getItem().getDepartment() != null) {
             f.setDepartment(billItem.getItem().getDepartment());
@@ -2406,7 +2406,7 @@ public class BillBeanController implements Serializable {
     }
 
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu) {
-        e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
         e.getBillItem().setBill(b);
 
@@ -2421,7 +2421,7 @@ public class BillBeanController implements Serializable {
     }
     
     public BillItem saveBillItem(Bill b, BillEntry e, WebUser wu,Payment p) {
-        e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
         e.getBillItem().setBill(b);
 
@@ -2482,7 +2482,6 @@ public class BillBeanController implements Serializable {
                     bill.setDiscount(dis);
                     bill.setCashPaid(billController.getCashRemain());
                     billController.setCashRemain(0.0);
-                    System.out.println("1.2.cashRemain" + billController.getCashRemain());
                 } else {
                     System.out.println("2.1.cashRemain" + billController.getCashRemain());
                     bill.setBalance(0.0);
@@ -2491,11 +2490,9 @@ public class BillBeanController implements Serializable {
                     bill.setDiscount(dis);
                     bill.setCashPaid(tot);
                     billController.setCashRemain(billController.getCashRemain() - tot);
-                    System.out.println("2.2.cashRemain" + billController.getCashRemain());
                 }
 
             } else {
-                System.out.println("3.cashRemain" + billController.getCashRemain());
                 bill.setBalance(tot);
                 bill.setTotal(tot);
                 bill.setNetTotal(0.0);
@@ -2509,7 +2506,6 @@ public class BillBeanController implements Serializable {
             bill.setNetTotal(net);
             bill.setDiscount(dis);
         }
-        System.err.println("bill.getNetTotal() = "+bill.getNetTotal());
         getBillFacade().edit(bill);
     }
 
@@ -2554,7 +2550,7 @@ public class BillBeanController implements Serializable {
     public List<BillItem> saveBillItems(Bill b, List<BillEntry> billEntries, WebUser wu) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
-            e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            e.getBillItem().setCreatedAt(new Date());
             e.getBillItem().setCreater(wu);
             e.getBillItem().setBill(b);
             if (e.getBillItem().getId() == null) {
@@ -2601,7 +2597,7 @@ public class BillBeanController implements Serializable {
     public void saveBillItems(Bill b, BillEntry e, WebUser wu) {
 
         // BillItem temBi = e.getBillItem();
-        e.getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        e.getBillItem().setCreatedAt(new Date());
         e.getBillItem().setCreater(wu);
         e.getBillItem().setBill(b);
 
@@ -2804,7 +2800,7 @@ public class BillBeanController implements Serializable {
                 b = new BillComponent();
                 BillItem bit = new BillItem();
                 b.setBillItem(bit);
-                b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                b.setCreatedAt(new Date());
                 b.setItem(i);
                 b.setName(i.getName());
                 b.setPackege((Packege) billItem.getItem());
@@ -2816,7 +2812,7 @@ public class BillBeanController implements Serializable {
         } else {
             b = new BillComponent();
             b.setBillItem(billItem);
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setItem(billItem.getItem());
             ////System.out.println("Bill Item is " + billItem.getItem());
             b.setName(billItem.getItem().getName());
@@ -2857,7 +2853,7 @@ public class BillBeanController implements Serializable {
             //      ////System.out.println("Fee Value is " + f.getFeeValue());
             // f.setBill(billItem.getBill());
             f.setBillItem(billItem);
-            f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            f.setCreatedAt(new Date());
             if (billItem.getItem().getDepartment() != null) {
                 f.setDepartment(billItem.getItem().getDepartment());
             } else {
@@ -2904,7 +2900,7 @@ public class BillBeanController implements Serializable {
             f.setFeeValue(i.getFee());
             f.setFeeGrossValue(i.getFee());
             f.setBillItem(billItem);
-            f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            f.setCreatedAt(new Date());
             if (billItem.getItem().getDepartment() != null) {
                 f.setDepartment(billItem.getItem().getDepartment());
             } else {
@@ -2944,7 +2940,7 @@ public class BillBeanController implements Serializable {
                     f.setFeeGrossValue(i.getFee());
                     //  f.setBill(billItem.getBill());
                     f.setBillItem(billItem);
-                    f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                    f.setCreatedAt(new Date());
                     if (pi.getDepartment() != null) {
                         f.setDepartment(pi.getDepartment());
                     } else {
@@ -2977,7 +2973,7 @@ public class BillBeanController implements Serializable {
                 ////System.out.println("Fee Value is " + f.getFeeValue());
                 // f.setBill(billItem.getBill());
                 f.setBillItem(billItem);
-                f.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                f.setCreatedAt(new Date());
                 if (billItem.getItem().getDepartment() != null) {
                     f.setDepartment(billItem.getItem().getDepartment());
                 } else {
@@ -3162,7 +3158,6 @@ public class BillBeanController implements Serializable {
 
         //   hm.put("b", b);
         List<BillFee> list = getBillFeeFacade().findBySQL(sql);
-        System.err.println(list);
         return list;
     }
 

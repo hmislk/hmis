@@ -41,22 +41,24 @@
                         <p:spacer width="110" height="1"/>
                         <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;"
                                          action="#{bookKeepingSummery.createCashCategoryWithProMonth}"/>
+                        <p:commandButton value="Process OPD Done Only" ajax="false"  styleClass="noPrintButton" style="float: right;" rendered="false"
+                                         action="#{bookKeepingSummery.createCashCategoryWithProMonth2}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="panelPrint" />
-                        </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                         outside:outside,
-                                         pharmacy:pharmacy,
-                                         inward:inward,                                     
-                                         col,
-                                         opd_professional:opd_professional,
-                                         inward_professional:inward_professional,                                     
-                                         finalSum" 
-                                         fileName="Book_Keeping_Summery_with_pro_day"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
-                        </p:commandButton>
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                                <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
+                                             outside:outside,
+                                             pharmacy:pharmacy,
+                                             inward:inward,                                     
+                                             col,
+                                             opd_professional:opd_professional,
+                                             inward_professional:inward_professional,                                     
+                                             finalSum" 
+                                             fileName="Book_Keeping_Summery_with_pro_day"
+                                             facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                             fontName="Courier New"  />
+                            </p:commandButton>
                     </h:panelGrid>
                 </f:facet>
 

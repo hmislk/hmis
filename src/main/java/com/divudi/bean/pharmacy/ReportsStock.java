@@ -9,12 +9,14 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
@@ -22,14 +24,16 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,14 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-import com.divudi.data.dataStructure.PharmacyStockRow;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.ItemFacade;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  *
@@ -76,7 +76,7 @@ public class ReportsStock implements Serializable {
     double totalRetailSaleRate;
     double totalRetailSaleValue;
     Vmp vmp;
-
+    BillType[] billTypes;
     /**
      * Managed Beans
      */
@@ -303,7 +303,6 @@ public class ReportsStock implements Serializable {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
             System.err.println("Stock History " + b.getStockHistory().getStockQty());
-            System.err.println("Department " + b.getBillItem().getBill().getDepartment().getName());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -424,7 +423,6 @@ public class ReportsStock implements Serializable {
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
                     System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
                     System.err.println("History " + curHistory);
-                    System.err.println("######");
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
@@ -508,36 +506,24 @@ public class ReportsStock implements Serializable {
         }
         Map m = new HashMap();
         String sql;
-
         sql = "SELECT bi.item "
                 + " FROM BillItem bi "
                 + " WHERE  "
                 + " bi.bill.department=:d "
                 + " AND bi.bill.billType in :bts "
                 + " AND bi.bill.billDate between :fd and :td ";
-
         m.put("d", department);
-        ArrayList<BillType> bts = new ArrayList<>();
-        bts.add(BillType.PharmacyTransferIssue);
-        bts.add(BillType.PharmacyPre);
-        bts.add(BillType.PharmacySale);
-        bts.add(BillType.PharmacyBhtPre);
-        bts.add(BillType.PharmacyIssue);
-
+        m.put("bts", Arrays.asList(billTypes));
+        m.put("fd", getFromDateE());
+        m.put("td", getToDateE());
         if (category != null) {
             sql += " AND bi.item.category=:cat ";
             m.put("cat", category);
         }
-
         sql += " GROUP BY bi.item";
 
-        m.put("bts", bts);
-        m.put("fd", getFromDateE());
-        m.put("td", getToDateE());
-
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
-
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
         Set<Item> bis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
         sql = "SELECT s.itemBatch.item "
@@ -546,8 +532,8 @@ public class ReportsStock implements Serializable {
                 + " AND s.stock > 0 ";
         m = new HashMap();
         m.put("d", department);
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
         if (category != null) {
             sql += " AND s.itemBatch.item.category=:cat ";
             m.put("cat", category);
@@ -557,11 +543,9 @@ public class ReportsStock implements Serializable {
 
         Set<Item> sis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
-        //System.out.println("bis.size() before removing = " + bis.size());
-        //System.out.println("sis.size() before removing " + sis.size());
-
+        System.out.println("bis.size() before removing = " + bis.size());
+        System.out.println("sis.size() before removing " + sis.size());
         sis.removeAll(bis);
-        //System.out.println("sis.size() after removing " + sis.size());
         items = new ArrayList<>(sis);
 
         Collections.sort(items);
@@ -1007,7 +991,7 @@ public class ReportsStock implements Serializable {
     public ItemFacade getItemFacade() {
         return itemFacade;
     }
-    
+
     boolean paginator = true;
     int rows = 20;
 
@@ -1026,17 +1010,26 @@ public class ReportsStock implements Serializable {
     public void setRows(int rows) {
         this.rows = rows;
     }
-    
-    
-    
-    public void prepareForPrint(){
-        paginator=false;
-        rows=getStocks().size();
+
+    public void prepareForPrint() {
+        paginator = false;
+        rows = getStocks().size();
     }
-    
-    public void prepareForView(){
-        paginator=true;
-        rows=20;
+
+    public void prepareForView() {
+        paginator = true;
+        rows = 20;
+    }
+
+    public BillType[] getBillTypes() {
+        if (billTypes == null) {
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre, BillType.PharmacyWholesalePre};
+        }
+        return billTypes;
+    }
+
+    public void setBillTypes(BillType[] billTypes) {
+        this.billTypes = billTypes;
     }
 
 }

@@ -4,7 +4,6 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import java.util.List;
@@ -20,7 +19,9 @@ public class InstitutionEncounters {
     private double returned;
     private double total;
     private double paidTotal;
-    double paidTotalPatient;
+    private double paidTotalPatient;
+    private double transPaidTotal;
+    private double transPaidTotalPatient;
 
     public Institution getInstitution() {
         return institution;
@@ -71,6 +72,21 @@ public class InstitutionEncounters {
     public void setPaidTotalPatient(double paidTotalPatient) {
         this.paidTotalPatient = paidTotalPatient;
     }
-    
+
+    public double getTransPaidTotal() {
+        return transPaidTotal;
+    }
+
+    public void setTransPaidTotal(double transPaidTotal) {
+        this.transPaidTotal = transPaidTotal;
+    }
+
+    public double getTransPaidTotalPatient() {
+        return transPaidTotalPatient;
+    }
+
+    public void setTransPaidTotalPatient(double transPaidTotalPatient) {
+        this.transPaidTotalPatient = transPaidTotalPatient;
+    }
     
 }

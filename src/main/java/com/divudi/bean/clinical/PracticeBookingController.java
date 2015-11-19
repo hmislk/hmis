@@ -4,9 +4,11 @@
  */
 package com.divudi.bean.clinical;
 
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.channel.*;
+import com.divudi.bean.channel.ChannelBillController;
+import com.divudi.bean.channel.ChannelReportController;
+import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -21,12 +23,12 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -40,19 +42,18 @@ import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -330,6 +331,15 @@ public class PracticeBookingController implements Serializable {
         opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
         if (opdVisit == null) {
             newOpdVisit();
+            String tt = "" ;
+            SimpleDateFormat sm = new SimpleDateFormat("dd MMMM yyyy");
+            tt= sm.format(new Date());
+            tt += "\n\n";
+            tt += billSession.getBill().getPatient().getPerson().getNameWithTitle();
+            tt+="\n";
+            tt += billSession.getBill().getPatient().getAge();
+            tt+="\n";
+            opdVisit.setComments(tt);
         }
     }
 
@@ -384,7 +394,7 @@ public class PracticeBookingController implements Serializable {
 
     private BillItem addToBilledItem(Bill b) {
         BillItem bi = new BillItem();
-        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
         bi.setBill(b);
         bi.setNetValue(b.getTotal());
@@ -427,9 +437,9 @@ public class PracticeBookingController implements Serializable {
         bi.setPatient(getPatientController().getCurrent());
         //   //System.out.println("pt = " + getPatientController().getCurrent().getPerson().getName());
 
-        bi.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bi.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        bi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        bi.setBillDate(new Date());
+        bi.setBillTime(new Date());
+        bi.setCreatedAt(new Date());
         bi.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(bi);
         return bi;

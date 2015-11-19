@@ -4,26 +4,24 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.hr;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.Shift;
 import com.divudi.facade.RosterFacade;
 import com.divudi.facade.ShiftFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -42,6 +40,7 @@ public class ShiftController implements Serializable {
     private RosterFacade rosterFacade;
     @Inject
     private SessionController sessionController;
+    boolean checked = false;
 
     private boolean errorCheck() {
         if (getCurrent().getRoster() == null) {
@@ -134,12 +133,12 @@ public class ShiftController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
 
         //     recreateModel();
@@ -163,7 +162,7 @@ public class ShiftController implements Serializable {
         if (current != null) {
             // removeAll();
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
 
             getFacade().edit(current);
@@ -171,9 +170,9 @@ public class ShiftController implements Serializable {
 //            getFacade().remove(current);
 //            getCurrentRoster().getShiftList().remove(getCurrent());
             getRosterFacade().edit(getCurrentRoster());
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         //   recreateModel();
 
@@ -227,6 +226,14 @@ public class ShiftController implements Serializable {
         this.rosterFacade = rosterFacade;
     }
 
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
     public void createShiftList() {
         String sql = "Select s From Shift s "
                 + " where s.retired=false "
@@ -238,12 +245,16 @@ public class ShiftController implements Serializable {
 
         shiftList = getFacade().findBySQL(sql, hm);
     }
-    
+
     public void createShiftListReport() {
         String sql = "Select s From Shift s "
-                + " where s.retired=false "
-                + " order by s.roster.name " ;
-                
+                + " where s.retired=false ";
+
+        if (checked) {
+            sql += " and s.hideShift=false ";
+        }
+
+        sql += " order by s.roster.name ";
 
         shiftList = getFacade().findBySQL(sql);
     }

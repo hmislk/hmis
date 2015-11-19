@@ -4,14 +4,14 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.entity.*;
+import com.divudi.entity.Category;
+import com.divudi.entity.Staff;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 

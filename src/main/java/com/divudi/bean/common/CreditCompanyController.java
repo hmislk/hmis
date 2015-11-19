@@ -13,14 +13,10 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.facade.InstitutionFacade;
-import com.lowagie.text.xml.simpleparser.EntitiesToSymbol;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -44,7 +40,7 @@ public class CreditCompanyController implements Serializable {
     private Institution current;
     Item service;
     Category category;
-    
+
     private List<Institution> items = null;
     List<Institution> institutions;
     String selectText = "";
@@ -109,8 +105,6 @@ public class CreditCompanyController implements Serializable {
     public void setCategory(Category category) {
         this.category = category;
     }
-    
-    
 
     private void recreateModel() {
         items = null;
@@ -120,23 +114,23 @@ public class CreditCompanyController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
     }
-    
-    public void fillCreditCompany(){
-        
-        String sql="select i from Institution i "
-                    + "where i.retired=false " ;
-        institutions=getEjbFacade().findBySQL(sql);
-        
+
+    public void fillCreditCompany() {
+
+        String sql = "select i from Institution i "
+                + "where i.retired=false ";
+        institutions = getEjbFacade().findBySQL(sql);
+
     }
 
     public void setSelectText(String selectText) {
@@ -178,12 +172,12 @@ public class CreditCompanyController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -196,11 +190,9 @@ public class CreditCompanyController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<Institution>();
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CreditCompany order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }

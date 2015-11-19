@@ -7,7 +7,6 @@ package com.divudi.bean.common;
 
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.Privileges;
 import com.divudi.data.dataStructure.StringsDoublesRow;
 import com.divudi.ejb.RevenueBean;
 import com.divudi.entity.BilledBill;
@@ -23,8 +22,8 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

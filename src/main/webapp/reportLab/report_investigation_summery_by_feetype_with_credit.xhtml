@@ -20,16 +20,16 @@
 
                     <h:panelGrid columns="2"  >
                         <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy " >
+                            <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy " >
+                            <p:calendar id="toDate" value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel value="Select Institution"/>
                         <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{pharmacySaleReport.institution}"  
-                                    style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{institutionController.completeCompany}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select Institution" >
+                                        style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{institutionController.completeCollectingCenter}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select Institution" >
                         </p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="3">

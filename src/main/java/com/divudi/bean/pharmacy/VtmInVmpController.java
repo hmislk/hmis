@@ -13,26 +13,25 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.VtmsVmps;
 import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class VtmInVmpController implements Serializable {
+public class VtmInVmpController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -61,16 +60,15 @@ public  class VtmInVmpController implements Serializable {
     }
 
     public void saveSelected() {
-       
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -111,12 +109,12 @@ public  class VtmInVmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -129,7 +127,14 @@ public  class VtmInVmpController implements Serializable {
     }
 
     public List<VtmsVmps> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select v "
+                    + " from VtmsVmps v "
+                    + " where v.retired=false "
+                    + " order by v.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

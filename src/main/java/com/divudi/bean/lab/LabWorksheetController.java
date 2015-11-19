@@ -6,15 +6,13 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.WorksheetItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

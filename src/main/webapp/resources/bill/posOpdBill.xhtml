@@ -131,7 +131,7 @@
                         </td>
 
                     </tr>
-                    
+
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel value="BatchBill No" ></h:outputLabel>
@@ -340,7 +340,7 @@
                             <td style="width: 45% ;text-align: left;" colspan="3">
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}" ></h:outputLabel>
                             </td>
-                           <td style="width: 10%" >
+                            <td style="width: 10%" >
                             </td>
                             <td style="width: 15%" >
                             </td>
@@ -385,8 +385,8 @@
                         </td>
                     </tr>
 
-                    
-                    
+
+
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
 
                         <tr>
@@ -545,12 +545,11 @@
 
             <div class="footer">
                 <br/>
-                The Greatest Wealth is Health<br/>
-                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                The Greatest Wealth is Health!
                 <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                Software by www.lakmedi.com - 0715812399<br/>
+                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
             </div>
 
 

@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -25,12 +26,13 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.CancelledBillFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -66,11 +68,15 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private BillComponentFacade billCommponentFacade;
     @EJB
     private RefundBillFacade refundBillFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
 
     @Inject
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    AgentPaymentRecieveBillController agentPaymentRecieveBillController;
     @EJB
     EjbApplication ejbApplication;
     private List<BillItem> tempbillItems;
@@ -162,7 +168,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
             bC.setBill(can);
             bC.setBillItem(bt);
-            bC.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bC.setCreatedAt(new Date());
             bC.setCreater(getSessionController().getLoggedUser());
             getBillCommponentFacade().create(bC);
         }
@@ -195,9 +201,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         cb.setBilledBill(getBill());
         cb.setPaymentMethod(paymentMethod);
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
@@ -258,6 +264,10 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 getBill().setCancelledBill(cb);
                 getBilledBillFacade().edit(getBill());
                 UtilityController.addSuccessMessage("Cancelled");
+
+                //for channel agencyHistory Update
+                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), HistoryType.ChannelDepositCancel, cb);
+                //for channel agencyHistory Update
 
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 getSessionController().setLoggedUser(wb);
@@ -330,7 +340,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             b.setCatId(nB.getCatId());
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             getBillItemFacede().create(b);
@@ -524,6 +534,22 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
+    }
+
+    public InstitutionFacade getInstitutionFacade() {
+        return institutionFacade;
+    }
+
+    public void setInstitutionFacade(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
+    }
+
+    public AgentPaymentRecieveBillController getAgentPaymentRecieveBillController() {
+        return agentPaymentRecieveBillController;
+    }
+
+    public void setAgentPaymentRecieveBillController(AgentPaymentRecieveBillController agentPaymentRecieveBillController) {
+        this.agentPaymentRecieveBillController = agentPaymentRecieveBillController;
     }
 
 }

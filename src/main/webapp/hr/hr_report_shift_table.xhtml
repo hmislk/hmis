@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css" />
+        <h:form id="form">  
+            <h:panelGrid columns="2">
+                <h:outputLabel value="From Date"/>
+                <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="To Date"/>
+                <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                <h:outputLabel value="Roster"/>
+                <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
+                    <f:selectItem itemLabel="Select Roster"/>
+                    <f:selectItems value="#{rosterController.items}" var="r" itemLabel="#{r.name}" itemValue="#{r}"/>
+                    <f:ajax event="change" execute="@this" render="lst" 
+                            listener="#{shiftTableController.selectRosterLstener()}" />
+                </p:selectOneMenu>
+
+
+            </h:panelGrid>
+
+            <h:panelGrid columns="4">                
+                <p:commandButton ajax="false" value="Fill Roster"
+                                 actionListener="#{shiftTableController.makeTableNull()}"
+                                 action="#{shiftTableController.fetchShiftTableForCheck()}"
+                                 onclick="onSubmitButton();" />   
+                <p:commandButton value="Print" ajax="false" action="#"  >
+                    <p:printer target="print2" ></p:printer>
+                </p:commandButton>
+                <p:commandButton value="Check(Only For Developers)" ajax="false" action="#{shiftTableController.fetchStaffShiftMoreThan()}" rendered="true" />
+
+            </h:panelGrid>
+
+            <p:panel id="print2" styleClass="summeryBorder">
+                <f:facet name="header">
+                    <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
+                    <h:outputLabel value="#{shiftTableController.fromDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="   To  "/>
+                    <h:outputLabel value="#{shiftTableController.toDate}">
+                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                    </h:outputLabel>
+                    <br/>
+                    <h:outputLabel value="* This report consider only analized Times Only for Time" style="color: red;"/>
+                </f:facet>
+                <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
+                             var="data" value="#{shiftTableController.shiftTables}" >
+                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine," >
+                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}" style="text-align: left; 
+                                  white-space: nowrap!important; 
+                                  width: 10em!important; 
+                                  overflow: hidden!important;
+                                  text-overflow: clip!important; 
+                                  " >                      
+                            <h:outputLabel value="#{sts.staff.person.name}" />
+                        </p:column>
+                        
+                        <p:column headerText="Staff Code" rendered="#{data.flag eq true}" style="text-align: right;">                        
+                            <h:outputLabel value="#{sts.staff.code}"/>                           
+                        </p:column>
+
+                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
+                            <f:facet name="header">                            
+                                <h:outputLabel value="#{data.date}" >
+                                    <f:convertDateTime pattern="dd/MM/yy  E"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel id="lbl1" value="#{sts.shift.durationMin}" rendered="#{sts.shift.durationMin ne 0.0}"/>
+                            <h:outputLabel value="#{sts.shift.name}" rendered="#{sts.shift.durationMin eq 0.0}"/>
+                            <h:outputLabel value="---" rendered="#{sts.shift.durationMin eq null and sts.shift eq null}"/>
+                            <p:tooltip for="lbl1" >
+                                <h:panelGrid columns="2" >
+                                    <h:outputLabel value="Shift " />
+                                    <h:outputLabel value=": #{sts.shift.name}" />
+                                    <h:outputLabel value="Shift Duration(H) " />
+                                    <h:outputLabel value=": #{sts.shift.durationMin/60}" />
+                                    <h:outputLabel value="Shift Duration(M) " />
+                                    <h:outputLabel value=": #{sts.shift.durationMin}" />
+                                </h:panelGrid>
+                                             
+                                
+                            </p:tooltip>
+                        </p:column>
+                        
+                        <p:column rendered="#{data.date ne null}" style="text-align: right;">
+                            <f:facet name="header">                            
+                                <h:outputLabel value="Time" />
+                            </f:facet>
+                            <h:outputLabel value="#{sts.transWorkTime/60}">
+                                <f:convertNumber pattern="#0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                        <p:column rendered="#{data.date eq null}" style="text-align: right;">
+                            <f:facet name="header">                            
+                                <h:outputLabel value="Total Roster Time" />
+                            </f:facet>
+                            <h:outputLabel value="#{sts.transShiftTime}">
+                                <f:convertNumber pattern="#0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
+                        <p:column rendered="#{data.date eq null}" style="text-align: right;">
+                            <f:facet name="header">                            
+                                <h:outputLabel value="Total work Time" />
+                            </f:facet>
+                            <h:outputLabel value="#{sts.transWorkTime/60}">
+                                <f:convertNumber pattern="#0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+
+                    </p:dataTable>  
+                </p:dataGrid>
+
+
+
+            </p:panel>
+
+
+
+
+        </h:form>  
+
+
+
+    </ui:define>
+
+
+
+</ui:composition>

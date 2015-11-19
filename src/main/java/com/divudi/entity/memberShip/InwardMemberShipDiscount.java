@@ -4,7 +4,7 @@
  */
 package com.divudi.entity.memberShip;
 
-import com.divudi.entity.*;
+import com.divudi.entity.PriceMatrix;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;

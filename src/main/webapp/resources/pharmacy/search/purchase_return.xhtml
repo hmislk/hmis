@@ -129,7 +129,20 @@
                     </h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
-            </p:column>           
+            </p:column>
+            
+            <p:column headerText="Sale Value" style="text-align: right;"  >
+                <f:facet name="header">
+                    <h:outputLabel value="Sale Value" />
+                </f:facet>
+                <h:commandLink action="pharmacy_reprint_purchase_return" >
+                    <h:outputLabel value="#{bill.saleValue}" >
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>
+            
             <p:column headerText="Comments" >
                 <f:facet name="header">
                     <h:outputLabel value="Comments" />

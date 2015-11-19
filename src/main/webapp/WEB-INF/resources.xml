@@ -18,7 +18,7 @@
         userName=root
         jdbcUrl=jdbc\:mysql\://localhost\:3306/ruhunu?zeroDateTimeBehavior\=convertToNull
     </Resource>
-    <Resource id="dsR" type="javax.sql.DataSource">#Tue Oct 28 16:47:16 IST 2014
+    <Resource id="java:app/x" type="javax.sql.DataSource">#Tue Oct 28 16:47:16 IST 2014
         jdbcDriver=com.mysql.jdbc.Driver
         password=Bud7Nil
         userName=root

@@ -176,6 +176,19 @@
 
                     <p:columnGroup type="footer">
 
+                         <p:row>
+                            <p:column colspan="7" footerText="Sale Value" style="font-weight: bold!important;"/>
+                            <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
+                                <f:facet name="footer">
+                                    <br></br>
+                                    <h:outputLabel value="#{0-cc.attrs.bill.saleValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column ></p:column>
+                        </p:row>
+                        
                         <p:row>
                             <p:column colspan="7" footerText="Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
@@ -186,6 +199,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column ></p:column>
                         </p:row>
 
                         <p:row>
@@ -198,6 +212,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column ></p:column>
                         </p:row>
 
                         <p:row >
@@ -209,7 +224,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            <p:column ></p:column>
                         </p:row>
                         <p:row >
                             <p:column colspan="7" footerText="Discount"/>
@@ -220,7 +235,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            <p:column ></p:column>
                         </p:row>
                         <p:row >
                             <p:column colspan="7" footerText="Net Total" style="font-weight: bold!important;"/>
@@ -231,7 +246,7 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            <p:column ></p:column>
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>

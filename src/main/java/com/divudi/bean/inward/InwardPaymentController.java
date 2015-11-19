@@ -7,16 +7,15 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
-
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.entity.Bill;
@@ -28,13 +27,12 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BilledBillFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -218,13 +216,13 @@ public class InwardPaymentController implements Serializable {
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
 
 //        getCurrent().setForwardReferenceBill(getCurrent().getPatientEncounter().getFinalBill());
-        getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
 
         double dbl = Math.abs(getCurrent().getTotal());
         getCurrent().setTotal(dbl);
         getCurrent().setNetTotal(dbl);
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
 
@@ -239,7 +237,7 @@ public class InwardPaymentController implements Serializable {
         temBi.setBill(getCurrent());
         temBi.setGrossValue(getCurrent().getTotal());
         temBi.setNetValue(getCurrent().getTotal());
-        temBi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temBi.setCreatedAt(new Date());
         temBi.setCreater(getSessionController().getLoggedUser());
 
         if (temBi.getId() == null) {

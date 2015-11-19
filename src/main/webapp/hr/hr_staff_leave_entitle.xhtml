@@ -12,33 +12,80 @@
         <h:form>
             <p:panel header="Staff Leave Entitle">
                 <h:panelGrid columns="2">
-                    <p:panel header="Staff Leave Entitle">
-                        <h:panelGrid columns="2">                            
-                            <h:outputLabel value="Staff : "/>
-                            <hr:completeStaff value="#{staffLeaveEntitleController.current.staff}"/>
-                            <h:outputLabel value="From Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.fromDate}" pattern="dd/MM/yy">
-                                <!--<f:ajax execute="@this" event="dateSelect" render="frm" />-->
-                            </p:calendar>
-                            <h:outputLabel value="To Date : "/>
-                            <p:calendar value="#{staffLeaveEntitleController.current.toDate}" pattern="dd/MM/yy">
-                                <!--<f:ajax execute="@this" event="dateSelect" render="to" />-->
-                            </p:calendar>
-                            <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
-                                <f:selectItem itemLabel="Select Leave Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>
-                            <h:outputLabel value="Entitle Days Per Year"/>
-                            <p:inputText value="#{staffLeaveEntitleController.current.count}"/>
-                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                             action="#{staffLeaveEntitleController.saveSelected()}"/>
 
-                            <p:commandButton ajax="false" value="Delete" 
-                                             action="#{staffLeaveEntitleController.delete()}"/>
+                    <p:panel>
 
-                        </h:panelGrid>
+                        <p:panelGrid columns="2" id="stfDetail" rendered="#{staffLeaveEntitleController.current.staff ne null}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Staff Detail"/>
+                            </f:facet>
+                            <h:outputLabel value="Staff Joined Date"/>
+                            <h:outputLabel value="#{staffLeaveEntitleController.current.staff.dateJoined}">
+                                <f:convertDateTime pattern="dd/MM/yy"/>
+                            </h:outputLabel>
+
+                            <h:outputLabel/>
+                            <h:panelGrid columns="3">
+                                <h:outputLabel value="Leave Entitle || "/>
+                                <h:outputLabel value="Leave Utilized || "/>
+                                <h:outputLabel value="Ballance"/>
+                                <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle}"/>
+                                <h:outputLabel value="#{staffLeaveEntitleController.leaved}"/>
+                                <h:outputLabel value="#{staffLeaveEntitleController.leaveEntitle - staffLeaveEntitleController.leaved}"/>
+                            </h:panelGrid>
+                        </p:panelGrid>
+
+                        <p:panel header="Staff Leave Entitle">
+                            <h:panelGrid columns="2">                            
+                                <h:outputLabel value="Staff : "/>
+                                <p:autoComplete   forceSelection="true" id="staff"
+                                                  value="#{staffLeaveEntitleController.current.staff}" 
+                                                  completeMethod="#{staffController.completeStaffCode}" 
+                                                  var="mys" 
+                                                  itemLabel="#{mys.person.nameWithTitle}" 
+                                                  itemValue="#{mys}"
+                                                  converter="stfcon">   
+                                    <p:column headerText="Name">
+                                        #{mys.person.name}
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        #{mys.code}
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="@this staff" update="stfDetail"/>
+                                </p:autoComplete> 
+                                                               
+
+
+                                <h:outputLabel value="From Date : "/>
+                                <p:calendar id="frmDate" value="#{staffLeaveEntitleController.current.fromDate}" pattern="dd/MM/yy">
+                                    <f:ajax execute="@this frmDate" event="dateSelect" render="stfDetail" listener="#{staffLeaveEntitleController.completeStaffDetail}"/>
+                                </p:calendar>
+                                
+                                <h:outputLabel value="To Date : "/>
+                                <p:calendar value="#{staffLeaveEntitleController.current.toDate}" pattern="dd/MM/yy">
+                                    <!--<f:ajax execute="@this" event="dateSelect" render="to" />-->
+                                </p:calendar>
+                                
+                                <h:outputLabel value="Leave Type : "/>
+                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
+                                    <f:selectItem itemLabel="Select Leave Type"/>
+                                    <f:selectItems value="#{enumController.leaveType}"/>
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Entitle Days Per Year"/>
+                                <p:inputText value="#{staffLeaveEntitleController.current.count}"/>
+                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                                                 action="#{staffLeaveEntitleController.saveSelected()}"/>
+
+                                <p:commandButton ajax="false" value="Delete" 
+                                                 action="#{staffLeaveEntitleController.delete()}"/>
+                                
+                                <p:watermark for="staff" value="Staff"/> 
+
+                            </h:panelGrid>
+                        </p:panel>
+
                     </p:panel>
+
                     <p:panel header="Search Forms">
                         <h:panelGrid columns="2">                           
                             <h:outputLabel value="Staff : "/>
@@ -51,10 +98,12 @@
                             <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
-                            <p:commandButton ajax="false" value="Reset " action="#{staffLeaveEntitleController.resetDate()}" />                            
+                            </p:selectOneMenu>                                                       
                         </h:panelGrid>
+                        <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createItems()}" />                            
+                        <p:commandButton ajax="false" value="Reset " action="#{staffLeaveEntitleController.resetDate()}" />
+                        <p:commandButton ajax="false" value="Back to Leave Form" action="hr_form_staff_leave" />
+
                         <p:dataTable value="#{staffLeaveEntitleController.selectedItems}" var="add" 
                                      scrollable="true"
                                      scrollHeight="300" >
@@ -83,6 +132,7 @@
                         </p:dataTable>
                     </p:panel>
                 </h:panelGrid>
+
                 <p:panel header="Forms">
                     <h:panelGrid columns="3">                           
                         <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" /> 
@@ -158,6 +208,7 @@
                         </p:dataTable>
                     </p:panel>   
                 </p:panel>
+
             </p:panel>
         </h:form>
     </ui:define> 

@@ -19,7 +19,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Casheir Session Report Detail">
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="#{commonReport.webUser.institution.name}"/> 
+                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> 
                             
                             <br/>
 
@@ -163,15 +163,27 @@
 
                         <p:spacer height="30"/>
 
-                        <ca:channelBilledBill data="#{commonReport.channelBilled}"/>
+                        <ca:channelBilledBill agent="false" data="#{commonReport.channelBilled}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelCancelBill data="#{commonReport.channelCancells}"/>
+                        <ca:channelCancelBill agent="false" data="#{commonReport.channelCancells}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelRefundBill data="#{commonReport.channelRefunds}"/>
+                        <ca:channelRefundBill agent="false" data="#{commonReport.channelRefunds}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBill agent="true" data="#{commonReport.channelBilledAgent}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBill agent="true" data="#{commonReport.channelCancellsAgent}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBill agent="true" data="#{commonReport.channelRefundsAgent}"/>
 
                         <p:spacer height="30"/>
 

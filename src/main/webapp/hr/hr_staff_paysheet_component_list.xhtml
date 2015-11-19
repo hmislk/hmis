@@ -5,7 +5,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:pe="http://primefaces.org/ui/extensions"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
         <h:form>
@@ -25,140 +26,166 @@
                         <f:selectItem itemLabel="Please select component Type "/>
                         <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>                    
                     </p:selectOneMenu> 
+                    <h:outputLabel value="Employee : "/>
+                    <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
+                    <h:outputLabel value="Department : "/>
+                    <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
+                    <h:outputLabel value="Institution : "/>
+                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>
+                    <h:outputLabel value="Staff Category : "/>
+                    <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
+                    <h:outputLabel value="Staff Designation : "/>
+                    <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
+                    <h:outputLabel value="Staff Roster : "/>
+                    <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/>
+                    <h:outputLabel value="Branch(Bank) : "/>
+                    <hr:completeBank_Branch value="#{staffBasicController.reportKeyWord.bank}"/>
+                    <h:outputLabel value="Bank : "/>
+                    <hr:completeBank value="#{staffBasicController.reportKeyWord.institutionBank}"/>
                 </h:panelGrid>
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
-                  <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
-                        </p:commandButton>
+                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                    <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                </p:commandButton>
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
 
- 
+
 
                 <p:panel id="gpBillPreview">
-                <p:dataTable  id="tb1" value="#{staffBasicController.items}" 
-                              filteredValue="#{staffBasicController.filteredStaffPaysheet}"
-                              var="i"   rowKey="#{i.id}"  >
+                    <p:dataTable  id="tb1" value="#{staffBasicController.items}" 
+                                  filteredValue="#{staffBasicController.filteredStaffPaysheet}"
+                                  var="i"   rowKey="#{i.id}"  >
 
-                    <f:facet name="header">
-                        <h:outputLabel value="Staff Paysheet Component List"/>
-                  
-                        <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
-                        </h:outputLabel>
-                    </f:facet>
-
-                    <p:column headerText="From" >
-                         <f:facet name="header">
-                                    <h:outputLabel value="From"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.fromDate}" >
-                             
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column headerText="To" >
                         <f:facet name="header">
-                                    <h:outputLabel value="To"  />
-                                </f:facet>
-                        <p:cellEditor> 
-                              
-                            
-                            <f:facet name="output">
-                                <h:outputLabel value="#{i.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                </h:outputLabel>
-                            </f:facet>
-                            <f:facet name="input">
-                                <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
-                            </f:facet>
-                        </p:cellEditor>
+                            <h:outputLabel value="Staff Paysheet Component List"/>
 
-                    </p:column>
-                    <p:column headerText="Component Name" >
-                         <f:facet name="header">
-                                    <h:outputLabel value="Component Name"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
-                    </p:column>
-
-                    <p:column headerText="Grade" >
-                          <f:facet name="header">
-                                    <h:outputLabel value="Grade"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.grade}"/>                           
-                    </p:column>
-
-                    <p:column headerText="Category" >
-                          <f:facet name="header">
-                                    <h:outputLabel value="Category"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.staffCategory.name}"/>
-                    </p:column>
-
-                    <p:column headerText="Designtion" >
-                          <f:facet name="header">
-                                    <h:outputLabel value="Designtion"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.designation.name}"/>
-                    </p:column>
-
-                    <p:column headerText="Department" >
-                          <f:facet name="header">
-                                    <h:outputLabel value="Department"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
-                    </p:column>
-
-                    <p:column headerText="Staff" >
-                          <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
-                    </p:column>
-                    <p:column headerText="Staff Code">
-                          <f:facet name="header">
-                                    <h:outputLabel value="Staff Code"  />
-                                </f:facet>
-                        <h:outputLabel value="#{i.staff.code}"/>
-                    </p:column>
-                    
-                     <p:column >
-                         
-                         <h:outputLabel value="#{i.retired}"/>
-                    </p:column>
-
-                         <p:column >
-                         
-                             <h:outputLabel value="#{i.paysheetComponent.name}"/>
-                    </p:column>
-
-                         <p:column >
-                         
-                             <h:outputLabel value="#{i.paysheetComponent.includedForOt}"/>
-                    </p:column>
-
-                    
-                    <p:column headerText="Value" styleClass="averageNumericColumn">
-                          <f:facet name="header">
-                                    <h:outputLabel value="Value"  />
-                                </f:facet>
-
-                        <h:outputLabel value="#{i.staffPaySheetComponentValue}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <p:outputLabel value="#{staffBasicController.totalStaffPaySheetComponentValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
+                            <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
+                            </h:outputLabel>
                         </f:facet>
-                    </p:column>
+
+                        <p:column headerText="From" >
+                            <f:facet name="header">
+                                <h:outputLabel value="From"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.fromDate}" >
+
+                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="To" >
+                            <f:facet name="header">
+                                <h:outputLabel value="To"  />
+                            </f:facet>
+                            <p:cellEditor> 
 
 
-                </p:dataTable>
-            </p:panel>
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.toDate}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                </f:facet>
+                            </p:cellEditor>
+
+                        </p:column>
+                        <p:column headerText="Component Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Component Name"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
+                        </p:column>
+
+                        <p:column headerText="Grade" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Grade"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.grade}"/>                           
+                        </p:column>
+
+                        <p:column headerText="Category" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Category"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Designtion" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Designtion"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.designation.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Department" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Department"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Staff" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Staff"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:column headerText="Staff Code">
+                            <f:facet name="header">
+                                <h:outputLabel value="Staff Code"  />
+                            </f:facet>
+                            <h:outputLabel value="#{i.staff.code}"/>
+                        </p:column>
+
+                        <p:column >
+
+                            <h:outputLabel value="#{i.bankBranch.name}"/>
+                        </p:column>
+                        
+                        <p:column >
+
+                            <h:outputLabel value="#{i.bankBranch.institution.name}"/>
+                        </p:column>
+                        
+                        <p:column >
+
+                            <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
+                        </p:column>
+
+                        <p:column >
+
+                            <h:outputLabel value="#{i.paysheetComponent.name}"/>
+                        </p:column>
+
+                        <p:column >
+
+                            <h:outputLabel value="#{i.paysheetComponent.includedForOt}"/>
+                        </p:column>
+
+
+                        <p:column headerText="Value" styleClass="averageNumericColumn">
+                            <f:facet name="header">
+                                <h:outputLabel value="Value"  />
+                            </f:facet>
+
+                            <h:outputLabel value="#{i.staffPaySheetComponentValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{staffBasicController.totalStaffPaySheetComponentValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+
+                    </p:dataTable>
                 </p:panel>
+            </p:panel>
         </h:form>
     </ui:define>
 

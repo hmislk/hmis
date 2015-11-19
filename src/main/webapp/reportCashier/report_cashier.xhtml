@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
             <h:outputStylesheet library="css" name="printing.css" />
@@ -88,7 +88,8 @@
                                 <p:panel header="6) Bill Lists" style="width: 400px; height: auto" collapsed="true" toggleable="true">
 
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>                                
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>   
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) OPD payment scheme bills" action="/reportCashier/report_opd_bill_payment_sheame"/> 
                                 </h:panelGrid>
                             </p:panel>
                             </h:panelGrid>
@@ -101,5 +102,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

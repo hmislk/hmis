@@ -183,7 +183,7 @@
                                 
                                     <h:outputLabel value="#{cc.attrs.bill.netTotal}" styleClass="totalCoop">
                                     <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputLabel>                                
                                 </f:facet>
                             </h:column>
                         </h:dataTable>
@@ -201,16 +201,7 @@
                                     <br/>
                                 </td>
                             </tr>
-<!--                            <tr>
-                                <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
-                                </td>
-                                <td style="text-align: right!important;">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}"  style=" text-decoration: underline!important; text-decoration-style: double!important; font-weight: bold ; text-align: right!important; font-size: 15px!important; margin-left: 115px;">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>-->
+
                             <tr>
                                 <td style="text-align: left;">
                                     <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>

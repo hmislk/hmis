@@ -7,11 +7,9 @@ package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.UtilityController;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
-import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.context.RequestScoped;
@@ -19,6 +17,7 @@ import javax.faces.FacesException;
 import javax.faces.context.FacesContext;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.ServletContext;
 import org.primefaces.event.CaptureEvent;
 

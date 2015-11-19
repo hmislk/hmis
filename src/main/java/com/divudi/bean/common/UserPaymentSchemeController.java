@@ -7,27 +7,25 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
 import com.divudi.entity.Institution;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserPaymentScheme;
-import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.facade.WebUserPaymentSchemeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -87,12 +85,12 @@ public  class UserPaymentSchemeController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -128,12 +126,12 @@ public  class UserPaymentSchemeController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

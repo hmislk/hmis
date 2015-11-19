@@ -5,9 +5,12 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.lab.InvestigationController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.InvestigationSummeryData;
 import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
@@ -27,16 +30,17 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.ReportItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -47,8 +51,16 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InvestigationMonthSummeryOwnControllerSession implements Serializable {
 
+    /**
+     * Managed Beans
+     */
     @Inject
     private SessionController sessionController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
+    /**
+     * EJBs
+     */
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -61,9 +73,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private BillItemFacade billItemFacade;
     @EJB
     BillEjb billEjb;
+    @EJB
+    ReportItemFacade reportItemFacade;
+    /**
+     * Properties
+     */
     private Date fromDate;
     private Date toDate;
-    Institution  reportedInstitution;
+    Institution reportedInstitution;
     Department reportedDepartment;
     private Institution creditCompany;
     Institution institution;
@@ -73,6 +90,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> items;
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
+    List<Bill> bills;
+    List<PatientInvestigation> pis;
     List<InvestigationSummeryData> itemsLab;
     Long totalCount;
     int progressValue = 0;
@@ -101,20 +120,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
-        totalCount = null;
-        progressStarted = true;
-        progressValue = 0;
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
-        double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
-            System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
-            if (stopProgress == true) {
-                break;
-            }
-            progressValue += (int) singleItem;
             InvestigationSummeryData temp = setIxSummeryCount(w);
             if (temp.getCount() != 0) {
                 totalCount += temp.getCount();
@@ -123,16 +133,63 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
+    @Inject
+    InvestigationController investigationController;
+    public void createInvestigationExistTable(){
+        items= new ArrayList<>();
+        List<Investigation> investigations;
+        investigations=new ArrayList<>();
+        
+        investigations.addAll(investigationController.getInvestigationItems());
+        System.out.println("investigations = " + investigations);        
+        
+        if(investigations.isEmpty()){
+            UtilityController.addErrorMessage("No Investigations");
+            return;
+        }
+        
+        for(Investigation i:investigations){
+            InvestigationSummeryData temp =new InvestigationSummeryData();
+            
+            temp.setInvestigation(i);
+            
+            temp.setB(checkAvailabilityOfReport(i));
+            
+            if(temp.getInvestigation()!=null){
+                System.out.println("Adding");
+                items.add(temp);
+            }
+            
+        }
+    }
     
+    public boolean checkAvailabilityOfReport(Investigation investigation){
+        boolean exist=false;
+        String sql;
+        HashMap hm=new HashMap();
+        
+        sql = "Select ri from ReportItem ri "
+                + " where ri.retired=false "
+                + " and ri.item=:itm ";
+        
+        hm.put("itm", investigation);
+        
+        if(reportItemFacade.findFirstBySQL(sql, hm)!=null){
+            exist=true;
+        }
+        System.out.println("reportItemFacade.findFirstBySQL(sql, hm)"+reportItemFacade.findFirstBySQL(sql, hm));
+        
+        return exist;
+    }
+
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null , true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
-            System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
@@ -154,10 +211,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department , true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
-            System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
@@ -173,16 +229,15 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
-            System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
@@ -198,16 +253,15 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null , true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
-            System.out.println("w.getName() = " + w.getName());
             if (totalCount == null) {
                 totalCount = 0l;
             }
@@ -223,18 +277,40 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         progressStarted = false;
     }
-    
+
+    public void createInvestigationTurnoverTimeByBills() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select pi "
+                + " from PatientInvestigation pi join pi.billItem bi join bi.bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.createdAt between :fd and :td "
+                + " and (bi.refunded is null or bi.refunded=FALSE) "
+                + " and bi.retired=false ";
+
+        if (department != null) {
+            sql += " and b.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+    }
+
     public void createInvestigationTurnoverTime() {
-        progressStarted = true;
-        progressValue = 0;
+        System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
         double totalMins = 0;
         double averageCount = 0;
-        List<PatientInvestigation> pis = billEjb.getPatientInvestigations(item,
+        List<PatientInvestigation> temPis = billEjb.getPatientInvestigations(item,
                 fromDate,
                 toDate,
                 new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
-                new Class[]{Bill.class},
+                new Class[]{BilledBill.class},
                 true,
                 null,
                 true,
@@ -243,18 +319,18 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 null,
                 true,
                 null);
-        double singleItem = 0;
-        if (pis.size() != 0) {
-            singleItem = 100 / pis.size();
-        }
+        System.out.println("pis.size() = " + temPis.size());
+        for (PatientInvestigation pi : temPis) {
 
-        for (PatientInvestigation pi : pis) {
-            System.out.println("pi.getBillItem().getItem().getName() = " + pi.getBillItem().getItem().getName());
-            progressValue += (int) singleItem;
-            averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
-            totalMins += averateMins;
-            averageCount++;
+            if (pi.getPrintingAt() != null && pi.getBillItem().getBill().getCreatedAt() != null) {
+                System.out.println("pi.getPrintingAt().getTime() = " + pi.getPrintingAt().getTime());
+                System.out.println("pi.getBillItem().getBill().getCreatedAt().getTime() = " + pi.getBillItem().getBill().getCreatedAt().getTime());
+                averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+                totalMins += averateMins;
+                averageCount++;
+            }
         }
+        System.out.println("totalMins = " + totalMins);
         totalCount = (long) (totalMins / averageCount);
         progressStarted = false;
     }
@@ -353,7 +429,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.department = department;
     }
 
-    
     private Institution collectingIns;
 
     public List<InvestigationSummeryData> getItems() {
@@ -814,7 +889,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, true, null);
         System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
-        System.out.println("net = " + net);
         is.setCount(net);
         return is;
     }
@@ -824,7 +898,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long timeInMinutes = (getToDate().getTime() - getFromDate().getTime()) / 60000;
 
         long turnOverTime = timeInMinutes / count;
-        System.out.println("turnOverTime = " + turnOverTime);
 
         return turnOverTime;
     }
@@ -1192,15 +1265,31 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
 
     }
-    
-    public void prepareForPrint(){
-        paginator=false;
-        rows=getItems().size();
+
+    public void prepareForPrint() {
+        paginator = false;
+        rows = getItems().size();
     }
-    
-    public void prepareForView(){
-        paginator=true;
-        rows=20;
+
+    public void prepareForView() {
+        paginator = true;
+        rows = 20;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public List<PatientInvestigation> getPis() {
+        return pis;
+    }
+
+    public void setPis(List<PatientInvestigation> pis) {
+        this.pis = pis;
     }
 
 }

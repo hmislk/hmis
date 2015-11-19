@@ -11,20 +11,20 @@ package com.divudi.bean.common;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.facade.IssueRateMarginsFacade;
 import com.divudi.entity.IssueRateMargins;
+import com.divudi.facade.IssueRateMarginsFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

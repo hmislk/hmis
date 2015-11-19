@@ -87,6 +87,7 @@ public class Shift implements Serializable {
     boolean halfShift;
     boolean firstShift;
     boolean lastShift;
+    private boolean hideShift;
 
     public boolean isFirstShift() {
         return firstShift;
@@ -136,8 +137,6 @@ public class Shift implements Serializable {
         this.shiftDuration = shiftDuration;
     }
 
-    private boolean hideShift;
-
     public Shift getPreviousShift() {
         return previousShift;
     }
@@ -175,11 +174,9 @@ public class Shift implements Serializable {
         System.err.println("S H " + sHour);
         System.err.println("E H " + eHour);
         durationHour = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60 * 60));
-        System.err.println(durationHour);
         if (sHour > eHour) {
             System.err.println("1 ");
             durationHour = (durationHour + 24);
-            System.err.println("2 " + durationHour);
         }
 
         durationHour = Math.floor(durationHour);
@@ -204,11 +201,9 @@ public class Shift implements Serializable {
         System.err.println("S H " + sHour);
         System.err.println("E H " + eHour);
         durationMin = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60));
-        System.err.println(durationMin);
         if (sHour > eHour) {
             System.err.println("1 ");
             durationMin = (durationMin + (24 * 60));
-            System.err.println("2 " + durationMin);
         }
 
         durationMin = Math.floor(durationMin);

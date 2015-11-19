@@ -5,15 +5,15 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
@@ -813,7 +813,6 @@ public class PharmacyIssueController implements Serializable {
         System.err.println("tdp = " + tdp);
         double dr;
         dr = (tr * tdp) / 100;
-        System.err.println("dr = " + dr);
 
 //        if (bi.getItem().isDiscountAllowed()) {
         return dr;

@@ -44,13 +44,23 @@
 
             <p:dataTable id="tbl" value="#{salaryCycleController.staffSalary}" var="scc" >
                 <f:facet name="header">
-                    <h:outputLabel value="All Staff Salary Summary"></h:outputLabel>
+                    <h:outputLabel value="All Staff Salary Summary"></h:outputLabel><br></br>
+                    <h:outputLabel value="#{salaryCycleController.current.name}"></h:outputLabel>
                 </f:facet>
+
+
                 <p:column headerText="Name" >
                     <f:facet name="header">
                         <h:outputLabel value="Name"></h:outputLabel>
                     </f:facet>
-                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}" ></h:outputLabel>
+                    <h:outputLabel value="#{scc.staff.person.nameWithTitle}"></h:outputLabel>                    
+                </p:column>
+
+                <p:column headerText="Department" >
+                    <f:facet name="header">
+                        <h:outputLabel value="Department"></h:outputLabel>
+                    </f:facet>
+                    <h:outputLabel value="#{scc.staff.department.name}" ></h:outputLabel>
                     <f:facet name="footer">
                         <h:outputLabel value="Total"></h:outputLabel>
                     </f:facet>
@@ -265,6 +275,13 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>
+                <f:facet name="footer">
+                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                    <p:outputLabel value="Print At : " />
+                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                    </p:outputLabel>
+                </f:facet>
 
             </p:dataTable>
 

@@ -6,4 +6,56 @@
 <application>
    
 </application>
+    <application>
+        <el-resolver>com.divudi.bean.common.util.JsfCrudELResolver</el-resolver>
+    </application>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>welcome</from-outcome>
+            <to-view-id>/index.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <managed-bean>
+        <managed-bean-name>personInstitution</managed-bean-name>
+        <managed-bean-class>com.divudi.bean.common.PersonInstitutionController</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>personInstitutionJpa</managed-bean-name>
+        <managed-bean-class>com.divudi.facade.PersonInstitutionFacade</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <converter>
+        <converter-for-class>com.divudi.entity.PersonInstitution</converter-for-class>
+        <converter-class>com.divudi.bean.common.PersonInstitutionConverter</converter-class>
+    </converter>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>personInstitution_create</from-outcome>
+            <to-view-id>/personinstitution/personInstitution/New.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>personInstitution_list</from-outcome>
+            <to-view-id>/personinstitution/personInstitution/List.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>personInstitution_edit</from-outcome>
+            <to-view-id>/personinstitution/personInstitution/Edit.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>personInstitution_detail</from-outcome>
+            <to-view-id>/personinstitution/personInstitution/Detail.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
 </faces-config>

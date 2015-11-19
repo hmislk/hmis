@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import javax.faces.bean.SessionScoped;
 import javax.inject.Named;
-import javax.faces.view.ViewScoped;
 
 /**
  *

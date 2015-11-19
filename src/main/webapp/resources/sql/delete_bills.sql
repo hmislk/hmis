@@ -1,0 +1,10 @@
+SET FOREIGN_KEY_CHECKS=0;
+DELETE from billfee where `ID` > 0;
+DELETE from bill where `ID` > 0;
+DELETE from billitem where `ID` > 0;
+DELETE from bill where `ID` > 0;
+DELETE from billnumber WHERE `ID`>0;
+Delete from billsession where id>0;
+delete from billcomponent where `ID`>0;
+delete from billentry WHERE id > 0;
+SET FOREIGN_KEY_CHECKS=1;

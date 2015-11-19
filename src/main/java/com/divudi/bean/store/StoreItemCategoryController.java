@@ -16,19 +16,18 @@ import com.divudi.facade.AssetCategoryFacade;
 import com.divudi.facade.StoreItemCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -64,7 +63,7 @@ public class StoreItemCategoryController implements Serializable {
         }
         return a;
     }
-    
+
     public List<AssetCategory> completeAssetCategory(String qry) {
         List<AssetCategory> a = null;
         Map m = new HashMap();
@@ -85,7 +84,6 @@ public class StoreItemCategoryController implements Serializable {
         current = new StoreItemCategory();
     }
 
-  
     private void recreateModel() {
         items = null;
     }
@@ -94,18 +92,17 @@ public class StoreItemCategoryController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
     }
 
-  
     public StoreItemCategoryFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -139,8 +136,6 @@ public class StoreItemCategoryController implements Serializable {
     public void setAssetCategoryFacade(AssetCategoryFacade assetCategoryFacade) {
         this.assetCategoryFacade = assetCategoryFacade;
     }
-    
-    
 
     public void setCurrent(StoreItemCategory current) {
         this.current = current;
@@ -150,12 +145,12 @@ public class StoreItemCategoryController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -168,7 +163,11 @@ public class StoreItemCategoryController implements Serializable {
     }
 
     public List<StoreItemCategory> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j = "select c from StoreItemCategory c where c.retired=false order by c.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

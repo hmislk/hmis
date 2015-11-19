@@ -13,32 +13,61 @@
         <h:form>
 
             <p:panel header="Cannel Agent Reperence Book">
-
+                <f:facet name="header">
+                    <p:outputLabel value="Cannel Agent Reperence Book" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
                 <p:panel>
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{agentReferenceBookController.frmDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
-                    </p:calendar>
-                    <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{agentReferenceBookController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
-                    </p:calendar>
-                    <p:outputLabel value="Agent Name" />
-                    <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
-                                    forceSelection="true"
-                                    completeMethod="#{agentReferenceBookController.completeAgent}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                    <h:panelGrid columns="6">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+                        <p:outputLabel value="Agent Name" />
+                        <p:autoComplete converter="deal" value="#{channelReportTempController.searchKeyword.ins}" 
+                                        forceSelection="true"
+                                        completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            <p:column>#{vt.institutionCode}</p:column>
+                            <p:column>#{vt.name}</p:column>
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="With Deleted Books"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.withRetiered}" />
+                        <p:outputLabel value="Activate Advance Search"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.activeAdvanceOption}"  >
+                            <p:ajax event="change" process="@this" update="val1 val2 val3 pgAdvan" />
+                        </p:selectBooleanCheckbox>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgAdvan" columns="3"  >
+                        <h:panelGrid columns="3" rendered="#{channelReportTempController.searchKeyword.activeAdvanceOption}">
+                            <p:outputLabel value="Book No"/>
+                            <p:outputLabel value="Starting Ref. No"/>
+                            <p:outputLabel value="Ending Ref. No"/>
+                            <p:inputText id="val1" value="#{channelReportTempController.searchKeyword.val1}" />
+                            <p:inputText id="val2" value="#{channelReportTempController.searchKeyword.val2}" />
+                            <p:inputText id="val3" value="#{channelReportTempController.searchKeyword.val3}" />
+                        </h:panelGrid>
+                    </h:panelGrid>
 
-
-                    <p:commandButton action="#{agentReferenceBookController.createAllBooks}" value="Fill" ajax="false" ></p:commandButton> 
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton action="#{channelReportTempController.createAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
 
-                    <p:commandButton actionListener="#{agentReferenceBookController.createAllBooks}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton actionListener="#{channelReportTempController.createAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
                         <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
                     </p:commandButton> 
 
                 </p:panel>
                 <p:panel id="reportPrint">
-                    <p:dataTable value="#{agentReferenceBookController.agentReferenceBooks}" var="a" id="tbl1" rowIndexVar="i">
+                    <p:dataTable value="#{channelReportTempController.agentReferenceBooks}"
+                                 rowStyleClass="#{a.deactivate ? 'redText':''}" var="a" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
                             <p:outputLabel value="Channel Book Details" />
                         </f:facet>
@@ -116,7 +145,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton value="Update" actionListener="#{agentReferenceBookController.createAllBooks}" action="#{agentReferenceBookController.updateDecactivateAgentBook(a)}" ajax="false"></p:commandButton>
+                            <p:commandButton disabled="#{a.retired}" value="Update" actionListener="#{channelReportTempController.createAgentReferenceBooks}" action="#{channelReportTempController.updateDecactivateAgentBook(a)}" ajax="false"></p:commandButton>
                         </p:column>
 
                     </p:dataTable>

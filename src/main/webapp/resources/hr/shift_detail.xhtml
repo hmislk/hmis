@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="staffShift"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panel>
+            lahiru madushanka
+            <f:facet name="header">
+                <h:outputLabel value="Shift Detail"/>                        
+            </f:facet>
+            <h:panelGrid id="gpDetailTextPrint" columns="3">
+
+                <h:outputText  value="Name" ></h:outputText>
+                <h:outputLabel value=":"/>
+                <h:outputText value="#{cc.attrs.staffShift.name}"/>
+
+                <h:outputText  value="Day Type" ></h:outputText>
+                <h:outputLabel value=":"/>
+                <h:outputText  value="#{cc.attrs.staffShift.dayType}"/>
+
+                <h:outputLabel value="Shift Order" rendered="false"/>
+                <h:outputLabel value=":" rendered="false"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.shiftOrder}" rendered="false"/>
+
+                <p:outputLabel value="Starting Time"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.startingTime}">
+                    <f:convertDateTime pattern="hh:mm:ss a"/>
+                </h:outputLabel>  
+
+                <p:outputLabel value="End Time"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.cc.attrs.staffShift.endingTime}">
+                    <f:convertDateTime pattern="hh:mm:ss a"/>
+                </h:outputLabel>  
+
+                <p:outputLabel value="Previous Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.previousShift}"/>
+
+                <p:outputLabel value="Next Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.nextShift}"/>
+
+                <h:outputLabel value="Leave Hour Full"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.leaveHourFull}"/>
+
+                <h:outputLabel value="Leave Hour Half"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.leaveHourHalf}"/>
+
+                <h:outputLabel value="Duration Minute"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.durationMin}"/>
+
+                <p:outputLabel value="First Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.firstShift ? 'Yes':'No'}" />
+
+                <p:outputLabel value="Last Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.lastShift ? 'Yes':'No'}" />
+
+                <p:outputLabel value="Half Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.halfShift ? 'Yes':'No'}" />
+
+                <p:outputLabel value="Hide Shift"/>
+                <h:outputLabel value=":"/>
+                <h:outputLabel value="#{cc.attrs.staffShift.hideShift ? 'Yes':'No'}" />
+
+
+                <p:outputLabel value="This Shift Id"/>
+                <h:outputLabel value=":"/>
+                <p:outputLabel value="#{cc.attrs.staffShift.id}"/>
+
+                <p:outputLabel value="Previous Shift Id"/>
+                <h:outputLabel value=":"/>
+                <p:outputLabel value="#{cc.attrs.staffShift.previousShift.id}"/>
+
+                <p:outputLabel value="Next Shift Id"/>
+                <h:outputLabel value=":"/>
+                <p:outputLabel value="#{cc.attrs.staffShift.nextShift.id}"/>
+
+                <p:outputLabel value="Creater"/>
+                <h:outputLabel value=":"/>
+                <p:outputLabel value="#{cc.attrs.staffShift.creater.webUserPerson.name}"/>
+
+                <p:outputLabel value="Created At"/>
+                <h:outputLabel value=":"/>
+                <p:outputLabel value="#{cc.attrs.staffShift.createdAt}">
+                    <f:convertDateTime pattern="hh:mm:ss a"/>
+                </p:outputLabel>
+
+            </h:panelGrid>
+
+        </p:panel>
+    </cc:implementation>
+</html>

@@ -6,7 +6,6 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.hr.StaffController;
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Model;
 import javax.enterprise.inject.Produces;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;

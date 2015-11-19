@@ -19,19 +19,23 @@
     <cc:implementation>
         <p:panel>
             <f:facet name="header">
-            <h:outputLabel value="Program Preferences" ></h:outputLabel>
-            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
-            <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
-                <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
-            </h:panelGroup>
-            <h:panelGroup rendered="#{cc.attrs.department ne null}" >
-                <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
-            </h:panelGroup>
+                <h:outputLabel value="Program Preferences" ></h:outputLabel>
+                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
+                    <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.department ne null}" >
+                    <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
+                </h:panelGroup>
             </f:facet>
         </p:panel>
-        
+
+
+        <h:outputLabel  value="#{sessionController.currentPreference.id}"/>
 
         <h:panelGrid columns="3" styleClass="alignTop" >
+
+
 
             <p:panel header="Institution" >
                 <h:panelGrid columns="2" styleClass="alignTop" >
@@ -50,6 +54,7 @@
                     <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillFooter}" />
                     <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
+                        <f:selectItem itemLabel="Please Select Paper Type" />
                         <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                     </p:selectOneMenu>
                     <h:outputLabel value="GRN Detaied" ></h:outputLabel>
@@ -78,6 +83,7 @@
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
                     <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.opdBillPaperType}" >
+                        <f:selectItem itemLabel="Please Select Paper Type" />
                         <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                     </p:selectOneMenu>
                     <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
@@ -89,6 +95,12 @@
 
                     <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
+
+                    <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
+                    
+                    <h:outputLabel value="OPD Settle Without Patient Phone Number"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 
                 </h:panelGrid>
 
@@ -117,9 +129,22 @@
                 <h:panelGrid columns="2" styleClass="alignTop" >
 
 
+                    <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
+                    <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
+                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Channel Bill Double"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelBillDouble}"/>
                     <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
-
+                    <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
+                    <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
+                    <h:outputLabel value="Default Payment Method"></h:outputLabel>
+                    <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
+                        <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                    </p:selectOneMenu>
 
 
                 </h:panelGrid>
@@ -139,10 +164,20 @@
 
             </p:panel>
 
+            <p:panel header="Lab" >
+                <h:panelGrid columns="2" styleClass="alignTop" >
+                    <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
+                    <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
+                    <p:watermark for="fontName" value="Eg- Courier New" />
+
+                </h:panelGrid>
+            </p:panel>
+
 
 
         </h:panelGrid>
 
+        <h:outputLabel value="#{sessionController.currentPreference.id}" ></h:outputLabel>
 
 
 

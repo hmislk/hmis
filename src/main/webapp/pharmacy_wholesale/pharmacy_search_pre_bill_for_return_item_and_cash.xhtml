@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
@@ -42,7 +42,7 @@
                             >
                             <p:column headerText="View">
                                 <p:commandButton ajax="false" value="View Bill"
-                                                action="pharmacy_reprint_bill_sale">
+                                                action="/pharmacy/pharmacy_reprint_bill_sale">
                                     <f:setPropertyActionListener value="#{bill.referenceBill}" 
                                                                  target="#{pharmacyBillSearch.bill}"/>   
                                 </p:commandButton>
@@ -103,5 +103,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

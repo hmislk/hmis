@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Cannel Agent Reperence Book">
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <p:outputLabel value="Agent Name" />
+                        <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
+                                        forceSelection="true"
+                                        completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            <p:column>#{vt.institutionCode}</p:column>
+                            <p:column>#{vt.name}</p:column>
+                        </p:autoComplete>
+
+
+                        <p:commandButton action="#{channelReportController.createAgentHistoryTable}" value="Fill" ajax="false" ></p:commandButton> 
+                        <h:panelGrid columns="2">
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+
+                            <p:commandButton actionListener="#{channelReportController.createAgentHistoryTable}" ajax="false" value="Excel" styleClass="noPrintButton">
+                                <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </h:panelGrid> 
+                </p:panel>
+                <p:panel id="reportPrint">
+                    <p:dataTable value="#{channelReportController.agentHistorys}" var="a" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="From - " />
+                            <p:outputLabel value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                            <p:outputLabel value=" - To - " />
+                            <p:outputLabel value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                            <p:outputLabel value=" Channel Agent " />
+                            <p:outputLabel value="#{channelReportController.institution.name}" />
+                            <p:outputLabel value=" History" />
+                        </f:facet>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Agent" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.bill.creditCompany.name}" />
+                            <p:outputLabel value="#{a.bill.fromInstitution.name}" />
+                            <p:outputLabel value="- Ref. No(#{a.referenceNo})" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Bill No" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.bill.insId} - #{a.bill.deptId}" >
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Before Balance" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.beforeBallance}" >
+                                <f:convertNumber pattern="#,##,###.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol">
+                            <f:facet name="header">
+                                <p:outputLabel value="Transaction Value" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.transactionValue}" >
+                                <f:convertNumber pattern="#,##,###.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="After Balance" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.beforeBallance+a.transactionValue}" >
+                                <f:convertNumber pattern="#,##,###.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="History Type" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.historyType}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Creater" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.createdAt}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

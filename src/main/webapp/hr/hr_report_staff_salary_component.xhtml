@@ -8,7 +8,7 @@
       xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -52,6 +52,8 @@
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                             <h:outputLabel value="Staff Paysheet Componet : "/>
                             <hr:completePaySheetComponent value="#{hrReportController.reportKeyWord.paysheetComponent}"/>
+                            <h:outputLabel value="Bank : "/>
+                            <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}"/>
 
                         </h:panelGrid>
 
@@ -66,64 +68,71 @@
                         <p:panel id="gpBillPreview" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalaryComponants}" var="ss">
                                 <p:column headerText="Emp No">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp No"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp No"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staffSalary.staff.codeInterger}" >
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Emp Name">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Emp Name"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Emp Name"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staffSalary.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>                              
                                 <p:column headerText="Paysheet Component ">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Paysheet Component"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paysheet Component"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.paysheetComponent.name}">
                                     </p:outputLabel>
                                 </p:column>  
+                                <p:column headerText="Bank">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bank"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffPaysheetComponent.bankBranch.institution.name}">
+                                    </p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Component Value " style="text-align: right;">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Component Value"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Component Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.componantValue}">
-                                
+
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column>  
                                 <p:column headerText="EPF Staff Value " style="text-align: right;">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="EPF Staff Value"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="EPF Staff Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.epfValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column> 
                                 <p:column headerText="EPF Company Value " style="text-align: right;">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="EPF Company Value"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="EPF Company Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.epfCompanyValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column> 
                                 <p:column headerText="ETF Company Value " style="text-align: right;">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="ETF Company Value"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ETF Company Value"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.etfCompanyValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Total" style="text-align: right;">
-                                     <f:facet name="header">
-                                    <h:outputLabel value="Total"  />
-                                </f:facet>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Total"  />
+                                    </f:facet>
                                     <p:outputLabel value="#{ss.etfCompanyValue + ss.epfCompanyValue + ss.epfValue + ss.componantValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -140,5 +149,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -4,7 +4,8 @@
  */
 package com.divudi.entity.channel;
 
-import com.divudi.entity.*;
+import com.divudi.entity.Fee;
+import com.divudi.entity.ServiceSession;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;

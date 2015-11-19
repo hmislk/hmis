@@ -12,21 +12,20 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.hr.AmendmentForm;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftHistory;
 import com.divudi.facade.AmendmentFormFacade;
 import com.divudi.facade.ShiftFacade;
 import com.divudi.facade.StaffShiftFacade;
 import com.divudi.facade.StaffShiftHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**

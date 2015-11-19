@@ -7,10 +7,10 @@
  */
 package com.divudi.entity;
 
-import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +27,9 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
 
 /**
  *
@@ -97,6 +100,17 @@ public class Person implements Serializable {
     @ManyToOne
     private MembershipScheme membershipScheme;
 
+    @Transient
+    int ageMonths;
+    @Transient
+    int ageDays;
+    @Transient
+    int ageYears;
+    @Transient
+    String age;
+    @Transient
+    long ageInDays;
+    
     public boolean isForeigner() {
         return foreigner;
     }
@@ -105,48 +119,68 @@ public class Person implements Serializable {
         this.foreigner = foreigner;
     }
 
-    public String getNameWithTitle() {
-        String temT = "";
-        Title t;
-        if (getName() != null) {
-            t = getTitle();
-            if (t == Title.Baby) {
-                temT = "Baby ";
-            } else if (t == Title.Dr) {
-                temT = "Dr. ";
-            } else if (t == Title.DrMiss) {
-                temT = "Dr(Miss). ";
-            } else if (t == Title.DrMrs) {
-                temT = "Dr(Mrs). ";
-            } else if (t == Title.DrMs) {
-                temT = "Dr(Ms). ";
-            } else if (t == Title.Hon) {
-                temT = "Hon. ";
-            } else if (t == Title.Master) {
-                temT = "Master. ";
-            } else if (t == Title.Miss) {
-                temT = "Miss. ";
-            } else if (t == Title.Mr) {
-                temT = "Mr. ";
-            } else if (t == Title.Mrs) {
-                temT = "Mrs. ";
-            } else if (t == Title.Ms) {
-                temT = "Ms. ";
-            } else if (t == Title.Prof) {
-                temT = "Prof. ";
-            } else if (t == Title.Rev) {
-                temT = "Rev. ";
-            } else if (t == Title.RtHon) {
-                temT = "Rt. Hon. ";
-            } else if (t == Title.RtRev) {
-                temT = "Rt. Rev. ";
-            } else {
-                temT = "";
-            }
-
-            nameWithTitle = temT + getName();
+    public void calAgeFromDob() {
+        age = "";
+        ageInDays = 0l;
+        ageMonths = 0;
+        ageDays = 0;
+        ageYears = 0;
+        if (getDob() == null) {
+            return;
         }
 
+        LocalDate dob = new LocalDate(getDob());
+        LocalDate date = new LocalDate(new Date());
+
+        Period period = new Period(dob, date, PeriodType.yearMonthDay());
+        ageYears = period.getYears();
+        ageMonths = period.getMonths();
+        ageDays = period.getDays();
+        if (ageYears > 12) {
+            age = period.getYears() + " years.";
+        } else if (ageYears > 0) {
+            age = period.getYears() + " years and " + period.getMonths() + " months.";
+        } else {
+            age = period.getMonths() + " months and " + period.getDays() + " days.";
+        }
+        period = new Period(dob, date, PeriodType.days());
+        ageInDays = (long) period.getDays();
+    }
+
+    public String getAge() {
+        calAgeFromDob();
+        return age;
+    }
+
+    public Long getAgeInDays() {
+        calAgeFromDob();
+        return ageInDays;
+    }
+
+    public int getAgeMonths() {
+        calAgeFromDob();
+        return ageMonths;
+    }
+
+    public int getAgeDays() {
+        calAgeFromDob();
+        return ageDays;
+    }
+
+    public int getAgeYears() {
+        calAgeFromDob();
+        return ageYears;
+    }
+
+    public String getNameWithTitle() {
+        String temT;
+        Title t = getTitle();
+        if (t != null) {
+            temT = t.getLabel();
+        } else {
+            temT = "";
+        }
+        nameWithTitle = temT + getName();
         return nameWithTitle;
     }
 

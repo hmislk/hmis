@@ -153,12 +153,12 @@
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel    value="#{bip.rate}"    styleClass="itemsBlock" >
+                                <h:outputLabel    value="#{bip.netValue/bip.qty}"    styleClass="itemsBlock" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel    value="#{bip.grossValue}"    styleClass="itemsBlock"  >
+                                <h:outputLabel    value="#{bip.netValue}"    styleClass="itemsBlock"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -189,7 +189,7 @@
 
                 <table style="width: 100%;">
 
-                    <tr>
+<!--                    <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
                             <h:outputLabel value="Sub Total" />
                         </td>
@@ -198,7 +198,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
-                    </tr>
+                    </tr>-->
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount (#{cc.attrs.bill.paymentScheme.discountPercentForPharmacy} %)"/>
@@ -211,7 +211,7 @@
                     </tr>
                     <tr>
                         <td  class="totalsBlock" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Total" />
+                            <h:outputLabel  rendered="#{cc.attrs.bill.netTotal ne 0.0}"    value="Total" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.netTotal ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
@@ -228,7 +228,6 @@
 
             <div class="footer">
                
-                www.lakmedi.com 0715812399
             </div>
 
 

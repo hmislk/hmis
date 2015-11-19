@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -25,36 +25,58 @@
                                 value="Please do not touch this page without the written permission from the lead software developer." 
                                 style="font-size: 20px; color: red; font-weight: 900;" ></h:outputLabel>
                         </p:panel>
-                        <p:panelGrid columns="1"                         >
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" value="5. Remove Unused Pharmaceutical Categories" onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
-                            <p:commandLink ajax="false" action="/dataAdmin/change_categories" value="6. Change Categories of Items" ></p:commandLink>
 
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.addWholesalePrices()}" value="7. Add Wholesale Prices" ></p:commandLink>
+                        <p:panelGrid columns="2" >
 
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.detectWholeSaleBills}" 
-                                           value="8. Convert Sale Bils to Wholesale Bills if saled from Wholesale Rate" ></p:commandLink>
-                            <p:commandLink ajax="false" action="/channel/channel_report_agent_referece_book_bulk_delete" 
-                                           value="9. Channel Book Bulk Delete" ></p:commandLink>
-                            <p:commandLink ajax="false" action="/dataAdmin/inward_search_service_with_payment_methord" 
-                                           value="10. Update Inward Service bill Payment Methord" ></p:commandLink>
+                            <p:panelGrid columns="1"                         >
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.restBillNumber()}" value="3. Reset Bill Number"  onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.makeRateFromPurchaseRateToSaleInTransferBills()}" value="4. Make Rate From Purchase Rate To Sale In Transfer Bills" onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.removeUnsedPharmaceuticalCategories()}" value="5. Remove Unused Pharmaceutical Categories" onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="/dataAdmin/change_categories" value="6. Change Categories of Items" ></p:commandLink>
 
-                            <p:commandLink ajax="false" action="#{dataAdministrationController.addInstitutionToInvestigationsWithoutInstitution}" 
-                                           value="11. Add Institutions to Investigations without Institution" ></p:commandLink>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.addWholesalePrices()}" value="7. Add Wholesale Prices" ></p:commandLink>
 
-                            <p:commandLink ajax="false" action="#{staffShiftController.updateStaffShiftWithoutRoster()}" value="12. Update Staff Shift Without Roster(For Analyse)" onclick="if (!confirm('Really want to do that?'))
-                                        return false"/>
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.detectWholeSaleBills}" 
+                                               value="8. Convert Sale Bils to Wholesale Bills if saled from Wholesale Rate" ></p:commandLink>
+                                <p:commandLink ajax="false" action="/channel/channel_report_agent_referece_book_bulk_delete" 
+                                               value="9. Channel Book Bulk Delete" ></p:commandLink>
+                                <p:commandLink ajax="false" action="/dataAdmin/inward_search_service_with_payment_methord" 
+                                               value="10. Update Inward Service bill Payment Methord" ></p:commandLink>
+
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.addInstitutionToInvestigationsWithoutInstitution}" 
+                                               value="11. Add Institutions to Investigations without Institution" ></p:commandLink>
+
+                                <p:commandLink ajax="false" action="#{staffShiftController.updateStaffShiftWithoutRoster()}" value="12. Update Staff Shift Without Roster(For Analyse)" onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+                                <p:commandLink ajax="false" action="#{pharmacyCalculation.updatePharmacyPurchaseGrnCancelRefundBilledBills}" 
+                                               value="13. Update Pharmacy Purchase Grn Cancel RefundBilled Bills" />
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.addOPDBillFeesToProfessionalCancelBills()}" rendered="true"
+                                               value="14. Add bill fees to professional fee cancel bills OPD"  onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
+
+                                <p:commandLink ajax="false" 
+                                               action="#{dataAdministrationController.makeAllAmpsWithNullDepartmentTypeToPharmacyType()}" rendered="true"
+                                               value="15. Make All Amps with null department type to Pharmacy Type"  onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
+
+                            </p:panelGrid>
+
+                            <p:panelGrid columns="1"                         >
+                                <p:commandLink ajax="false" action="#{agencyController.randomlySetAgencyBalances}" 
+                                               value="1. Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
+                                               onclick="if (!confirm('Really want to do that?'))
+                                            return false"/>
+
+                            </p:panelGrid>
 
                         </p:panelGrid>
-
 
                     </p:panel>
 
@@ -63,5 +85,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

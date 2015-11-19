@@ -7,6 +7,7 @@ package com.divudi.entity;
 
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaperType;
+import com.divudi.data.PaymentMethod;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -34,7 +35,18 @@ public class UserPreference implements Serializable {
     String abbreviationForTreatments;
     String abbreviationForManagement;
     @Lob
+    String pharmacyBillHeader;
+    @Lob
     String pharmacyBillFooter;
+    @Lob
+    String opdBillHeader;
+    @Lob
+    String opdBillFooter;
+    @Lob
+    String channellingBillHeader;
+    @Lob
+    String channellingBillFooter;
+    
     @ManyToOne
     WebUser webUser;
     @ManyToOne
@@ -60,12 +72,23 @@ public class UserPreference implements Serializable {
     boolean inwardMoChargeCalculateInitialTime;
     boolean inwardChangeAdmissionFee;
     boolean pharmacyBillWithOutItem;
+    boolean fiveFivePaperWithHeadings;
+    boolean showOnlyMarkedDoctors=false;
+    boolean channelSettleWithoutPatientPhoneNumber=false;
+    boolean opdSettleWithoutPatientPhoneNumber=false;
+    boolean channelBillDouble=false;
+    String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
+    @Enumerated(EnumType.STRING)
     PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
+    PaperType channelBillPaperType;
+    @Enumerated(EnumType.STRING)
     ApplicationInstitution applicationInstitution;
+    @Enumerated(EnumType.STRING)
+    PaymentMethod channellingPaymentMethod;
 
     public ApplicationInstitution getApplicationInstitution() {
         if(applicationInstitution==null){
@@ -76,8 +99,7 @@ public class UserPreference implements Serializable {
 
     public void setApplicationInstitution(ApplicationInstitution applicationInstitution) {
         this.applicationInstitution = applicationInstitution;
-    }   
-    
+    }
 
     public boolean isPaymentMethodAllowedInInwardMatrix() {
         return paymentMethodAllowedInInwardMatrix;
@@ -87,7 +109,13 @@ public class UserPreference implements Serializable {
         this.paymentMethodAllowedInInwardMatrix = paymentMethodAllowedInInwardMatrix;
     }
 
-    
+    public boolean isChannelBillDouble() {
+        return channelBillDouble;
+    }
+
+    public void setChannelBillDouble(boolean channelBillDouble) {
+        this.channelBillDouble = channelBillDouble;
+    }
     
     public boolean isPartialPaymentOfOpdBillsAllowed() {
         return partialPaymentOfOpdBillsAllowed;
@@ -123,6 +151,17 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillPaperType(PaperType opdBillPaperType) {
         this.opdBillPaperType = opdBillPaperType;
+    }
+
+    public PaperType getChannelBillPaperType() {
+        return channelBillPaperType;
+    }
+
+    public void setChannelBillPaperType(PaperType channelBillPaperType) {
+        if(opdBillPaperType==null){
+            opdBillPaperType = PaperType.Paper24_2x9_3;
+        }
+        this.channelBillPaperType = channelBillPaperType;
     }
 
     public PaperType getPharmacyBillPaperType() {
@@ -281,6 +320,14 @@ public class UserPreference implements Serializable {
         this.grnBillDetailed = grnBillDetailed;
     }
 
+    public String getMicroBiologyFont() {
+        return microBiologyFont;
+    }
+
+    public void setMicroBiologyFont(String microBiologyFont) {
+        this.microBiologyFont = microBiologyFont;
+    }
+
     
     
     
@@ -367,6 +414,91 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillWithOutItem(boolean pharmacyBillWithOutItem) {
         this.pharmacyBillWithOutItem = pharmacyBillWithOutItem;
     }
+
+    public boolean isFiveFivePaperWithHeadings() {
+        return fiveFivePaperWithHeadings;
+    }
+
+    public void setFiveFivePaperWithHeadings(boolean fiveFivePaperWithHeadings) {
+        this.fiveFivePaperWithHeadings = fiveFivePaperWithHeadings;
+    }
+
+    public boolean isShowOnlyMarkedDoctors() {
+        return showOnlyMarkedDoctors;
+    }
+
+    public void setShowOnlyMarkedDoctors(boolean showOnlyMarkedDoctors) {
+        this.showOnlyMarkedDoctors = showOnlyMarkedDoctors;
+    }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+
+    public String getOpdBillHeader() {
+        return opdBillHeader;
+    }
+
+    public void setOpdBillHeader(String opdBillHeader) {
+        this.opdBillHeader = opdBillHeader;
+    }
+
+    public String getOpdBillFooter() {
+        return opdBillFooter;
+    }
+
+    public void setOpdBillFooter(String opdBillFooter) {
+        this.opdBillFooter = opdBillFooter;
+    }
+
+    public String getChannellingBillHeader() {
+        return channellingBillHeader;
+    }
+
+    public void setChannellingBillHeader(String channellingBillHeader) {
+        this.channellingBillHeader = channellingBillHeader;
+    }
+
+    public String getChannellingBillFooter() {
+        return channellingBillFooter;
+    }
+
+    public void setChannellingBillFooter(String channellingBillFooter) {
+        this.channellingBillFooter = channellingBillFooter;
+    }
+
+    public PaymentMethod getChannellingPaymentMethod() {
+        if(channellingPaymentMethod==null){
+            channellingPaymentMethod = PaymentMethod.OnCall;
+        }
+        return channellingPaymentMethod;
+    }
+
+    public void setChannellingPaymentMethod(PaymentMethod channellingPaymentMethod) {
+        this.channellingPaymentMethod = channellingPaymentMethod;
+    }
+
+    public boolean isChannelSettleWithoutPatientPhoneNumber() {
+        return channelSettleWithoutPatientPhoneNumber;
+    }
+
+    public void setChannelSettleWithoutPatientPhoneNumber(boolean channelSettleWithoutPatientPhoneNumber) {
+        this.channelSettleWithoutPatientPhoneNumber = channelSettleWithoutPatientPhoneNumber;
+    }
+
+    public boolean isOpdSettleWithoutPatientPhoneNumber() {
+        return opdSettleWithoutPatientPhoneNumber;
+    }
+
+    public void setOpdSettleWithoutPatientPhoneNumber(boolean opdSettleWithoutPatientPhoneNumber) {
+        this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
+    }
+    
+    
     
     
     

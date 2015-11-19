@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -98,7 +98,8 @@
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
                                 
-                                <p:column headerText="Payment Method">
+                                <p:column headerText="Payment Method"
+                                          filterBy="#{a.paymentMethod}" filterMatchMode="contains" exportable="false">
                                     
                                     <p:outputLabel value="#{a.paymentMethod}"/>
                                 </p:column>
@@ -157,5 +158,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

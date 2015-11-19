@@ -10,8 +10,8 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel header="Extra Time">
-                <h:panelGrid columns="2">
+            <p:panel header="Additoinal Extra Time Froms">
+                <h:panelGrid columns="3" styleClass="alignTop">
                     <p:panel >
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Form Number"/>
@@ -88,7 +88,7 @@
                                                         </p:calendar>-->
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />
-                            <p:commandButton id="btnAdd" ajax="false" value="Save" 
+                            <p:commandButton id="btnAdd" ajax="false" value="Save" disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
                                             action="#{staffAdditionalFormController.saveAdditionalFormExtra()}"/>
 
                             <p:commandButton ajax="false" value="Clear" action="#{staffAdditionalFormController.clear}"/>
@@ -132,6 +132,10 @@
                             <p:column headerText="Roster">
                                 <p:outputLabel value="#{add.staff.roster.name}" ></p:outputLabel>
                             </p:column>
+                            <p:column headerText="Shift End">
+                                <p:outputLabel value="#{add.staffShift.dayType}" >
+                                </p:outputLabel>
+                            </p:column>
 
                             <p:column headerText="From">
                                 <p:outputLabel value="#{add.fromTime}" >
@@ -165,6 +169,12 @@
                                 <p:outputLabel value="Deleted By  #{add.retirer.webUserPerson.nameWithTitle}" rendered="#{add.retired}" style="color: blue;"></p:outputLabel>
                             </p:column>
                         </p:dataTable>
+                    </p:panel>
+                    <p:panel header="Links" >
+                        <p:panelGrid columns="2" >
+                            <p:commandLink value="Finger Print Analysis" action="/hr/hr_shift_table_finger_print_by_staff" ajax="false" ></p:commandLink>
+                        </p:panelGrid>
+                        
                     </p:panel>
                 </h:panelGrid>
             </p:panel>

@@ -8,26 +8,29 @@ import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -43,12 +46,17 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     private SessionController sessionController;
+    @Inject
+    InstitutionController institutionController;
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private InstitutionFacade institutionFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
+    
     private PatientEncounter patientEncounter;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -99,10 +107,10 @@ public class AgentPaymentRecieveBillController implements Serializable {
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         
-        getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setBillDate(new Date());
+        getCurrent().setBillTime(new Date());
         
-        getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         
         getCurrent().setNetTotal(getCurrent().getNetTotal());
@@ -149,10 +157,17 @@ public class AgentPaymentRecieveBillController implements Serializable {
         
         saveBill(BillType.AgentPaymentReceiveBill);
         saveBillItem();
+        //for channel agencyHistory Update
+        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), HistoryType.ChannelDeposit, getCurrent());
+        //for channel agencyHistory Update
 
-        //Add to Agent Ballance
-        getCurrent().getFromInstitution().setBallance(getCurrent().getFromInstitution().getBallance() + getCurrent().getTotal());
-        getInstitutionFacade().edit(getCurrent().getFromInstitution());
+        //Update Agent Max Credit Limit
+        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit()))&&(getCurrent().getFromInstitution().getMaxCreditLimit()!= getCurrent().getFromInstitution().getStandardCreditLimit())) {
+            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), HistoryType.AgentBalanceUpdateBill, "Agent Payment Allowed Credit Limit Update");
+            getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
+            getInstitutionFacade().edit(getCurrent().getFromInstitution());
+        }
+        //Update Agent Max Credit Limit
 
         ///////////////////
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
@@ -165,7 +180,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
-            tmp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());
@@ -181,6 +196,25 @@ public class AgentPaymentRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         comment = null;
+        
+    }
+    
+    public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
+        System.out.println("updating agency balance");
+        System.out.println("ins.getName() = " + ins.getName());
+        System.out.println("ins.getBallance() before " + ins.getBallance());
+        System.out.println("transactionValue = " + transactionValue);
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
+        agentHistory.setBill(bill);
+        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setHistoryType(historyType);
+        agentHistoryFacade.create(agentHistory);
+        
+        ins.setBallance(ins.getBallance() + transactionValue);
+        getInstitutionFacade().edit(ins);
         
     }
     
@@ -311,5 +345,13 @@ public class AgentPaymentRecieveBillController implements Serializable {
     
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
+    }
+    
+    public AgentHistoryFacade getAgentHistoryFacade() {
+        return agentHistoryFacade;
+    }
+    
+    public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
+        this.agentHistoryFacade = agentHistoryFacade;
     }
 }

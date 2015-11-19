@@ -59,10 +59,16 @@
                             <p:column headerText="Department" filterMatchMode="contains" filterBy="#{sv.department.name}" style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.department.name}" rendered="#{sv.category ne null}" />
                             </p:column>
-                            <p:column headerText="Item" filterMatchMode="contains"
+                            <p:column headerText="Item" filterMatchMode="contains" sortBy="#{sv.name}"
                                       filterBy="#{sv.name}" style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.name}" />
                             </p:column>
+                            
+                            <p:column headerText="Item" filterMatchMode="contains" sortBy="#{sv.id}"
+                                      filterBy="#{sv.id}" style="font-weight:normal ;color: black;text-align: left;">
+                                <h:outputLabel value="#{sv.id}" />
+                            </p:column>
+                            
                              <p:column headerText="Created By" 
                                        style="font-weight:normal ;color: black;text-align: left;"
                                        filterBy="#{sv.creater.webUserPerson.name}" filterMatchMode="contains">

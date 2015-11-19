@@ -7,37 +7,31 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.Bill;
 import com.divudi.entity.Institution;
-import java.util.TimeZone;
 import com.divudi.entity.Item;
 import com.divudi.entity.PackageFee;
-import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.entity.pharmacy.ItemsDistributors;
 import com.divudi.facade.ItemFacade;
+import com.divudi.facade.ItemsDistributorsFacade;
 import com.divudi.facade.PackageFeeFacade;
-
 import com.divudi.facade.PackegeFacade;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
+import java.util.Map;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.persistence.TemporalType;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -97,6 +91,20 @@ public class ItemsDistributorsController implements Serializable {
             return false;
         }
     }
+    
+    public Institution getDistributor(Item i) {
+        String sql = "Select i from ItemsDistributors i where i.retired=false"
+                + " and i.item=:item" +
+                " order by i.id desc";
+        Map m =new HashMap();
+        m.put("item", i);
+        ItemsDistributors tmp = getFacade().findFirstBySQL(sql,m);
+        if (tmp != null) {
+            return tmp.getInstitution();
+        } else {
+            return null;
+        }
+    }
 
     public void addToPackage() {
         if (getCurrentInstituion() == null) {
@@ -117,7 +125,7 @@ public class ItemsDistributorsController implements Serializable {
 
         pi.setInstitution(getCurrentInstituion());
         pi.setItem(getCurrentItem());
-        pi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
         if (pi.getId() == null) {
             getFacade().create(pi);
@@ -138,7 +146,7 @@ public class ItemsDistributorsController implements Serializable {
 
         getCurrent().setRetired(true);
         getCurrent().setRetirer(getSessionController().getLoggedUser());
-        getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
         UtilityController.addSuccessMessage("Item Removed");
         recreateModel();
@@ -291,12 +299,12 @@ public class ItemsDistributorsController implements Serializable {
 
             getFacade().edit(current);
 
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -311,12 +319,12 @@ public class ItemsDistributorsController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

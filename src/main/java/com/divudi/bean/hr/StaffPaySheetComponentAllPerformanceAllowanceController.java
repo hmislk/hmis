@@ -14,8 +14,6 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 
@@ -239,15 +239,18 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
     }
 
     public void createStaffPaysheetComponent() {
+        HashMap hm = new HashMap();
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                + " and ss.paysheetComponent.componentType=:pct "
-                + " and ss.fromDate <=:fd"
-                + " and ss.toDate >=:fd ";
+                + " and ss.paysheetComponent.componentType=:pct ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
-        HashMap hm = new HashMap();
-        hm.put("fd", getFromDate());
         hm.put("pct", PaysheetComponentType.PerformanceAllowance);
 
 //        if (paysheetComponent != null) {
@@ -281,7 +284,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

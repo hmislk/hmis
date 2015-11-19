@@ -7,31 +7,26 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
-import com.divudi.data.dataStructure.PrivilageNode;
 import com.divudi.data.Privileges;
+import com.divudi.data.dataStructure.PrivilageNode;
 import com.divudi.entity.WebUser;
-import java.util.TimeZone;
-import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.entity.WebUserPrivilege;
+import com.divudi.facade.WebUserPrivilegeFacade;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import javax.inject.Named;
-import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.faces.component.UIComponent;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
-//package org.primefaces.examples.view;  
-
-import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
-
 import org.primefaces.model.TreeNode;
 
 //import org.primefaces.examples.domain.Document;  
@@ -86,6 +81,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node121 = new PrivilageNode("Room Occupency", node12, Privileges.InwardRoomRoomOccupency);
         TreeNode node122 = new PrivilageNode("Room Change", node12, Privileges.InwardRoomRoomChange);
         TreeNode node123 = new PrivilageNode("Gurdian Room Change", node12, Privileges.InwardRoomGurdianRoomChange);
+        TreeNode node124 = new PrivilageNode("Dischage Room in Room Ocupency", node12, Privileges.InwardRoomDischarge);
         TreeNode node13 = new PrivilageNode("Services & Items", node1);
         TreeNode node130 = new PrivilageNode("Services & Items", node13, Privileges.InwardServicesAndItems);
         TreeNode node131 = new PrivilageNode("Add Services", node13, Privileges.InwardServicesAndItemsAddServices);
@@ -273,6 +269,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node910 = new PrivilageNode("HR Anistration", node91, Privileges.HrAdmin);
         TreeNode node911 = new PrivilageNode("HR Employee History Reports", node91, Privileges.EmployeeHistoryReport);
         TreeNode node912 = new PrivilageNode("HR Delete Late Leave", node91, Privileges.hrDeleteLateLeave);
+        TreeNode node913 = new PrivilageNode("HR Salary Generate", node91, Privileges.HrGenerateSalary);
 
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);
@@ -339,7 +336,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode node2308 = new PrivilageNode("Channel Future Booking", node23, Privileges.ChannellingFutureChannelBooking);
         TreeNode node2302 = new PrivilageNode("Past Booking", node23, Privileges.ChannellingPastBooking);
         TreeNode node2303 = new PrivilageNode("Booked List", node23, Privileges.ChannellingBookedList);
-        TreeNode node2304 = new PrivilageNode("Doctor Leave", node23, Privileges.ChannellingDoctorLeave);
+        TreeNode node2304 = new PrivilageNode("Doctor Leave Menu", node23, Privileges.ChannellingDoctorLeave);
+        TreeNode node230400 = new PrivilageNode("Doctor Leave By Date", node2304, Privileges.ChannellingDoctorLeaveByDate);
+        TreeNode node230401 = new PrivilageNode("Doctor Leave By Service Session", node2304, Privileges.ChannellingDoctorLeaveByServiceSession);
         TreeNode node2305 = new PrivilageNode("Channel Sheduling", node23, Privileges.ChannellingChannelSheduling);
         TreeNode node2306 = new PrivilageNode("Channel Agent Fee", node23, Privileges.ChannellingChannelAgentFee);
         TreeNode node2309 = new PrivilageNode("Channel Booking Change", node23, Privileges.ChannelBookingChange);
@@ -348,6 +347,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode node23071 = new PrivilageNode("Pay Doctor", node2307, Privileges.ChannellingPaymentPayDoctor);
         TreeNode node23072 = new PrivilageNode("Payment Due Search", node2307, Privileges.ChannellingPaymentDueSearch);
         TreeNode node23073 = new PrivilageNode("Payment Done Search", node2307, Privileges.ChannellingPaymentDoneSearch);
+        TreeNode node23010 = new PrivilageNode("Administrator", node23);
+        TreeNode node230100 = new PrivilageNode("Edit Appoinment Count", node23010, Privileges.ChannellingApoinmentNumberCountEdit);
         
 
         return tmproot;
@@ -471,12 +472,12 @@ public class UserPrivilageController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -489,40 +490,6 @@ public class UserPrivilageController implements Serializable {
     }
     private TreeNode tmpNode;
 
-//    public List<WebUserPrivilege> getItems2() {
-//        // items = getFacade().findAll("name", true);
-//        if (getCurrentWebUser() == null) {
-//            return new ArrayList<WebUserPrivilege>();
-//        }
-//
-//        String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " order by i.webUser.webUserPerson.name";
-//        items = getEjbFacade().findBySQL(sql);
-//        if (items == null) {
-//            items = new ArrayList<WebUserPrivilege>();
-//        }
-//        for (TreeNode n : root.getChildren()) {
-//            n.setSelected(false);
-//        }
-//        for (TreeNode n : root.getChildren()) {
-//            ////System.out.println("n is " + n);
-//            for (TreeNode n1 : n.getChildren()) {
-//                Privileges p;
-//                ////System.out.println("n1 is " + n1);
-//                //
-//                try {
-//                    if (n1 instanceof PrivilageNode) {
-//                        p = ((PrivilageNode) n1).getP();
-//                        markTreeNode(p, n1);
-//                    } else {
-//                        ////System.out.println("type of p is ");
-//                    }
-//                } catch (Exception e) {
-//                    ////System.out.println("exception e is " + e.getMessage());
-//                }
-//            }
-//        }
-//        return items;
-//    }
     private void unselectNode() {
         for (TreeNode n : root.getChildren()) {
             n.setSelected(false);

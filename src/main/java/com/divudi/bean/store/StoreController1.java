@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.pharmacy.*;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -18,7 +17,6 @@ import com.divudi.data.dataStructure.DepartmentStock;
 import com.divudi.data.dataStructure.InstitutionSale;
 import com.divudi.data.dataStructure.InstitutionStock;
 import com.divudi.data.dataStructure.StockAverage;
-import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -46,9 +44,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.inject.Named;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -498,7 +496,6 @@ public class StoreController1 implements Serializable {
             dayCount = lValue / (1000 * 60 * 60 * 24);
         }
 
-        System.err.println("Day Count " + dayCount);
         createStockAverage(dayCount);
 
     }
@@ -515,7 +512,6 @@ public class StoreController1 implements Serializable {
             monthCount = lValue / (1000 * 60 * 60 * 24 * 30);
         }
 
-        System.err.println("Month Count " + monthCount);
         createStockAverage(Math.abs(monthCount));
 
     }

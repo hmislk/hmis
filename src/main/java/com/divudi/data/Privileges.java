@@ -43,6 +43,7 @@ public enum Privileges {
     InwardRoomRoomOccupency,
     InwardRoomRoomChange,
     InwardRoomGurdianRoomChange,
+    InwardRoomDischarge,
     InwardServicesAndItems,
     InwardServicesAndItemsAddServices,
     InwardServicesAndItemsAddOutSideCharges,
@@ -254,6 +255,8 @@ public enum Privileges {
     ChannellingPastBooking,
     ChannellingBookedList,
     ChannellingDoctorLeave,
+    ChannellingDoctorLeaveByDate,
+    ChannellingDoctorLeaveByServiceSession,
     ChannellingChannelSheduling,
     ChannellingChannelAgentFee,
     ChannellingDoctorSessionView,
@@ -261,6 +264,7 @@ public enum Privileges {
     ChannellingPaymentPayDoctor,
     ChannellingPaymentDueSearch,
     ChannellingPaymentDoneSearch,
+    ChannellingApoinmentNumberCountEdit,
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,
@@ -274,6 +278,7 @@ public enum Privileges {
     HrAdmin,
     EmployeeHistoryReport,
     hrDeleteLateLeave,
+    HrGenerateSalary,
     
     
     Developers,

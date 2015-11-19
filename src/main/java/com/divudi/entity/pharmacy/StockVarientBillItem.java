@@ -9,7 +9,6 @@ import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
-import javax.annotation.Generated;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

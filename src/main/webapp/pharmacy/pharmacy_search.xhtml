@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:se="http://java.sun.com/jsf/composite/pharmacy/search">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
@@ -16,10 +16,10 @@
                             <h:outputLabel value="PHARMACY BILL SEARCH "/>                                 
                             <h:panelGrid columns="4" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:selectOneMenu value="#{searchController.billType}">
                                     <f:selectItem itemLabel="Select Bill Type"/>
@@ -94,5 +94,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

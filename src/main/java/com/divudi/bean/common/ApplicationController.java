@@ -11,8 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 /**
  *
@@ -33,7 +33,6 @@ public class ApplicationController {
 //    public void setSessionControllers(List<SessionController> sessionControllers) {
 //        this.sessionControllers = sessionControllers;
 //    }
-
     public Date getStartTime() {
         return startTime;
     }
@@ -75,8 +74,11 @@ public class ApplicationController {
 
     public void addToLoggins(SessionController sc) {
         Logins login = sc.getThisLogin();
-        loggins.add(login);
+        if (loggins == null) {
+            loggins = new ArrayList<>();
+        }
         try {
+            loggins.add(login);
 //            for (SessionController s : getSessionControllers()) {
 //                if (s.getLoggedUser().equals(login.getWebUser())) {
 //                    ////System.out.println("making log out");
@@ -85,7 +87,6 @@ public class ApplicationController {
 //            }
 //            getSessionControllers().add(sc);
         } catch (Exception e) {
-            ////System.out.println("Error in addToLogins of Application controller." + e.getMessage());
         }
     }
 
@@ -103,12 +104,12 @@ public class ApplicationController {
     }
 
     public Date getStoresExpiery() {
-        if (storesExpiery==null) {
-            Calendar c=Calendar.getInstance();
+        if (storesExpiery == null) {
+            Calendar c = Calendar.getInstance();
             c.set(Calendar.YEAR, 2020);
             c.set(Calendar.MONTH, 0);
             c.set(Calendar.DATE, 1);
-            storesExpiery=c.getTime();
+            storesExpiery = c.getTime();
         }
         return storesExpiery;
     }
@@ -116,6 +117,5 @@ public class ApplicationController {
     public void setStoresExpiery(Date storesExpiery) {
         this.storesExpiery = storesExpiery;
     }
-    
-    
+
 }

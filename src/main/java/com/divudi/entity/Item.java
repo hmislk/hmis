@@ -98,6 +98,11 @@ public class Item implements Serializable, Comparable<Item> {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+   //Editer Properties
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
     @ManyToOne
     Item parentItem;
     boolean userChangable;
@@ -841,6 +846,22 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setReserveNumbers(String reserveNumbers) {
         this.reserveNumbers = reserveNumbers;
+    }
+
+    public WebUser getEditer() {
+        return editer;
+    }
+
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
     }
 
     @Override

@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -33,8 +33,15 @@
                                 <h:outputLabel value="Category" ></h:outputLabel>
                                 <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
                                                 itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true" value="#{reportsStock.category}"
-                                               >
+                                                >
                                 </p:autoComplete>
+
+
+                                <h:outputLabel value="Movement Type" ></h:outputLabel>
+                                <p:selectCheckboxMenu value="#{reportsStock.billTypes}" label="Bill Types"  >
+                                    <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
+                                </p:selectCheckboxMenu>
+
                             </h:panelGrid>
 
                             <h:panelGrid columns="1" >
@@ -69,8 +76,15 @@
                                          rowsPerPageTemplate="5,10,15"
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{reportsStock.department.name} Stock"/>                                     
-                                </f:facet>                               
+                                    <h:outputLabel value="Non Moving Stocks - #{reportsStock.department.name}"/>                                     
+                                </f:facet>   
+                                <p:column headerText="Category" 
+                                          sortBy="#{i.category.name}"
+                                          filterBy="#{i.category.name}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Item" 
                                           sortBy="#{i.name}"
                                           filterBy="#{i.name}"
@@ -100,5 +114,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

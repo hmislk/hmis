@@ -11,20 +11,19 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.inward.RoomCategoryController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
-
 import com.divudi.entity.Institution;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomCategory;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.PriceMatrixFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

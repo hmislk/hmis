@@ -45,7 +45,6 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.memberShip.MembershipScheme;
@@ -74,7 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -262,8 +260,6 @@ public class BillController implements Serializable {
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(opdPaymentCredit);
 
-        
-
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
         temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
         temp.setBillType(BillType.CashRecieveBill);
@@ -280,17 +276,17 @@ public class BillController implements Serializable {
 
         getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        reminingCashPaid=opdPaymentCredit;
+        reminingCashPaid = opdPaymentCredit;
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
@@ -303,11 +299,9 @@ public class BillController implements Serializable {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
             List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
-            System.out.println("billFees = " + billFees.size());
 
             calculateBillfeePayments(billFees, p);
         }
-        System.out.println("calBillPaidValue(opdBill) = " + calBillPaidValue(opdBill));
         opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
         opdBill.setCashPaid(calBillPaidValue(opdBill));
         opdBill.setNetTotal(calBillPaidValue(opdBill));
@@ -358,10 +352,10 @@ public class BillController implements Serializable {
 
         getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
 
@@ -380,7 +374,6 @@ public class BillController implements Serializable {
     }
 
     public void searchPatientListener() {
-        System.err.println("1");
         //   createPaymentSchemeItems();
         calTotals();
     }
@@ -431,7 +424,6 @@ public class BillController implements Serializable {
         this.strTenderedValue = strTenderedValue;
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
-            System.out.println("cashPaid = " + cashPaid);
         } catch (NumberFormatException e) {
             ////System.out.println("Error in converting tendered value. \n " + e.getMessage());
         }
@@ -847,9 +839,9 @@ public class BillController implements Serializable {
         switch (getPatientTabId()) {
             case "tabNewPt":
                 getNewPatient().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-                getNewPatient().getPerson().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                getNewPatient().getPerson().setCreatedAt(new Date());
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 tmpPatient = getNewPatient();
@@ -870,7 +862,7 @@ public class BillController implements Serializable {
         for (Department d : billDepts) {
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
-            
+
             if (myBill == null) {
                 return false;
             }
@@ -893,11 +885,10 @@ public class BillController implements Serializable {
             }
 
             getBillFacade().edit(myBill);
-            
+
             getBillBean().calculateBillItems(myBill, tmp);
-            System.err.println("myBill.getNetTotal() = " + myBill.getNetTotal());
             createPaymentsForBills(myBill, tmp);
-            
+
             bills.add(myBill);
         }
 
@@ -1020,7 +1011,6 @@ public class BillController implements Serializable {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
             if (be.getBillItem().getBillSession() != null) {
-                System.err.println("IN");
                 getBillSessionFacade().create(be.getBillItem().getBillSession());
             }
         }
@@ -1119,15 +1109,15 @@ public class BillController implements Serializable {
 
         getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
 
-        temp.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        temp.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setBillDate(new Date());
+        temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
         temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
         //SETTING INS ID
@@ -1223,9 +1213,11 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (getNewPatient().getPerson().getPhone() == null) {
-            UtilityController.addErrorMessage("Please Insert a Phone Number");
-            return true;
+        if (!sessionController.getUserPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+            if (getNewPatient().getPerson().getPhone() == null) {
+                UtilityController.addErrorMessage("Please Insert a Phone Number");
+                return true;
+            }
         }
 
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
@@ -1374,26 +1366,31 @@ public class BillController implements Serializable {
     }
 
     public void addToBill() {
-
+        System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
+            System.out.println("noting to add");
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
+            System.out.println("an item ?");
             UtilityController.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
+            System.out.println("fee ?");
             UtilityController.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
+            System.out.println("dept?");
             UtilityController.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
+            System.out.println("cat ?");
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
@@ -1402,6 +1399,7 @@ public class BillController implements Serializable {
 
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+        System.out.println("to get current bill items");
         lastBillItem = getCurrentBillItem();
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
@@ -1413,6 +1411,7 @@ public class BillController implements Serializable {
         getCurrentBillItem().setQty(1.0);
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
 
+        System.out.println("to cal totals");
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
@@ -1497,7 +1496,6 @@ public class BillController implements Serializable {
         }
 
         if (toStaff != null) {
-            System.err.println("Inside");
             paymentScheme = null;
             creditCompany = null;
         }
@@ -1674,7 +1672,6 @@ public class BillController implements Serializable {
         p.setBill(bill);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         System.out.println("bill.getBalance() = " + bill.getBalance());
-        System.out.println("bill.getCashPaid() = " + bill.getCashPaid());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1688,7 +1685,6 @@ public class BillController implements Serializable {
         p.setPaymentMethod(pm);
 
         p.setPaidValue(p.getBill().getNetTotal());
-        System.out.println("p.getPaidValue() = " + p.getPaidValue());
 
         if (p.getId() == null) {
             getPaymentFacade().create(p);
@@ -1709,12 +1705,10 @@ public class BillController implements Serializable {
             System.err.println("Bill For In");
             System.out.println("dbl = " + dbl);
             System.out.println("reminingCashPaid = " + reminingCashPaid);
-            System.out.println("cashPaid = " + cashPaid);
 
             if ((reminingCashPaid != 0.0) || !getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
-                System.err.println("BillItem For Out");
 
             }
 
@@ -1727,11 +1721,9 @@ public class BillController implements Serializable {
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
-            System.out.println("reminingCashPaid = " + reminingCashPaid);
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()||getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 System.err.println("IF In");
-                System.out.println("Math.abs((bf.getFeeValue()-bf.getSettleValue())) = " + Math.abs((bf.getFeeValue() - bf.getSettleValue())));
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -1745,7 +1737,6 @@ public class BillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                         System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.out.println("Out If reminingCashPaid = " + reminingCashPaid);
                         System.err.println("out");
                     } else {
                         System.err.println("IN");
@@ -1756,7 +1747,6 @@ public class BillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
                         System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.out.println("In O reminingCashPaid = " + reminingCashPaid);
                         System.err.println("OUT");
                     }
                 }
@@ -1766,7 +1756,6 @@ public class BillController implements Serializable {
                 bf.setSettleValue(bf.getFeeValue());
                 setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
                 getBillFeeFacade().edit(bf);
-                System.err.println("Else Out");
             }
             System.err.println("BillFee For Out");
         }
@@ -1783,7 +1772,7 @@ public class BillController implements Serializable {
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
     }
-    
+
     public double calBillPaidValue(Bill b) {
         String sql;
 
@@ -1851,7 +1840,6 @@ public class BillController implements Serializable {
     public void changeListener() {
         System.err.println("Change Listen 1 ");
         calTotals();
-        System.err.println("Change Listen 2 ");
     }
 
     public String getPatientTabId() {

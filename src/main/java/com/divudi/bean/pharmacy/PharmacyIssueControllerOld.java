@@ -4,18 +4,17 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.pharmacy;
-
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.inward.InwardChargeType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
@@ -36,15 +35,15 @@ import com.divudi.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
-import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -374,8 +373,8 @@ public class PharmacyIssueControllerOld implements Serializable {
         getSaleBill().setTotal(getPreBill().getTotal());
 //        getSaleBill().setRefBill(getPreBill());
 
-        getSaleBill().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getSaleBill().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getSaleBill().setBillDate(new Date());
+        getSaleBill().setBillTime(new Date());
         getSaleBill().setPaymentScheme(getPreBill().getPaymentScheme());
         getSaleBill().setReferenceBill(getPreBill());
         getSaleBill().setCreatedAt(Calendar.getInstance().getTime());

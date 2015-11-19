@@ -62,11 +62,11 @@
                 <p:column headerText="Room No">
                     <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>
                 </p:column>
-                <p:column>
+                <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
                     <p:selectBooleanCheckbox value="#{pr.discharged}" 
                                              itemLabel="Discharge"/>
                 </p:column>
-                <p:column>
+                <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
                     <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}" onclick="onSubmitButton();" />
                 </p:column>
             </p:dataTable>

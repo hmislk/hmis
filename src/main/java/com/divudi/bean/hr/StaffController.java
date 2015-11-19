@@ -20,10 +20,8 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
-import java.util.TimeZone;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
-import com.divudi.facade.StaffFacade;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
 import com.divudi.entity.hr.StaffDesignation;
@@ -39,24 +37,24 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffEmploymentFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
@@ -78,6 +76,10 @@ public class StaffController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    HrReportController hrReportController;
+    @Inject
+    StaffSalaryController staffSalaryController;
     ////
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
@@ -102,6 +104,18 @@ public class StaffController implements Serializable {
     FormItemValueFacade fivFacade;
     Category formCategory;
     private List<CommonReportItem> formItems = null;
+    List<Staff> itemsToRemove;
+
+    public void removeSelectedItems() {
+        for (Staff s : itemsToRemove) {
+            s.setRetired(true);
+            s.setRetireComments("Bulk Remove");
+            s.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(s);
+        }
+        itemsToRemove = null;
+        items = null;
+    }
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
@@ -228,6 +242,8 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
     }
+    
+    
 
     ReportKeyWord reportKeyWord;
 
@@ -323,10 +339,31 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        //System.out.println(sql);
-        //System.out.println("hm = " + hm);
+        System.out.println(sql);
+        System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
-        selectedStaffes=staffWithCode;
+        selectedStaffes = staffWithCode;
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
+        for (Staff s : staffWithCode) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+        }
+    }
+    
+    public void createActiveStaffOnylSalaryGeneratedTable(){
+        staffWithCode=new ArrayList<>();
+        hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
+        staffWithCode=hrReportController.fetchOnlySalaryGeneratedStaff();
+    }
+    
+    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate){
+        List<Staff> salaryGeneratedStaff=new ArrayList<>();
+        hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
+        salaryGeneratedStaff=hrReportController.fetchOnlySalaryGeneratedStaff();
+        createActiveStaffTable(ssDate);
+        System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        staffWithCode.removeAll(salaryGeneratedStaff);
     }
 
     public void createActiveStaffTable() {
@@ -432,6 +469,47 @@ public class StaffController implements Serializable {
                     + " and LENGTH(p.person.name) > 0 "
                     + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
                     + " or upper(p.code) like '%" + query.toUpperCase() + "%' )"
+                    + " order by p.person.name";
+
+            ////System.out.println(sql);
+            suggestions = getEjbFacade().findBySQL(sql, 20);
+        }
+        return suggestions;
+    }
+    
+    public List<Staff> completeConsultant(String query) {
+        List<Staff> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select s from Staff s "
+                    + " where s.retired=false "
+                    + " and type(s)=:class "
+                    + " and LENGTH(s.person.name) > 0 "
+                    + " and upper(s.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " order by s.person.name";
+
+            ////System.out.println(sql);
+            suggestions = getEjbFacade().findBySQL(sql, hm, 20);
+        }
+        return suggestions;
+    }
+    
+    public List<Staff> completeStaffCodeChannel(String query) {
+        List<Staff> suggestions;
+        String sql;
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and LENGTH(p.code) > 0 "
+                    + " and LENGTH(p.person.name) > 0 "
+                    + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or upper(p.code)='" + query.toUpperCase() + "' )"
                     + " order by p.person.name";
 
             ////System.out.println(sql);
@@ -548,7 +626,6 @@ public class StaffController implements Serializable {
         hm.put("sp", speciality);
         ss = getFacade().findBySQL(sql, hm);
 
-        System.err.println("Staff List Size " + ss.size());
 
         return ss;
     }
@@ -792,13 +869,13 @@ public class StaffController implements Serializable {
             } else {
 
                 current.setRetired(true);
-                current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+                current.setRetiredAt(new Date());
                 current.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(current);
-                UtilityController.addSuccessMessage("DeleteSuccessfull");
+                UtilityController.addSuccessMessage("Deleted Successfully");
             }
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -835,7 +912,6 @@ public class StaffController implements Serializable {
 
         //System.out.println("current.getId() = " + current.getId());
         //System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
-
 //        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
 //            getPersonFacade().create(current.getPerson());
 //        } else {
@@ -852,7 +928,7 @@ public class StaffController implements Serializable {
             current.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(current.getPerson());
 
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("New Staff Created");
@@ -1054,10 +1130,23 @@ public class StaffController implements Serializable {
         staffes = getFacade().findBySQL(temSql);
     }
 
+    
+    
+    
+    public List<Staff> getItemsToRemove() {
+        return itemsToRemove;
+    }
+
+    public void setItemsToRemove(List<Staff> itemsToRemove) {
+        this.itemsToRemove = itemsToRemove;
+    }
+
     public List<Staff> getItems() {
-        String temSql;
-        temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
-        items = getFacade().findBySQL(temSql);
+        if (items == null) {
+            String temSql;
+            temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
+            items = getFacade().findBySQL(temSql);
+        }
         return items;
     }
 
@@ -1109,6 +1198,9 @@ public class StaffController implements Serializable {
         this.selectedList = selectedList;
     }
 
+    /**
+     * Converters
+     */
     /**
      *
      */

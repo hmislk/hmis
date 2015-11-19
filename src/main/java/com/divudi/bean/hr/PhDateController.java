@@ -12,23 +12,21 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.facade.PhDateFacade;
 import com.divudi.entity.hr.PhDate;
+import com.divudi.facade.PhDateFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -91,13 +89,14 @@ public class PhDateController implements Serializable {
 
         sql = "Select d From PhDate d "
                 + " Where d.retired=false "
-                + " and d.phDate between :fd and :td ";
-        
+                + " and d.phDate between :fd and :td "
+                + " order by d.phDate ";
+
         m.put("fd", frDate);
         m.put("td", toDate);
-        
-        phDates=getFacade().findBySQL(sql, m);
-        
+
+        phDates = getFacade().findBySQL(sql, m);
+
     }
 
     public DayType getHolidayType(Date d) {
@@ -125,12 +124,12 @@ public class PhDateController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -170,12 +169,12 @@ public class PhDateController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -188,7 +187,14 @@ public class PhDateController implements Serializable {
     }
 
     public List<PhDate> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String j;
+            j="select j "
+                    + " from PhDate j "
+                    + " where j.retired=false "
+                    + " order by j.name";
+            items = getFacade().findBySQL(j);
+        }
         return items;
     }
 

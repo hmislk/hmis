@@ -5,7 +5,6 @@
 package com.divudi.entity.pharmacy;
 
 import com.divudi.data.HistoryType;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;

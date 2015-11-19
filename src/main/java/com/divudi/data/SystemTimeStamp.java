@@ -68,7 +68,6 @@ public class SystemTimeStamp {
         } catch (Exception e) {
         }
 
-        System.err.println("End Process Time");
     }
 
     public void processTime(Date date) {
@@ -90,7 +89,6 @@ public class SystemTimeStamp {
         } catch (Exception e) {
         }
 
-        System.err.println("End Process Time with Date");
     }
 
     public Date getTime() {

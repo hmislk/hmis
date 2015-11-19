@@ -15,16 +15,21 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
+import com.divudi.entity.Sms;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.ReportItemFacade;
+import com.divudi.facade.SmsFacade;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,16 +37,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -82,6 +85,11 @@ public class PatientInvestigationController implements Serializable {
     CommonFunctions commonFunctions;
     @EJB
     private InvestigationFacade investFacade;
+    @EJB
+    SmsFacade smsFacade;
+    @EJB
+    BillFacade billFacade;
+    
     List<Investigation> investSummery;
     Date sampledOutsideDate;
     boolean sampledOutSide;
@@ -90,6 +98,8 @@ public class PatientInvestigationController implements Serializable {
     private boolean listIncludingSampled;
     boolean listIncludingApproved;
     List<PatientInvestigation> selectedToReceive;
+    
+    Sms sms;
 
     public void resetLists() {
         items = null;
@@ -104,6 +114,22 @@ public class PatientInvestigationController implements Serializable {
         toReceive = null;
     }
 
+    
+    public PatientInvestigation getPatientInvestigationFromBillItem(BillItem bi){
+        String j;
+        Map m = new HashMap();
+        j="select pi "
+                + " from PatientInvestigation pi "
+                + " where pi.billItem =:bi "
+                + " and pi.retired=false "
+                + " order by pi.id";
+        m.put("bi", bi);
+        PatientInvestigation pi = getFacade().findFirstBySQL(j, m);
+        pi.isRetired();
+        return pi;
+    }
+    
+    
     public boolean sampledForAnyItemInTheBill(Bill bill) {
         //System.out.println("bill = " + bill);
         String jpql;
@@ -229,7 +255,7 @@ public class PatientInvestigationController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -241,7 +267,7 @@ public class PatientInvestigationController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -320,12 +346,12 @@ public class PatientInvestigationController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("savedOldSuccessfully");
+            UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            UtilityController.addSuccessMessage("savedNewSuccessfully");
+            UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
@@ -419,7 +445,99 @@ public class PatientInvestigationController implements Serializable {
 
     @Inject
     private InstitutionLabSumeryController labReportSearchByInstitutionController;
+    
+    public void sendSms() {
+        if (current == null) {
+            UtilityController.addErrorMessage("Nothing to send sms");
+            return;
+        }
 
+        Bill bill = current.getBillItem().getBill();
+
+        System.out.println("running the sending sms.");
+        if (bill == null) {
+        }
+        String url = "http://www.textit.biz/sendmsg/index.php";
+        HttpResponse<String> stringResponse;
+        String messageBody;
+        String id = "94715812399";
+        String pw = "5672";
+
+        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
+            return;
+        }
+
+        
+        
+        String sendingNo = bill.getPatient().getPerson().getPhone();
+        if(sendingNo.contains("077") || sendingNo.contains("076")
+                || sendingNo.contains("071")||sendingNo.contains("072")||
+                sendingNo.contains("075")||sendingNo.contains("078")){
+        }else{
+            return;
+        }
+        
+        StringBuilder sb = new StringBuilder(sendingNo);
+        sb.deleteCharAt(3);
+        sendingNo = sb.toString();
+
+        messageBody = "Reports ready. ";
+        messageBody = messageBody + bill.getInstitution().getName() + ". ";
+        messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
+        messageBody = messageBody + bill.getInstitution().getWeb();
+
+        try {
+            System.out.println("id = " + id);
+            System.out.println("pw = " + pw);
+            System.out.println("sendingNo = " + sendingNo);
+            System.out.println("text = " + messageBody);
+
+            stringResponse = Unirest.post(url)
+                    .field("id", id)
+                    .field("pw", pw)
+                    .field("to", sendingNo)
+                    .field("text", messageBody)
+                    .asString();
+
+        } catch (Exception ex) {
+            return;
+        }
+
+        sms = new Sms();
+        sms.setUserId(id);
+        sms.setPassword(pw);
+        sms.setCreatedAt(new Date());
+        sms.setCreater(getSessionController().getLoggedUser());
+        sms.setBill(bill);
+        sms.setSendingUrl(url);
+        sms.setSendingMessage(messageBody);
+        
+        System.out.println("Updating current PtIx = " + getCurrent());
+        
+        System.out.println("SMS status before updating " + getCurrent().getBillItem().getBill().getSmsed());
+        
+        getCurrent().getBillItem().getBill().setSmsed(true);
+        getCurrent().getBillItem().getBill().setSmsedAt(new Date());
+        getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
+        getFacade().edit(current);
+        getCurrent().getBillItem().getBill().getSentSmses().add(sms);
+        
+        
+        System.out.println("SMS status aftr updating " + getCurrent().getBillItem().getBill().getSmsed());
+        
+        billFacade.edit(getCurrent().getBillItem().getBill());
+        
+        System.out.println("sms before saving = " + sms);
+        getSmsFacade().create(sms);
+        System.out.println("sms after saving " + sms);
+
+        
+        
+        UtilityController.addSuccessMessage("Sms send");
+
+        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
+    
     public void markAsSampled() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to sample");
@@ -432,7 +550,7 @@ public class PatientInvestigationController implements Serializable {
         if (current.getSampleOutside()) {
             getCurrent().setSampledAt(sampledOutsideDate);
         } else {
-            getCurrent().setSampledAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setSampledAt(new Date());
             current.setSampleDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setSampleInstitution(getSessionController().getLoggedUser().getInstitution());
         }
@@ -578,7 +696,7 @@ public class PatientInvestigationController implements Serializable {
         
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setReceived(Boolean.TRUE);
-            getCurrent().setReceivedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setReceivedAt(new Date());
             getCurrent().setReceivedCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
         }
@@ -590,7 +708,7 @@ public class PatientInvestigationController implements Serializable {
 //        ////System.out.println("going to mark as received");
         for (PatientInvestigation pi : getSelectedToReceive()) {
             pi.setReceived(Boolean.TRUE);
-            pi.setReceivedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            pi.setReceivedAt(new Date());
             pi.setReceivedCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(pi);
         }
@@ -627,7 +745,7 @@ public class PatientInvestigationController implements Serializable {
     public void markAsDataEntered() {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setDataEntered(Boolean.TRUE);
-            getCurrent().setDataEntryAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setDataEntryAt(new Date());
             getCurrent().setDataEntryUser(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
         }
@@ -660,7 +778,7 @@ public class PatientInvestigationController implements Serializable {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setApproved(Boolean.TRUE);
             getCurrent().setApproveUser(getSessionController().getLoggedUser());
-            getCurrent().setApproveAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setApproveAt(new Date());
             getEjbFacade().edit(getCurrent());
         }
     }
@@ -686,7 +804,7 @@ public class PatientInvestigationController implements Serializable {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setPrinted(Boolean.TRUE);
             getCurrent().setPrintingUser(getSessionController().getLoggedUser());
-            getCurrent().setPrintingAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setPrintingAt(new Date());
             getEjbFacade().edit(getCurrent());
         }
     }
@@ -695,12 +813,12 @@ public class PatientInvestigationController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
-            UtilityController.addSuccessMessage("DeleteSuccessfull");
+            UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
-            UtilityController.addSuccessMessage("NothingToDelete");
+            UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -743,6 +861,30 @@ public class PatientInvestigationController implements Serializable {
 
     public void setLabReportSearchByInstitutionController(InstitutionLabSumeryController labReportSearchByInstitutionController) {
         this.labReportSearchByInstitutionController = labReportSearchByInstitutionController;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
+
+    public Sms getSms() {
+        return sms;
+    }
+
+    public void setSms(Sms sms) {
+        this.sms = sms;
     }
 
     /**
