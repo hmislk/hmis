@@ -987,18 +987,27 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addChildItemListener(BillItem bi) {
+        System.out.println("Add accessories = " + bi);
         currentBillItem = null;
         parentBillItem = bi;
     }
 
     public void addDetailItemListener(BillItem bi) {
-        System.err.println("Add Detasils " + bi.getId());
+        System.err.println("Add Detasils " + bi);
 
-        parentBillItem = null;
-        currentBillItem = null;
-        currentBillItem = bi;
-        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+//        parentBillItem = null;
+//        currentBillItem = null;
+//        currentBillItem = bi;
+//        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
+        
 
+    }
+    
+    public void updateItemDetail(BillItem bi){
+        System.out.println("bi = " + bi);
+        System.out.println("currentBillItem.getPharmaceuticalBillItem() = " + currentBillItem.getPharmaceuticalBillItem());
+        currentBillItem.setPharmaceuticalBillItem(currentBillItem.getPharmaceuticalBillItem());
+        
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
