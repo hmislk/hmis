@@ -174,10 +174,10 @@
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="true"> 
 
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="true" > 
                                         <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
