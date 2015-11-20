@@ -223,11 +223,14 @@ public class StoreGrnController implements Serializable {
         }
 
         for (BillItem bi : billItems) {
-                //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
-                //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
-                bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
-                //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
-                //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
+            System.out.println("bi = " + bi.getSearialNo());
+            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+            System.out.println("bi.getQty() = " + bi.getQty());
+            //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+            //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
+            bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
+            //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
+            //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
         }
 
         storeCalculation.calSaleFreeValue(getGrnBill());
@@ -242,52 +245,58 @@ public class StoreGrnController implements Serializable {
         for (BillItem i : getBillItems()) {
             i.setId(null);
         }
-
+        System.out.println("getBillItems().size() = " + getBillItems().size());
         for (BillItem i : getBillItems()) {
+            System.err.println("in");
+            System.out.println("bi = " + i.getSearialNo());
+            System.out.println("i.getTmpQty() = " + i.getTmpQty());
+            System.out.println("i.getQty() = " + i.getQty());
             if (i.getTmpQty() == 0.0) {
                 continue;
             }
-
+            System.err.println("2.bi = " + i.getSearialNo());
 //            createSerialNumber(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
             i.setPharmaceuticalBillItem(null);
-
+            System.out.println("1");
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getGrnBill());
-
+            System.out.println("2");
             saveParentBillItem(i.getParentBillItem());
-
+            System.out.println("3");
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-
+            System.out.println("4");
             getPharmaceuticalBillItemFacade().create(ph);
-
+            System.out.println("5");
             i.setPharmaceuticalBillItem(ph);
             getBillItemFacade().edit(i);
-
+            System.out.println("6");
             //     updatePoItemQty(i);
             //System.err.println("1 " + i);
             ItemBatch itemBatch = storeCalculation.saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
-
+            System.out.println("7");
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
             i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
-
+            System.out.println("8");
             Stock stock = getStoreBean().addToStock(
                     i.getPharmaceuticalBillItem(),
                     Math.abs(addingQty),
                     getSessionController().getDepartment());
-
+            System.out.println("9");
             i.getPharmaceuticalBillItem().setStock(stock);
-
+            System.out.println("10");
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+            System.out.println("11");
             storeCalculation.editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
-
+            System.out.println("12");
             getGrnBill().getBillItems().add(i);
+            System.out.println("getGrnBill().getBillItems().size() = " + getGrnBill().getBillItems().size());
         }
 
         //Save Parent Stock
@@ -332,7 +341,6 @@ public class StoreGrnController implements Serializable {
 
         //System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         //System.out.println("getBillExpenses() = " + getBillExpenses());
-
         if (getGrnBill().getBillExpenses() == null || getGrnBill().getBillExpenses().isEmpty()) {
             //System.out.println("Adding ");
             getGrnBill().setBillExpenses(getBillExpenses());
@@ -340,7 +348,6 @@ public class StoreGrnController implements Serializable {
 
         //System.out.println("getGrnBill().getBillExpenses() = " + getGrnBill().getBillExpenses());
         //System.out.println("getBillExpenses() = " + getBillExpenses());
-
         getBillFacade().edit(getGrnBill());
 
         //  getPharmacyBillBean().editBill(, , getSessionController());
@@ -539,8 +546,8 @@ public class StoreGrnController implements Serializable {
 //            return;
 //        }
         if (billItem.getPharmaceuticalBillItem().getRetailRate() <= 0) {
-            if(billItem.getItem().getCategory()==null){
-                UtilityController.addErrorMessage("Please Select Item Category for"+billItem.getItem().getName());
+            if (billItem.getItem().getCategory() == null) {
+                UtilityController.addErrorMessage("Please Select Item Category for" + billItem.getItem().getName());
             }
             try {
                 billItem.getPharmaceuticalBillItem().setRetailRate(billItem.getPharmaceuticalBillItem().getPurchaseRate() * (1 + (.01 * billItem.getItem().getCategory().getSaleMargin())));
@@ -557,7 +564,6 @@ public class StoreGrnController implements Serializable {
         billItem.setParentBillItem(getParentBillItem());
 
         //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
-
         billItem.setSearialNo(getBillItems().size());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
 
@@ -742,11 +748,9 @@ public class StoreGrnController implements Serializable {
         //System.out.println("adt = " + adt);
         //System.out.println("pt = " + pt);
         //System.out.println("dt = " + dt);
-
         getGrnBill().setNetTotal(nt + dt - adt);
 
         //System.out.println("dt = " + getGrnBill().getNetTotal());
-
     }
 
 //    public double getNetTotal() {
@@ -993,21 +997,64 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addDetailItemListener(BillItem bi) {
-        System.err.println("Add Detasils " + bi);
+        System.err.println("Add Detasils " + bi.getItem().getName());
+        parentBillItem = new BillItem();
+        currentBillItem = new BillItem();
+        currentBillItem.copy(bi);
+        parentBillItem.copy(bi);
+        currentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+        currentBillItem.getPharmaceuticalBillItem().copy(bi.getPharmaceuticalBillItem());
+        currentBillItem.getPharmaceuticalBillItem().setCode(bi.getPharmaceuticalBillItem().getCode());
+        System.out.println("bi.getSearialNo() = " + bi.getSearialNo());
+        System.out.println("currentBillItem.getSearialNo() = " + currentBillItem.getSearialNo());
+        System.out.println("parentBillItem.getSearialNo() = " + parentBillItem.getSearialNo());
+        System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+        System.out.println("bi.getQty() = " + bi.getQty());
+    }
 
-//        parentBillItem = null;
-//        currentBillItem = null;
-//        currentBillItem = bi;
-//        currentBillItem.setPharmaceuticalBillItem(bi.getPharmaceuticalBillItem());
-        
+    public void updateItemDetail() {
+        System.err.println("******Update*************");
+        System.out.println("currentBillItem.getSearialNo() = " + currentBillItem.getSearialNo());
+        System.out.println("currentBillItem.getTmpQty() = " + currentBillItem.getTmpQty());
+        System.out.println("currentBillItem.getQty() = " + currentBillItem.getQty());
+        System.out.println("parentBillItem.getSearialNo() = " + parentBillItem.getSearialNo());
+        System.out.println("currentBillItem.getTmpQty() = " + parentBillItem.getTmpQty());
+        System.out.println("currentBillItem.getQty() = " + parentBillItem.getQty());
+        for (BillItem bi : getBillItems()) {
+            System.out.println("bi = " + bi.getSearialNo());
+            if (bi.getSearialNo() == parentBillItem.getSearialNo()) {
+                System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+                System.out.println("bi.getQty() = " + bi.getQty());
+//                bi = getCurrentBillItem();
+                bi.getPharmaceuticalBillItem().setMake(getCurrentBillItem().getPharmaceuticalBillItem().getMake());
+                bi.getPharmaceuticalBillItem().setModel(getCurrentBillItem().getPharmaceuticalBillItem().getModel());
+                bi.getPharmaceuticalBillItem().setCode(getCurrentBillItem().getPharmaceuticalBillItem().getCode());
+                bi.getPharmaceuticalBillItem().setDescription(getCurrentBillItem().getPharmaceuticalBillItem().getDescription());
+                bi.getPharmaceuticalBillItem().setBarcode(getCurrentBillItem().getPharmaceuticalBillItem().getBarcode());
+                bi.getPharmaceuticalBillItem().setSerialNo(getCurrentBillItem().getPharmaceuticalBillItem().getSerialNo());
+                bi.getPharmaceuticalBillItem().setRegistrationNo(getCurrentBillItem().getPharmaceuticalBillItem().getRegistrationNo());
+                bi.getPharmaceuticalBillItem().setChassisNo(getCurrentBillItem().getPharmaceuticalBillItem().getChassisNo());
+                bi.getPharmaceuticalBillItem().setEngineNo(getCurrentBillItem().getPharmaceuticalBillItem().getEngineNo());
+                bi.getPharmaceuticalBillItem().setColour(getCurrentBillItem().getPharmaceuticalBillItem().getColour());
+                bi.getPharmaceuticalBillItem().setWarrentyCertificateNumber(getCurrentBillItem().getPharmaceuticalBillItem().getWarrentyCertificateNumber());
+                bi.getPharmaceuticalBillItem().setWarrentyDuration(getCurrentBillItem().getPharmaceuticalBillItem().getWarrentyDuration());
+                bi.getPharmaceuticalBillItem().setDeprecitionRate(getCurrentBillItem().getPharmaceuticalBillItem().getDeprecitionRate());
+                bi.getPharmaceuticalBillItem().setManufacturer(getCurrentBillItem().getPharmaceuticalBillItem().getManufacturer());
+                bi.getPharmaceuticalBillItem().setOtherNotes(getCurrentBillItem().getPharmaceuticalBillItem().getOtherNotes());
+            }
+            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+        }
+
+        System.err.println("******Update*************");
 
     }
-    
-    public void updateItemDetail(BillItem bi){
-        System.out.println("bi = " + bi);
-        System.out.println("currentBillItem.getPharmaceuticalBillItem() = " + currentBillItem.getPharmaceuticalBillItem());
-        currentBillItem.setPharmaceuticalBillItem(currentBillItem.getPharmaceuticalBillItem());
-        
+
+    public void checkItemDetail() {
+        for (BillItem bi : getBillItems()) {
+            System.out.println("bi = " + bi.getSearialNo());
+            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+            System.out.println("bi.getQty() = " + bi.getQty());
+        }
     }
 
     public void setBillExpenses(List<BillItem> billExpenses) {
