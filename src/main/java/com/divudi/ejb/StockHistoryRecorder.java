@@ -100,7 +100,7 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(minute = "15", second = "59", hour = "18", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    @Schedule(hour = "23", minute = "59", second = "59", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
@@ -128,7 +128,7 @@ public class StockHistoryRecorder {
         //System.out.println("End writing stock history: " + new Date());
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
-
+    
     public List<Department> fetchStockDepartment() {
         String sql;
         Map m = new HashMap();
