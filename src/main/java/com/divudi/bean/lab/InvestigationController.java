@@ -20,6 +20,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.DepartmentFacade;
@@ -67,6 +68,8 @@ public class InvestigationController implements Serializable {
     IxCalController ixCalController;
     @Inject
     ItemFeeManager itemFeeManager;
+    @Inject
+    PatientReportController patientReportController;
     /**
      * EJBs
      */
@@ -94,6 +97,8 @@ public class InvestigationController implements Serializable {
     Institution institution;
     List<Investigation> deletedIxs;
     List<Investigation> selectedIxs;
+    List<PatientReport> selectedPatientReports;
+    List<Investigation> ixWithoutSamples;
 
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
@@ -238,6 +243,48 @@ public class InvestigationController implements Serializable {
         allIxs = getFacade().findBySQL(sql);
         return "/lab/lab_investigation_list";
     }
+    
+    public void prepareSelectedReportSamples(){
+        System.out.println("prepareSelectedReportSamples");
+        selectedPatientReports = new ArrayList<>();
+        ixWithoutSamples = new ArrayList<>();
+        System.err.println("selectedIxs.size() = " + selectedIxs.size());
+        for(Investigation ix:selectedIxs){
+            System.err.println("ix.getName() = " + ix.getName());
+            PatientReport pr = patientReportController.getLastPatientReport(ix);
+            if(pr!=null){
+                selectedPatientReports.add(pr);
+            }else{
+                ixWithoutSamples.add(ix);
+            }
+        }
+    }
+
+    public List<PatientReport> getSelectedPatientReports() {
+        return selectedPatientReports;
+    }
+
+    public void setSelectedPatientReports(List<PatientReport> selectedPatientReports) {
+        this.selectedPatientReports = selectedPatientReports;
+    }
+
+    public List<Investigation> getIxWithoutSamples() {
+        return ixWithoutSamples;
+    }
+
+    public void setIxWithoutSamples(List<Investigation> ixWithoutSamples) {
+        this.ixWithoutSamples = ixWithoutSamples;
+    }
+
+    
+    
+    public List<Investigation> getInvestigationItems() {
+        String sql;
+        sql = "Select i from Investigation i "
+                + " where i.retired=false ";
+
+        return getFacade().findBySQL(sql);
+    }
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -356,14 +403,13 @@ public class InvestigationController implements Serializable {
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
 //        }
-
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         return suggestions;
     }
-    
+
     public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
         System.out.println("master" + listMasterItemsOnly);
         if (query == null || query.trim().equals("")) {
@@ -392,19 +438,18 @@ public class InvestigationController implements Serializable {
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
 //        }
-
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         List<InvestigationWithCount> ics = new ArrayList<>();
-        for(Investigation ix:suggestions){
+        for (Investigation ix : suggestions) {
             InvestigationWithCount ic = new InvestigationWithCount(ix, investigationItemController.findItemCount(ix));
             ics.add(ic);
         }
-        
+
         return ics;
-        
+
     }
 
     public List<Investigation> completeInvestWithout(String query) {
@@ -447,7 +492,7 @@ public class InvestigationController implements Serializable {
         }
         return listMasterItemsOnly;
     }
-    
+
     public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
             if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {

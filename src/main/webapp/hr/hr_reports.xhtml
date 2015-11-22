@@ -60,7 +60,11 @@
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
                                         <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate _or_not"
-                                                         value="(11) Staff Salary Generate Or Not Report" 
+                                                         value="(10) Staff Salary Generate Or Not Report" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{hrReportController.makeNull()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_deleted_report"
+                                                         value="(11) Staff Salary Generate Or Delete Detail Report" 
                                                          styleClass="linkButton"
                                                          actionListener="#{hrReportController.makeNull()}"  />
                                     </h:panelGrid>

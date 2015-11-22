@@ -12,6 +12,7 @@ import com.divudi.entity.FeeChange;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Staff;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
@@ -99,14 +100,17 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(minute = "59", second = "59", hour = "23", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    @Schedule(hour = "23", minute = "59", second = "59", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
         for (FeeChange fc : fetchFeeChanges()) {
             System.err.println("fc.getFee().getName() = " + fc.getFee().getName());
             System.err.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
-            for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName())) {
+            if (fc.getFee().getStaff() != null) {
+                System.out.println("fc.getFee().getStaff().getPerson().getName() = " + fc.getFee().getStaff().getPerson().getName());
+            }
+            for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName(), fc.getFee().getStaff())) {
                 System.out.println("1.f.getFee() = " + f.getFee());
                 f.setFee(f.getFee() + fc.getFee().getFee());
                 System.out.println("2.f.getFee() = " + f.getFee());
@@ -117,13 +121,14 @@ public class StockHistoryRecorder {
                 System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
                 getItemFeeFacade().edit(f);
             }
+            fc.setDoneAt(new Date());
             fc.setDone(true);
             getFeeChangeFacade().edit(fc);
         }
         //System.out.println("End writing stock history: " + new Date());
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
-
+    
     public List<Department> fetchStockDepartment() {
         String sql;
         Map m = new HashMap();
@@ -192,24 +197,26 @@ public class StockHistoryRecorder {
         return changes;
     }
 
-    public List<ItemFee> fetchServiceSessionFees(FeeType ft, String s) {
+    public List<ItemFee> fetchServiceSessionFees(FeeType ft, String s, Staff staff) {
         String sql;
         Map m = new HashMap();
         sql = "Select f from ItemFee f "
                 + " where f.retired=false "
-                + " and type(f.serviceSession)=:type"
-                + " and f.serviceSession.originatingSession is null"
-                + " and f.feeType=:ft"
+                + " and type(f.serviceSession)=:type "
+                + " and f.serviceSession.originatingSession is null "
+                + " and f.feeType=:ft "
+                + " and f.serviceSession.staff=:staff "
                 + " and f.name=:a ";
 
         if ((ft == FeeType.Service && s.equals("Scan Fee")) || (ft == FeeType.OwnInstitution && s.equals("Hospital Fee"))) {
             sql += " and (f.fee>0 or f.ffee>0) ";
         }
-        
+
         sql += " order by f.id";
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
         m.put("a", s);
+        m.put("staff", staff);
         List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
         System.out.println("itemFees.size() = " + itemFees.size());
         return itemFees;

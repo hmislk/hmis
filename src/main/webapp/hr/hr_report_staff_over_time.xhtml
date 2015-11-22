@@ -69,6 +69,8 @@
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
                                     <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
+                                    <br/>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <br/>
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -125,8 +127,8 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Rate Per Minute"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
-                                        <f:convertNumber pattern="0.00" />
+                                    <p:outputLabel value="#{ss.rpmWithMutiplingFactor1_5}">
+
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinut}">
@@ -162,7 +164,18 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Normal OT Value(C)"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5*ss.extraDutyNormalMinute}">
+                                    <p:outputLabel value="#{ss.rpmWithMutiplingFactor1_5*ss.extraDutyNormalMinute}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column  style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Normal OT Value(C) diff"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{(ss.rpmWithMutiplingFactor1_5*ss.extraDutyNormalMinute)-ss.extraDutyNormalValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -178,7 +191,7 @@
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel style="text-align: right;" value="#{hrReportController.totalOtValue}">
-
+                                            <f:convertNumber pattern="0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -203,7 +216,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="RPM OT(1.5)"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*1.5}">
+                                    <p:outputLabel value="#{ss.rpmWithMutiplingFactor1_5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -244,12 +257,13 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="RPM(2.5)"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.overTimeRatePerMinute*2.5}">
+                                    <p:outputLabel value="#{ss.rpmWithMutiplingFactor2_5}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinuts}">                                            
-                                        </h:outputLabel>
+<!--                                        <h:outputLabel style="text-align: right;" value="#{hrReportController.totalRatePerMinuts}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </h:outputLabel>-->
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="OFF DAY OT Value" style="text-align: right;">

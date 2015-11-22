@@ -47,7 +47,7 @@
 
                             <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
-                                               value="#{pi.billItem.bill.deptId}" 
+                                               value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
                                 <p:tooltip for="lblBillNo"  >
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
@@ -252,7 +252,7 @@
                                                 <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
-
+                                            
                                             <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
