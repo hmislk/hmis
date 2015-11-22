@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -21,7 +22,10 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPaymentTable}"/>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPaymentTableAll}"/>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                <p:commandButton actionListener="#{searchController.createPaymentTableAll}" value="Excel" ajax="false">
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
+                                </p:commandButton>
+                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
                                 <h:outputLabel value="Opd Bill No"/>
                                 <h:outputLabel value="Payment Bill No"/>

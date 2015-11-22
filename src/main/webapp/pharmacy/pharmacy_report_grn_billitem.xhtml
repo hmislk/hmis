@@ -32,7 +32,7 @@
                     <p:outputLabel></p:outputLabel>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createGRNBillItemTable()}"/>
-                        <p:commandButton actionListener="#{pharmacySaleReport.createPharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton actionListener="#{pharmacySaleReport.createGRNBillItemTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
@@ -43,7 +43,7 @@
 
 
                 <p:spacer height="30"/>
-                <p:dataTable value="#{pharmacySaleReport.billItems}" var="i" >
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.billItems}" var="i" >
                     <f:facet name="header">
                         <h:outputLabel value="From Date :  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
@@ -56,87 +56,120 @@
                         <h:outputLabel value="Pharmacy GRN Bill Item Table"/>
                     </f:facet>
                     <p:column headerText="PO Number">
+                        <f:facet name="header" >
+                            <p:outputLabel value="PO Number" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.referenceBill.deptId}"/>
                     </p:column>
                     <p:column headerText="GRN Number">
+                        <f:facet name="header" >
+                            <p:outputLabel value="GRN Number" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.deptId}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="PO Value" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="PO Value" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.referenceBill.netTotal}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="PO Value(Sale)" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="PO Value(Sale)" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.referenceBill.saleValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="Dealer Name">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Dealer Name" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.fromInstitution.name}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>     
                     <p:column headerText="Item Name">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Item Name" />
+                        </f:facet>
                         <h:outputLabel value="#{i.item.name}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Free Quantity" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Free Quantity" />
+                        </f:facet>
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.freeQty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="Purchase Rate" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Purchase Rate" />
+                        </f:facet>
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="Free Qty Value" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Free Qty Value" />
+                        </f:facet>
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate*i.pharmaceuticalBillItem.freeQty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="Order Quantity" style="text-align: right;">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Order Quantity" />
+                        </f:facet>
                         <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column> 
                     <p:column headerText="Department">
+                        <f:facet name="header" >
+                            <p:outputLabel value="Department" />
+                        </f:facet>
                         <h:outputLabel value="#{i.bill.department.name}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
-                    
+
+
                     <p:columnGroup type="footer">  
-                <p:row>                                 
-                    <p:column colspan="7"/>                    
-                    <p:column footerText="Total" style=" text-align: right">
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total">
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    
-                    <p:column footerText="#{pharmacySaleReport.totalPurchaseValue}" style=" text-align: right">
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{pharmacySaleReport.totalPurchaseValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                </p:row>  
-            </p:columnGroup>
-                    
-                    
-                    
+                        <p:row>                                 
+                            <p:column colspan="7"/>                    
+                            <p:column footerText="Total" style=" text-align: right">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total">
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column footerText="#{pharmacySaleReport.totalPurchaseValue}" style=" text-align: right">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacySaleReport.totalPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:row>  
+                    </p:columnGroup>
+
+
+
                 </p:dataTable>
 
             </p:panel>         

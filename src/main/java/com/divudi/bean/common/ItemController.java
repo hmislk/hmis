@@ -139,6 +139,8 @@ public class ItemController implements Serializable {
             ni.setInstitution(instituion);
             ni.setDepartment(department);
             ni.setItemFee(null);
+            System.out.println("ni.getReportedAs() in master = " + i.getReportedAs());
+            System.out.println("ni.getReportedAs() in created = " + ni.getReportedAs());            
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
             //System.out.println("ni = " + ni);
@@ -167,8 +169,10 @@ public class ItemController implements Serializable {
             }
             getFacade().edit(ni);
             List<Item> ifis = itemForItemController.getItemsForParentItem(i);
+            System.out.println("ifis = " + ifis);
             if (ifis != null) {
                 for (Item ifi : ifis) {
+                    System.out.println("ifi = " + ifi);
                     ItemForItem ifin = new ItemForItem();
                     ifin.setParentItem(ni);
                     ifin.setChildItem(ifi);

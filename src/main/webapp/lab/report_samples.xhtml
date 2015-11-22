@@ -17,7 +17,7 @@
         <h:form id="form"  >
 
             <p:growl autoUpdate="true" />
-            <p:panel id="panIx" styleClass="nonPrintBlock" >
+            <p:panel id="panIx">
 
                 <f:facet name="header" >
                     <h:outputLabel value="Sample Reports" styleClass="nonPrintBlock" ></h:outputLabel>
@@ -57,8 +57,8 @@
 
 
 
-                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >
-                    <div >
+                <ui:repeat value="#{investigationController.selectedPatientReports}" var="pr" >                    
+                    <div style="page-break-after: always!important;">
                         <ez:patient_report patientReport="#{pr}"/>
                     </div>
                 </ui:repeat>
