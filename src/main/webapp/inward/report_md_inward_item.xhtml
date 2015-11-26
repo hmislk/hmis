@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
         <h:form>
@@ -79,9 +80,17 @@
 
                         <p:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Process by Added Date" 
-                                            action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
                             <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                            action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();"
+                                             actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate}">
+                                <pe:exporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate}">
+                                <pe:exporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
+                            </p:commandButton>
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>

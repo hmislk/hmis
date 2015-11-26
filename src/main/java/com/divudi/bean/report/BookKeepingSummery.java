@@ -2145,7 +2145,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
-//                + " and bi.item.department.institution=:ins "
+                + " and bi.item.department.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms";
