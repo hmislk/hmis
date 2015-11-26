@@ -30,7 +30,7 @@
                     </p:selectOneMenu>
                     <p:commandButton  value="Settle" action="#{grnController.settle}"
                                       onclick="onSubmitButton();"
-                                    ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
 
@@ -46,7 +46,7 @@
                     <f:facet name="header">  
                         <h:outputLabel  value="Ordered Bill Item"/>   
                         <p:commandButton ajax="false" value="Remove All" 
-                                        action="#{grnController.removeSelected()}"/>
+                                         action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" />  
@@ -113,8 +113,8 @@
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>  
-                    
-                   
+
+
                     <p:column headerText="Sale Price"  > 
                         <p:cellEditor>
                             <f:facet name="output">
@@ -132,6 +132,26 @@
                             </f:facet>
                         </p:cellEditor>                      
                     </p:column>  
+
+                    <p:column headerText="Wholesale Price"  > 
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:panelGroup id="retail">
+                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.wholesaleRate}"  > 
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
+                                </h:panelGroup>
+                            </f:facet>  
+                            <f:facet name="input">
+                                <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.wholesaleRate}"  > 
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:inputText>
+                            </f:facet>
+                        </p:cellEditor>                      
+                    </p:column>  
+
+
 
                     <p:column headerText="Total"  >  
                         <h:panelGroup id="total">
@@ -175,7 +195,7 @@
                     <p:column >
                         <p:commandButton value="Remove" ajax="false"
                                          onclick="onSubmitButton();"
-                                        action="#{grnController.removeItem(bi)}"/>
+                                         action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
                 </p:dataTable>  
@@ -215,20 +235,20 @@
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
                                  onclick="onSubmitButton();"
-                                actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
+                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   style="border: none;">
-                    
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
-                        <ph:grn bill="#{grnController.grnBill}"/>
+                        <ph:grn_wh bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
-                        <ph:grn_detail bill="#{grnController.grnBill}"/>
+                        <ph:grn_detail_wh bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
-                    
+
 
                 </p:panel>
             </p:panel>

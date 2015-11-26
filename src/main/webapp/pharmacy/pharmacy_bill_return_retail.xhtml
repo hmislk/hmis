@@ -108,10 +108,10 @@
 
                 <h:panelGroup   id="gpBillPreview"  > 
 
-                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                    <h:panelGroup   id="gpBillPreviewSingle" rendered="true">
 
                         <div >
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                            <h:panelGroup rendered="true" > 
                                 <ph:saleBill bill="#{saleReturnController.returnBill}"></ph:saleBill>
                             </h:panelGroup>
                         </div>
