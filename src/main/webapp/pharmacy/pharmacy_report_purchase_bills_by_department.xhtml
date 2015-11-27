@@ -37,11 +37,19 @@
 
                     </h:panelGrid>
 
-                    <h:panelGrid columns="3">
-                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
+                    <h:panelGrid columns="5">
+                        <p:commandButton id="btnRefresh" ajax="false" value="Fill All" 
                                          styleClass="noPrintButton" 
                                          actionListener="#{pharmacyPurchaseController.createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment()}"
-                                         style="float: right;" />  
+                                         style="float: right;" /> 
+                        <p:commandButton id="btnRefresh2" ajax="false" value="GRN Only" 
+                                         styleClass="noPrintButton" 
+                                         actionListener="#{pharmacyPurchaseController.createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment()}"
+                                         style="float: right;" />
+                        <p:commandButton id="btnRefresh3" ajax="false" value="Purchase Only" 
+                                         styleClass="noPrintButton" 
+                                         actionListener="#{pharmacyPurchaseController.createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment()}"
+                                         style="float: right;" />
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="bills" fileName="report_pharmacy_grn_and_purchase_bill_list"  />
