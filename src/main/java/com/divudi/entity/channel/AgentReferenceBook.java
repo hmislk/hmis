@@ -11,6 +11,7 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -59,7 +60,7 @@ public class AgentReferenceBook implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     ReferenceBookEnum referenceBookEnum;
     ////////////////
 

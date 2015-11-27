@@ -121,6 +121,18 @@ public class PharmacyPurchaseController implements Serializable {
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
     }
     
+    public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment(){
+        BillType[] bts= new BillType[] {BillType.PharmacyPurchaseBill,BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+        billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+    }
+    
+    public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment(){
+        BillType[] bts= new BillType[] {BillType.PharmacyGrnBill,BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+        billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+    }
+    
     public void fillItemVicePurchaseAndGoodReceive() {
         Map m = new HashMap();
         String sql;
