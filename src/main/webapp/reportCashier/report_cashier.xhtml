@@ -22,7 +22,8 @@
 
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1.1) Cashier Report(Using Recipt No)" action="report_cashier_detailed_by_user_by_reciptno.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal2}"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="4) All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
@@ -87,11 +88,11 @@
                                 </p:panel>
                                 <p:panel header="6) Bill Lists" style="width: 400px; height: auto" collapsed="true" toggleable="true">
 
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>   
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) OPD payment scheme bills" action="/reportCashier/report_opd_bill_payment_sheame"/> 
-                                </h:panelGrid>
-                            </p:panel>
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>   
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2) OPD payment scheme bills" action="/reportCashier/report_opd_bill_payment_sheame"/> 
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
                         </h:panelGrid>
 
