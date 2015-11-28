@@ -8,9 +8,8 @@ package com.divudi.bean.common;
 import com.divudi.entity.BillExpense;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -57,7 +56,7 @@ public class BillExpenseController implements Serializable {
         List<BillExpense> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<BillExpense>();
+            suggestions = new ArrayList<>();
         } else {
             sql = "select c from BillExpense c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             ////System.out.println(sql);
@@ -102,7 +101,7 @@ public class BillExpenseController implements Serializable {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             getFacade().edit(getCurrent());
@@ -148,7 +147,7 @@ public class BillExpenseController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

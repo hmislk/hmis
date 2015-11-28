@@ -69,7 +69,7 @@
             <div >
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
 
-                    <p:column style="width: 50px!important; text-align: right!important; padding-right: 20px;">
+                    <p:column style="width: 0.5cm!important; text-align: right!important; padding-right: 0.25cm;;">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
@@ -82,22 +82,40 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}">
+                    
+                     <p:column style="text-align: left!important;width: 2cm;padding-right: 0.25cm;">
                         <f:facet name="header">
-                            <h:outputLabel value="Free QTY"/>
+                            <h:outputLabel value="Code"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
-                            <f:convertNumber integerOnly="true"/>
-                        </h:outputLabel>
+                        <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                    
+                    <p:column  style="width: 2cm!important; text-align: right!important; padding-right: 0.25cm;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column  style="width: 2cm!important; text-align: right!important; padding-right: 0.25cm;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Free QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}" rendered="#{bip.pharmaceuticalBillItem.freeQty ne 0.0}">
+                            <f:convertNumber integerOnly="true"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    
+                    <p:column  style="width: 2cm!important; text-align: right!important; padding-right: 0.25cm;;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Rate"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
 

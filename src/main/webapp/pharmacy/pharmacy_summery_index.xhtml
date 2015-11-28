@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -18,10 +18,10 @@
 
                             <h:panelGrid columns="1">
                                 <p:panel header="1) Cashier" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="4) All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="/reportCashier/report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="4) All Cashier Summary " action="/reportCashier/report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                                      value="5) Cashier Detailed Report by Department" 
                                                      action="/reportCashier/report_cashier_detailed_by_department.xhtml" actionListener="#{commonReport.recreteModal}"/>
@@ -93,9 +93,15 @@
                                 </p:panel>
                                 <p:panel header="5) Purchase" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
-                                                     value="1)Purchase Summary" action="pharmacy_report_purchase_detail.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                     value="1)Purchase Bills by Department" action="pharmacy_report_purchase_bills_by_department.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                                      value="2)Purchase Summary By Supplier" action="pharmacy_report_purchase_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+
+                                    <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                                     value="3)Purchase Summary (Credit / Cash )" action="pharmacy_report_purchase_detail.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                                     value="4)Purchase Summary By Supplier (Credit / Cash)" action="pharmacy_report_purchase_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+
                                 </p:panel>
                                 <p:panel header="8) BHT ISSUE" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
@@ -158,6 +164,8 @@
                                 <p:panel header="9) Transfer Report" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
                                                      value="1) Transfer Issue Summary Report By Date" action="pharmacy_report_issue_by_date_summery.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
+                                                     value="2) Transfer Recive Vs BHT Issue Quntity Totals By Item" action="/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count" />
                                 </p:panel>
                                 <p:panel header="12)Pharmacy Return Without Traising" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" style="text-align: left"
@@ -174,5 +182,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

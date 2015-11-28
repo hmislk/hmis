@@ -16,9 +16,11 @@ public enum HistoryType {
     GoodReceive,
     Stock,
     ChannelBooking,
+    ChannelBalanceReset,
     @Deprecated
     ChannelBookingCancel,
     ChannelDeposit,
     ChannelDepositCancel,
+    AgentBalanceUpdateBill,
     MonthlyRecord,   
 }

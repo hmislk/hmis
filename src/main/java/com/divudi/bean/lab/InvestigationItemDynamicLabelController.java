@@ -18,23 +18,22 @@ import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -76,6 +75,18 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     double toValue;
     Sex sex;
     InvestigationItemValueFlag removingInvestigationItemofDynamicLabelType;
+
+    public void removeDynamicLabelValue() {
+        if (removingInvestigationItemofDynamicLabelType == null) {
+            return;
+        }
+        removingInvestigationItemofDynamicLabelType.setRetired(true);
+        removingInvestigationItemofDynamicLabelType.setRetirer(sessionController.getWebUser());
+        removingInvestigationItemofDynamicLabelType.setRetiredAt(new Date());
+        getFacade().edit(removingInvestigationItemofDynamicLabelType);
+        JsfUtil.addSuccessMessage("Removed");
+        dynamicLabels=null;
+    }
 
     public double getFromValue() {
         return fromValue;
@@ -279,7 +290,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -323,7 +334,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -429,7 +440,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItemValueFlag> getDynamicLabelsByIxItId(InvestigationItem ii) {
         String sql;
-        List<InvestigationItemValueFlag> d ;
+        List<InvestigationItemValueFlag> d;
         if (ii != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
                     + " i.investigationItemOfLabelType.id = " + ii.getId();

@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel styleClass="verticalAndHorizontalCenteringLarge" >
+                        <f:facet name="header" >
+                            <h:outputText value="Manage Favourite Medicines" >
+                            </h:outputText>
+
+                            <p:commandButton ajax="false" 
+                                             value="Back"
+                                             action="/clinical/clinical_administration"
+                                             style="float: right;"></p:commandButton>
+
+                        </f:facet>
+
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="Select Medicine" ></p:outputLabel>
+
+                            <p:autoComplete id="acItem" 
+                                            value="#{favouriteController.item}" 
+                                            forceSelection="true"
+                                            completeMethod="#{itemController.completeMedicine}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Item" >
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                            <p:watermark for="acItem" value="Select Medicine"/>
+
+                            <p:commandButton value="Add New"
+                                             onclick="PF('dlg2').show();"
+                                             action="#{favouriteController.prepareAddingFavouriteItem()}" >
+                            </p:commandButton>
+                            <p:dialog header="Add Favourite Medicine" widgetVar="dlg2" modal="true" height="100">
+                                <h:panelGrid columns="2" >
+
+                                    <h:outputText value="Category" ></h:outputText>
+                                    <p:selectOneMenu    
+                                        value="#{favouriteController.current.category}" style="min-width: 223px">
+                                        <f:selectItem itemLabel="Select Category" ></f:selectItem>
+                                        <f:selectItems  value="#{pharmaceuticalItemCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+
+                                    <h:outputText value="Dose" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.dblValue1}" ></h:outputText>
+
+                                    <h:outputText value="Dose Unit" ></h:outputText>
+                                    <p:selectOneMenu      value="#{favouriteController.current.measurementUnit1}" style="min-width: 223px">
+                                        <f:selectItem itemLabel="Select Dose Unit" ></f:selectItem>
+                                        <f:selectItems  value="#{measurementUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="Frequency" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.measurementUnit2}" ></h:outputText>
+                                    <p:selectOneMenu    
+                                        value="#{favouriteController.current.measurementUnit2}"
+                                        style="min-width: 223px">
+                                        <f:selectItem itemLabel="Select Frequency" ></f:selectItem>
+                                        <f:selectItems  value="#{frequencyUnitController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="Duration" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.dblValue2}" ></h:outputText>
+
+                                    <h:outputText value="Duration Unit" ></h:outputText>
+                                    <h:outputText value="#{favouriteController.current.measurementUnit2}" ></h:outputText>
+
+                                </h:panelGrid>
+
+                            </p:dialog> 
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="#{favouriteController.items}" var="fi" >
+                            <p:column  >
+                                <f:facet name="header" >
+                                    <h:outputText value="Medicine" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.item}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Category" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.category}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dose" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.dblValue1}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Dose Unit" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.measurementUnit1}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Frequency" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.measurementUnit2}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Duration" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.dblValue2}" ></h:outputText>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <h:outputText value="Duration Unit" ></h:outputText>
+                                </f:facet>
+                                <h:outputText value="#{fi.measurementUnit2}" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

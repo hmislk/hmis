@@ -6,10 +6,11 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
-import com.divudi.entity.lab.*;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
+import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.ReportItem;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

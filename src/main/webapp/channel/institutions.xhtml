@@ -18,9 +18,9 @@
 
 
 
-                <p:panel header="Manage Institution" >
+                <p:panel header="Manage Channel Agents" styleClass="verticalAndHorizontalCenteringLarge">
 
-                    <div id="Temp" style="position: relative;left: 10%;">
+                    <div id="Temp" style="position: relative;left: 0%;">
                         <h:panelGrid id ="gpVeda" columns="2" >
 
                             <h:panelGrid id="gpSelect" columns="1"  >
@@ -28,11 +28,11 @@
                                 <p:panel >
                                     <h:panelGrid id="gpSelectText" >
                                         <h:inputText autocomplete="off" id="txtSearch" value="#{institutionController.selectText}" >
-                                            <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                                            <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{institutionController.fetchSelectedAgencys}" />
                                         </h:inputText>
 
                                         <p:selectOneListbox  id="lstSelect"   value="#{institutionController.current}" style="min-width: 223px; height: 300px;">
-                                            <f:selectItems  value="#{institutionController.agencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <f:selectItems  value="#{institutionController.selectedAgencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                             <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                             </p:ajax>
                                         </p:selectOneListbox>
@@ -54,64 +54,95 @@
                             <p:panel>
 
                                 <h:panelGrid id="gpDetail" columns="1">
-                                    <h:panelGrid id="gpDetailText" columns="2">
-                                        
-                                        <h:outputText id="lblId" value="Id" ></h:outputText>
-                                        <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
-                                        
-                                        <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName" value="#{institutionController.current.name}"  ></h:inputText>
-                                        
-                                        <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}"  ></h:inputText>
-                                        
-                                        <h:outputText value="Code" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  >
-                                        </h:inputText> 
-                                        
-                                        <h:outputText value="Descreption" >                                        
-                                        </h:outputText>
-                                        <h:inputTextarea  value="#{institutionController.current.descreption}"  >
-                                        </h:inputTextarea> 
-                                        
-                                        <h:outputText id="lblType" value="Institution Type" ></h:outputText>
-                                        
-                                        <h:outputText value="#{institutionController.current.institutionType}">
-                                        </h:outputText>
-                                        
-                                        <h:outputText value="Allowed Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{institutionController.current.allowedCredit}"  >
-                                        </h:inputText>
-                                        
-                                         <h:outputText value="Balance" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off"  value="#{institutionController.current.ballance}"  >
-                                        </h:inputText>
 
-                                        <h:outputText id="lblPhone" value="Phone" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtPhone" value="#{institutionController.current.phone}"  ></h:inputText>
+                                    <p:tabView>
+                                        <p:tab title="Agent Detail">
 
-                                        <h:outputText id="lblFax" value="Fax" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtFax" value="#{institutionController.current.fax}"  ></h:inputText>
+                                            <h:panelGrid id="gpDetailText" columns="2">
 
-                                        <h:outputText id="lblEMail" value="Email" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtEmail" value="#{institutionController.current.email}"  ></h:inputText>
-                                        
-                                        <h:outputText id="lblAdress" value="Adress" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtAdress" value="#{institutionController.current.address}"  ></h:inputText>
-                                        
-                                        <h:outputText id="lblWeb" value="Web" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  ></h:inputText>
+                                                <h:outputText id="lblId" value="Id" ></h:outputText>
+                                                <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
+
+                                                <h:outputText id="lblName" value="Name" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtName" value="#{institutionController.current.name}"  ></h:inputText>
+
+                                                <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}"  ></h:inputText>
+
+                                                <h:outputText value="Code" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  >
+                                                </h:inputText> 
+
+                                                <h:outputText value="Descreption" >                                        
+                                                </h:outputText>
+                                                <h:inputTextarea  value="#{institutionController.current.descreption}"  >
+                                                </h:inputTextarea> 
+
+                                                <h:outputText id="lblType" value="Institution Type" ></h:outputText>
+
+                                                <h:outputText value="#{institutionController.current.institutionType}">
+                                                </h:outputText>
+
+                                                <h:outputText value="Standerd Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.current.standardCreditLimit}"  >
+                                                </h:inputText>
+
+                                                <h:outputText value="Allowed Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.current.allowedCredit}"  >
+                                                </h:inputText>
+
+                                                <h:outputText value="Allowed Maximum Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.current.maxCreditLimit}"  >
+                                                </h:inputText>
+
+                                                <h:outputText value="Balance" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.current.ballance}">
+                                                </h:inputText>
+
+                                                <h:outputText id="lblPhone" value="Phone" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtPhone" value="#{institutionController.current.phone}"  ></h:inputText>
+
+                                                <h:outputText id="lblFax" value="Fax" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtFax" value="#{institutionController.current.fax}"  ></h:inputText>
+
+                                                <h:outputText id="lblEMail" value="Email" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtEmail" value="#{institutionController.current.email}"  ></h:inputText>
+
+                                                <h:outputText id="lblAdress" value="Adress" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtAdress" value="#{institutionController.current.address}"  ></h:inputText>
+
+                                                <h:outputText id="lblWeb" value="Web" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  ></h:inputText>
 
 
-                                    </h:panelGrid>
-                                    <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <h:commandButton id="btnSave" value="Save" action="#{institutionController.saveSelected()}" styleClass="buttons">
-                                        </h:commandButton>
-                                        <p:defaultCommand target="btnSave"/>
-                                    </h:panelGrid>
+                                            </h:panelGrid>
+
+
+                                        </p:tab>
+
+                                        <p:tab title="Contact Person Detail">
+                                            <h:panelGrid id="gpContactPerson" columns="2">
+                                                <h:outputText value="Contact Person Name" ></h:outputText>
+                                                <h:inputText autocomplete="off"  value="#{institutionController.current.contactPerson.name}"  ></h:inputText>
+
+                                                <h:outputText value="Contact Person Tel" ></h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.contactPerson.mobile}"  ></h:inputText>
+
+                                                <h:outputText value="Contact Person Email" ></h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.contactPerson.email}"  ></h:inputText>
+                                            </h:panelGrid>
+                                        </p:tab>
+                                    </p:tabView>
+                                </h:panelGrid>
+                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                    <h:commandButton id="btnSave" value="Save" action="#{institutionController.saveSelected()}" styleClass="buttons">
+                                    </h:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>
 
                             </p:panel>

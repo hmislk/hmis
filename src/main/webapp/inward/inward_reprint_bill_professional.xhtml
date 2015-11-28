@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/inward/bill">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -103,7 +103,7 @@
                                         <f:facet name="input">  
                                             <p:autoComplete value="#{bip.staff}" 
                                                             disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
-                                                            completeMethod="#{staffController.completeStaffCode}"
+                                                            completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                             var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" 
                                                             forceSelection="true"/>
                                            
@@ -127,5 +127,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

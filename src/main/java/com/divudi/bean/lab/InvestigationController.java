@@ -8,17 +8,19 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.SymanticType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.ItemFeeManager;
+import com.divudi.data.lab.InvestigationWithCount;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.DepartmentFacade;
@@ -31,20 +33,18 @@ import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -68,6 +68,8 @@ public class InvestigationController implements Serializable {
     IxCalController ixCalController;
     @Inject
     ItemFeeManager itemFeeManager;
+    @Inject
+    PatientReportController patientReportController;
     /**
      * EJBs
      */
@@ -87,7 +89,7 @@ public class InvestigationController implements Serializable {
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
-    boolean listMasterItemsOnly = false;//if boolean is true list only institution null
+    Boolean listMasterItemsOnly = false;//if boolean is true list only institution null
     InvestigationCategory category;
     List<Investigation> catIxs;
     List<Investigation> allIxs;
@@ -95,6 +97,37 @@ public class InvestigationController implements Serializable {
     Institution institution;
     List<Investigation> deletedIxs;
     List<Investigation> selectedIxs;
+    List<PatientReport> selectedPatientReports;
+    List<Investigation> ixWithoutSamples;
+
+    public void changeIxInstitutionAccordingToDept() {
+        List<Investigation> ixs = getFacade().findAll(true);
+        for (Investigation ix : ixs) {
+            if (ix.getInstitution() != null && !ix.getDepartment().getInstitution().equals(ix.getInstitution())) {
+                ix.setInstitution(ix.getDepartment().getInstitution());
+                getFacade().edit(ix);
+                System.out.println("ix = " + ix.getName());
+            }
+        }
+    }
+
+    public void changeIxReportedAsToMasterItem() {
+        List<Investigation> ixs = getFacade().findAll(true);
+        for (Investigation ix : ixs) {
+            if (ix.getReportedAs() != null && ix.getInstitution() != null && ix.getReportedAs().getInstitution() != null) {
+                String j;
+                Map m = new HashMap();
+                j = "select ix from Investigation ix "
+                        + " where ix.retired=false "
+                        + " and ix.institution is null "
+                        + " and ix.name=:ixn";
+                m.put("ixn", ix.getName());
+
+                getFacade().edit(ix);
+                System.out.println("ix = " + ix.getName());
+            }
+        }
+    }
 
     public String toEditReportFormat() {
         if (current == null) {
@@ -125,10 +158,10 @@ public class InvestigationController implements Serializable {
         if (current.getReportedAs() == null) {
             current.setReportedAs(current);
         }
-        ixCalController.setIx((Investigation) current.getReportedAs()); 
+        ixCalController.setIx((Investigation) current.getReportedAs());
         return "lab_calculation";
     }
-    
+
     public String toEditFees() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -209,6 +242,48 @@ public class InvestigationController implements Serializable {
         sql = "Select i from Investigation i where i.retired=false order by i.name";
         allIxs = getFacade().findBySQL(sql);
         return "/lab/lab_investigation_list";
+    }
+    
+    public void prepareSelectedReportSamples(){
+        System.out.println("prepareSelectedReportSamples");
+        selectedPatientReports = new ArrayList<>();
+        ixWithoutSamples = new ArrayList<>();
+        System.err.println("selectedIxs.size() = " + selectedIxs.size());
+        for(Investigation ix:selectedIxs){
+            System.err.println("ix.getName() = " + ix.getName());
+            PatientReport pr = patientReportController.getLastPatientReport(ix);
+            if(pr!=null){
+                selectedPatientReports.add(pr);
+            }else{
+                ixWithoutSamples.add(ix);
+            }
+        }
+    }
+
+    public List<PatientReport> getSelectedPatientReports() {
+        return selectedPatientReports;
+    }
+
+    public void setSelectedPatientReports(List<PatientReport> selectedPatientReports) {
+        this.selectedPatientReports = selectedPatientReports;
+    }
+
+    public List<Investigation> getIxWithoutSamples() {
+        return ixWithoutSamples;
+    }
+
+    public void setIxWithoutSamples(List<Investigation> ixWithoutSamples) {
+        this.ixWithoutSamples = ixWithoutSamples;
+    }
+
+    
+    
+    public List<Investigation> getInvestigationItems() {
+        String sql;
+        sql = "Select i from Investigation i "
+                + " where i.retired=false ";
+
+        return getFacade().findBySQL(sql);
     }
 
     public List<Department> getInstitutionDepatrments() {
@@ -302,7 +377,6 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> completeInvest(String query) {
         System.out.println("master" + listMasterItemsOnly);
-        System.out.println("master login Lab");
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
         }
@@ -321,22 +395,61 @@ public class InvestigationController implements Serializable {
         m.put("n", "%" + query.toUpperCase() + "%");
 
         if (listMasterItemsOnly == true) {
-            System.out.println("inside intitution null only");
             sql += " and c.institution is null ";
         }
 
-        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
-            System.out.println("inside intitution null and logged institution only");
-            sql += " and (c.institution is null "
-                    + " or c.institution=:ins) ";
-            m.put("ins", sessionController.getInstitution());
-        }
-
+//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//            sql += " and (c.institution is null "
+//                    + " or c.institution=:ins) ";
+//            m.put("ins", sessionController.getInstitution());
+//        }
         sql += " order by c.name";
 
         suggestions = getFacade().findBySQL(sql, m);
 
         return suggestions;
+    }
+
+    public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
+        System.out.println("master" + listMasterItemsOnly);
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+
+        //m.put(m, m);
+        sql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and (upper(c.name) like :n or "
+                + " upper(c.fullName) like :n or "
+                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+        ////System.out.println(sql);
+
+        m.put("n", "%" + query.toUpperCase() + "%");
+
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+
+//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//            sql += " and (c.institution is null "
+//                    + " or c.institution=:ins) ";
+//            m.put("ins", sessionController.getInstitution());
+//        }
+        sql += " order by c.name";
+
+        suggestions = getFacade().findBySQL(sql, m);
+
+        List<InvestigationWithCount> ics = new ArrayList<>();
+        for (Investigation ix : suggestions) {
+            InvestigationWithCount ic = new InvestigationWithCount(ix, investigationItemController.findItemCount(ix));
+            ics.add(ic);
+        }
+
+        return ics;
+
     }
 
     public List<Investigation> completeInvestWithout(String query) {
@@ -369,11 +482,29 @@ public class InvestigationController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public boolean isListMasterItemsOnly() {
+    public Boolean isListMasterItemsOnly() {
+        if (listMasterItemsOnly == null) {
+            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+                listMasterItemsOnly = true;
+            } else {
+                listMasterItemsOnly = false;
+            }
+        }
         return listMasterItemsOnly;
     }
 
-    public void setListMasterItemsOnly(boolean listMasterItemsOnly) {
+    public Boolean getListMasterItemsOnly() {
+        if (listMasterItemsOnly == null) {
+            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+                listMasterItemsOnly = true;
+            } else {
+                listMasterItemsOnly = false;
+            }
+        }
+        return listMasterItemsOnly;
+    }
+
+    public void setListMasterItemsOnly(Boolean listMasterItemsOnly) {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
@@ -422,8 +553,12 @@ public class InvestigationController implements Serializable {
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
         if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
-            sql += " and c.institution=:ins";
-            m.put("ins", institution);
+            if (institution != null) {
+                sql += " and c.institution=:ins ";
+                m.put("ins", institution);
+            } else {
+                sql += " and c.institution is null ";
+            }
         }
         sql += " order by c.name";
         selectedItems = getFacade().findBySQL(sql, m);
@@ -569,7 +704,7 @@ public class InvestigationController implements Serializable {
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             ////System.out.println("4");
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             if (billedAs == false) {
@@ -637,7 +772,7 @@ public class InvestigationController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

@@ -14,19 +14,18 @@ import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -71,7 +70,13 @@ public class DepartmentController implements Serializable {
 
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
-            searchItems = getFacade().findAll(true);
+            String sql = "Select d from Department d where d.retired=false order by d.name";
+            searchItems = getFacade().findBySQL(sql);
+            if (searchItems != null && !searchItems.isEmpty()) {
+                current = searchItems.get(0);
+            } else {
+                current = null;
+            }
         } else {
             String sql = "Select d from Department d where d.retired=false and upper(d.name) like :dn order by d.name";
             Map m = new HashMap();
@@ -99,8 +104,6 @@ public class DepartmentController implements Serializable {
             hm.put("ins", getInstitution());
             items = getFacade().findBySQL(sql, hm);
         }
-
-        //items = getFacade().findAll("name", true);
         return items;
     }
 
@@ -229,7 +232,7 @@ public class DepartmentController implements Serializable {
                     return;
                 }
             }
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved");
@@ -334,7 +337,7 @@ public class DepartmentController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

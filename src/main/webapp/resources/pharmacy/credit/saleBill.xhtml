@@ -19,9 +19,9 @@
         <div class="posbill">
 
             <div class="institutionName" style="text-align: center!important;
-    font-weight: bold!important;
-    font-size: 15px!important;
-    font-weight: bold;">
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
@@ -101,7 +101,7 @@
                         </td>
 
                     </tr>
-                    
+
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel value="For" class="billDetails"></h:outputLabel>
@@ -358,12 +358,11 @@
 
             <div class="footer">
                 <br/>
-                THANK YOU. PLEASE COME AGAIN<br/>
-                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                THANK YOU. PLEASE COME AGAIN
                 <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                Software by www.lakmedi.com - 0715812399<br/>
+                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
             </div>
 
 

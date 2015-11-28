@@ -31,8 +31,8 @@ import com.divudi.facade.RefundBillFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -168,7 +168,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
             bC.setBill(can);
             bC.setBillItem(bt);
-            bC.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            bC.setCreatedAt(new Date());
             bC.setCreater(getSessionController().getLoggedUser());
             getBillCommponentFacade().create(bC);
         }
@@ -201,9 +201,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
         cb.setBilledBill(getBill());
         cb.setPaymentMethod(paymentMethod);
-        cb.setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        cb.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
@@ -340,7 +340,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             b.setCatId(nB.getCatId());
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
-            b.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
             getBillItemFacede().create(b);

@@ -5,6 +5,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Institution;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class InstitutionBills {
     
     private Institution institution;
     private List<Bill> bills;
+    List<BillItem>billItems;
     private double returned;
     private double total;
     private double paidTotal;
@@ -72,6 +74,13 @@ public class InstitutionBills {
     public void setPaidByPatient(double paidByPatient) {
         this.paidByPatient = paidByPatient;
     }
-    
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
     
 }

@@ -7,29 +7,27 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
-import java.util.TimeZone;
-import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
-import com.divudi.facade.DepartmentFacade;
 import com.divudi.entity.WebUserDepartment;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.WebUserDepartmentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import javax.inject.Inject;
-import javax.inject.Named; import javax.ejb.EJB;
-import javax.inject.Inject;
-import javax.faces.bean.RequestScoped;
+import java.util.Map;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -92,7 +90,7 @@ public  class UserDepartmentController implements Serializable {
             getEjbFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getEjbFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -131,7 +129,7 @@ public  class UserDepartmentController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getEjbFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -164,21 +162,14 @@ public  class UserDepartmentController implements Serializable {
     }
 
     public List<WebUserDepartment> getItems() {
-        // items = getFacade().findAll("name", true);
-        ////System.out.println("11");
         if (selectedUser == null) {
-            items = new ArrayList<WebUserDepartment>();
-            ////System.out.println("22");
+            items = new ArrayList<>();
             return items;
         }
-
         String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
         items = getEjbFacade().findBySQL(sql);
-        ////System.out.println("33");
-
         if (items == null) {
-            items = new ArrayList<WebUserDepartment>();
-            ////System.out.println("44");
+            items = new ArrayList<>();
         }
         return items;
     }
@@ -266,15 +257,18 @@ public  class UserDepartmentController implements Serializable {
     public List<Department> getCurrentInsDepartments() {
         if (currentInstituion == null) {
             ////System.out.println("1");
-            return new ArrayList<Department>();
+            return new ArrayList<>();
         }
         ////System.out.println("2");
-        String sql = "SELECT i FROM Department i where i.retired=false and i.institution.id=" + getCurrentInstituion().getId() + " order by i.name";
-        currentInsDepartments = getDepartmentFacade().findBySQL(sql);
+        Map m = new HashMap();
+        m.put("ins", currentInstituion);
+        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+        currentInsDepartments = getDepartmentFacade().findBySQL(sql,m);
+        System.out.println("sql = " + sql);
         ////System.out.println("3");
         if (currentInsDepartments == null) {
             ////System.out.println("4");
-            currentInsDepartments = new ArrayList<Department>();
+            currentInsDepartments = new ArrayList<>();
         }
         return currentInsDepartments;
     }

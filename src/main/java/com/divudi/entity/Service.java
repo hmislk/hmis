@@ -4,9 +4,7 @@
  */
 package com.divudi.entity;
 
-import com.divudi.data.SessionNumberType;
 import java.io.Serializable;
-import java.nio.channels.SeekableByteChannel;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;

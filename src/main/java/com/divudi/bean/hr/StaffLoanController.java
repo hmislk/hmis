@@ -70,18 +70,27 @@ public class StaffLoanController implements Serializable {
             return true;
         }
 
-        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
-            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+        if (getCurrent().isCompleted() && getCurrent().getCompletedAt() == null) {
+            UtilityController.addErrorMessage("Check Completed Date");
             return true;
         }
 
+        if (!getCurrent().isCompleted() && getCurrent().getCompletedAt() != null) {
+            UtilityController.addErrorMessage("You Can't Add Completed Date Without Completed");
+            return true;
+        }
+
+//        if (humanResourceBean.checkStaff(getCurrent(), getCurrent().getPaysheetComponent(), getCurrent().getStaff(), getCurrent().getFromDate(), getCurrent().getToDate())) {
+//            UtilityController.addErrorMessage("There is Some component in Same Date Range");
+//            return true;
+//        }
         return false;
     }
 
     public boolean errorCheckSelected() {
         for (StaffPaysheetComponent s : selectedList) {
             //System.out.println("getChequeNumber() = " + s.getChequeNumber());
-            if (s.getChequeNumber()==null || s.getChequeNumber().equals("")) {
+            if (s.getChequeNumber() == null || s.getChequeNumber().equals("")) {
                 return true;
             }
         }
@@ -103,8 +112,20 @@ public class StaffLoanController implements Serializable {
         }
 
         if (getCurrent().getId() == null) {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            if(!getCurrent().isCompleted()){
+                getCurrent().setCompletedAt(null);
+            }
+            
             getStaffPaysheetComponentFacade().create(getCurrent());
         } else {
+            if (getCurrent().isCompleted()) {
+                getCurrent().setCompleter(getSessionController().getLoggedUser());
+            }
+            if(!getCurrent().isCompleted()){
+                getCurrent().setCompletedAt(null);
+            }
             getStaffPaysheetComponentFacade().edit(getCurrent());
         }
 
@@ -116,7 +137,7 @@ public class StaffLoanController implements Serializable {
             UtilityController.addErrorMessage("Please Check Cheque Date And Cheque No:");
             return;
         }
-        
+
         for (StaffPaysheetComponent s : selectedList) {
             s.setChequePaidBy(getSessionController().getLoggedUser());
             s.setChequePaidDate(new Date());
@@ -165,8 +186,13 @@ public class StaffLoanController implements Serializable {
         HashMap hm = new HashMap();
 
         sql = "Select ss from StaffPaysheetComponent ss "
-                + " where ss.retired=false "
-                + " and ss.fromDate <=:fd ";
+                + " where ss.retired=false ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
         if (paysheetComponent != null) {
             sql += " and ss.paysheetComponent=:tp ";
@@ -208,13 +234,12 @@ public class StaffLoanController implements Serializable {
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        hm.put("fd", getFromDate());
 
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
         paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-        
+
         chequeDetails = false;
     }
 

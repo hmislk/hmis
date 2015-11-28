@@ -7,29 +7,25 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.entity.lab.InvestigationItemValue;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.facade.InvestigationItemValueFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -117,13 +113,12 @@ public class InvestigationItemValueController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        getItems();
     }
 
     public void setSelectText(String selectText) {
@@ -161,7 +156,7 @@ public class InvestigationItemValueController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -169,7 +164,6 @@ public class InvestigationItemValueController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
         current = null;
         getCurrent();
     }
@@ -178,10 +172,6 @@ public class InvestigationItemValueController implements Serializable {
         return ejbFacade;
     }
 
-    public List<InvestigationItemValue> getItems() {
-        items = getFacade().findAll("name", true);
-        return items;
-    }
 
     /**
      *

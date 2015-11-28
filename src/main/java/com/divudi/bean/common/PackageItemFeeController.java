@@ -7,7 +7,6 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
 import com.divudi.entity.Department;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Item;
@@ -24,17 +23,16 @@ import com.divudi.facade.PackegeFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -132,7 +130,7 @@ public class PackageItemFeeController implements Serializable {
         currentFee.setPackege(currentPackege);
         currentFee.setItem(currentIx);
         if (currentFee.getId() == null || currentFee.getId() == 0) {
-            currentFee.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
 
             getPackageFeeFacade().create(currentFee);
@@ -197,7 +195,7 @@ public class PackageItemFeeController implements Serializable {
         } else {
             getRemovedPackageFee().setRetired(true);
             getRemovedPackageFee().setRetirer(getSessionController().getLoggedUser());
-            getRemovedPackageFee().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getRemovedPackageFee().setRetiredAt(new Date());
             getPackageFeeFacade().edit(getRemovedPackageFee()); // Flag as retired, so that will never appearing when calling from database
 
             setCharges(null);
@@ -211,7 +209,7 @@ public class PackageItemFeeController implements Serializable {
 
         if (currentIx != null) {
             currentIx.setRetired(true);
-            currentIx.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            currentIx.setRetiredAt(new Date());
             currentIx.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(currentIx);
             UtilityController.addSuccessMessage("Deleted Successfully");

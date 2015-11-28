@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -48,7 +48,7 @@
                         </h:panelGrid>
 
 
-                        <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup id="gpBillPreview" styleClass="summeryBorder" >
 
 
                             <p:dataTable id="tbl"  value="#{storeReportsTransfer.drows}" var="i"  >
@@ -155,5 +155,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

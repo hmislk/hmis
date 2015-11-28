@@ -7,7 +7,6 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
-
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemsCategories;
@@ -18,9 +17,8 @@ import com.divudi.facade.PackageFeeFacade;
 import com.divudi.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -104,7 +102,7 @@ public class ItemsCategoriesController implements Serializable {
 
         pi.setCategory(getCurrentCategory());
         pi.setItem(getCurrentItem());
-        pi.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
         getFacade().create(pi);
         UtilityController.addSuccessMessage("Added");
@@ -123,7 +121,7 @@ public class ItemsCategoriesController implements Serializable {
 
         getCurrent().setRetired(true);
         getCurrent().setRetirer(getSessionController().getLoggedUser());
-        getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getCurrent().setRetiredAt(new Date());
         getFacade().edit(getCurrent());
         UtilityController.addSuccessMessage("Item Removed");
         recreateModel();
@@ -241,7 +239,7 @@ public class ItemsCategoriesController implements Serializable {
 
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -259,7 +257,7 @@ public class ItemsCategoriesController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

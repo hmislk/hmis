@@ -33,9 +33,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import jxl.Cell;
 import jxl.Sheet;
@@ -295,7 +295,6 @@ public class AttendanceUploadController implements Serializable {
                     // System.err.println(" 1 str = " + str);
                     date = formatter.parse(str);
                 } catch (ParseException e) {
-                    System.err.println("error in parsing");
                     continue;
                 }
 

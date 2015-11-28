@@ -5,12 +5,12 @@
  */
 package com.divudi.entity.inward;
 
-import com.divudi.entity.PatientEncounter;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;

@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.InstitutionType;
+import com.divudi.entity.channel.AgentReferenceBook;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,6 +84,8 @@ public class Institution implements Serializable {
     double pharmacyDiscount;
     double ballance;
     double allowedCredit;
+    double maxCreditLimit;
+    double standardCreditLimit;
     @Transient
     String transAddress1;
     @Transient
@@ -91,6 +94,8 @@ public class Institution implements Serializable {
     String transAddress3;
     @Transient
     String transAddress4;
+    @Transient
+    List<AgentReferenceBook> agentReferenceBooks;
     
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Institution> branch = new ArrayList<>();
@@ -397,6 +402,16 @@ public class Institution implements Serializable {
         this.allowedCredit = allowedCredit;
     }
 
+    public double getMaxCreditLimit() {
+        return maxCreditLimit;
+    }
+
+    public void setMaxCreditLimit(double maxCreditLimit) {
+        this.maxCreditLimit = maxCreditLimit;
+    }
+    
+    
+
     public String getChequePrintingName() {
         return chequePrintingName;
     }
@@ -442,6 +457,25 @@ public class Institution implements Serializable {
 
     public void setContactPerson(Person contactPerson) {
         this.contactPerson = contactPerson;
+    }
+
+    public double getStandardCreditLimit() {
+        return standardCreditLimit;
+    }
+
+    public void setStandardCreditLimit(double standardCreditLimit) {
+        this.standardCreditLimit = standardCreditLimit;
+    }
+
+    public List<AgentReferenceBook> getAgentReferenceBooks() {
+        if (agentReferenceBooks==null) {
+            agentReferenceBooks=new ArrayList<>();
+        }
+        return agentReferenceBooks;
+    }
+
+    public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
+        this.agentReferenceBooks = agentReferenceBooks;
     }
 
 }

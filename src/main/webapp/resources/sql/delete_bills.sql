@@ -1,0 +1,25 @@
+SET FOREIGN_KEY_CHECKS=0;
+DELETE FROM billfee ;
+DELETE FROM bill ;
+DELETE FROM billitem ;
+DELETE FROM bill ;
+DELETE FROM billnumber ;
+DELETE FROM billsession ;
+DELETE FROM billcomponent ;
+DELETE FROM billentry;
+-- DELETE table person;
+DELETE FROM patient;
+DELETE FROM patientencounter;
+DELETE FROM patientflag;
+DELETE FROM patientinvestigation;
+DELETE FROM patientitem;
+DELETE FROM patientreport;
+DELETE FROM patientreportitemvalue;
+DELETE FROM patientroom;
+DELETE FROM payment;
+-- drop table person;
+-- drop table personinstitution;
+-- drop TABLE webuser;
+-- drop table webuserdepartment;
+-- drop table 
+SET FOREIGN_KEY_CHECKS=1;

@@ -6,13 +6,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -25,9 +26,8 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.StockFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +36,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -74,6 +76,7 @@ public class ReportsTransfer implements Serializable {
 
     List<BillItem> transferItems;
     List<Bill> transferBills;
+    private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
 
     List<StockReportRecord> movementRecords;
     List<StockReportRecord> movementRecordsQty;
@@ -84,6 +87,10 @@ public class ReportsTransfer implements Serializable {
     double stockSaleValue;
     double valueOfQOH;
     double qoh;
+    double totalIssueQty;
+    double totalBHTIssueQty;
+    double totalIssueValue;
+    double totalBHTIssueValue;
 
     /**
      * EJBs
@@ -96,6 +103,8 @@ public class ReportsTransfer implements Serializable {
     BillFacade BillFacade;
     @EJB
     PharmacyBean pharmacyBean;
+    @EJB
+    ItemFacade itemFacade;
 
     /**
      * Methods
@@ -833,8 +842,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -881,8 +888,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -921,8 +926,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1015,8 +1018,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1063,8 +1064,6 @@ public class ReportsTransfer implements Serializable {
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
             System.err.println("PRE CAN " + preCancel);
-            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1339,6 +1338,175 @@ public class ReportsTransfer implements Serializable {
         }
     }
 
+    public void fillTheaterTransfersReceiveWithBHTIssue() {
+        if (fromDepartment == null || toDepartment == null) {
+            JsfUtil.addErrorMessage("Please Check From To Departments");
+            return;
+        }
+        itemBHTIssueCountTrancerReciveCounts = new ArrayList<>();
+        totalIssueQty = 0.0;
+        totalBHTIssueQty = 0.0;
+        totalIssueValue = 0.0;
+        totalBHTIssueValue = 0.0;
+        for (Item i : fetchStockItems()) {
+            ItemBHTIssueCountTrancerReciveCount count = new ItemBHTIssueCountTrancerReciveCount();
+            count.setI(i);
+            System.out.println("i.getName() = " + i.getName());
+            List<Object[]> object = fetchItemDetails(i);
+            double qty;
+            try {
+                qty = (double) object.get(0)[0];
+                totalIssueQty += qty;
+            } catch (Exception e) {
+                qty = 0.0;
+            }
+            System.out.println("qty = " + qty);
+            double totalValue;
+            try {
+                totalValue = (double) object.get(0)[1];
+                totalIssueValue += totalValue;
+            } catch (Exception e) {
+                totalValue = 0.0;
+            }
+            System.out.println("totalValue = " + totalValue);
+            count.setCountIssue(qty);
+            count.setTotalIssue(totalValue);
+            List<Object[]> objectBHT = fetchBHTIsssue(BillType.PharmacyBhtPre, i);
+            double qtyBHT;
+            try {
+                qtyBHT = (double) objectBHT.get(0)[0];
+                totalBHTIssueQty += qtyBHT;
+            } catch (Exception e) {
+                qtyBHT = 0.0;
+            }
+            System.out.println("qtyBHT = " + qtyBHT);
+            double totalBHTValue;
+            try {
+                totalBHTValue = (double) objectBHT.get(0)[1];
+                totalBHTIssueValue += totalBHTValue;
+            } catch (Exception e) {
+                totalBHTValue = 0.0;
+            }
+            System.out.println("totalBHTValue = " + totalBHTValue);
+            count.setCountBht(qtyBHT);
+            count.setTotalBht(totalBHTValue);
+            itemBHTIssueCountTrancerReciveCounts.add(count);
+        }
+
+    }
+
+    public List<Item> fetchStockItems() {
+
+        Map m = new HashMap();
+        String sql;
+        sql = "select distinct(s.itemBatch.item) from Stock s "
+                + " where s.department=:d "
+                + " order by s.itemBatch.item.name";
+        m.put("d", toDepartment);
+        List<Item> items = getItemFacade().findBySQL(sql, m);
+        System.out.println("items.size() = " + items.size());
+        return items;
+    }
+
+    public List<Object[]> fetchItemDetails(Item i) {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "select sum(bi.pharmaceuticalBillItem.qty),sum(bi.pharmaceuticalBillItem.itemBatch.purcahseRate*bi.pharmaceuticalBillItem.qty) "
+                + " from BillItem bi "
+                + " where bi.bill.fromDepartment=:fdept "
+                + " and bi.bill.department=:tdept "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType=:bt "
+                + " and bi.item=:i ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", BillType.PharmacyTransferReceive);
+        m.put("fdept", fromDepartment);
+        m.put("tdept", toDepartment);
+        m.put("i", i);
+
+        return getItemFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public List<Object[]> fetchBHTIsssue(BillType billType, Item i) {
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", billType);
+        m.put("fdept", fromDepartment);
+        m.put("i", i);
+
+        sql = "select sum(b.pharmaceuticalBillItem.qty),sum(b.pharmaceuticalBillItem.qty*b.pharmaceuticalBillItem.itemBatch.purcahseRate) "
+                + " from BillItem b "
+                + " where b.bill.department=:fdept "
+                + " and b.bill.createdAt between :fd and :td "
+                + " and b.bill.billType=:bt "
+                + " and b.item=:i ";
+
+        return getBillFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public List<ItemBHTIssueCountTrancerReciveCount> getItemBHTIssueCountTrancerReciveCounts() {
+        return itemBHTIssueCountTrancerReciveCounts;
+    }
+
+    public void setItemBHTIssueCountTrancerReciveCounts(List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts) {
+        this.itemBHTIssueCountTrancerReciveCounts = itemBHTIssueCountTrancerReciveCounts;
+    }
+
+    public class ItemBHTIssueCountTrancerReciveCount {
+
+        private Item i;
+        private double countIssue;
+        private double countBht;
+        private double totalIssue;
+        private double totalBht;
+
+        public Item getI() {
+            return i;
+        }
+
+        public void setI(Item i) {
+            this.i = i;
+        }
+
+        public double getCountIssue() {
+            return countIssue;
+        }
+
+        public void setCountIssue(double countIssue) {
+            this.countIssue = countIssue;
+        }
+
+        public double getCountBht() {
+            return countBht;
+        }
+
+        public void setCountBht(double countBht) {
+            this.countBht = countBht;
+        }
+
+        public double getTotalIssue() {
+            return totalIssue;
+        }
+
+        public void setTotalIssue(double totalIssue) {
+            this.totalIssue = totalIssue;
+        }
+
+        public double getTotalBht() {
+            return totalBht;
+        }
+
+        public void setTotalBht(double totalBht) {
+            this.totalBht = totalBht;
+        }
+
+    }
+
     /**
      * Getters & Setters
      *
@@ -1528,7 +1696,7 @@ public class ReportsTransfer implements Serializable {
 
     public BillType[] getBillTypes() {
         if (billTypes == null) {
-            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre};
+            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyIssue, BillType.PharmacyPre, BillType.PharmacyWholesalePre};
         }
         return billTypes;
     }
@@ -1706,6 +1874,46 @@ public class ReportsTransfer implements Serializable {
 
     public void setQoh(double qoh) {
         this.qoh = qoh;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
+    }
+
+    public double getTotalIssueQty() {
+        return totalIssueQty;
+    }
+
+    public void setTotalIssueQty(double totalIssueQty) {
+        this.totalIssueQty = totalIssueQty;
+    }
+
+    public double getTotalBHTIssueQty() {
+        return totalBHTIssueQty;
+    }
+
+    public void setTotalBHTIssueQty(double totalBHTIssueQty) {
+        this.totalBHTIssueQty = totalBHTIssueQty;
+    }
+
+    public double getTotalIssueValue() {
+        return totalIssueValue;
+    }
+
+    public void setTotalIssueValue(double totalIssueValue) {
+        this.totalIssueValue = totalIssueValue;
+    }
+
+    public double getTotalBHTIssueValue() {
+        return totalBHTIssueValue;
+    }
+
+    public void setTotalBHTIssueValue(double totalBHTIssueValue) {
+        this.totalBHTIssueValue = totalBHTIssueValue;
     }
 
 }

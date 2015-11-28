@@ -128,6 +128,10 @@ public enum BillType {
                 return "Inward Payment Receive Bill";
             case PharmacyOrder:
                 return "Purchase Order Request";
+            case PharmacyWholeSale:
+                return "Purchase Wholesale";
+            case PharmacyWholesalePre:
+                return "Purchase Wholsesale (Pre)";
             case PharmacyOrderApprove:
                 return "Purchase Order Aproval";
             case PharmacyGrnBill:
@@ -140,8 +144,7 @@ public enum BillType {
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
-            case PharmacyWholeSale:
-                return "Pharmacy WholeSale Bill";
+           
             case PharmacyPre:
                 return "Pharmacy Sale Bill (Pre)";
             case PharmacyAdjustment:

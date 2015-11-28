@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml" >
 
@@ -43,14 +43,30 @@
                                                          value="(7) Staff Salary Payment To Bank" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_payment_bank_summery"
+                                                         value="(7.1) Staff Salary Bank Vise" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{staffBasicController.makeItemNul()}"  />
                                         <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_component"
                                                          value="(8) Staff Salary Component" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_component_summery_bank_vise"
+                                                         value="(8.1) Staff Salary Component(Bank Vise)" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
                                         <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf"
                                                          value="(9) EPF ETF" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate _or_not"
+                                                         value="(10) Staff Salary Generate Or Not Report" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{hrReportController.makeNull()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_deleted_report"
+                                                         value="(11) Staff Salary Generate Or Delete Detail Report" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{hrReportController.makeNull()}"  />
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="(4) Shift" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
@@ -246,6 +262,10 @@
                                                          action="hr_report_month_end_employee_date" 
                                                          actionListener="#{hrReportController.makeNull()}" 
                                                          styleClass="linkButton" ajax="false" /> 
+                                        <p:commandButton value="(2.1) Employee Worked Day Report(New)" 
+                                                         action="hr_report_month_end_employee_date_1" 
+                                                         actionListener="#{hrReportController.makeNull()}" 
+                                                         styleClass="linkButton" ajax="false" />
                                         <p:commandButton value="(3) Month End Employee Working Time + 
                                                          Over Time Report-By Minute " 
                                                          action="hr_report_month_end_work_time" 
@@ -302,5 +322,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

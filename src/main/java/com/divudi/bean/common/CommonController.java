@@ -5,11 +5,11 @@
  */
 package com.divudi.bean.common;
 
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 

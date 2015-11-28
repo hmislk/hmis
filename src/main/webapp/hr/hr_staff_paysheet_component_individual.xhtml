@@ -36,10 +36,10 @@
                     </p:selectOneMenu>
 
                     <h:outputLabel value="From"/>
-                    <p:calendar  value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MM yyyy">                            
+                    <p:calendar  navigator="true" value="#{staffPaySheetComponentController.current.fromDate}" pattern="dd MM yyyy">                            
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar   value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MM yyyy">                            
+                    <p:calendar  navigator="true" value="#{staffPaySheetComponentController.current.toDate}" pattern="dd MM yyyy">                            
                     </p:calendar>                    
                     <h:outputLabel value="Value"/>
                     <p:inputText autocomplete="off" value="#{staffPaySheetComponentController.current.staffPaySheetComponentValue}"/>
@@ -51,12 +51,12 @@
                 <p:spacer height="30" />
                 <p:panel >
                     <f:facet name="header" >   
-                          <h:outputLabel value="Paysheet Component individual" style="text-transform:uppercase;" />
-                        
+                        <h:outputLabel value="Paysheet Component individual" style="text-transform:uppercase;" />
+
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
-                        <p:calendar value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                        <p:calendar navigator="true" value="#{staffPaySheetComponentController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
 
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentController.paysheetComponent}">                        
@@ -87,63 +87,51 @@
                             <p:printer target="individualpanel" ></p:printer>
                         </p:commandButton>  </h:panelGrid>
 
-                    <p:panel  id="individualpanel">
+                    <p:panel  id="individualpanel" styleClass="noBorder summeryBorder">
                         <p:dataTable id="tb6" value="#{staffPaySheetComponentController.items}" 
                                      filteredValue="#{staffPaySheetComponentController.filteredStaff}"
-                                     var="i" scrollHeight="200"  editable="true" >
-
-
-
+                                     var="i" editable="true" rowIndexVar="a" >
 
                             <f:facet name="header">
-                                <h:outputLabel value="#{staffPaySheetComponentController.current.staff.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{staffPaySheetComponentController.paysheetComponent.name}"/>
                             </f:facet>
 
                             <p:ajax event="rowEdit" listener="#{staffPaySheetComponentController.onEdit}" />  
 
 
-                            <p:column headerText="Staff" >  
+                            <p:column headerText="No">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff"  />
+                                    <h:outputLabel value="No"/>
                                 </f:facet>
-
-                                <h:outputLabel value="#{i.staff.person.name}" >
+                                <h:outputLabel value="#{a+1}" >
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Code" > 
-                                <f:facet name="header">
-                                    <h:outputLabel value="Code"  />
-                                </f:facet>  
-                                <h:outputLabel value="#{i.staff.codeInterger}" >
-
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Institution"  >
-                                <f:facet name="header">
+                            <p:column headerText="Institution" sortBy="#{i.staff.workingDepartment.institution.name}"  >
+                                <f:facet name="header" >
                                     <h:outputLabel value="Institution"  />
                                 </f:facet>
-                                <h:outputLabel value="#{i.staff.workingDepartment.institution.name}" >
-
-                                </h:outputLabel>
+                                <h:outputLabel value="#{i.staff.workingDepartment.institution.name}" ></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Department"  >
-                                <f:facet name="header">
+                            <p:column headerText="Department" sortBy="#{i.staff.workingDepartment.name}" >
+                                <f:facet name="header" >
                                     <h:outputLabel value="Department"  />
                                 </f:facet>
-                                <h:outputLabel value="#{i.staff.workingDepartment.name}" >
 
-                                </h:outputLabel>
+                                <h:outputLabel value="#{i.staff.workingDepartment.name}" ></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Roster" >
+                            <p:column headerText="Roster"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Roster"  />
                                 </f:facet>
-                                <h:outputLabel value="#{i.staff.roster.name}" >
-
-                                </h:outputLabel>
+                                <h:outputLabel value="#{i.staff.roster.name}" ></h:outputLabel>
                             </p:column>
-
+                            <p:column headerText="EMP Code" sortBy="#{i.staff.codeInterger}" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="EMP Code"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
+                            </p:column>
                             <p:column headerText="From" >
                                 <f:facet name="header">
                                     <h:outputLabel value="From"  />
@@ -156,7 +144,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar autocomplete="off" value="#{i.fromDate}">
+                                        <p:calendar navigator="true" autocomplete="off" value="#{i.fromDate}">
 
                                         </p:calendar>
                                     </f:facet>
@@ -174,14 +162,48 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar autocomplete="off" value="#{i.toDate}">
+                                        <p:calendar navigator="true" autocomplete="off" value="#{i.toDate}">
 
                                         </p:calendar>
                                     </f:facet>
                                 </p:cellEditor>
                             </p:column>
+                            <p:column headerText="Grade" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Grade"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.grade.name}"/>                           
+                            </p:column>
 
-                            <p:column headerText="Component" >
+                            <p:column headerText="Category" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Category"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.staffCategory.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Designtion" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Designtion"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.designation.name}"/>
+                            </p:column>
+                            <p:column headerText="Resign Date" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Resign Date"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.dateLeft}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Staff" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Staff"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.person.nameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Component" rendered="false" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Component"  />
                                 </f:facet>
@@ -219,11 +241,11 @@
 
                             </p:column>
 
-                            <p:column style="width:6%"  exportable="false">  
+                            <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
                                 <p:rowEditor />  
                             </p:column>  
 
-                            <p:column style="width:6%" exportable="false">  
+                            <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
                                 <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentController.remove}" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffPaySheetComponentController.removingEntry}" value="#{i}" />
                                 </p:commandButton>

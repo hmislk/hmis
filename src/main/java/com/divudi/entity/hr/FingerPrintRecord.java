@@ -9,10 +9,8 @@ import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.Times;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.ReportItem;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 import javax.persistence.Column;
@@ -25,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -52,7 +51,7 @@ public class FingerPrintRecord implements Serializable {
     Roster roster;
     
 
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     Date recordTimeStamp;
     @Column(name = "allowedOverTime")
     boolean allowedExtraDuty;
@@ -63,20 +62,20 @@ public class FingerPrintRecord implements Serializable {
     //Created Properties
     @ManyToOne
     private WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     //Retairing properties
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
     //Approving Properties
     private boolean approved;
     @ManyToOne
     private WebUser approver;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date approvedAt;
     private String approveComments;
     
@@ -172,8 +171,6 @@ public class FingerPrintRecord implements Serializable {
             output = formatter.format(date);
 //         //   //System.out.println(pattern + " " + output);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-
         }
 
         if (comments != null) {

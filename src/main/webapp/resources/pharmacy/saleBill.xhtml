@@ -19,9 +19,9 @@
         <div class="posbill">
 
             <div class="institutionName" style="text-align: center!important;
-    font-weight: bold!important;
-    font-size: 15px!important;
-    font-weight: bold;">
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
@@ -333,22 +333,22 @@
                             </h:outputLabel>                          
                         </td>                        
                     </tr>
-                    
+
                     <tr>
-                        
+
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                         </td>
-                        
+
                         <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
                                 <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
-                            
-                            
+
+
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
                             <h:outputLabel   value="Number of Items Count" />
@@ -368,12 +368,11 @@
 
             <div class="footer">
                 <br/>
-                THANK YOU. PLEASE COME AGAIN<br/>
-                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                THANK YOU !
                 <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                Software by www.lakmedi.com - 0715812399<br/>
+                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
             </div>
 
 

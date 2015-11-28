@@ -3,8 +3,8 @@ package com.divudi.bean.memberShip;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PriceMatrixController;
-import com.divudi.data.memberShip.IpaCreditInstitution;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.memberShip.IpaCreditInstitution;
 import com.divudi.data.memberShip.IpaMemberShip;
 import com.divudi.data.memberShip.IpaMemberShipCreditInstitution;
 import com.divudi.data.memberShip.IpaPaymentMethod;
@@ -16,9 +16,9 @@ import com.divudi.facade.PriceMatrixFacade;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -84,7 +84,6 @@ public class ReportMemberShip {
     public void createOpdPriceAdjustments() {
         opdMemberShip = new ArrayList<>();
         for (MembershipScheme pm : getMembershipSchemeController().getItems()) {
-            System.err.println("Mem " + pm.getName());
             OpdMemberShip subTable = new OpdMemberShip();
             subTable.setMembershipScheme(pm);
             List<PriceMatrix> list = getPriceMatrixController().getOpdMemberShipDiscountsDepartment(pm);

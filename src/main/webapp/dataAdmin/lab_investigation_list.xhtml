@@ -57,7 +57,7 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                         </p:column>
-                         <p:column headerText="Category"  style="width: 45%;">
+                        <p:column headerText="Category"  style="width: 45%;" sortBy="#{ix.investigationCategory.name}">
                             <f:facet name="header">
                                 <h:outputLabel value="Investigation Category"/>
                             </f:facet>
@@ -71,7 +71,7 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
                         </p:column>
-                         <p:column headerText="Machine Name"  style="width: 20%;">
+                        <p:column headerText="Machine Name"  style="width: 20%;" sortBy="#{ix.machine.name}" filterBy="#{ix.machine.name}">
                             <f:facet name="header">
                                 <h:outputLabel value="Machine Name"/>
                             </f:facet>

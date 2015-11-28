@@ -12,10 +12,8 @@ import com.divudi.entity.DoctorSpeciality;
 import com.divudi.facade.DoctorSpecialityFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -95,7 +93,7 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText ==null || selectText.trim().equals("") ) {
             selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -126,7 +124,7 @@ public class DoctorSpecialityController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -173,7 +171,7 @@ public class DoctorSpecialityController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -192,7 +190,9 @@ public class DoctorSpecialityController implements Serializable {
 
     public List<DoctorSpeciality> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            String j;
+            j="select s from DoctorSpeciality s where s.retired=false order by s.name";
+            items = getFacade().findBySQL(j);
         }
         return items;
     }

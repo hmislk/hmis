@@ -7,11 +7,11 @@ package com.divudi.bean.report;
 
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.table.String1Value1;
 import com.divudi.data.dataStructure.DatedBills;
 import com.divudi.data.dataStructure.PharmacyDetail;
 import com.divudi.data.dataStructure.PharmacyPaymetMethodSummery;
 import com.divudi.data.dataStructure.PharmacySummery;
+import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -22,8 +22,6 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**

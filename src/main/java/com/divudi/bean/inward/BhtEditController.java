@@ -13,9 +13,9 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Bill;
-import com.divudi.entity.inward.Admission;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.inward.Admission;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.BillFacade;
@@ -25,19 +25,17 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.RoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -99,7 +97,6 @@ public class BhtEditController implements Serializable {
         Bill bill = getBillFacade().findFirstBySQL(sql, hm);
         if (bill != null) {
             System.out.println("bill.getInsId() = " + bill.getInsId());
-            System.out.println("bill.isCancelled() = " + bill.isCancelled());
             return true;
         }
 
@@ -218,7 +215,7 @@ public class BhtEditController implements Serializable {
 
         if (getCurrent() != null) {
             getCurrent().setRetired(true);
-            getCurrent().setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Deleted Successfully");

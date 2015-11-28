@@ -13,13 +13,13 @@ import com.divudi.entity.hr.ShiftAmendment;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.facade.ShiftAmendmentFacade;
 import com.divudi.facade.StaffShiftFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**

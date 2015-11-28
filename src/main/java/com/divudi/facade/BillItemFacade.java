@@ -4,10 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
-import java.util.HashMap;
-import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

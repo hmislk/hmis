@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -71,9 +71,9 @@
                                                     completeMethod="#{itemController.completeItem}"
                                                     converter="itemcon"
                                                     var="cat" 
-                                                    itemLabel="#{cat.name}" 
-                                                    itemValue="#{cat}">                                   
-                                    </p:autoComplete>
+                                                    itemLabel="#{cat.item.name}" 
+                                                    itemValue="#{cat}"/>                                   
+                                    
                                 </p:column>
 
                                 <p:column headerText="Payment Method">
@@ -114,5 +114,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

@@ -102,7 +102,6 @@ public class PriceMatrixController implements Serializable {
 
     public double getItemWithInwardMargin(Item item) {
         if (item == null) {
-            System.err.println("1 ");
             return 0.0;
         }
 
@@ -115,7 +114,6 @@ public class PriceMatrixController implements Serializable {
             category = item.getCategory();
         }
         if (category == null) {
-            System.err.println("2 ");
             return item.getTotal();
         }
         inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category);
@@ -123,10 +121,8 @@ public class PriceMatrixController implements Serializable {
             inwardPriceAdjustment = getInwardPriceAdjustment(item.getDepartment(), item.getTotal(), category.getParentCategory());
         }
         if (inwardPriceAdjustment == null) {
-            System.err.println("3 ");
             return item.getTotal();
         }
-        System.err.println("4 ");
         return item.getTotal() * (inwardPriceAdjustment.getMargin() + 100) / 100;
     }
 
@@ -220,10 +216,8 @@ public class PriceMatrixController implements Serializable {
 
         InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
-        System.err.println("1 " + imsd);
 
         if (imsd != null) {
-            System.err.println("2 " + imsd.getDiscountPercent());
         }
 
         return imsd;
@@ -283,10 +277,8 @@ public class PriceMatrixController implements Serializable {
 
         InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
-        System.err.println("1 " + imsd);
 
         if (imsd != null) {
-            System.err.println("2 " + imsd.getDiscountPercent());
         }
 
         return imsd;
@@ -298,7 +290,6 @@ public class PriceMatrixController implements Serializable {
         System.err.println(paymentMethod);
         System.err.println(membershipScheme);
         System.err.println(department);
-        System.err.println(category);
         //Get Discount From Category    
         opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
 
@@ -363,7 +354,6 @@ public class PriceMatrixController implements Serializable {
         // System.err.println(paymentScheme);
         System.err.println(department);
         System.err.println(category);
-        System.err.println(item);
 
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, item);
@@ -496,6 +486,21 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
+
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+
+    }
+    
+    public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", paymentScheme);
+        sql = "Select i from PaymentSchemeDiscount i"
+                + "  where i.retired=false "
+                + " and i.paymentScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.department is null ";
 
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 

@@ -11,7 +11,6 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
-import com.divudi.data.table.String2Value1;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -43,7 +42,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -250,7 +248,6 @@ public class InwardReportController1 implements Serializable {
         hm.put("toDate", toDate);
 
         Object obj[] = patientRoomFacade.findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
-        System.err.println("OBJ " + obj);
         if (obj == null) {
             Double[] dbl = new Double[14];
             dbl[0] = 0.0;
@@ -387,7 +384,6 @@ public class InwardReportController1 implements Serializable {
         hm.put("toDate", tDate);
 
         System.err.println("sql = " + sql);
-        System.err.println("hm = " + hm);
 
         return billFeeFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
@@ -468,7 +464,6 @@ public class InwardReportController1 implements Serializable {
         professionals = new ArrayList<>();
         professionalGross = 0;
         List<Object[]> list = fetchDoctorPaymentInwardModified(frmDate, tDate, byDischargedDate);
-        System.err.println("Professional " + list);
         for (Object[] obj : list) {
             Speciality sp = (Speciality) obj[0];
             double dbl = (Double) obj[1];
@@ -492,7 +487,6 @@ public class InwardReportController1 implements Serializable {
         //System.out.println("frmDate = " + frmDate);
         //System.out.println("tDate = " + tDate);
         List<Object[]> list = fetchDoctorPaymentInwardPaid(frmDate, tDate, byDischargedDate);
-        System.err.println("Professional Paid " + list);
         for (Object[] obj : list) {
             Speciality sp = (Speciality) obj[0];
             double dbl = (Double) obj[1];
@@ -564,7 +558,6 @@ public class InwardReportController1 implements Serializable {
         }
 
         timedServices = new ArrayList<>();
-        System.err.println("SIZE " + results);
         for (Object[] obj : results) {
             String1Value2 row = new String1Value2();
             Item item = (Item) obj[0];
@@ -706,7 +699,6 @@ public class InwardReportController1 implements Serializable {
         hm.put("td", toDate);
 
         List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        System.err.println("list = " + list.size());
         for (PatientEncounter patientEncounter : list) {
             Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
             if (finalBill == null) {
@@ -1234,7 +1226,6 @@ public class InwardReportController1 implements Serializable {
             Calendar to = Calendar.getInstance();
             Calendar ans = Calendar.getInstance();
             List<PatientRoom> list = fetchPatientRoomTime(rm);
-            System.err.println("SIZE " + list.size());
             for (PatientRoom pt : list) {
                 frm.setTime(pt.getAdmittedAt());
                 to.setTime(pt.getDischargedAt());
@@ -1261,7 +1252,6 @@ public class InwardReportController1 implements Serializable {
         Calendar to = Calendar.getInstance();
         Calendar ans = Calendar.getInstance();
         patientRooms = fetchPatientRoomTime(cat);
-        System.err.println("SIZE " + patientRooms.size());
         for (PatientRoom pt : patientRooms) {
             if (pt.getAdmittedAt() != null && pt.getDischargedAt() != null) {
                 frm.setTime(pt.getAdmittedAt());
@@ -1367,7 +1357,6 @@ public class InwardReportController1 implements Serializable {
         }
 
         Object obj[] = patientRoomFacade.findAggregateModified(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("OBJ " + obj);
         if (obj == null) {
             Double[] dbl = new Double[4];
             dbl[0] = 0.0;
@@ -1607,7 +1596,6 @@ public class InwardReportController1 implements Serializable {
     }
 
     private void createFinalSummeryMonth() {
-        System.err.println("createFinalSummery");
         finalValues = new ArrayList<>();
         String1Value2 dd;
         ////////       
@@ -2384,7 +2372,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2395,7 +2383,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2804,7 +2792,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getFromDatePaid() {
         if (fromDatePaid == null) {
-            fromDatePaid = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDatePaid = getCommonFunctions().getStartOfDay(new Date());
         }
 
         return fromDatePaid;
@@ -2816,7 +2804,7 @@ public class InwardReportController1 implements Serializable {
 
     public Date getToDatePaid() {
         if (toDatePaid == null) {
-            toDatePaid = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDatePaid = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDatePaid;
     }

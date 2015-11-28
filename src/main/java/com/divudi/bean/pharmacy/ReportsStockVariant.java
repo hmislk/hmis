@@ -15,26 +15,22 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
-import com.divudi.entity.Staff;
-import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockVarientBillItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *

@@ -8,13 +8,13 @@ import com.divudi.data.BillType;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.facade.BillItemFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

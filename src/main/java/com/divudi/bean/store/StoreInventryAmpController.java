@@ -1,23 +1,21 @@
 package com.divudi.bean.store;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.facade.AmpFacade;
 import com.divudi.entity.pharmacy.Amp;
+import com.divudi.facade.AmpFacade;
 import java.io.Serializable;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -66,7 +64,7 @@ public class StoreInventryAmpController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -112,7 +110,7 @@ public class StoreInventryAmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -132,7 +130,12 @@ public class StoreInventryAmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            items = getFacade().findAll("name", true);
+            String j;
+            j="select a "
+                    + " from Amp a "
+                    + " where a.retired=false "
+                    + " order by a.name";
+            items = getFacade().findBySQL(j);
         }
         return items;
     }

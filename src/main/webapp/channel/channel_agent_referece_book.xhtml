@@ -3,15 +3,16 @@
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ch="http://java.sun.com/jsf/composite/channel">
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions" >
 
     <ui:define name="content">
 
         <h:form>
 
-            <p:panel header="Cannel Agent Reperence Book">
+            <p:panel header="Cannel Agent Reference Book" styleClass="verticalAndHorizontalCenteringLarge">
 
                 <p:panelGrid columns="2" >
                     <p:outputLabel value="Agent Name" />
@@ -23,12 +24,13 @@
                         <p:column>#{vt.name}</p:column>
                     </p:autoComplete>
                     <p:outputLabel value="Book Number" />
-                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" />
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
                     <p:outputLabel value="Strarting Reference Number" />
-                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" />
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
                     <p:outputLabel value="Ending Reference Number" />
-                    <p:inputText value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" />
-                    <p:commandButton action="#{agentReferenceBookController.saveAgentBook}" value="Save" ajax="false" ></p:commandButton> 
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
+                    
+                    <p:commandButton action="#{agentReferenceBookController.saveChannelBook}" value="Save" ajax="false" ></p:commandButton> 
                     <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
 
                 </p:panelGrid>

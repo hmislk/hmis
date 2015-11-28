@@ -64,6 +64,12 @@
                         </h:outputText>
 
                     </p:column>  
+                    <p:column headerText="Code"   > 
+
+                        <h:outputText id="code" value="#{bi.item.code}" >                                   
+                        </h:outputText>
+
+                    </p:column> 
 
                     <p:column headerText="Ordered Qty" >  
                         <h:outputLabel value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>

@@ -5,7 +5,6 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.entity.Department;
 import com.divudi.entity.Staff;
 import java.util.Date;
 import javax.persistence.Entity;

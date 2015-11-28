@@ -41,7 +41,7 @@
                             <h:panelGrid columns="1">                            
                                 <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
                                     <f:selectItem itemLabel="Select Discount Scheme"/>
-                                    <f:selectItems value="#{paymentSchemeController.items}" 
+                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                     <p:ajax process="@this pay" 
                                             update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
@@ -101,7 +101,8 @@
                                                         <p:selectOneMenu  id="cmbTitle"  
                                                                           value="#{billController.newPatient.person.title}"  >
                                                             <f:selectItem itemLabel="Select Title" />
-                                                            <f:selectItems value="#{billController.title}"/>
+                                                            <f:selectItems value="#{billController.title}" var="i" 
+                                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
                                                         </p:selectOneMenu>
 
                                                     </td>
@@ -266,6 +267,7 @@
                                         <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
                                             <f:ajax execute="acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                         </h:commandButton>
+                                        <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
                                         <p:defaultCommand target="btnAddIx" />
                                         <p:panel header="Session"  >
                                             <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
@@ -564,6 +566,7 @@
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
                         
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false 
+                                                  and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
                                                   and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" 
@@ -629,6 +632,26 @@
                             </h:panelGroup>
                         </h:panelGroup>
                         
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">
+
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpBillPreviewRmh" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                             return false;"/>
+                            </div>
+                            <h:panelGroup id="gpBillPreviewRmh">
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:opdBillPrintRmh bill="#{b}" dup="false"/>                        
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                     </h:panelGroup>
 

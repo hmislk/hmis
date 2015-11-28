@@ -8,7 +8,7 @@
       xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"     
       xmlns:in="http://java.sun.com/jsf/composite/inward" >
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -17,19 +17,20 @@
                     <p:panel rendered="#{inwardSearch.patient.person ne null}">
                         <p:panel header="Reprint" styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}">
                             <h:panelGrid columns="1">
-                                <p:panel>
-                                    <p:commandButton ajax="false" value="Cancel" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
-                                    <p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />
-                                    <p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />
-                                </p:panel>
 
-                                <h:panelGrid columns="2">
-                                    <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
+
+                                <h:panelGrid columns="3">
+
+                                    <p:panel header="Claimable Bill Reprints" 
+                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Patient Copy" ajax="false"   >
+                                            <p:commandButton value="Print Patient Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
-                                            </p:commandButton>                               
-                                            <p:commandButton value="Duplicate Copy" ajax="false"  >
+                                            </p:commandButton>   
+                                            <p:commandButton value="Print Patient Detailed Copy" ajax="false"   >
+                                                <p:printer target="claimablePatientDetailCopy" ></p:printer>
+                                            </p:commandButton>   
+                                            <p:commandButton value="Print Duplicate Copy" ajax="false"  >
                                                 <p:printer target="claimableDuplicate" ></p:printer>
                                             </p:commandButton>
 
@@ -40,7 +41,7 @@
 
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
+                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Patient Copy without Professional" ajax="false"   >
                                                 <p:printer target="notClaimablePatientCopy" ></p:printer>
@@ -53,14 +54,14 @@
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="CLAIMABLE" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
+                                    <p:panel header="Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
                                         <h:panelGrid columns="1">
                                             <p:commandButton ajax="false" value="Green Sheet Print"  >
                                                 <p:printer target="finalBillGreenSheet" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="Not Claimable" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
+                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
                                                 <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
@@ -69,6 +70,11 @@
                                                 <p:printer target="professional" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="Actions">
+                                        <p:commandButton ajax="false" value="To Cancel Bill" action="inward_cancel_bill_final" disabled="#{inwardSearch.bill.cancelled}"  />
+                                        <!--<p:commandButton rendered="false" ajax="false" value="Update" action="#{inwardSearch.update()}"  />-->
+                                        <!--<p:commandButton rendered="false" ajax="false" value="Replace" action="#{inwardSearch.replace()}"  />-->
                                     </p:panel>
                                 </h:panelGrid>
 
@@ -106,7 +112,7 @@
                                         </p:inputMask>
                                         <h:outputLabel value="Patient ​Address" ></h:outputLabel>
                                         <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.address}" ></h:inputText>
-                                        
+
                                         <p:commandButton value="Update" action="#{inwardSearch.updatePatiantDetails()}" ajax="false"></p:commandButton>
                                     </p:panelGrid>
                                 </p:panel>
@@ -138,7 +144,7 @@
                                         <p:inputText value="#{inwardSearch.bill.patientEncounter.creditLimit}"
                                                      rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}" />
                                         <p:commandButton ajax="false" value="SET CREDIT LIMIT"
-                                                        action="#{inwardSearch.edit()}"
+                                                         action="#{inwardSearch.edit()}"
                                                          rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}"    />
                                     </p:panelGrid>
                                 </p:panel>
@@ -155,6 +161,8 @@
                         <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
                             <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
+
+
 
                         <h:panelGroup id="letter">
                             <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
@@ -196,7 +204,168 @@
                         <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
                             <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
                         </h:panelGroup>
+
+
+                        <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
+
+
+
                     </p:panel>
+
+
+                    <h:panelGroup id="claimablePatientDetailCopy" > 
+
+                        <div style="width: 100%; text-align: center; margin: auto; padding: 10px; " >
+                            <div styleClass="noBorderWhenPrint" style="width: 21.0cm; " >
+                                <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
+                            </div>
+                            <div>
+                                <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
+                                             sortBy="#{iss.bill.deptId}"
+                                             rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
+                                                              and                                                                        
+                                                              ((iss.bill.billClass eq 'class com.divudi.entity.PreBill')
+                                                              or 
+                                                              (iss.bill.billedBill ne null 
+                                                              and iss.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                                    <p:column headerText="Bill No">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill No"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{iss.bill.deptId}"/>                                    
+                                    </p:column>                  
+                                    <p:column headerText="Item Name">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Item Name"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.item.name}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Qty">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Qty"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.qty}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>                               
+                                    <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
+                                        <h:outputLabel  value="#{iss.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
+                                        <h:outputLabel  value="#{iss.marginValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Gross Value" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Gross Value"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Discount Value">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Discount Value"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Net Value">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Net Value"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;" headerText="Adjusted Value">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Adjusted Value"/>
+                                        </f:facet>
+                                        <h:outputLabel  value="#{iss.adjustedValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Created At" exportable="false">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Created At"/> 
+                                        </f:facet>
+                                        <h:outputLabel value="#{iss.bill.createdAt}">
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>                                                   
+                                        <br/>
+                                        <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                            <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                           value="#{iss.bill.cancelledBill.createdAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Billed By" exportable="false" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Billed By"/> 
+                                        </f:facet>
+                                        <h:outputLabel value="#{iss.bill.creater.webUserPerson.name}"/>     
+                                        <br/>
+                                        <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                            <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                           value="#{iss.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>   
+                                    <p:column headerText="Edited" exportable="false">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Edited"/> 
+                                        </f:facet>
+                                        <h:panelGroup  rendered="#{iss.bill.editor ne null}" >
+                                            <h:outputLabel style="color: #008000;" value="Edited By " />
+                                            <h:outputLabel style="color: #008000;" 
+                                                           value="#{iss.bill.editor.webUserPerson.name}" >
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup  rendered="#{iss.bill.editedAt ne null}" >
+                                            <h:outputLabel style="color: #008000;" value="Edited at " />
+                                            <h:outputLabel style="color: #008000;" 
+                                                           value="#{iss.bill.editedAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column headerText="Checked" exportable="false">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Checked"/> 
+                                        </f:facet>
+                                        <h:panelGroup  rendered="#{iss.bill.checkedBy ne null}" >
+
+                                            <h:outputLabel style="color: #008000;" 
+                                                           value="#{iss.bill.checkedBy.webUserPerson.name}" >
+                                            </h:outputLabel>
+                                        </h:panelGroup><br/>
+                                        <h:panelGroup  rendered="#{iss.bill.checkeAt ne null}" >
+
+                                            <h:outputLabel style="color: #008000;" 
+                                                           value="#{iss.bill.checkeAt}" >
+                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            </h:outputLabel>
+                                        </h:panelGroup>                        
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+                    </h:panelGroup>
+
                 </h:form>
 
             </ui:define>
@@ -205,5 +374,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

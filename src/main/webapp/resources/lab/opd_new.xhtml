@@ -43,6 +43,7 @@
                 </f:facet>
                 <p:outputLabel value="#{sr.categoryName}" rendered="#{sr.catRow}" ></p:outputLabel>
             </p:column>
+            
             <p:column headerText="Item/Service"
                       sortBy="#{sr.itemName}" 
                       filterBy="#{sr.itemName}"
@@ -52,6 +53,7 @@
                 </f:facet>
                 <h:outputLabel value="#{sr.itemName}"></h:outputLabel>
             </p:column>
+            
             <p:column headerText="Count" >
                 <p:outputLabel value=" #{sr.catCount}" rendered="#{!sr.catRow and !sr.totalRow}" ></p:outputLabel>
                 <f:facet name="footer">

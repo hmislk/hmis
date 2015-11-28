@@ -7,12 +7,12 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
-import com.divudi.data.table.String1Value5;
-import com.divudi.data.table.String1Value1;
+import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
+import com.divudi.data.table.String1Value1;
+import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -25,17 +25,13 @@ import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.bean.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -60,6 +56,8 @@ public class CashierReportController implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
+    String fromReciptNo;
+    String toReciptNo;
     private List<WebUser> cashiers;
     private List<CashierSummeryData> cashierDatas;
     private double finalCashTot;
@@ -70,6 +68,8 @@ public class CashierReportController implements Serializable {
     private List<String1Value1> dataTableDatas;
     @Inject
     private EnumController enumController;
+    @Inject
+    CommonReport commonReport;
 
     /**
      * Creates a new instance of CashierReportController
@@ -84,6 +84,12 @@ public class CashierReportController implements Serializable {
         cashiers = null;
         currentCashier = null;
         dataTableDatas = null;
+    }
+    
+    public void recreteModal2() {
+        fromReciptNo = null;
+        toReciptNo = null;
+        recreteModal();
     }
 
     public CashierReportController() {
@@ -121,6 +127,16 @@ public class CashierReportController implements Serializable {
 
     }
 
+    private BillsTotals createRowAgent(BillType billType, String suffix, Bill bill, WebUser webUser) {
+        BillsTotals newB = new BillsTotals();
+        newB.setName(billType.getLabel() + " " + suffix);
+        newB.setCash(calTotalValueOwn(webUser, bill, PaymentMethod.Cash, billType));
+        finalCashTot += newB.getCash();
+
+        return newB;
+
+    }
+
     private BillsTotals createRowWithoutPro(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
@@ -128,7 +144,6 @@ public class CashierReportController implements Serializable {
         System.out.println("newB.getCard() = " + newB.getCard());
         finalCardTot += newB.getCard();
         newB.setCash(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cash, billType));
-        System.out.println("newB.getCash = " + newB.getCash());
         finalCashTot += newB.getCash();
         newB.setCheque(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cheque, billType));
         finalChequeTot += newB.getCheque();
@@ -196,7 +211,23 @@ public class CashierReportController implements Serializable {
                 uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
 
             }
+            //channel agent bill cash cancel refund
+            BillsTotals newC = createRowAgent(BillType.ChannelAgent, "Cancelled", new CancelledBill(), webUser);
 
+            if (newC.getCard() != 0 || newC.getCash() != 0 || newC.getCheque() != 0 || newC.getCredit() != 0 || newC.getSlip() != 0) {
+                billls.add(newC);
+            }
+
+            BillsTotals newR = createRow(BillType.ChannelAgent, "Refunded", new RefundBill(), webUser);
+
+            if (newR.getCard() != 0 || newR.getCash() != 0 || newR.getCheque() != 0 || newR.getCredit() != 0 || newR.getSlip() != 0) {
+                billls.add(newR);
+            }
+
+            uCash += (newC.getCash() + newR.getCash());
+
+            //
+            
             //Cash In
             BillsTotals newIn = createRowInOut(BillType.CashIn, "Billed", new BilledBill(), webUser);
 
@@ -229,7 +260,6 @@ public class CashierReportController implements Serializable {
             BillsTotals newOut = createRowInOut(BillType.CashOut, "Billed", new BilledBill(), webUser);
 
             if (newOut.getCard() != 0 || newOut.getCash() != 0 || newOut.getCheque() != 0 || newOut.getCredit() != 0 || newOut.getSlip() != 0) {
-                System.err.println("New Out ");
                 billls.add(newOut);
             }
 
@@ -282,7 +312,6 @@ public class CashierReportController implements Serializable {
             newSum.setSlip(uSlip);
 
             if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
-                System.err.println("SUNN ");
                 billls.add(newSum);
             }
 
@@ -291,6 +320,32 @@ public class CashierReportController implements Serializable {
 
         }
 
+    }
+    
+    public void calCashierDataUsingReciptNo() {
+        fromDate = null;
+        toDate = null;
+        if (fromReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        fromDate = commonReport.fetchDate(fromReciptNo);
+        System.out.println("fromDate = " + fromDate);
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
+            return;
+        }
+        if (toReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        toDate = commonReport.fetchDate(toReciptNo);
+        System.out.println("toDate = " + toDate);
+        if (toDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
+            return;
+        }
+        calCashierData();
     }
 
     public void calCashierDataTotalOnly() {
@@ -375,6 +430,32 @@ public class CashierReportController implements Serializable {
 
         }
 
+    }
+    
+    public void calCashierDataTotalOnlyUsingReciptNo() {
+        fromDate = null;
+        toDate = null;
+        if (fromReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        fromDate = commonReport.fetchDate(fromReciptNo);
+        System.out.println("fromDate = " + fromDate);
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
+            return;
+        }
+        if (toReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        toDate = commonReport.fetchDate(toReciptNo);
+        System.out.println("toDate = " + toDate);
+        if (toDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
+            return;
+        }
+        calCashierDataTotalOnly();
     }
 
     public void calCashierDataTotalOnlyWithoutPro() {
@@ -505,7 +586,6 @@ public class CashierReportController implements Serializable {
 
         double dbl = getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("Cash " + dbl);
         return dbl;
 
     }
@@ -818,7 +898,7 @@ public class CashierReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunction().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunction().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -831,7 +911,7 @@ public class CashierReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunction().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunction().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1167,5 +1247,21 @@ public class CashierReportController implements Serializable {
 
     public void setEnumController(EnumController enumController) {
         this.enumController = enumController;
+    }
+
+    public String getFromReciptNo() {
+        return fromReciptNo;
+    }
+
+    public void setFromReciptNo(String fromReciptNo) {
+        this.fromReciptNo = fromReciptNo;
+    }
+
+    public String getToReciptNo() {
+        return toReciptNo;
+    }
+
+    public void setToReciptNo(String toReciptNo) {
+        this.toReciptNo = toReciptNo;
     }
 }

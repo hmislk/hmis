@@ -8,14 +8,14 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.inward.PatientEncounterComponentType;
 import com.divudi.data.inward.SurgeryBillType;
-import com.divudi.bean.common.BillBeanController;
-import com.divudi.data.BillClassType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -24,7 +24,6 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Item;
-import com.divudi.entity.PatientItem;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.EncounterComponent;
@@ -43,12 +42,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -125,7 +123,6 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
         if (getProEncounterComponent() != null && getProEncounterComponent().getBillFee() != null && getProEncounterComponent().getBillFee().getSpeciality() != null) {
             sql += " and c.speciality=:sp";
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
-            System.err.println("SSS " + getProEncounterComponent().getBillFee().getSpeciality());
         }
         sql += " and (upper(c.person.name) like :q "
                 + " or upper(c.code) like :q )"
@@ -658,11 +655,11 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 //        getCurrent().setNetTotal(bi.getFeeValue());
 //        ////////////////
 
-            getCurrent().setBillDate(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-            getCurrent().setBillTime(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setBillDate(new Date());
+            getCurrent().setBillTime(new Date());
             getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
 
-            getCurrent().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
             getFacade().create(getCurrent());
@@ -753,7 +750,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
             getBillItem().setBill(bill);
 
-            getBillItem().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getBillItem().setCreatedAt(new Date());
             getBillItem().setCreater(getSessionController().getLoggedUser());
 
             getBillItemFacade().create(getBillItem());
@@ -836,19 +833,6 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
     private BillFacade getFacade() {
         return ejbFacade;
-    }
-
-    public List<Bill> getItems() {
-        //items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM Bill i where i.retired=false and i.billType=:btp ";
-        HashMap hm = new HashMap();
-        hm.put("btp", BillType.OpdBill);
-        items = getEjbFacade().findBySQL(sql);
-        if (items == null) {
-            items = new ArrayList<Bill>();
-        }
-        return items;
-
     }
 
     public void removeBillItem() {

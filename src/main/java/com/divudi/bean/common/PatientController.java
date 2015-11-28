@@ -7,12 +7,8 @@ import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.ejb.clinical.ClinicalSearch;
-import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.ByteArrayInputStream;
@@ -25,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -180,7 +175,7 @@ public class PatientController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfull");
@@ -233,10 +228,13 @@ public class PatientController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
                 + " and ( upper(p.person.name) like  :q "
-                + " or upper(p.code) like  :q )"
+                + " or upper(p.code) like :q "
+                + " or upper(p.person.nic) like :q "
+                + " or upper(p.person.mobile) like :q "
+                + " or upper(p.person.phone) like :q "
+                + " or upper(p.person.address) like :q )"
                 + "order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        System.out.println(sql);
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
         return patientList;
@@ -269,28 +267,42 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
+        if(getCurrent().getPerson().getName().trim().equals("")){
+            UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
+            System.out.println("1.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
+            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
         } else {
             getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
+            System.out.println("2.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
+            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
         }
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            System.out.println("3.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
+            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
             getCurrent().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            System.out.println("4.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
+            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
         getPersonFacade().flush();
         getFacade().flush();
+        System.out.println("5.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
+        System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
     }
 
     public PatientFacade getEjbFacade() {

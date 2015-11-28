@@ -7,30 +7,28 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.memberShip;
-
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import java.util.TimeZone;
-import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.memberShip.AllowedPaymentMethod;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
+import com.divudi.facade.PaymentSchemeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -75,8 +73,6 @@ public class PaymentSchemeController implements Serializable {
     public void setPaymentSchemeForAllowPayment(PaymentScheme paymentSchemeForAllowPayment) {
         this.paymentSchemeForAllowPayment = paymentSchemeForAllowPayment;
     }
-    
-    
 
     public AllowedPaymentMethodFacade getAllowedPaymentMethodFacade() {
         return allowedPaymentMethodFacade;
@@ -102,12 +98,11 @@ public class PaymentSchemeController implements Serializable {
                 UtilityController.addErrorMessage("Please select Cheque Number,Bank and Cheque Date");
                 return true;
             }
-            
+
         }
 
         if (paymentMethod == PaymentMethod.Slip) {
             if (paymentMethodData.getSlip().getInstitution() == null
-                    
                     || paymentMethodData.getSlip().getDate() == null) {
                 UtilityController.addErrorMessage("Please Fill Memo,Bank and Slip Date ");
                 return true;
@@ -186,7 +181,7 @@ public class PaymentSchemeController implements Serializable {
             getFacade().edit(paymentScheme);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            paymentScheme.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setCreatedAt(new Date());
             paymentScheme.setCreater(getSessionController().getLoggedUser());
             getFacade().create(paymentScheme);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -207,7 +202,7 @@ public class PaymentSchemeController implements Serializable {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getCurrentAllowedPaymentMethod().setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrentAllowedPaymentMethod().setCreatedAt(new Date());
             getCurrentAllowedPaymentMethod().setCreater(getSessionController().getLoggedUser());
             getAllowedPaymentMethodFacade().create(getCurrentAllowedPaymentMethod());
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -258,7 +253,7 @@ public class PaymentSchemeController implements Serializable {
 
         if (paymentScheme != null) {
             paymentScheme.setRetired(true);
-            paymentScheme.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            paymentScheme.setRetiredAt(new Date());
             paymentScheme.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(paymentScheme);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -276,8 +271,7 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
-        items = null;
-        if (items == null) {
+        if(items==null){
             createPaymentSchemes();
         }
         return items;
@@ -291,12 +285,61 @@ public class PaymentSchemeController implements Serializable {
                 + " order by i.orderNo, i.name";
         items = getFacade().findBySQL(temSql);
     }
+    
+    public List<PaymentScheme> getPaymentSchemesForChannel(){
+        return createPaymentSchemes(false, false, true);
+    }
+    
+    public List<PaymentScheme> getPaymentSchemesForOPD(){
+        return createPaymentSchemes(true, false, false);
+    }
+    
+    public List<PaymentScheme> getPaymentSchemesForPharmacy(){
+        return createPaymentSchemes(false, true, false);
+    }
+
+    public List<PaymentScheme> createPaymentSchemes(boolean opd, boolean pharmacy, boolean channel) {
+        String temSql;
+        temSql = "SELECT i FROM PaymentScheme i "
+                + " where  i.retired=false ";
+
+        if (pharmacy) {
+            temSql += " and i.validForPharmacy=true ";
+        }
+        if (channel) {
+            temSql += " and i.validForChanneling=true ";
+        }
+        if (opd) {
+            temSql += " and i.validForBilledBills=true ";
+        }
+        
+        temSql += " order by i.orderNo, i.name";
+        
+        return getFacade().findBySQL(temSql);
+    }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {
         List<PaymentScheme> c;
         HashMap hm = new HashMap();
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        c = getFacade().findBySQL(sql, hm);
+
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public List<PaymentScheme> completePaymentSchemeChannel(String qry) {
+        List<PaymentScheme> c;
+        HashMap hm = new HashMap();
+        String sql = "select c from PaymentScheme c "
+                + " where c.retired=false "
+                + " and c.validForChanneling=true "
                 + " and upper(c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");

@@ -8,11 +8,10 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Bill;
 import com.divudi.facade.BillFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 
 /**
  *

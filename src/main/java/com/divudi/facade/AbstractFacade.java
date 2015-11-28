@@ -72,6 +72,7 @@ public abstract class AbstractFacade<T> {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
+        qry.setMaxResults(1);
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
             String pPara = (String) m.getKey();
@@ -111,9 +112,14 @@ public abstract class AbstractFacade<T> {
 
     public void edit(T entity) {
         getEntityManager().merge(entity);
-        //getEntityManager().flush();
     }
 
+    public void editAndCommit(T entity) {
+        getEntityManager().merge(entity);
+        getEntityManager().getTransaction().commit();
+    }
+
+    
     public void remove(T entity) {
         getEntityManager().remove(getEntityManager().merge(entity));
     }
@@ -349,7 +355,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }
@@ -689,6 +694,7 @@ public abstract class AbstractFacade<T> {
 
     public T findFirstBySQL(String temSQL) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
+        qry.setMaxResults(1);
         try {
             return qry.getResultList().get(0);
         } catch (Exception e) {
@@ -701,6 +707,7 @@ public abstract class AbstractFacade<T> {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
+        qry.setMaxResults(1);
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
             Object pVal = m.getValue();
@@ -916,7 +923,6 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
-            System.err.println("Aggregate " + e.getMessage());
             return null;
         }
     }

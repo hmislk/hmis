@@ -4,7 +4,8 @@
  */
 package com.divudi.entity.hr;
 
-import com.divudi.entity.*;
+import com.divudi.entity.Category;
+import com.divudi.entity.Staff;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Entity;

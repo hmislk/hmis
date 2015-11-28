@@ -4,9 +4,7 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.entity.Doctor;
 import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
 import java.util.List;
 
 /**

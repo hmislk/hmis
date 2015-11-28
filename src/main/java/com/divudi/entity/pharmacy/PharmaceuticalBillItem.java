@@ -16,11 +16,10 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import java.math.BigDecimal;
-import javax.persistence.Lob;
 
 /**
  *
@@ -224,6 +223,22 @@ public class PharmaceuticalBillItem implements Serializable {
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
         //  remainingQty=ph.getRemainingQty();
+
+        make= ph.getMake();
+        model=ph.getModel();
+        code=ph.getCode();
+        description=ph.getDescription();
+        barcode=ph.getBarcode();
+        serialNo=ph.getSerialNo();
+        registrationNo=ph.getRegistrationNo();
+        chassisNo=ph.getChassisNo();
+        engineNo=ph.getEngineNo();
+        colour=ph.getColour();
+        warrentyCertificateNumber=ph.getWarrentyCertificateNumber();
+        warrentyDuration=ph.getWarrentyDuration();
+        deprecitionRate=ph.getDeprecitionRate();
+        manufacturer=ph.getManufacturer();
+        otherNotes=ph.getOtherNotes();
 
     }
 

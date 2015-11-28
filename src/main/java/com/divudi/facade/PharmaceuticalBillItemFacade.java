@@ -5,7 +5,6 @@
 package com.divudi.facade;
 
 import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import java.util.HashMap;
 import java.util.List;

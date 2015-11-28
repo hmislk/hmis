@@ -46,11 +46,11 @@
                             
                         </p:autoComplete>
 
-                        <h:outputText value="Service Category/Sub Category" ></h:outputText>
+<!--                        <h:outputText value="Service Category/Sub Category" ></h:outputText>
                         <p:autoComplete converter="categoryConverter" completeMethod="#{categoryController.completeServiceCategory}" var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" forceSelection="true" value="#{serviceSummery.category}" >                                    
                             <p:column>#{pta.name}</p:column>
                             <p:column>#{pta.parentCategory}</p:column>                                        
-                        </p:autoComplete>
+                        </p:autoComplete>-->
 
                     </h:panelGrid>
                         <h:panelGrid columns="5">
@@ -131,7 +131,7 @@
                         <p:outputLabel value="Date"/>
                     </f:facet>
                     <h:outputLabel value="#{d.billItem.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm a"/>
                     </h:outputLabel>
                 </p:column>
 

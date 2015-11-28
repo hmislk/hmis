@@ -82,24 +82,27 @@
                         <hr:completeDesignation value="#{staffBasicController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
                         <hr:completeRoster value="#{staffBasicController.reportKeyWord.roster}"/> 
-                       
-                        
-                        <h:panelGrid columns="3">  <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb7" fileName="hr_staff_basic_individual"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="staffbasic" ></p:printer>
-                        </p:commandButton></h:panelGrid>
+
+
+                        <h:panelGrid columns="3"> 
+                            <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tb7" fileName="hr_staff_basic_individual"  />
+                            </p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="staffbasic" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
                     </h:panelGrid>
-                    <p:panel id="staffbasic">
+                    <p:panel id="staffbasic" styleClass="noBorder summeryBorder" >
                         <p:dataTable id="tb7"  value="#{staffBasicController.items}" 
                                      filteredValue="#{staffBasicController.filteredStaffPaysheet}"
-                                     var="i" scrollHeight="350" 
-                                     scrollable="true"  selection="#{staffBasicController.selectedStaffComponent}" 
+                                     var="i"  selection="#{staffBasicController.selectedStaffComponent}" 
                                      rowKey="#{i.id}" rowIndexVar="a" >
-
-                            <p:column  selectionMode="multiple">                            
+                            <f:facet name="header">
+                                <h:outputLabel value="Employee Basic"/>
+                            </f:facet>
+                            <p:column  selectionMode="multiple" styleClass="noPrintButton">                            
                             </p:column>
                             <p:column headerText="No">
                                 <f:facet name="header">
@@ -109,17 +112,17 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Institution"  >
+                            <p:column headerText="Institution" sortBy="#{i.staff.workingDepartment.institution.name}"  >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Institution"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.workingDepartment.institution.name}" ></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Department">
+                            <p:column headerText="Department" sortBy="#{i.staff.workingDepartment.name}" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Department"  />
                                 </f:facet>
-                               
+
                                 <h:outputLabel value="#{i.staff.workingDepartment.name}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Roster"  >
@@ -128,7 +131,7 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.roster.name}" ></h:outputLabel>
                             </p:column>
-                            <p:column headerText="EMP Code"  >
+                            <p:column headerText="EMP Code" sortBy="#{i.staff.codeInterger}" >
                                 <f:facet name="header">
                                     <h:outputLabel value="EMP Code"  />
                                 </f:facet>
@@ -153,7 +156,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                        <p:calendar  navigator="true" value="#{i.toDate}"  pattern="dd MMMM yyyy" />
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -163,7 +166,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Grade"  />
                                 </f:facet>
-                                <h:outputLabel value="#{i.staff.grade}"/>                           
+                                <h:outputLabel value="#{i.staff.grade.name}"/>                           
                             </p:column>
 
                             <p:column headerText="Category" >
@@ -179,7 +182,14 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.designation.name}"/>
                             </p:column>
-
+                            <p:column headerText="Resign Date" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Resign Date"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.dateLeft}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
                             <p:column headerText="Staff" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Staff"  />
@@ -205,13 +215,13 @@
 
                             </p:column>
 
-                            <p:column style="width:6%" exportable="false">  
+                            <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
                                 <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  
 
-                            <p:column style="width:6%" exportable="false">  
+                            <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
                                 <p:commandButton ajax="false" value="View" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>

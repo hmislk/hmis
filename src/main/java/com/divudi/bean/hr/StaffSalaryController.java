@@ -4,12 +4,12 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
@@ -31,23 +31,22 @@ import com.divudi.facade.StaffPaysheetComponentFacade;
 import com.divudi.facade.StaffSalaryComponantFacade;
 import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.StaffShiftFacade;
-import javax.inject.Named;
-import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 
@@ -325,9 +324,9 @@ public class StaffSalaryController implements Serializable {
         if (date == null) {
             return false;
         }
-
-        if ((getSalaryCycle().getSalaryFromDate().getTime() < date.getTime()
-                && getSalaryCycle().getSalaryToDate().getTime() > date.getTime())) {
+//#311
+        if ((getSalaryCycle().getDayOffPhFromDate().getTime() < date.getTime()
+                && getSalaryCycle().getDayOffPhToDate().getTime() > date.getTime())) {
 
             return true;
         }
@@ -349,8 +348,10 @@ public class StaffSalaryController implements Serializable {
                 //Check Employee Date Retired within Salary Cycle
                 || checkDateRange(getCurrent().getStaff().getDateRetired())) {
 
-            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-
+//            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
+            //#311
+            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
+            System.out.println("workedDays = " + workedDays);
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
                 return value;
             } else {
@@ -400,7 +401,8 @@ public class StaffSalaryController implements Serializable {
         ss.setCreatedAt(new Date());
         ss.setSalaryCycle(salaryCycle);
         ss.setCreater(getSessionController().getLoggedUser());
-        ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()));
+//        ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate()));
+        ss.setStaffPaysheetComponent(getHumanResourceBean().getBasic(getCurrent().getStaff(), getSalaryCycle().getDayOffPhToDate()));
         if (ss.getStaffPaysheetComponent() != null) {
 
             double basicValue = calValue(ss.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
@@ -482,7 +484,6 @@ public class StaffSalaryController implements Serializable {
         Double overTimeSec = 0.0;
 
         Date fromDate = getSalaryCycle().getWorkedFromDate();
-        System.out.println("fromDate = " + fromDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fromDate);
         frmCal.setTime(fromDate);
@@ -508,7 +509,6 @@ public class StaffSalaryController implements Serializable {
 
 //            //System.out.println("i = " + i);
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            System.out.println("*** worked Within TimeFrameVarified = " + workedWithinTimeFrameVarified / (60 * 60));
 
             System.err.println("FROM " + i + frmCal.getTime());
             System.err.println("TO " + i + toCal.getTime());
@@ -544,7 +544,6 @@ public class StaffSalaryController implements Serializable {
         Double overTimeSec = 0.0;
 
         Date fromDate = getSalaryCycle().getWorkedFromDate();
-        System.out.println("fromDate = " + fromDate);
         Calendar frmCal = Calendar.getInstance();
         frmCal.setTime(fromDate);
         frmCal.setTime(fromDate);
@@ -571,7 +570,9 @@ public class StaffSalaryController implements Serializable {
 
 //            //System.out.println("i = " + i);
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTimeByDate(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
-            System.out.println("*** worked Within TimeFrameVarified = " + workedWithinTimeFrameVarified / (60 * 60));
+            System.out.println("*** worked Within TimeFrameVarified(S) = " + workedWithinTimeFrameVarified);
+            System.out.println("*** worked Within TimeFrameVarified(H) = " + workedWithinTimeFrameVarified / (60 * 60));
+            System.out.println("*** worked Within TimeFrameVarified(M) = " + workedWithinTimeFrameVarified / 60);
 
             System.err.println("FROM " + i + frmCal.getTime());
             System.err.println("TO " + i + toCal.getTime());
@@ -580,7 +581,7 @@ public class StaffSalaryController implements Serializable {
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-//            //System.out.println("otSec = " + otSec);
+            System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
             System.err.println("OT Time : " + otSec / (60 * 60));
 
@@ -589,7 +590,7 @@ public class StaffSalaryController implements Serializable {
             toCal.add(Calendar.DATE, 7);
 
         }
-
+        System.out.println("overTimeSec = " + overTimeSec);
         System.err.println("OT Min " + (overTimeSec.longValue() / 60L));
         return (overTimeSec.longValue() / 60L);
     }
@@ -620,7 +621,6 @@ public class StaffSalaryController implements Serializable {
     public void setOT() {
 
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.OT);
-        System.out.println("ss = " + ss);
         if (ss.getStaffPaysheetComponent() != null) {
 
             Long overTimeMinute = calculateOverTimeMinuteByDate();//edited by doctor
@@ -629,10 +629,10 @@ public class StaffSalaryController implements Serializable {
             double overTimePerMinute = getOverTimeValuePerMinute();
             System.out.println("overTimePerMinute = " + overTimePerMinute);
 
-            ss.setComponantValue(overTimeMinute * overTimePerMinute * finalVariables.getOverTimeMultiply());
+            ss.setComponantValue(overTimeMinute * roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()));
+            System.out.println("roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()) = " + roundOff(overTimePerMinute * finalVariables.getOverTimeMultiply()));
 
             getCurrent().setOverTimeMinute(overTimeMinute);
-            System.out.println("overTimeMinute = " + overTimeMinute);
             getCurrent().setBasicRatePerMinute(overTimePerMinute);
 
             getCurrent().setOverTimeRatePerMinute(overTimePerMinute);
@@ -700,7 +700,11 @@ public class StaffSalaryController implements Serializable {
 //        if (current != null) {
 //            ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType, getCurrent().getOverTimeRatePerMinute()));
 //        } else {
-        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        //below commented value is corect but calculate with seconds
+//        ss.setComponantValue(humanResourceBean.calculateExtraWorkTimeValue(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        //new value calculate using miniuts
+        ss.setComponantValue(roundOff(getCurrent().getOverTimeRatePerMinute() * finalVariables.getOverTimeMultiply()) * humanResourceBean.calculateExtraWorkMinute(getSalaryCycle().getWorkedFromDate(), getSalaryCycle().getWorkedToDate(), getCurrent().getStaff(), dayType));
+        System.out.println("roundOff(getCurrent().getOverTimeRatePerMinute()*finalVariables.getOverTimeMultiply()) = " + roundOff(getCurrent().getOverTimeRatePerMinute() * finalVariables.getOverTimeMultiply()));
 //        }
         getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
@@ -722,7 +726,11 @@ public class StaffSalaryController implements Serializable {
         Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
-            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
+//            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(),
+//                    getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
+            ////Issue #311
+            count = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getDayOffPhFromDate(),
+                    getSalaryCycle().getDayOffPhToDate(), getCurrent().getStaff(), dayType);
 
             double salaryValue = 0;
 
@@ -738,13 +746,17 @@ public class StaffSalaryController implements Serializable {
                 }
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
-                    salaryValue += calValue(staffSalaryComponant.getComponantValue());
+//                    salaryValue += calValue(staffSalaryComponant.getComponantValue());mr.lahiru(Accountant) says work days not consider for PH
+                    salaryValue += staffSalaryComponant.getComponantValue();
                 }
             }
 
             if (salaryValue != 0) {
                 double salaryPerDay = roundOff(salaryValue / finalVariables.getWorkingDaysPerMonth());
-                double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+//                double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                ////Issue #311
+                double value = getHumanResourceBean().calculateHolidayWork(getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                System.out.println("value = " + value);
                 ss.setComponantValue(value);
             }
 
@@ -766,7 +778,9 @@ public class StaffSalaryController implements Serializable {
         Double count = 0.0;
         StaffSalaryComponant ss = createStaffSalaryComponant(paysheetComponentType);
         if (ss.getStaffPaysheetComponent() != null) {
-            count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
+//            count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType);
+            ////Issue #311
+            count = getHumanResourceBean().calculateOffDays(getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate(), getCurrent().getStaff(), dayType);
             double salaryValue = 0;
             for (StaffSalaryComponant staffSalaryComponant : getCurrent().getStaffSalaryComponants()) {
                 if (staffSalaryComponant == null
@@ -776,13 +790,17 @@ public class StaffSalaryController implements Serializable {
                 }
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
-                    salaryValue += calValue(staffSalaryComponant.getComponantValue());
+//                    salaryValue += calValue(staffSalaryComponant.getComponantValue());mr.lahiru(Accountant) says work days not consider for DO
+                    salaryValue += staffSalaryComponant.getComponantValue();
                 }
             }
 
             if (salaryValue != 0) {
                 double salaryPerDay = roundOff(salaryValue / finalVariables.getWorkingDaysPerMonth());
-                double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+//                double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                ////Issue #311
+                double value = getHumanResourceBean().calculateOffDays(getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate(), getCurrent().getStaff(), dayType, salaryPerDay);
+                System.out.println("value = " + value);
                 //Need Calculation Sum
                 ss.setComponantValue(value);
             }
@@ -803,7 +821,9 @@ public class StaffSalaryController implements Serializable {
         double salaryValue = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Basic);
         if (ss.getStaffPaysheetComponent() != null) {
-            noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+            //Issue #311
+            noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+//            noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             salaryValue = 0;
 
             if (getCurrent().getStaffSalaryComponants() == null) {
@@ -869,7 +889,9 @@ public class StaffSalaryController implements Serializable {
         double noPayCount = 0;
         StaffSalaryComponant ss = createStaffSalaryComponant(PaysheetComponentType.No_Pay_Deduction_Allowance);
         if (ss.getStaffPaysheetComponent() != null) {
-            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+            //Issue #311
+            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+//            noPayCount = getHumanResourceBean().fetchStaffLeaveAddedLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             allownaceValue = calAllowanceValueForNoPay(getCurrent().getStaffSalaryComponants());
 
             //Need Calculation Sum
@@ -915,7 +937,6 @@ public class StaffSalaryController implements Serializable {
     }
 
     public void addSalaryComponent() {
-        System.out.println("Add Salary Component");
 
         if (getCurrent().getStaff() != null) {
             System.out.println("getCurrent().getStaff() = " + getCurrent().getStaff().getPerson().getName());
@@ -935,7 +956,6 @@ public class StaffSalaryController implements Serializable {
                     ss.setCreater(getSessionController().getLoggedUser());
                     ss.setStaffPaysheetComponent(spc);
                     ss.setComponantValue(calValue(spc.getStaffPaySheetComponentValue()));
-                    System.out.println("getComponantValue() = " + ss.getComponantValue());
                     getHumanResourceBean().setEpf(ss, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
                     getHumanResourceBean().setEtf(ss, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
                     getCurrent().getStaffSalaryComponants().add(ss);
@@ -946,12 +966,11 @@ public class StaffSalaryController implements Serializable {
 
             if (listSub != null) {
                 for (StaffPaysheetComponent spc : listSub) {
-//                    System.err.println("Loop 1 " + spc.getPaysheetComponent().getName());
+                    System.err.println("Loop 1 " + spc.getPaysheetComponent().getName());
                     if ((spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanInstallemant
                             && spc.isCompleted())
-                            || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanNetSalary
-                            || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Salary_Advance_Deduction) {
-//                        System.err.println("Loop 2 " + spc.getPaysheetComponent().getName());
+                            || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanNetSalary){
+                            //|| spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Salary_Advance_Deduction) { for adjust salary advance payment
                         continue;
                     }
 
@@ -959,7 +978,6 @@ public class StaffSalaryController implements Serializable {
                     getCurrent().calcualteEpfAndEtf();
 
                     double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
-//                    System.err.println(" Salary Value Diduction " + salaryValueForDiduction);
 //                    System.err.println(" Component Value " + spc.getStaffPaySheetComponentValue());
                     if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) < 0) {
                         continue;
@@ -984,24 +1002,23 @@ public class StaffSalaryController implements Serializable {
             //Set Extra Duty Value
             double extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Normal);
             System.out.println("extraTimeMinute(DayType.Normal) = " + extraTimeMinute);
-            
-            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);            
-            System.out.println("extraTimeMinute(DayType.Normal+DayType.Extra) = " + extraTimeMinute);            
+
+            extraTimeMinute += setExtraDuty(PaysheetComponentType.ExtraDutyNormal, DayType.Extra);
+            System.out.println("extraTimeMinute(DayType.Normal+DayType.Extra) = " + extraTimeMinute);
             getCurrent().setExtraDutyNormalMinute(extraTimeMinute);
-            
-            
-            extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);            
+
+            extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyMerchantile, DayType.MurchantileHoliday);
             System.out.println("extraTimeMinute(DayType.MurchantileHoliday) = " + extraTimeMinute);
             getCurrent().setExtraDutyMerchantileMinute(extraTimeMinute);
-            
+
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyPoya, DayType.Poya);
-            System.out.println("extraTimeMinute(DayType.Poya) = " + extraTimeMinute);            
+            System.out.println("extraTimeMinute(DayType.Poya) = " + extraTimeMinute);
             getCurrent().setExtraDutyPoyaMinute(extraTimeMinute);
-            
+
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutyDayOff, DayType.DayOff);
             System.out.println("extraTimeMinute(DayType.DayOff) = " + extraTimeMinute);
             getCurrent().setExtraDutyDayOffMinute(extraTimeMinute);
-            
+
             extraTimeMinute = setExtraDuty(PaysheetComponentType.ExtraDutySleepingDay, DayType.SleepingDay);
             System.out.println("extraTimeMinute(DayType.SleepingDay) = " + extraTimeMinute);
             getCurrent().setExtraDutySleepingDayMinute(extraTimeMinute);
@@ -1010,24 +1027,24 @@ public class StaffSalaryController implements Serializable {
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             System.out.println("extraTimeMinute(DayType.MurchantileHoliday) = " + count);
             getCurrent().setMerchantileCount(count);
-            
+
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
             System.out.println("count(DayType.Poya) = " + count);
             getCurrent().setPoyaCount(count);
-            
+
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
             System.out.println("count(DayType.DayOff) = " + count);
             getCurrent().setDayOffCount(count);
-            
+
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
             System.out.println("count(DayType.SleepingDay) = " + count);
             getCurrent().setSleepingDayCount(count);
 
-            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
-            System.out.println("noPayCount(LeaveType.No_Pay) = " + noPayCount);
+//            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+            //Issue #311
+            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
             double basicValue = setNoPay_Basic(noPayCount);
-            
-            
+
             setNoPay_Allowance();
             getCurrent().setNoPayCount(noPayCount);
             setAdjustments();
@@ -1035,7 +1052,9 @@ public class StaffSalaryController implements Serializable {
             //Record Late No Pay Leave 
             //Not consider in any calcualtion is alredy with general NO Pay 
             //only for reporting purpose
-            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+//            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+            //Issue #311
+            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
             getCurrent().setLateNoPayCount(noPayCountLate);
             getCurrent().setLateNoPayBasicValue(0 - roundOff(basicValue / finalVariables.getWorkingDaysPerMonth()) * noPayCountLate);
 
@@ -1065,7 +1084,6 @@ public class StaffSalaryController implements Serializable {
 
         int i = 0;
         for (StaffSalary s : items) {
-            System.err.println("Del " + s.getStaff().getCodeInterger() + " " + (++i));
             deleteSalaryComponent(s);
         }
     }
@@ -1118,7 +1136,6 @@ public class StaffSalaryController implements Serializable {
         System.out.println("shiftCount.intValue() = " + shiftCount.intValue());
         System.out.println("fromTime = " + fromTime);
         System.out.println("toTime = " + toTime);
-        System.out.println("stfCurrent.getLateInVarified() = " + stfCurrent.getLateInVarified());
 
         if (!(stfCurrent.getLateInVarified() >= fromTime
                 && stfCurrent.getLateInVarified() <= toTime)) {
@@ -1152,7 +1169,6 @@ public class StaffSalaryController implements Serializable {
             for (int i = 0; i < shiftCount; i++) {
 
                 StaffShift lateShift = staffShiftLateInTenMinuteLinked.pollFirst();
-                System.err.println("Late In Shift ID " + lateShift.getId());
                 lateShift.setReferenceStaffShiftLateIn(stfCurrent);
                 lateShift.setConsiderForLateIn(true);
                 staffShiftFacade.edit(lateShift);
@@ -1160,7 +1176,6 @@ public class StaffSalaryController implements Serializable {
             }
 
             LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
-            System.err.println("leaveType = " + leaveType);
 
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
 
@@ -1183,7 +1198,6 @@ public class StaffSalaryController implements Serializable {
 
         if (list != null) {
             listReturn.addAll(list);
-            System.out.println("list.size(referenceStaffShiftEarlyOut) = " + list.size());
         }
 
         sql = " Select s from  StaffShift s "
@@ -1197,9 +1211,7 @@ public class StaffSalaryController implements Serializable {
 
         if (list != null) {
             listReturn.addAll(list);
-            System.out.println("list.size(referenceStaffShiftLateIn) = " + list.size());
         }
-        System.out.println("listReturn.size = " + listReturn.size());
         return listReturn;
     }
 
@@ -1231,14 +1243,12 @@ public class StaffSalaryController implements Serializable {
 
         System.err.println("staffShiftEarlyOut.size()" + staffShiftEarlyOut.size());
         System.err.println("Late in Shift Reference Count " + staffShiftEarlyOutThirtyMinuteLinked.size());
-        System.err.println("shiftCount = " + shiftCount);
         if (staffShiftEarlyOutThirtyMinuteLinked.size() >= shiftCount) {
             stfCurrent.setReferenceStaffShiftEarlyOut(stfCurrent);
             stfCurrent.setConsiderForEarlyOut(true);
             staffShiftFacade.edit(stfCurrent);
             for (int i = 0; i < shiftCount; i++) {
                 StaffShift earlyOut = staffShiftEarlyOutThirtyMinuteLinked.pollFirst();
-                System.err.println("Early Out  Shift ID " + earlyOut.getId());
                 earlyOut.setReferenceStaffShiftEarlyOut(stfCurrent);
                 earlyOut.setConsiderForEarlyOut(true);
                 staffShiftFacade.edit(earlyOut);
@@ -1246,7 +1256,6 @@ public class StaffSalaryController implements Serializable {
             }
 
             LeaveType leaveType = humanResourceBean.getLeaveType(stfCurrent.getStaff(), stfCurrent.getShiftDate());
-            System.err.println("leaveType = " + leaveType);
             HrForm hr = staffLeaveFromLateAndEarlyController.saveLeaveForm(stfCurrent, leaveType, stfCurrent.getShiftDate(), stfCurrent.getShiftDate());
             staffLeaveFromLateAndEarlyController.saveStaffLeaves(stfCurrent, leaveType, hr);
             staffLeaveFromLateAndEarlyController.addLeaveDataToStaffShift(stfCurrent, leaveType, hr);
@@ -1324,15 +1333,13 @@ public class StaffSalaryController implements Serializable {
         if (list == null) {
             return;
         }
-        System.out.println("stfCurrent = " + stfCurrent);
         for (StaffShift s : list) {
             s.setConsiderForEarlyOut(false);
             s.setConsiderForLateIn(false);
             staffShiftFacade.edit(s);
-            System.out.println("s = " + s);
         }
 
-        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
+//        System.err.println("Automatic Late In END " + stfCurrent.getStaff().getCodeInterger());
     }
 
     public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {
@@ -1352,16 +1359,12 @@ public class StaffSalaryController implements Serializable {
 
     private void resetAutoLeave(Staff staff, Date fromDate, Date toDate) {
         List<StaffShift> staffShifts = humanResourceBean.fetchStaffShiftForAutoLeaveReset(staff, fromDate, toDate);
-        System.out.println("staffShifts = " + staffShifts);
         if (staffShifts == null) {
             return;
         }
 
 //        System.err.println("Rest Count " + staffShifts.size());
         for (StaffShift ss : staffShifts) {
-            // Calculate Late in for 1 1\2 h 
-
-            System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
             calStaffAutoLeaveReset(ss);
 
         }
@@ -1381,36 +1384,37 @@ public class StaffSalaryController implements Serializable {
             // Calculate Late in for 1 1\2 h 
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()) {
-                System.err.println("******Automatic Late In Leave " + ss.getStaff().getCodeInterger());
 
                 if (ss.getLateInVarified() > fromMinute) {
                     calStaffLeaveFromLateIn(ss, 90 * 60);
+                    System.out.println("ss.getLeavedTime() = " + ss.getLeavedTime());
+                    System.out.println("ss.getLeavedTimeOther() = " + ss.getLeavedTimeOther());
                 }
             }
 
             if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()) {
-                System.err.println("******Automatic Early Out Leave " + ss.getStaff().getCodeInterger());
 //                        calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 3);
                 if (ss.getEarlyOutVarified() > fromMinute) {
                     calStaffLeaveFromEarlyOut(ss, 90 * 60);
+                    System.out.println("ss.getLeavedTime() = " + ss.getLeavedTime());
+                    System.out.println("ss.getLeavedTimeOther() = " + ss.getLeavedTimeOther());
                 }
             }
 
         }
 
         staffShifts = humanResourceBean.fetchStaffShiftForAutoLeave(staff, fromDate, toDate);
-        System.err.println("StaffShifts for Auto Leave System " + staffShifts.size());
         for (StaffShift ss : staffShifts) {
             System.out.println("ss.getLateInVarified() = " + ss.getLateInVarified());
             System.out.println("ss.getStaff().isAllowedLateInLeave() = " + ss.getStaff().isAllowedLateInLeave());
-            System.out.println("ss.isConsiderForLateIn() = " + ss.isConsiderForLateIn());
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()
                     && ss.getLateInVarified() > 0) {
                 System.err.println("******Automatic Late In Leave (Out) half " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromLateIn(ss, 10 * 60, 90 * 60, 2.0);
-
+                System.out.println("ss.getLeavedTime() = " + ss.getLeavedTime());
+                System.out.println("ss.getLeavedTimeOther() = " + ss.getLeavedTimeOther());
             }
 
             if (ss.getStaff().isAllowedEarlyOutLeave()
@@ -1418,6 +1422,8 @@ public class StaffSalaryController implements Serializable {
                     && ss.getEarlyInVarified() > 0) {
                 System.err.println("******Automatic Early Out Leave (Out) half " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 2.0);
+                System.out.println("ss.getLeavedTime() = " + ss.getLeavedTime());
+                System.out.println("ss.getLeavedTimeOther() = " + ss.getLeavedTimeOther());
 
             }
 
@@ -1436,11 +1442,13 @@ public class StaffSalaryController implements Serializable {
         items = null;
         int i = 0;
         for (Staff s : getStaffController().getSelectedList()) {
-            System.err.println("Staff Code " + s.getCodeInterger() + " : " + (++i) + " start at " + new Date());
             setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
             if (getCurrent().getId() == null) {
-                resetAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
-                generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+//                resetAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+//                generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+                //issue #311
+                resetAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+                generateAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
                 fetchAndSetBankData();
                 addSalaryComponent();
 //                save();
@@ -1535,8 +1543,8 @@ public class StaffSalaryController implements Serializable {
         }
 
         if (getReportKeyWord().getInstitution() != null) {
-            sql += " and ss.staff.workingDepartment.institution=:ins ";
-            hm.put("ins", getReportKeyWord().getDepartment());
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
@@ -1576,7 +1584,6 @@ public class StaffSalaryController implements Serializable {
         int i = 0;
 
         for (StaffSalary stf : items) {
-            System.err.println("Saving " + stf.getStaff().getCodeInterger() + " " + (++i));
             if (stf.getId() != null) {
                 continue;
             }

@@ -31,9 +31,9 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.StaffFacade;
-import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +43,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -98,8 +99,8 @@ public class ServiceSummery implements Serializable {
     @EJB
     private BillFeeFacade billFeeFacade;
     List<BillItem> billItems;
-    
-    List<Staff>staffs;
+
+    List<Staff> staffs;
     @EJB
     StaffFacade staffFacade;
 
@@ -131,9 +132,9 @@ public class ServiceSummery implements Serializable {
                 + " s.retired=false "
                 + " and s.annualWelfareQualified>0 "
                 + " order by s.codeInterger ";
-        
-        staffs=getStaffFacade().findBySQL(sql);
-        
+
+        staffs = getStaffFacade().findBySQL(sql);
+
     }
 
     public double calServiceTot(BillType billType, FeeType feeType, boolean discharged) {
@@ -221,7 +222,7 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public double calMarginTot(BillType billType, FeeType feeType) {
         String sql;
         Map temMap = new HashMap();
@@ -306,7 +307,6 @@ public class ServiceSummery implements Serializable {
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         //System.out.println("sql = " + sql);
-
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -351,7 +351,6 @@ public class ServiceSummery implements Serializable {
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         //System.out.println("sql = " + sql);
-
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -394,7 +393,6 @@ public class ServiceSummery implements Serializable {
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         //System.out.println("sql = " + sql);
-
         return getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -590,13 +588,12 @@ public class ServiceSummery implements Serializable {
 
     }
 
-    private List<BillItem> getBillItem(BillType billType, Item item, Department department, PaymentMethod paymentMethod, boolean discharged) {
+    private List<BillItem> getBillItem(List<BillType> billTypes, Item item, Department department, PaymentMethod paymentMethod, boolean discharged) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "select bi FROM BillItem bi "
-                + " where  bi.bill.institution=:ins "
-                + " and  bi.bill.billType= :bTp  ";
+                + " where  bi.bill.institution=:ins ";
 
         if (item != null) {
             sql += " and bi.item=:itm ";
@@ -619,10 +616,14 @@ public class ServiceSummery implements Serializable {
             sql += " and  bi.bill.createdAt between :fromDate and :toDate ";
         }
 
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bTp  ";
+            temMap.put("bTp", billTypes);
+        }
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bTp", billType);
 
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -743,13 +744,13 @@ public class ServiceSummery implements Serializable {
 
     }
 
-    public void calTotal(List<Bill>bills) {
-        totalBill=0.0;
-        discountBill=0.0;
+    public void calTotal(List<Bill> bills) {
+        totalBill = 0.0;
+        discountBill = 0.0;
         for (Bill bill : bills) {
-            totalBill+=bill.getNetTotal();
-            discountBill+=bill.getDiscount();
-           
+            totalBill += bill.getNetTotal();
+            discountBill += bill.getDiscount();
+
         }
     }
 
@@ -769,8 +770,11 @@ public class ServiceSummery implements Serializable {
             return;
         }
 
+        BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
+        List<BillType> bts = Arrays.asList(billType);
+
         serviceSummery = new ArrayList<>();
-        for (BillItem i : getBillItem(BillType.OpdBill, service, department, paymentMethod, false)) {
+        for (BillItem i : getBillItem(bts, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
             bi.setReagentFee(calFee(i, FeeType.Chemical));
@@ -935,7 +939,7 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
-        hosFeeMarginTotal=calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
+        hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
     }
 
@@ -982,7 +986,32 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
+    private String fetchStaffs(BillItem bi, FeeType feeType) {
+        String name = "";
+        HashMap hm = new HashMap();
+        String sql = "Select f from "
+                + " BillFee f where "
+                + " f.retired=false "
+                + " and f.billItem=:b and "
+                + " f.fee.feeType=:ftp";
+        hm.put("b", bi);
+        hm.put("ftp", feeType);
+
+        for (BillFee bf : (List<BillFee>) getBillFeeFacade().findBySQL(sql, hm)) {
+            if ("".equalsIgnoreCase(name)) {
+                name += bf.getStaff().getPerson().getName();
+            } else {
+                name += " ," + bf.getStaff().getPerson().getName();
+            }
+            System.out.println("bf.getStaff().getPerson().getName() = " + bf.getStaff().getPerson().getName());
+            System.out.println("name = " + name);
+        }
+
+        return name;
+
+    }
+
     private double calFeeMargin(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeMargin) from "
@@ -996,8 +1025,6 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
-    
 
     private double calFeeFeeValue(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
@@ -1098,6 +1125,7 @@ public class ServiceSummery implements Serializable {
             bi.setBillItem(i);
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
             billItemWithFees.add(bi);
         }
 
@@ -1263,7 +1291,6 @@ public class ServiceSummery implements Serializable {
 
     private List<BillItem> calBillItems(BillType billType, boolean discharged) {
         if (getCategory() instanceof ServiceSubCategory) {
-            System.out.println("ServiceSubCategory");
             return getBillItemByCategory(category, billType, discharged);
         }
 
@@ -1271,20 +1298,16 @@ public class ServiceSummery implements Serializable {
             System.out.println("ServiceCategory");
             getServiceSubCategoryController().setParentCategory(getCategory());
             List<ServiceSubCategory> subCategorys = getServiceSubCategoryController().getItems();
-            System.out.println("subCategorys = " + subCategorys);
             if (subCategorys.isEmpty()) {
-                System.out.println("if = ");
                 return getBillItemByCategory(getCategory(), billType, discharged);
             } else {
                 Set<BillItem> setBillItem = new HashSet<>();
                 for (ServiceSubCategory ssc : subCategorys) {
-                    System.out.println("getBillItemByCategory(ssc, billType, discharged) = " + getBillItemByCategory(ssc, billType, discharged));
                     setBillItem.addAll(getBillItemByCategory(ssc, billType, discharged));
                 }
                 System.out.println("setBillItem = " + setBillItem);
                 List<BillItem> tmpBillItems = new ArrayList<>();
                 tmpBillItems.addAll(setBillItem);
-                System.out.println("tmpBillItems = " + tmpBillItems);
                 return tmpBillItems;
             }
         }
@@ -1329,7 +1352,6 @@ public class ServiceSummery implements Serializable {
         temMap.put("cat", cat);
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        System.err.println("BILL " + tmp);
         return tmp;
 
     }

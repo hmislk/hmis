@@ -6,6 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -31,7 +32,9 @@
                         <p:calendar id="toDate"  navigator="true" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        <h:outputLabel value=""/>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="turn over time"/>
+                        </p:commandButton>
                         <p:commandButton ajax="false"  value="Process."  
                                          action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
                                          styleClass="noPrintButton" style="float: left;" />
@@ -41,7 +44,7 @@
                     <p:panel style="width: 100%; margin-top: 20px;">
 
 
-                        <p:dataTable value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
+                        <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
                             <p:column headerText="Ins Id" >
                                 <p:outputLabel value="#{pi.billItem.bill.insId}" ></p:outputLabel>
                             </p:column>

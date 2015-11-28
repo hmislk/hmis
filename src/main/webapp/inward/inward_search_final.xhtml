@@ -7,19 +7,19 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:se="http://java.sun.com/jsf/composite/inward/search">
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
+                    <p:panel header="Search Inpatient Bills by Bill Created Date" >
                         <f:facet name="header" >
                             <h:panelGroup>
                                 <h:panelGrid columns="5">
-                                    <h:outputLabel value="From Date"/>
+                                    <h:outputLabel value="From"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
-                                    <h:outputLabel value="To Date"/>
+                                    <h:outputLabel value="To"/>
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
@@ -29,9 +29,9 @@
                                 <h:panelGrid columns="6">
                                     <h:outputLabel value="Bill No"/>
                                     <h:outputLabel value="BHT No"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Patient Phone"/>
-                                    <h:outputLabel value="Total"/>
+                                    <h:outputLabel value="Name"/>
+                                    <h:outputLabel value="Telephone"/>
+                                    <h:outputLabel value="Gross Total"/>
                                     <h:outputLabel value="Net Total"/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
@@ -53,7 +53,9 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" 
+                                                 actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
+                                                 onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
@@ -115,5 +117,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

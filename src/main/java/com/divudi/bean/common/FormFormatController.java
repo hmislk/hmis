@@ -9,26 +9,24 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.hr.HrReportController;
-import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Category;
-import java.util.TimeZone;
-import com.divudi.facade.FormFormatFacade;
 import com.divudi.entity.FormFormat;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.facade.CommonReportItemFacade;
+import com.divudi.facade.FormFormatFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -67,9 +65,9 @@ public class FormFormatController implements Serializable {
         }
         String j;
         Map m = new HashMap();
-        
+
         j = "select s from Staff s where s.retired=false ";
-        
+
 //        if(hrReportController.getReportKeyWord().getDepartment()!=null){
 //            j+= " and s.workingDepartment =:dep ";
 //            m.put("dep", hrReportController.getReportKeyWord().getDepartment());
@@ -79,9 +77,8 @@ public class FormFormatController implements Serializable {
 //            j+= " and s.workingDepartment.institution =:ins ";
 //            m.put("ins", hrReportController.getReportKeyWord().getInstitution());
 //        }
-        
-        j+= " order by s.person.name ";
-        
+        j += " order by s.person.name ";
+
         staffes = staffFacade.findBySQL(j);
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
@@ -97,8 +94,6 @@ public class FormFormatController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
-    
-    
 
     public Category getFormCategory() {
         return formCategory;
@@ -124,8 +119,6 @@ public class FormFormatController implements Serializable {
         this.formItems = formItems;
     }
 
-    
-    
     public List<FormFormat> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from FormFormat c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -153,7 +146,7 @@ public class FormFormatController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -200,7 +193,7 @@ public class FormFormatController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
@@ -218,15 +211,12 @@ public class FormFormatController implements Serializable {
     }
 
     public List<FormFormat> getItems() {
-        // items = getFacade().findAll("name", true);
-        String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
-        items = getEjbFacade().findBySQL(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
+            items = getEjbFacade().findBySQL(sql);
         }
         return items;
     }
-    /**
-     *
-     */
+    
+    
 }

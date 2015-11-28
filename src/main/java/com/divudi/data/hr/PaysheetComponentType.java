@@ -169,7 +169,8 @@ public enum PaysheetComponentType {
             PaysheetComponentType.Advance_Payment_Deduction,
             PaysheetComponentType.LoanInstallemant,
             PaysheetComponentType.LoanNetSalary,
-            PaysheetComponentType.VariableDeduction});
+            PaysheetComponentType.VariableDeduction,
+            PaysheetComponentType.Salary_Advance_Deduction});
 
     }
 

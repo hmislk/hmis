@@ -90,10 +90,6 @@
                         <p:commandLink ajax="false" value="Holiday Forms" action="/hr/hr_form_staff_additional_shift_day_off" 
                                        actionListener="#{shiftFingerPrintAnalysisController.toStaffAdditionalFormController}"></p:commandLink>
 
-                        <p:commandLink ajax="false" value="Roster Table" 
-                                       action="/hr/hr_shift_table" 
-                                       actionListener="#{shiftFingerPrintAnalysisController.toShiftTableController}"></p:commandLink>
-
 
                         <p:commandLink ajax="false" value="Roster" 
                                        action="/hr/hr_shift_table_by_staff" 
@@ -115,12 +111,28 @@
                             <f:convertDateTime pattern="dd MM yyyy - (EEEE)"/>
                         </h:outputLabel>
                     </f:facet>
+                    <p:column >
+                        <p:outputLabel value="#{sts.id}" ></p:outputLabel>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.multiplyingFactorSalary}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.shift.dayType}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.dayType}"/>
+                    </p:column>
                     <p:column headerText="Shift" styleClass="fixedColumn75" >
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >
                             <p:outputLabel value="#{sts.id}" ></p:outputLabel>
                             <br/>
                             <p:outputLabel value="#{sts.shift.durationMin}"/>
+                            <br/>
+                            <p:outputLabel value="#{sts.shift.dayType}"/>
+                            <br/>
+                            <p:outputLabel value="#{sts.dayType}"/>
                         </p:tooltip>
                     </p:column>
                     <p:column headerText="Roster" styleClass="fixedColumn100">
@@ -130,22 +142,22 @@
                     <p:column headerText="Time" styleClass="fixedColumn100">
                         <h:panelGroup id="lblShiftDate" >
                             <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value=" - " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                         </h:panelGroup>
                         <p:tooltip for="lblShiftDate" >
                             <h:outputLabel value="From : " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
                             <h:outputLabel value="To : " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
                             <h:outputLabel value="Date : " ></h:outputLabel>

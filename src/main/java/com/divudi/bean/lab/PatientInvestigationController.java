@@ -28,6 +28,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,19 +37,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 
 /**
  *
@@ -256,7 +255,7 @@ public class PatientInvestigationController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -268,7 +267,7 @@ public class PatientInvestigationController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -349,7 +348,7 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -457,7 +456,6 @@ public class PatientInvestigationController implements Serializable {
 
         System.out.println("running the sending sms.");
         if (bill == null) {
-            System.out.println("pr is null ");
         }
         String url = "http://www.textit.biz/sendmsg/index.php";
         HttpResponse<String> stringResponse;
@@ -475,9 +473,7 @@ public class PatientInvestigationController implements Serializable {
         if(sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071")||sendingNo.contains("072")||
                 sendingNo.contains("075")||sendingNo.contains("078")){
-            System.err.println("sending no is " + sendingNo);
         }else{
-            System.err.println("sending no is " + sendingNo + ". Returning as number is not valid");
             return;
         }
         
@@ -502,10 +498,8 @@ public class PatientInvestigationController implements Serializable {
                     .field("to", sendingNo)
                     .field("text", messageBody)
                     .asString();
-            System.out.println("stringResponse = " + stringResponse);
 
         } catch (Exception ex) {
-            System.out.println("ex = " + ex);
             return;
         }
 
@@ -538,7 +532,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("sms after saving " + sms);
 
         
-        System.out.println("Sending Sms Completed. ");
         
         UtilityController.addSuccessMessage("Sms send");
 
@@ -557,7 +550,7 @@ public class PatientInvestigationController implements Serializable {
         if (current.getSampleOutside()) {
             getCurrent().setSampledAt(sampledOutsideDate);
         } else {
-            getCurrent().setSampledAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setSampledAt(new Date());
             current.setSampleDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setSampleInstitution(getSessionController().getLoggedUser().getInstitution());
         }
@@ -703,7 +696,7 @@ public class PatientInvestigationController implements Serializable {
         
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setReceived(Boolean.TRUE);
-            getCurrent().setReceivedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setReceivedAt(new Date());
             getCurrent().setReceivedCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
         }
@@ -715,7 +708,7 @@ public class PatientInvestigationController implements Serializable {
 //        ////System.out.println("going to mark as received");
         for (PatientInvestigation pi : getSelectedToReceive()) {
             pi.setReceived(Boolean.TRUE);
-            pi.setReceivedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            pi.setReceivedAt(new Date());
             pi.setReceivedCollecter(getSessionController().getLoggedUser());
             getEjbFacade().edit(pi);
         }
@@ -752,7 +745,7 @@ public class PatientInvestigationController implements Serializable {
     public void markAsDataEntered() {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setDataEntered(Boolean.TRUE);
-            getCurrent().setDataEntryAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setDataEntryAt(new Date());
             getCurrent().setDataEntryUser(getSessionController().getLoggedUser());
             getEjbFacade().edit(getCurrent());
         }
@@ -785,7 +778,7 @@ public class PatientInvestigationController implements Serializable {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setApproved(Boolean.TRUE);
             getCurrent().setApproveUser(getSessionController().getLoggedUser());
-            getCurrent().setApproveAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setApproveAt(new Date());
             getEjbFacade().edit(getCurrent());
         }
     }
@@ -811,7 +804,7 @@ public class PatientInvestigationController implements Serializable {
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setPrinted(Boolean.TRUE);
             getCurrent().setPrintingUser(getSessionController().getLoggedUser());
-            getCurrent().setPrintingAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            getCurrent().setPrintingAt(new Date());
             getEjbFacade().edit(getCurrent());
         }
     }
@@ -820,7 +813,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");

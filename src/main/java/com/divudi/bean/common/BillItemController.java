@@ -9,16 +9,10 @@
 package com.divudi.bean.common;
 
 import com.divudi.entity.BillItem;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.util.JsfUtil;
-import com.divudi.facade.util.JsfUtil.PersistAction;
 import java.io.Serializable;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -63,9 +57,7 @@ public class BillItemController implements Serializable {
         }
         for (BillItem bi : items) {
             System.err.println("PASs " + id);
-            System.err.println("BIB " + bi.getSearialNo());
             if (id.equals(bi.getSearialNo())) {
-                System.err.println("******");
                 return bi;
             }
         }
@@ -96,12 +88,10 @@ public class BillItemController implements Serializable {
         }
 
         java.lang.Integer getKey(String value) {
-            System.err.println("Args From Context "+value);
             java.lang.Integer key = null;
             try {
                 key = Integer.valueOf(value);
             } catch (NumberFormatException e) {
-                System.err.println("e" + e.getMessage());
             }
 
             return key;

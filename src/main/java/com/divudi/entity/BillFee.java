@@ -371,7 +371,6 @@ public class BillFee implements Serializable {
             }
         }
 
-        System.err.println("DISCOUNT " + feeDiscount);
     }
 
     public Long getId() {

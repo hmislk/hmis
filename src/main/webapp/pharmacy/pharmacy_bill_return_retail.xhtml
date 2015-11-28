@@ -42,7 +42,8 @@
 
                             <p:commandButton  value="Return" action="#{saleReturnController.settle}" 
                                               onclick="onSubmitButton();"
-                                            ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                              ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                              rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}">
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" /> 
                             <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="float: right;"/>
@@ -107,10 +108,10 @@
 
                 <h:panelGroup   id="gpBillPreview"  > 
 
-                    <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                    <h:panelGroup   id="gpBillPreviewSingle" rendered="true">
 
                         <div >
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                            <h:panelGroup rendered="true" > 
                                 <ph:saleBill bill="#{saleReturnController.returnBill}"></ph:saleBill>
                             </h:panelGroup>
                         </div>

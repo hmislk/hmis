@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
@@ -16,22 +17,21 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
 import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
@@ -58,6 +58,7 @@ public class CommonReport1 implements Serializable {
     private Department department;
     private BillType billType;
     private Institution creditCompany;
+    PaymentScheme paymentScheme;
     /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
@@ -80,6 +81,14 @@ public class CommonReport1 implements Serializable {
     private BillsTotals inwardPaymentCancel;
     //////////////////    
     private List<String1Value1> dataTableData;
+    ///
+    List<Bill> biledBills;
+    List<Bill> cancelBills;
+    List<Bill> refundBills;
+
+    double  biledBillsTotal;
+    double cancelBillsTotal;
+    double refundBillsTotal;
 
     Doctor referringDoctor;
 
@@ -136,7 +145,7 @@ public class CommonReport1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            fromDate = getCommonFunctions().getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -148,7 +157,7 @@ public class CommonReport1 implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            toDate = getCommonFunctions().getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -169,8 +178,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public Department getDepartment() {
-        if(department==null){
-            department= getSessionController().getDepartment();
+        if (department == null) {
+            department = getSessionController().getDepartment();
         }
         return department;
     }
@@ -1442,6 +1451,61 @@ public class CommonReport1 implements Serializable {
         return list;
     }
 
+    public void createOpdBillList() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Please Select Payment Scheme");
+            return;
+        }
+        biledBills = fetchBills(new BilledBill(), BillType.OpdBill, paymentScheme);
+        cancelBills = fetchBills(new CancelledBill(), BillType.OpdBill, paymentScheme);
+        refundBills = fetchBills(new RefundBill(), BillType.OpdBill, paymentScheme);
+        biledBillsTotal = fetchBillsTotal(new BilledBill(), BillType.OpdBill, paymentScheme);
+        cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
+        refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
+    }
+
+    public List<Bill> fetchBills(Bill b, BillType billType, PaymentScheme ps) {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "SELECT b FROM Bill b WHERE "
+                + " type(b)=:class "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.paymentScheme=:ps "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("btp", billType);
+        m.put("ins", getSessionController().getInstitution());
+        m.put("class", b.getClass());
+        m.put("ps", ps);
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public double fetchBillsTotal(Bill b, BillType billType, PaymentScheme ps) {
+        Map m = new HashMap();
+        String sql;
+        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE "
+                + " type(b)=:class "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.institution=:ins "
+                + " and b.paymentScheme=:ps "
+                + " and b.createdAt between :fromDate and :toDate";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("btp", billType);
+        m.put("ins", getSessionController().getInstitution());
+        m.put("class", b.getClass());
+        m.put("ps", ps);
+
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
     public void setDataTableData(List<String1Value1> dataTableData) {
         this.dataTableData = dataTableData;
     }
@@ -1534,5 +1598,61 @@ public class CommonReport1 implements Serializable {
 
     public void setRefundedBillsPh2(BillsTotals refundedBillsPh2) {
         this.refundedBillsPh2 = refundedBillsPh2;
+    }
+
+    public List<Bill> getBiledBills() {
+        return biledBills;
+    }
+
+    public void setBiledBills(List<Bill> biledBills) {
+        this.biledBills = biledBills;
+    }
+
+    public List<Bill> getCancelBills() {
+        return cancelBills;
+    }
+
+    public void setCancelBills(List<Bill> cancelBills) {
+        this.cancelBills = cancelBills;
+    }
+
+    public List<Bill> getRefundBills() {
+        return refundBills;
+    }
+
+    public void setRefundBills(List<Bill> refundBills) {
+        this.refundBills = refundBills;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public double getBiledBillsTotal() {
+        return biledBillsTotal;
+    }
+
+    public void setBiledBillsTotal(double biledBillsTotal) {
+        this.biledBillsTotal = biledBillsTotal;
+    }
+
+    public double getCancelBillsTotal() {
+        return cancelBillsTotal;
+    }
+
+    public void setCancelBillsTotal(double cancelBillsTotal) {
+        this.cancelBillsTotal = cancelBillsTotal;
+    }
+
+    public double getRefundBillsTotal() {
+        return refundBillsTotal;
+    }
+
+    public void setRefundBillsTotal(double refundBillsTotal) {
+        this.refundBillsTotal = refundBillsTotal;
     }
 }
