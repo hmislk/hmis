@@ -57,9 +57,10 @@
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Report Samples" actionListener="#{investigationController.listAllIxs}" action="/lab/report_samples" onclick="onSubmitButton();" />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Developer" action="lab_administration_extra" onclick="onSubmitButton();" />
                                 </p:panel>
-                                <p:panel header="Agent Book" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
+                                <p:panel header="Collecting Centre" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
                                     
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Lab Book to Collecting Centre" actionListener="#{investigationController.listAllIxs}" action="/lab/lab_agent_referece_book" onclick="onSubmitButton();" />                                    
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Lab Book to Collecting Centre" actionListener="#{investigationController.listAllIxs}" action="/lab/lab_agent_referece_book" onclick="onSubmitButton();" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centre Credit Limit Update" actionListener="#{investigationController.listAllIxs}" action="/lab/institutions_udate_credit_limit" onclick="onSubmitButton();" />
                                 </p:panel>
                             </h:panelGrid>
 
