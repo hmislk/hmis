@@ -14,7 +14,8 @@ import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
+import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -27,6 +28,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -49,6 +51,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -76,10 +79,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -114,10 +113,15 @@ public class CollectingCentreBillController implements Serializable {
     PaymentFacade PaymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
-
+    @EJB
+    BillSessionFacade billSessionFacade;
+    @EJB
+    AgentHistoryFacade agentHistoryFacade;
     /**
      * Controllers
      */
+    @Inject
+    ServiceSessionFunctions serviceSessionBean;
     @Inject
     SessionController sessionController;
     @Inject
@@ -126,9 +130,14 @@ public class CollectingCentreBillController implements Serializable {
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
+    @EJB
+    StaffBean staffBean;
+    @EJB
+    private BatchBillFacade batchBillFacade;
     /**
      * Properties
      */
+    List<BillSession> billSessions;
     private static final long serialVersionUID = 1L;
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
@@ -898,6 +907,9 @@ public class CollectingCentreBillController implements Serializable {
                 myBill.setCashPaid(cashPaid);
             }
 
+            myBill.setReferralNumber(referralId);
+            updateBallance(collectingCentre, 0 - Math.abs(myBill.getNetTotal()), HistoryType.ChannelBooking, myBill, myBill.getReferralNumber());
+            
             getBillFacade().edit(myBill);
 
             getBillBean().calculateBillItems(myBill, tmp);
@@ -939,22 +951,16 @@ public class CollectingCentreBillController implements Serializable {
             b.setBillTotal(b.getNetTotal());
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
-
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                b.setCashPaid(cashPaid);
-                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
-                    b.setBalance(0.0);
-                    b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
-                } else {
-                    b.setBalance(b.getTransSaleBillTotalMinusDiscount() - b.getCashPaid());
-                    b.setNetTotal(b.getCashPaid());
-                }
-            }
-
+            b.setBalance(0.0);
+            b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+            b.setReferralNumber(referralId);
+            
             createPaymentsForBills(b, getLstBillEntries());
-
+            
             getBillFacade().edit(b);
             getBills().add(b);
+
+            updateBallance(collectingCentre, 0 - Math.abs(b.getNetTotal()), HistoryType.ChannelBooking, b, b.getReferralNumber());
 
         } else {
             boolean result = putToBills();
@@ -966,15 +972,24 @@ public class CollectingCentreBillController implements Serializable {
         saveBatchBill();
         saveBillItemSessions();
 
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netTotal);
-            UtilityController.addSuccessMessage("User Credit Updated");
-        }
-
         UtilityController.addSuccessMessage("Bill Saved");
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+    }
+
+    public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
+        AgentHistory agentHistory = new AgentHistory();
+        agentHistory.setCreatedAt(new Date());
+        agentHistory.setCreater(getSessionController().getLoggedUser());
+        agentHistory.setBill(bill);
+        agentHistory.setBeforeBallance(ins.getBallance());
+        agentHistory.setTransactionValue(transactionValue);
+        agentHistory.setReferenceNo(refNo);
+        agentHistory.setHistoryType(historyType);
+        agentHistoryFacade.create(agentHistory);
+        ins.setBallance(ins.getBallance() + transactionValue);
+        getInstitutionFacade().edit(ins);
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1010,9 +1025,6 @@ public class CollectingCentreBillController implements Serializable {
         }
     }
 
-    @EJB
-    StaffBean staffBean;
-
     private void saveBillItemSessions() {
         for (BillEntry be : lstBillEntries) {
             be.getBillItem().setBillSession(getServiceSessionBean().createBillSession(be.getBillItem()));
@@ -1021,8 +1033,6 @@ public class CollectingCentreBillController implements Serializable {
             }
         }
     }
-    @EJB
-    private BatchBillFacade batchBillFacade;
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -1178,10 +1188,37 @@ public class CollectingCentreBillController implements Serializable {
             UtilityController.addErrorMessage("Please select a collecting centre");
             return true;
         }
-        if (getLstBillEntries().isEmpty()) {
-            UtilityController.addErrorMessage("Add tests");
-            return true;
+
+        if (getPatientTabId().equals("tabSearchPt")) {
+            if (getSearchedPatient() == null) {
+                UtilityController.addErrorMessage("Plese Select Patient");
+                return true;
+            }
+        } else if (getPatientTabId().equals("tabNewPt")) {
+            if (getNewPatient().getPerson().getName() == null
+                    || getNewPatient().getPerson().getName().trim().equals("")) {
+                UtilityController.addErrorMessage("Can not bill without Patient Name");
+                return true;
+            }
+            if (getNewPatient().getPerson().getPhone() == null) {
+                UtilityController.addErrorMessage("Enter a phone number");
+                return true;
+            }
+            if (getNewPatient().getPerson().getSex() == null) {
+                UtilityController.addErrorMessage("Enter the gender");
+                return true;
+            }
+            if (getNewPatient().getPerson().getDob() == null) {
+                UtilityController.addErrorMessage("Enter the age or date of birth");
+                return true;
+            }
+            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
+                UtilityController.addErrorMessage("Check Title,Age,Sex");
+                return true;
+            }
+
         }
+
         if (referralId == null || referralId.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a referrance number");
             return true;
@@ -1191,39 +1228,22 @@ public class CollectingCentreBillController implements Serializable {
                 return true;
             }
         }
-        if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
-            if (getPatientTabId().equals("tabSearchPt")) {
-                if (getSearchedPatient() == null) {
-                    UtilityController.addErrorMessage("Plese Select Patient");
-                    return true;
-                }
-            }
-            if (getPatientTabId().equals("tabNewPt")) {
-                if (getNewPatient().getPerson().getName() == null
-                        || getNewPatient().getPerson().getName().trim().equals("")) {
-                    UtilityController.addErrorMessage("Can not bill without Patient Name");
-                    return true;
-                }
-                if (getNewPatient().getPerson().getPhone() == null) {
-                    UtilityController.addErrorMessage("Enter a phone number");
-                    return true;
-                }
-                if (getNewPatient().getPerson().getSex() == null) {
-                    UtilityController.addErrorMessage("Enter the gender");
-                    return true;
-                }
-                if (getNewPatient().getPerson().getDob() == null) {
-                    UtilityController.addErrorMessage("Enter the age or date of birth");
-                    return true;
-                }
-                if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                    UtilityController.addErrorMessage("Check Title,Age,Sex");
-                    return true;
-                }
-            }
 
+        if (getLstBillEntries().isEmpty()) {
+            UtilityController.addErrorMessage("Add tests");
+            return true;
         }
 
+        double feeTotalExceptCcfs = 0.0;
+        for (BillFee bf : lstBillFees) {
+            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                feeTotalExceptCcfs += bf.getFeeValue();
+            }
+        }
+        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) > collectingCentre.getStandardCreditLimit()) {
+            UtilityController.addErrorMessage("This bill excees the Collecting Centre Limit");
+            return true;
+        }
         return false;
     }
 
@@ -1234,12 +1254,6 @@ public class CollectingCentreBillController implements Serializable {
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
-
-    List<BillSession> billSessions;
-    @EJB
-    BillSessionFacade billSessionFacade;
-    @Inject
-    ServiceSessionFunctions serviceSessionBean;
 
     public List<BillSession> getBillSessions() {
         return billSessions;
