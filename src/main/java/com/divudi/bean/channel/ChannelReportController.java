@@ -62,10 +62,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
-/**
- *
- * @author safrin
- */
 @Named
 @SessionScoped
 public class ChannelReportController implements Serializable {
