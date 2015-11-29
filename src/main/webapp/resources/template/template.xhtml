@@ -552,7 +552,27 @@
                                             <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/agent_bill_search_own"
                                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
-                                        </p:submenu>                                    
+                                        </p:submenu>
+
+                                        <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own"
+                                                         actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                                        </p:submenu>
+
+                                    </p:submenu>
+
+                                    <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <p:submenu label="Collecting Centre Book Issuing">
+                                            <p:menuitem  ajax="false"  action="/lab/lab_agent_referece_book" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit" value="Collecting Centre Credit Limit Update"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history" value="Collecting Centre History"  ></p:menuitem>
+                                        </p:submenu>
+                                        
+                                        <p:submenu label="Channell Agency Book Issuing">
+                                            
+                                        </p:submenu>
+
                                     </p:submenu>
                                 </p:submenu>
 

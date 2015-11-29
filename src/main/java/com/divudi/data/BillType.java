@@ -41,6 +41,7 @@ public enum BillType {
     CashRecieveBill,
     PettyCash,
     AgentPaymentReceiveBill,
+    CollectingCentrePaymentReceiveBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,

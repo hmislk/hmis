@@ -188,14 +188,14 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         return false;
     }
 
-    private CancelledBill createCancelBill() {
+    private CancelledBill createCancelBill(BillType billType, BillNumberSuffix billNumberSuffix) {
         CancelledBill cb = new CancelledBill();
         if (getBill() != null) {
             cb.copy(getBill());
             cb.invertValue(getBill());
 
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.AgentPaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.AGNCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.AgentPaymentReceiveBill, BillClassType.CancelledBill, BillNumberSuffix.AGNCAN));
+            cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), billType, BillClassType.CancelledBill, billNumberSuffix));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.CancelledBill, billNumberSuffix));
 
         }
 
@@ -246,14 +246,22 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
+    
+    public void collectingCentreCancelBill(){
+        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel);
+    }
+    
+    public void channellAgencyCancelBill(){
+        cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel);
+    }
 
-    public void cancelBill() {
+    public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType) {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(billType,billNumberSuffix);
 
             //Copy & paste
             //if (webUserController.hasPrivilege("LabBillCancelling")) {
@@ -266,7 +274,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 UtilityController.addSuccessMessage("Cancelled");
 
                 //for channel agencyHistory Update
-                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), HistoryType.ChannelDepositCancel, cb);
+                getAgentPaymentRecieveBillController().createAgentHistory(cb.getFromInstitution(), cb.getNetTotal(), historyType, cb);
                 //for channel agencyHistory Update
 
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());

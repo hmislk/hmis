@@ -80,6 +80,15 @@ public class InstitutionController implements Serializable {
             selectedAgencies = completeInstitution(selectText, types);
         }
     }
+    
+    public void fetchSelectedCollectingCentre() {
+        InstitutionType[] types={InstitutionType.CollectingCentre};
+        if (selectText.trim().equals("")) {
+            collectingCentre = completeInstitution(null, types);
+        } else {
+            collectingCentre = completeInstitution(selectText, types);
+        }
+    }
 
     public List<Institution> completeIns(String qry) {
         return completeInstitution(qry, InstitutionType.values());
