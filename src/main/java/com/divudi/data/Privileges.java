@@ -27,6 +27,7 @@ public enum Privileges {
     CashTransaction,
     //Submenu Privileges
     OpdBilling,
+    OpdCollectingCentreBilling,
     OpdPreBilling,
     OpdBillSearch,
     OpdBillItemSearch,

@@ -61,6 +61,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node00 = new PrivilageNode("Billing Menu", node0, Privileges.Opd);
         TreeNode node01 = new PrivilageNode("Bill", node0, Privileges.OpdBilling);
         TreeNode node01a = new PrivilageNode("Pre Billing", node0, Privileges.OpdPreBilling);
+        TreeNode node01aa = new PrivilageNode("Collecting Centre Billing", node0, Privileges.OpdCollectingCentreBilling);
         TreeNode node02 = new PrivilageNode("Bill Search", node0, Privileges.OpdBillSearch);
         TreeNode node03 = new PrivilageNode("Bill Item Search", node0, Privileges.OpdBillItemSearch);
         TreeNode node04 = new PrivilageNode("Reprint", node0, Privileges.OpdReprint);

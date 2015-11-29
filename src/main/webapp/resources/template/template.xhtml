@@ -55,7 +55,12 @@
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
                                 <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
                                 <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
-                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{collectingCentreBillController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/collecting_centre/bill"  
+                                                actionListener="#{billController.prepareNewBill}" 
+                                                value="Collecting Centre Billing" 
+                                                rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
+                                    </p:menuitem>
                                     <p:menuitem ajax="false" action="/opd_pre_bill"  actionListener="#{opdPreBillController.prepareNewBill}" value="Bills For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:menuitem>
 
                                     <p:submenu label="Packages">
