@@ -11,7 +11,6 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -1475,7 +1474,9 @@ public class ChannelBillController implements Serializable {
                 bf.setInstitution(institution);
             } else if (f.getFeeType() == FeeType.Staff) {
                 bf.setSpeciality(f.getSpeciality());
+                System.out.println("bf.getSpeciality() = " + bf.getSpeciality());
                 bf.setStaff(f.getStaff());
+                System.out.println("bf.getStaff() = " + bf.getStaff());
             }
 
             bf.setFee(f);

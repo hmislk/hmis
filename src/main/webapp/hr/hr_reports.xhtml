@@ -59,6 +59,14 @@
                                                          value="(9) EPF ETF" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate _or_not"
+                                                         value="(10) Staff Salary Generate Or Not Report" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{hrReportController.makeNull()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_deleted_report"
+                                                         value="(11) Staff Salary Generate Or Delete Detail Report" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{hrReportController.makeNull()}"  />
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel header="(4) Shift" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">

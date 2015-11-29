@@ -24,7 +24,7 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
-                    
+
                         <h:outputLabel value="Consultant"/>
                         <au:completeConsultant value="#{channelReportController.staff}"/>
                     </h:panelGrid>
@@ -40,50 +40,42 @@
                     </h:panelGrid>
 
                 </p:panel>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel UnPid-Bill List">
 
-                    <p:dataGrid value="#{channelReportController.doctorPaymentSummeryRows}" var="row" id="tbl" columns="1">
+                    <p:dataGrid value="#{channelReportController.doctorPaymentSummeryRows}" var="row" id="tbl" columns="1">                        
                         <p:dataTable value="#{row.doctorPaymentSummeryRowSubs}" var="da">
                             <f:facet name="header">
-                                <p:outputLabel value="#{row.consultant.person.name}" style="text-align: left;"/>
-                            </f:facet>
+                                <p:outputLabel value="#{row.date}" style="text-align: left;">
+                                    <f:convertDateTime pattern="dd-MM-YYYY"/>
+                                </p:outputLabel>
+                            </f:facet>                            
                             <p:columnGroup  type="header">
                                 <p:row>
                                     <p:column headerText="Reciept No"/>
-                                    <p:column headerText="App. No" style="text-align: center;"/>
-                                    <p:column headerText="Patient Name" style="text-align: left;"/>
+                                    <p:column headerText="Patient Name" style="text-align: left;"/>                                    
+                                    <p:column headerText="Day" style="text-align: center;"/>
                                     <p:column headerText="Hospital Fee" style="text-align: right;"/>
                                     <p:column headerText="Doc. Fee" style="text-align: right;"/>
-                                    <p:column headerText="Paymentmethod" style="text-align: center;"/>
                                 </p:row>
                             </p:columnGroup>                            
 
                             <p:subTable value="#{da.bills}" var="sub">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{da.date}">
-                                        <f:convertDateTime pattern="dd-MMM-yyyy"/>
-                                    </p:outputLabel>&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="No of Patient:#{da.cashCount+da.onCallCount+da.staffCount+da.agentCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Cash: #{da.cashCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Oncall: #{da.onCallCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Staff: #{da.staffCount}"/>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <p:outputLabel value="Agent: #{da.agentCount}"/>
+                                    <p:outputLabel value="#{da.consultant.person.name}" style="text-align: left;"/>
                                 </f:facet>
                                 <p:column>
                                     <p:outputLabel value="#{sub.insId}"/>
                                 </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <p:outputLabel value="#{sub.singleBillSession.serialNo}"/>
-                                </p:column>
-
                                 <p:column style="text-align: left;">
                                     <p:outputLabel value="#{sub.patient.person.name}"/>
                                 </p:column>
+
+                                <p:column style="text-align: center;">
+                                    <p:outputLabel value="#{sub.singleBillSession.serviceSession.sessionDate}">
+                                    <f:convertDateTime pattern="EEE"/>
+                                    </p:outputLabel>
+                                </p:column>                              
 
                                 <p:column style="text-align: right;">
                                     <p:outputLabel value="#{sub.hospitalFee}"/>
@@ -93,10 +85,10 @@
                                     <p:outputLabel value="#{sub.staffFee}"/>
                                 </p:column>
 
-                                <p:column style="text-align: center;">
+<!--                                <p:column style="text-align: center;">
                                     <p:outputLabel value="#{sub.paymentMethod}" rendered="#{sub.referenceBill eq null}"/>
                                     <p:outputLabel value="#{sub.referenceBill.paymentMethod}" rendered="#{sub.referenceBill ne null}"/>
-                                </p:column>
+                                </p:column>-->
 
                                 <p:columnGroup type="footer">
                                     <p:row>

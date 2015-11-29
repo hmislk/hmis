@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
@@ -17,6 +18,7 @@ import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFlagFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,6 +75,18 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     double toValue;
     Sex sex;
     InvestigationItemValueFlag removingInvestigationItemofDynamicLabelType;
+
+    public void removeDynamicLabelValue() {
+        if (removingInvestigationItemofDynamicLabelType == null) {
+            return;
+        }
+        removingInvestigationItemofDynamicLabelType.setRetired(true);
+        removingInvestigationItemofDynamicLabelType.setRetirer(sessionController.getWebUser());
+        removingInvestigationItemofDynamicLabelType.setRetiredAt(new Date());
+        getFacade().edit(removingInvestigationItemofDynamicLabelType);
+        JsfUtil.addSuccessMessage("Removed");
+        dynamicLabels=null;
+    }
 
     public double getFromValue() {
         return fromValue;
@@ -426,7 +440,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItemValueFlag> getDynamicLabelsByIxItId(InvestigationItem ii) {
         String sql;
-        List<InvestigationItemValueFlag> d ;
+        List<InvestigationItemValueFlag> d;
         if (ii != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
                     + " i.investigationItemOfLabelType.id = " + ii.getId();

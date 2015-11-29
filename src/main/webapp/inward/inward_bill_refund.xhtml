@@ -53,10 +53,13 @@
 
                     <p:panel header="Paid Amount" id="paid" >
                         <p:panelGrid columns="2">
-                            <h:outputLabel value="Total Payments"/>
-                            <h:outputLabel value="#{inwardRefundController.paidAmount}">
-                              
+                            <h:outputLabel value="Refund Amount "/>
+                            <h:outputLabel value="#{inwardRefundController.paidAmount}">                              
                             </h:outputLabel>                           
+                            
+                            <h:outputLabel value="Final Bill Total: "/>
+                            <h:outputLabel value="#{inwardRefundController.netTotal}"></h:outputLabel>
+                            
                         </p:panelGrid>
                     </p:panel>
                    

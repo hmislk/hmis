@@ -23,7 +23,7 @@
 
             <div class="fiveinchbillBreakRuhunu">
                 <h:panelGroup id="gpBillPreview" >
-                    
+
 
                     <div class="errorMessage" >
                         <h:outputLabel rendered="#{cc.attrs.bill.transError}"
@@ -36,29 +36,29 @@
                     </div>
                     <div class="receiptnoPrintingRuhunu"
                          style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
-                        <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.dup eq false}"/>
-                        
+                        <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
 
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
-                                       rendered="#{cc.attrs.bill.cancelledBill.deptId ne null 
+
+                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId} **Cancelled"  
+                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null 
                                                    and cc.attrs.bill.cancelled eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.deptId} **Refunded" 
-                                       rendered="#{cc.attrs.bill.refundedBill.deptId ne null 
+                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null 
                                                    and cc.attrs.bill.refunded eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.deptId} **Duplicate" 
-                                       rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
-                                                   cc.attrs.bill.cancelledBill.deptId eq null 
+                        <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
+                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                   cc.attrs.bill.cancelledBill.insId eq null 
                                                    and cc.attrs.dup eq true}"/>
                     </div>
 
                     <div class="billdatePrintingRuhunu" >                       
-                            
-                            <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                        
+
+                        <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                            <f:convertDateTime pattern="dd/MM/yy"/>
+                        </h:outputLabel>
+
                     </div>
 
                     <div class="paymentPrintingRuhunu" >
@@ -72,14 +72,14 @@
                             <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}"/>                              
                         </h:panelGroup>
                     </div>
-                    
-                    
+
+
                     <div class="billtimePrintingRuhunu" >      
-                            
-                            <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                                <f:convertDateTime pattern="hh:mm a"/>
-                            </h:outputLabel>
-                        
+
+                        <h:outputLabel value="#{cc.attrs.bill.billTime}">
+                            <f:convertDateTime pattern="hh:mm a"/>
+                        </h:outputLabel>
+
                     </div>
 
                     <div class="ptnamePrintingRuhunu" >
@@ -93,7 +93,10 @@
                         </h:outputLabel>
                     </div>
 
-                    <div class="cashierPrintingRuhunu" >
+                    <div style="text-decoration: overline;
+                         position:absolute!important;
+                         left:25%!important;
+                         bottom:3%!important;">
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
                         </h:outputLabel>
                     </div>
@@ -134,7 +137,13 @@
                         </h:dataTable>
                     </div>
 
-                    <div class="totalsPrintingRuhunu">
+                    <div style="position: absolute;
+                         left: 30%!important;
+                         bottom:10%!important;
+                         /*top: 13.8cm;*/
+                         font-size: 20px;
+                         font-weight: bolder;
+                         text-align: right;">
 
                         <table>
                             <tr>

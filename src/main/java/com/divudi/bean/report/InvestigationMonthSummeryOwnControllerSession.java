@@ -5,6 +5,8 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.lab.InvestigationController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -28,6 +30,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.ReportItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,6 +73,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private BillItemFacade billItemFacade;
     @EJB
     BillEjb billEjb;
+    @EJB
+    ReportItemFacade reportItemFacade;
     /**
      * Properties
      */
@@ -127,6 +132,54 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+    }
+    @Inject
+    InvestigationController investigationController;
+    public void createInvestigationExistTable(){
+        items= new ArrayList<>();
+        List<Investigation> investigations;
+        investigations=new ArrayList<>();
+        
+        investigations.addAll(investigationController.getInvestigationItems());
+        System.out.println("investigations = " + investigations);        
+        
+        if(investigations.isEmpty()){
+            UtilityController.addErrorMessage("No Investigations");
+            return;
+        }
+        
+        for(Investigation i:investigations){
+            InvestigationSummeryData temp =new InvestigationSummeryData();
+            
+            temp.setInvestigation(i);
+            
+            temp.setB(checkAvailabilityOfReport(i));
+            
+            if(temp.getInvestigation()!=null){
+                System.out.println("Adding");
+                items.add(temp);
+            }
+            
+        }
+    }
+    
+    public boolean checkAvailabilityOfReport(Investigation investigation){
+        boolean exist=false;
+        String sql;
+        HashMap hm=new HashMap();
+        
+        sql = "Select ri from ReportItem ri "
+                + " where ri.retired=false "
+                + " and ri.item=:itm ";
+        
+        hm.put("itm", investigation);
+        
+        if(reportItemFacade.findFirstBySQL(sql, hm)!=null){
+            exist=true;
+        }
+        System.out.println("reportItemFacade.findFirstBySQL(sql, hm)"+reportItemFacade.findFirstBySQL(sql, hm));
+        
+        return exist;
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
@@ -232,18 +285,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 + " from PatientInvestigation pi join pi.billItem bi join bi.bill b "
                 + " where b.retired=false "
                 + " and b.cancelled=false "
-                + " and b.toDepartment=:dep "
                 + " and b.createdAt between :fd and :td "
                 + " and (bi.refunded is null or bi.refunded=FALSE) "
                 + " and bi.retired=false ";
-        m.put("dep", department);
+
+        if (department != null) {
+            sql += " and b.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
     }
-    
+
     public void createInvestigationTurnoverTime() {
         System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
@@ -1235,6 +1292,4 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.pis = pis;
     }
 
-    
-    
 }

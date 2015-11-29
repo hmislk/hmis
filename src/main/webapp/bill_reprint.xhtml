@@ -44,7 +44,7 @@
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
                                         <h:panelGroup>
                                             <h:outputLabel value="#{billSearch.bill.paymentMethod}" />
@@ -119,7 +119,9 @@
 
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                        
                         <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false
+                                                                     and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
                                                                      and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
@@ -165,6 +167,15 @@
                             </h:panelGroup>
                         </h:panelGroup>
 
+                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh' }">
+                            <div class="nonPrintBlock">
+                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:printer target="gpBillPreviewRmh" ></p:printer>
+                                </p:commandButton>
+                            </div>
+                            <bi:opdBillPrintRmh bill="#{billSearch.bill}" dup="false"/>
+
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">

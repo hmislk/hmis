@@ -548,6 +548,7 @@ public class ServiceController implements Serializable {
                     if (itf.getFeeType() == FeeType.OwnInstitution) {
                         i.setHospitalFee(i.getHospitalFee() + itf.getFee());
                         i.setHospitalFfee(i.getHospitalFfee() + itf.getFfee());
+                        System.out.println("i.getHospitalFee() = " + i.getHospitalFee());
                     } else if (itf.getFeeType() == FeeType.Staff) {
                         i.setProfessionalFee(i.getProfessionalFee() + itf.getFee());
                         i.setProfessionalFfee(i.getProfessionalFfee() + itf.getFfee());

@@ -239,15 +239,18 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
     }
 
     public void createStaffPaysheetComponent() {
+        HashMap hm = new HashMap();
         String sql = "Select ss "
                 + " from StaffPaysheetComponent ss"
                 + " where ss.retired=false "
-                + " and ss.paysheetComponent.componentType=:pct "
-                + " and ss.fromDate <=:fd"
-                + " and ss.toDate >=:fd ";
+                + " and ss.paysheetComponent.componentType=:pct ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
-        HashMap hm = new HashMap();
-        hm.put("fd", getFromDate());
         hm.put("pct", PaysheetComponentType.PerformanceAllowance);
 
 //        if (paysheetComponent != null) {
@@ -281,7 +284,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

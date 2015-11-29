@@ -187,16 +187,16 @@ public class StaffPaySheetComponentController implements Serializable {
         if (getPaysheetComponent() == null) {
             JsfUtil.addErrorMessage("Set Pay Sheet Component");
         }
-
+        HashMap hm = new HashMap();
         String sql = "Select ss from "
                 + " StaffPaysheetComponent ss"
-                + " where ss.retired=false "
-                // + " and ss.staff=:st "
-                + " and ss.fromDate <=:fd "
-                + " and ss.toDate >=:fd ";
-        HashMap hm = new HashMap();
-//        hm.put("td", getToDate());
-        hm.put("fd", getFromDate());
+                + " where ss.retired=false ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
 
         if (getPaysheetComponent() != null) {
             sql += " and ss.paysheetComponent=:pt ";
@@ -228,7 +228,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.roster=:rs ";
+            sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

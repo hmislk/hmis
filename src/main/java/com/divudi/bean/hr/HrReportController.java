@@ -20,6 +20,7 @@ import com.divudi.data.hr.StaffShiftAggrgation;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Form;
 import com.divudi.entity.Institution;
@@ -113,7 +114,8 @@ public class HrReportController implements Serializable {
     SessionController sessionController;
     @Inject
     ShiftFingerPrintAnalysisController shiftFingerPrintAnalysisController;
-
+    @Inject
+    StaffController staffController;
     /**
      *
      * Properties
@@ -137,6 +139,9 @@ public class HrReportController implements Serializable {
     List<OverTimeAllMonth> overTimeAllMonths;
     List<SummeryForMonth> summeryForMonths;
     List<BankViseSalaryAndOt> bankViseSalaryAndOts;
+    List<Staff> salaryGeneratedStaffs;
+    List<Staff> salaryNotGeneratedStaffs;
+    List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails;
 
     String backButtonPage;
 
@@ -862,7 +867,7 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff=:stf ";
             hm.put("stf", getReportKeyWord().getStaff());
         }
-        
+
         if (getReportKeyWord().getEmployeeStatus() != null) {
             sql += " and ss.staff.employeeStatus=:est ";
             hm.put("est", getReportKeyWord().getEmployeeStatus());
@@ -902,6 +907,66 @@ public class HrReportController implements Serializable {
             sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
+
+        return sql;
+    }
+
+    public String createStaffSalaryDeletedQuary(HashMap hm, Staff s) {
+        String sql = "";
+        sql = "select ss from StaffSalary ss "
+                + " where ss.salaryCycle=:scl "
+                + " and ss.staff=:stf ";
+
+        if (blocked == true) {
+            sql += " and ss.blocked=true ";
+        }
+        if (hold == true) {
+            sql += " and ss.hold=true ";
+        }
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+        hm.put("stf", s);
+
+        if (getReportKeyWord().getEmployeeStatus() != null) {
+            sql += " and ss.staff.employeeStatus=:est ";
+            hm.put("est", getReportKeyWord().getEmployeeStatus());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and ss.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and ss.bankBranch.institution=:insbk ";
+            hm.put("insbk", getReportKeyWord().getInstitutionBank());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.staff.codeInterger ";
 
         return sql;
     }
@@ -947,9 +1012,9 @@ public class HrReportController implements Serializable {
                     if (otPayment && netSalary) {
                         nettotal += ss.getTransNetSalry();
                         netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
-                    }else if (!otPayment && netSalary) {
+                    } else if (!otPayment && netSalary) {
                         nettotal += ss.getTransNetSalry();
-                    }else if (otPayment && !netSalary) {
+                    } else if (otPayment && !netSalary) {
                         netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
                     }
 
@@ -993,7 +1058,7 @@ public class HrReportController implements Serializable {
             sql += " and ss.staffSalary.staff.bankBranch=:bk ";
             hm.put("bk", getReportKeyWord().getBank());
         }
-        
+
         if (getReportKeyWord().getInstitutionBank() != null) {
             sql += " and ss.staffPaysheetComponent.bankBranch.institution=:ibk ";
             hm.put("ibk", getReportKeyWord().getInstitutionBank());
@@ -1021,7 +1086,7 @@ public class HrReportController implements Serializable {
 
         return sql;
     }
-    
+
     public List<Institution> createBanks() {
         Map hm = new HashMap();
         String sql = "";
@@ -1062,7 +1127,7 @@ public class HrReportController implements Serializable {
         System.out.println("hm = " + hm);
         return institutionFacade.findBySQL(sql, hm);
     }
-    
+
     public double createBankTotal(Institution i) {
         Map hm = new HashMap();
         String sql = "";
@@ -1824,8 +1889,8 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
-    private long fetchWorkedDays(Staff staff,Date fd,Date td) {
+
+    private long fetchWorkedDays(Staff staff, Date fd, Date td) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -2228,8 +2293,8 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
-    private long fetchExtraDutyDays(Staff staff,Date fd,Date td) {
+
+    private long fetchExtraDutyDays(Staff staff, Date fd, Date td) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -2330,8 +2395,8 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
-    private long fetchLateDays(Staff staff,Date fd,Date td) {
+
+    private long fetchLateDays(Staff staff, Date fd, Date td) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -2489,8 +2554,8 @@ public class HrReportController implements Serializable {
 //        sql += " group by FUNC('Date',ss.shiftDate)";
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
-    
-    private long fetchWorkedDays(Staff staff, DayType dayType, boolean fullShifts, boolean halfShift,Date fd,Date td) {
+
+    private long fetchWorkedDays(Staff staff, DayType dayType, boolean fullShifts, boolean halfShift, Date fd, Date td, boolean leaveLeavePoya) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -2508,6 +2573,17 @@ public class HrReportController implements Serializable {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 //2246740
+        if (dayType == DayType.Poya) {
+            if (leaveLeavePoya) {
+                sql += " and ss.lieuAllowed=true ";
+            } else {
+                sql += " and ss.lieuAllowed!=true ";
+            }
+        }
+        if (dayType == DayType.DayOff) {
+            sql += " and type(ss)=:class "; //only get add forms for day off
+            hm.put("class", StaffShiftExtra.class);
+        }
         if (fullShifts && halfShift) {
 
         } else if (fullShifts) {
@@ -2562,11 +2638,11 @@ public class HrReportController implements Serializable {
 
         return fullAndHald;
     }
-    
-    private double fetchWorkedDays(Staff staff, DayType dayType,Date fd,Date td) {
-        long fs = fetchWorkedDays(staff, dayType, true, false,fd,td);
+
+    private double fetchWorkedDays(Staff staff, DayType dayType, Date fd, Date td, boolean leaveLeavePoya) {
+        long fs = fetchWorkedDays(staff, dayType, true, false, fd, td, leaveLeavePoya);
         //System.out.println("fs = " + fs);
-        long hs = fetchWorkedDays(staff, dayType, false, true,fd,td);
+        long hs = fetchWorkedDays(staff, dayType, false, true, fd, td, leaveLeavePoya);
         //System.out.println("hs = " + hs);
 
         double fullAndHald = fs + (hs * .5);
@@ -2671,26 +2747,27 @@ public class HrReportController implements Serializable {
             monthEndRecords.add(monthEnd);
         }
     }
-    
+
     public void createMonthEndReportNew() {
-        List<Staff> staffList = fetchStaff(getReportKeyWord().getSalaryCycle().getSalaryFromDate(),getReportKeyWord().getSalaryCycle().getSalaryToDate());
+        List<Staff> staffList = fetchStaff(getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate());
         monthEndRecords = new ArrayList<>();
         for (Staff stf : staffList) {
             MonthEndRecord monthEnd = new MonthEndRecord();
             monthEnd.setStaff(stf);
-            monthEnd.setWorkedDays(fetchWorkedDays(stf,getReportKeyWord().getSalaryCycle().getSalaryFromDate(),getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLeave_annual(humanResourceBean.calStaffLeave(stf, LeaveType.Annual, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLeave_casual(humanResourceBean.calStaffLeave(stf, LeaveType.Casual, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLeave_medical(humanResourceBean.calStaffLeave(stf, LeaveType.Medical, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLeave_nopay(humanResourceBean.calStaffLeave(stf, LeaveType.No_Pay,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setWorkedDays(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setLeave_annual(humanResourceBean.calStaffLeave(stf, LeaveType.Annual, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setLeave_casual(humanResourceBean.calStaffLeave(stf, LeaveType.Casual, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setLeave_medical(humanResourceBean.calStaffLeave(stf, LeaveType.Medical, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setLeave_nopay(humanResourceBean.calStaffLeave(stf, LeaveType.No_Pay, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf,getReportKeyWord().getSalaryCycle().getSalaryFromDate(),getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLatedays(fetchLateDays(stf,getReportKeyWord().getSalaryCycle().getSalaryFromDate(),getReportKeyWord().getSalaryCycle().getSalaryToDate()));
-            monthEnd.setLateNoPays(humanResourceBean.calStaffLeaveSystem(stf, LeaveType.No_Pay,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
-            monthEnd.setDayoff(fetchWorkedDays(stf, DayType.DayOff,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
-            monthEnd.setSleepingDays(fetchWorkedDays(stf, DayType.SleepingDay,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
-            monthEnd.setPoyaDays(fetchWorkedDays(stf, DayType.Poya,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
-            monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday,getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
+            monthEnd.setLatedays(fetchLateDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setLateNoPays(humanResourceBean.calStaffLeaveSystem(stf, LeaveType.No_Pay, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            monthEnd.setDayoff(fetchWorkedDays(stf, DayType.DayOff, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
+            monthEnd.setSleepingDays(fetchWorkedDays(stf, DayType.SleepingDay, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
+            monthEnd.setPoyaDays(fetchWorkedDays(stf, DayType.Poya, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
+            monthEnd.setPoyaDaysLeave(fetchWorkedDays(stf, DayType.Poya, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
+            monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
             monthEndRecords.add(monthEnd);
         }
     }
@@ -2736,6 +2813,23 @@ public class HrReportController implements Serializable {
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
                 StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
+                List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+//                System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
+                System.out.println("staffLeaves.size() = " + staffLeaves.size());
+                if (staffLeaves.size() > 1) {
+                    double d = 0.0;
+                    for (StaffLeave sl : staffLeaves) {
+                        if (sl.getLeaveType() != LeaveType.No_Pay_Half) {
+                            d += (ss.getShift().getLeaveHourHalf() * 60 * 60);
+                            System.out.println("d = " + d);
+                        }
+                    }
+                    if (d > 0) {
+                        System.out.println("d = " + d);
+                        System.out.println("value = " + value);
+                        value = d;
+                    }
+                }
                 Double leavedTimeValue = (Double) obj[5] != null ? (Double) obj[5] : 0;
 
                 System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
@@ -2745,6 +2839,37 @@ public class HrReportController implements Serializable {
                     if ((ss.getShift().getDurationMin() * 60) < value) {
                         value = ss.getShift().getDurationMin() * 60;
                     }
+                }
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        weekDayWork.setSunDayExtra(valueExtra);
+                        System.out.println("sunday = ");
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        weekDayWork.setMonDayExtra(valueExtra);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        weekDayWork.setTuesDayExtra(valueExtra);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        weekDayWork.setWednesDayExtra(valueExtra);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        weekDayWork.setThursDayExtra(valueExtra);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        weekDayWork.setFriDayExtra(valueExtra);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        weekDayWork.setSaturDayExtra(valueExtra);
+                        break;
                 }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
@@ -2862,6 +2987,23 @@ public class HrReportController implements Serializable {
                 Double valueExtra = (Double) obj[2] != null ? (Double) obj[2] : 0;
                 Double totalExtraDuty = (Double) obj[3] != null ? (Double) obj[3] : 0;
                 StaffShift ss = (StaffShift) obj[4] != null ? (StaffShift) obj[4] : new StaffShift();
+                List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+//                System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
+                System.out.println("staffLeaves.size() = " + staffLeaves.size());
+                if (staffLeaves.size() > 1) {
+                    double d = 0.0;
+                    for (StaffLeave sl : staffLeaves) {
+                        if (sl.getLeaveType() != LeaveType.No_Pay_Half) {
+                            d += (ss.getShift().getLeaveHourHalf() * 60 * 60);
+                            System.out.println("d = " + d);
+                        }
+                    }
+                    if (d > 0) {
+                        System.out.println("d = " + d);
+                        System.out.println("value = " + value);
+                        value = d;
+                    }
+                }
                 Double leavedTimeValue = (Double) obj[5] != null ? (Double) obj[5] : 0;
 
                 System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
@@ -2871,6 +3013,38 @@ public class HrReportController implements Serializable {
                     if ((ss.getShift().getDurationMin() * 60) < value) {
                         value = ss.getShift().getDurationMin() * 60;
                     }
+                }
+
+                switch (dayOfWeek) {
+                    case Calendar.SUNDAY:
+                        weekDayWork.setSunDay(value);
+                        weekDayWork.setSunDayExtra(valueExtra);
+                        System.out.println("sunday = ");
+                        break;
+                    case Calendar.MONDAY:
+                        weekDayWork.setMonDay(value);
+                        weekDayWork.setMonDayExtra(valueExtra);
+                        break;
+                    case Calendar.TUESDAY:
+                        weekDayWork.setTuesDay(value);
+                        weekDayWork.setTuesDayExtra(valueExtra);
+                        break;
+                    case Calendar.WEDNESDAY:
+                        weekDayWork.setWednesDay(value);
+                        weekDayWork.setWednesDayExtra(valueExtra);
+                        break;
+                    case Calendar.THURSDAY:
+                        weekDayWork.setThursDay(value);
+                        weekDayWork.setThursDayExtra(valueExtra);
+                        break;
+                    case Calendar.FRIDAY:
+                        weekDayWork.setFriDay(value);
+                        weekDayWork.setFriDayExtra(valueExtra);
+                        break;
+                    case Calendar.SATURDAY:
+                        weekDayWork.setSaturDay(value);
+                        weekDayWork.setSaturDayExtra(valueExtra);
+                        break;
                 }
 
                 weekDayWork.setTotal(weekDayWork.getTotal() + value);
@@ -3534,6 +3708,81 @@ public class HrReportController implements Serializable {
         calTableTotal(staffSalarys);
     }
 
+    public void createStaffSalaryGenereateOrNotStaffTable() {
+        salaryGeneratedStaffs = fetchOnlySalaryGeneratedStaff();
+        staffController.setReportKeyWord(getReportKeyWord());
+        staffController.createActiveStaffTable(getReportKeyWord().getSalaryCycle().getDayOffPhFromDate());
+        salaryNotGeneratedStaffs = staffController.getStaffWithCode();
+        System.out.println("salaryGeneratedStaffs.size() = " + salaryGeneratedStaffs.size());
+        System.out.println("salaryNotGeneratedStaffs.size() = " + salaryNotGeneratedStaffs.size());
+        salaryNotGeneratedStaffs.removeAll(salaryGeneratedStaffs);
+        System.out.println("A.R.salaryNotGeneratedStaffs.size() = " + salaryNotGeneratedStaffs.size());
+    }
+
+    public List<Staff> fetchOnlySalaryGeneratedStaff() {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select ss.staff from StaffSalary ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl ";
+        if (blocked == true) {
+            sql += " and ss.blocked=true";
+        }
+        if (hold == true) {
+            sql += " and ss.hold=true";
+        }
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getEmployeeStatus() != null) {
+            sql += " and ss.staff.employeeStatus=:est ";
+            hm.put("est", getReportKeyWord().getEmployeeStatus());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and ss.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and ss.bankBranch.institution=:insbk ";
+            hm.put("insbk", getReportKeyWord().getInstitutionBank());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+        sql += " order by ss.staff.codeInterger ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        return getStaffFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
+
     String chequeNo;
 
     public String getChequeNo() {
@@ -3574,27 +3823,60 @@ public class HrReportController implements Serializable {
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
 
     }
-    
+
     public void createStaffSalaryComponentSummeryBankVise() {
-        if (getReportKeyWord().getPaysheetComponent()==null) {
+        if (getReportKeyWord().getPaysheetComponent() == null) {
             JsfUtil.addErrorMessage("Please Select Paysheet Component");
             return;
         }
-        bankViseSalaryAndOts=new ArrayList<>();
-        totalValue=0.0;
+        bankViseSalaryAndOts = new ArrayList<>();
+        totalValue = 0.0;
         for (Institution i : createBanks()) {
             System.err.println("i = " + i);
-            if (i!=null) {
-                double netTotal=createBankTotal(i);
+            if (i != null) {
+                double netTotal = createBankTotal(i);
                 System.out.println("i.getName() = " + i.getName());
                 System.out.println("netTotal = " + netTotal);
-                BankViseSalaryAndOt bvsao=new BankViseSalaryAndOt();
+                BankViseSalaryAndOt bvsao = new BankViseSalaryAndOt();
                 bvsao.setBank(i);
                 bvsao.setNetSalary(netTotal);
                 bankViseSalaryAndOts.add(bvsao);
-                totalValue+=netTotal;
+                totalValue += netTotal;
             }
         }
+    }
+
+    public void createStaffSalaryDeletedReport() {
+        List<Staff> staffs = new ArrayList<>();
+        salaryAndDeletaedDetails = new ArrayList<>();
+        if (getReportKeyWord().getStaff() == null) {
+            String s;
+            HashMap m = new HashMap();
+            s = "select p from Staff p "
+                    + " where p.retired=false"
+                    + " and type(p)!=:class"
+                    + " and p.person.name is not null "
+                    + " order by p.person.name";
+            m.put("class", Consultant.class);
+            staffs = getStaffFacade().findBySQL(s, m);
+        } else {
+            staffs.add(getReportKeyWord().getStaff());
+        }
+        System.out.println("staffs.size() = " + staffs.size());
+        for (Staff s : staffs) {
+            SalaryAndDeletaedDetail sadd = new SalaryAndDeletaedDetail();
+            List<StaffSalary> sSalarys=new ArrayList<>();
+            String sql;
+            HashMap hm = new HashMap();
+            sql = createStaffSalaryDeletedQuary(hm,s);
+            System.out.println("sql = " + sql);
+            System.out.println("hm = " + hm);
+            sSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+            sadd.setStaff(s);
+            sadd.setSalarys(sSalarys);
+            salaryAndDeletaedDetails.add(sadd);
+        }
+
     }
 
     public List<StaffSalaryComponant> getStaffSalaryComponants() {
@@ -3662,13 +3944,13 @@ public class HrReportController implements Serializable {
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
             totalExtraDutyNormalMinute += totStaffSalary.getExtraDutyNormalMinute();
-            totalRatePerMinut += totStaffSalary.getOverTimeRatePerMinute() * 1.5;
+            totalRatePerMinut += totStaffSalary.getRpmWithMutiplingFactor1_5();
             totalOtValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue();
             totalPhOtMin += totStaffSalary.getExtraDutyPoyaMinute() + totStaffSalary.getExtraDutyMerchantileMinute();
-            totalRatePerMinutPhOt += totStaffSalary.getOverTimeMinute() * 1.5;
+            totalRatePerMinutPhOt += totStaffSalary.getRpmWithMutiplingFactor1_5();
             totalPhOtValue += totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue();
             totalOffDayOtMin += totStaffSalary.getExtraDutySleepingDayMinute() + totStaffSalary.getExtraDutyDayOffMinute();
-            totalRatePerMinuts += totStaffSalary.getOverTimeRatePerMinute() * 2.5;
+            totalRatePerMinuts += totStaffSalary.getRpmWithMutiplingFactor2_5();
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
@@ -4219,6 +4501,28 @@ public class HrReportController implements Serializable {
         }
     }
 
+    public class SalaryAndDeletaedDetail {
+
+        Staff staff;
+        List<StaffSalary> salarys;
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public List<StaffSalary> getSalarys() {
+            return salarys;
+        }
+
+        public void setSalarys(List<StaffSalary> salarys) {
+            this.salarys = salarys;
+        }
+    }
+
     public void makeNull() {
         reportKeyWord = null;
         staffShifts = null;
@@ -4679,6 +4983,30 @@ public class HrReportController implements Serializable {
 
     public void setBankViseSalaryAndOts(List<BankViseSalaryAndOt> bankViseSalaryAndOts) {
         this.bankViseSalaryAndOts = bankViseSalaryAndOts;
+    }
+
+    public List<Staff> getSalaryGeneratedStaffs() {
+        return salaryGeneratedStaffs;
+    }
+
+    public void setSalaryGeneratedStaffs(List<Staff> salaryGeneratedStaffs) {
+        this.salaryGeneratedStaffs = salaryGeneratedStaffs;
+    }
+
+    public List<Staff> getSalaryNotGeneratedStaffs() {
+        return salaryNotGeneratedStaffs;
+    }
+
+    public void setSalaryNotGeneratedStaffs(List<Staff> salaryNotGeneratedStaffs) {
+        this.salaryNotGeneratedStaffs = salaryNotGeneratedStaffs;
+    }
+
+    public List<SalaryAndDeletaedDetail> getSalaryAndDeletaedDetails() {
+        return salaryAndDeletaedDetails;
+    }
+
+    public void setSalaryAndDeletaedDetails(List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails) {
+        this.salaryAndDeletaedDetails = salaryAndDeletaedDetails;
     }
 
 }

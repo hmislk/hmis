@@ -335,11 +335,17 @@
                                     <p:column>
                                         <f:facet name="header">Speciality</f:facet>
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
-                                    </p:column> 
+                                    </p:column>
+                                    
+                                    <p:column>
+                                        <f:facet name="header">Paid Value</f:facet>
+                                        <h:outputLabel value="#{bip.paidValue}"/>
+                                    </p:column>
+                                    
                                     <p:column headerText="Payee">
                                         <p:cellEditor>  
                                             <f:facet name="output"> 
-                                                <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
+                                                <h:outputLabel value="#{bip.staff.person.name}"></h:outputLabel>
                                             </f:facet>  
                                             <f:facet name="input">  
                                                 <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >

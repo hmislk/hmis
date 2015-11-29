@@ -114,6 +114,15 @@
                     <p:column >
                         <p:outputLabel value="#{sts.id}" ></p:outputLabel>
                     </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.multiplyingFactorSalary}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.shift.dayType}"/>
+                    </p:column>
+                    <p:column >
+                       <p:outputLabel value="#{sts.dayType}"/>
+                    </p:column>
                     <p:column headerText="Shift" styleClass="fixedColumn75" >
                         <h:outputLabel id="lblShiftName" value="#{sts.shift.name}" />
                         <p:tooltip for="lblShiftName" >
@@ -133,22 +142,22 @@
                     <p:column headerText="Time" styleClass="fixedColumn100">
                         <h:panelGroup id="lblShiftDate" >
                             <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value=" - " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="h:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="h:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                         </h:panelGroup>
                         <p:tooltip for="lblShiftDate" >
                             <h:outputLabel value="From : " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftStartTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
                             <h:outputLabel value="To : " ></h:outputLabel>
                             <h:outputLabel value="#{sts.shiftEndTime}" >
-                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
                             <h:outputLabel value="Date : " ></h:outputLabel>

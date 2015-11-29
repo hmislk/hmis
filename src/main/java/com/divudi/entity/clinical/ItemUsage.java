@@ -72,7 +72,7 @@ public class ItemUsage implements Serializable {
     Integer intValue2;
     @ManyToOne
     private MeasurementUnit measurementUnit2;
-
+    @Enumerated(EnumType.STRING)
     private Sex sex;
     private Long ageInMonthsFrom;
     private Long ageInMonthsTo;

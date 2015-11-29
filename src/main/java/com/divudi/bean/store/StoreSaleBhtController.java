@@ -490,6 +490,11 @@ public class StoreSaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Please Select a BHT");
             return;
         }
+        
+        if(getPatientEncounter().isDischarged()){
+            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
 
         if (checkAllBillItem()) {
             return;

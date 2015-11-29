@@ -124,6 +124,8 @@ public class PharmacySaleBhtController implements Serializable {
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
+    
+    
 
     public void settleSurgeryBhtIssue() {
         if (getBatchBill() == null) {
@@ -131,6 +133,11 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (getBatchBill().getProcedure() == null) {
+            return;
+        }
+        
+        if(getBatchBill().getPatientEncounter().isDischarged()){
+            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
 
@@ -545,6 +552,11 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
             UtilityController.addErrorMessage("Please Set Room");
+            return true;
+        }
+        
+        if(getPatientEncounter().isDischarged()){
+            UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
 

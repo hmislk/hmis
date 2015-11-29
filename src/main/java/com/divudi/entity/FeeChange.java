@@ -27,10 +27,12 @@ public class FeeChange implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.DATE)
     Date validFrom;
     Fee fee;
     boolean done;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date doneAt;
     @Enumerated(EnumType.STRING)
     FeeChangeType feeChangeType;
 
@@ -134,6 +136,14 @@ public class FeeChange implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Date getDoneAt() {
+        return doneAt;
+    }
+
+    public void setDoneAt(Date doneAt) {
+        this.doneAt = doneAt;
     }
 
     @Override
