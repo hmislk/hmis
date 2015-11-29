@@ -874,6 +874,7 @@ public class CollectingCentreBillController implements Serializable {
                 break;
         }
     }
+    
 
     public boolean putToBills() {
         bills = new ArrayList<>();
