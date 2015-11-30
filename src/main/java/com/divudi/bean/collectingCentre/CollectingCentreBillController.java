@@ -16,7 +16,6 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -42,15 +41,12 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
-import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -60,6 +56,7 @@ import com.divudi.facade.BillFeePaymentFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
@@ -68,20 +65,17 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -117,6 +111,8 @@ public class CollectingCentreBillController implements Serializable {
     BillSessionFacade billSessionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    @EJB
+    ItemFeeFacade itemFeeFacade;
     /**
      * Controllers
      */
@@ -298,7 +294,6 @@ public class CollectingCentreBillController implements Serializable {
         temp.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
-
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setPaymentMethod(getPaymentMethod());
@@ -374,7 +369,6 @@ public class CollectingCentreBillController implements Serializable {
         temp.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
-
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setPaymentMethod(getPaymentMethod());
@@ -460,8 +454,6 @@ public class CollectingCentreBillController implements Serializable {
         return Sex.values();
     }
 
-    
-
     public Double getGrosTotal() {
         return grosTotal;
     }
@@ -469,8 +461,6 @@ public class CollectingCentreBillController implements Serializable {
     public void setGrosTotal(Double grosTotal) {
         this.grosTotal = grosTotal;
     }
-
-    
 
     public BillEjb getBillEjb() {
         return billEjb;
@@ -603,7 +593,7 @@ public class CollectingCentreBillController implements Serializable {
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
         }
-Bill temBill=new Bill();
+        Bill temBill = new Bill();
         for (Department d : billDepts) {
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
@@ -625,7 +615,6 @@ Bill temBill=new Bill();
                 }
             }
 
-            
             myBill.setReferralNumber(referralId);
 
             getBillFacade().edit(myBill);
@@ -727,7 +716,6 @@ Bill temBill=new Bill();
     }
 
     public boolean checkBillValues(Bill b) {
-       
 
         Double[] billItemValues = billBean.fetchBillItemValues(b);
         double billItemTotal = billItemValues[0];
@@ -855,7 +843,6 @@ Bill temBill=new Bill();
         temp.setComments(comment);
 
 //        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
@@ -996,12 +983,10 @@ Bill temBill=new Bill();
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-        {
-            if (billSessions == null || !billSessions.isEmpty()) {
+         if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
-        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
@@ -1051,6 +1036,12 @@ Bill temBill=new Bill();
         if (getCurrentBillItem().getItem().getCategory() == null) {
             System.out.println("cat ?");
             UtilityController.addErrorMessage("Please set Category to Item");
+            return;
+        }
+        
+        if (collectingCentre == null) {
+            System.out.println("Collecting Center ?");
+            UtilityController.addErrorMessage("Please Select Collecting Center");
             return;
         }
 
@@ -1142,11 +1133,11 @@ Bill temBill=new Bill();
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-       
+
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-       
+
         for (BillEntry be : getLstBillEntries()) {
             ////System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1180,7 +1171,6 @@ Bill temBill=new Bill();
         setTotal(billGross);
         setNetTotal(billNet);
 
-        
         System.out.println("bill tot is " + billGross);
     }
 
@@ -1210,6 +1200,7 @@ Bill temBill=new Bill();
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Agent;
+        collectingCentre=null;
     }
 
     public void makeNull() {

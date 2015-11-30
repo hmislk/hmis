@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
@@ -111,6 +112,8 @@ public class BillController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private EnumController enumController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
     @EJB
     BillEjb billEjb;
     @EJB
@@ -1224,14 +1227,10 @@ public class BillController implements Serializable {
             if (referralId == null || referralId.trim().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
                 return true;
-            } else {
+            } else if (institutionReferranceNumberExist()) {
 
-                if (institutionReferranceNumberExist()) {
-
-                    JsfUtil.addErrorMessage("Alredy Entered");
-                    return true;
-                }
-
+                JsfUtil.addErrorMessage("Alredy Entered");
+                return true;
             }
 
         }
@@ -1336,12 +1335,10 @@ public class BillController implements Serializable {
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
-        } else {
-            //System.out.println("billSessions = " + billSessions);
-            if (billSessions == null || !billSessions.isEmpty()) {
-                //System.out.println("new array");
-                billSessions = new ArrayList<>();
-            }
+        } else //System.out.println("billSessions = " + billSessions);
+        if (billSessions == null || !billSessions.isEmpty()) {
+            //System.out.println("new array");
+            billSessions = new ArrayList<>();
         }
     }
 
@@ -1581,7 +1578,7 @@ public class BillController implements Serializable {
             cashRemain = cashPaid;
         }
 
-        //      ////System.out.println("bill tot is " + billGross);
+        System.out.println("bill tot is " + billGross);
     }
 
     public void feeChanged() {
@@ -1610,6 +1607,7 @@ public class BillController implements Serializable {
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
+        collectingCentreBillController.setCollectingCentre(null);
     }
 
     public void makeNull() {
