@@ -233,7 +233,7 @@
                                                     <p:ajax event="itemSelect"  listener="#{collectingCentreBillController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                                 </p:autoComplete>
                                                 <h:commandButton id="btnAddIx" value="Add" action="#{collectingCentreBillController.addToBill()}"  style="width: 75px;"  >
-                                                    <f:ajax execute="acIx btnAddIx panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
+                                                    <f:ajax execute="acIx btnAddIx panelBillItems :#{p:component('acColl')}" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                                 </h:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
                                             </h:panelGrid>
@@ -285,7 +285,7 @@
                                                 </p:column>
                                                 <p:column >
                                                     <p:autoComplete converter="deal" value="#{collectingCentreBillController.collectingCentre}" 
-                                                                    forceSelection="true"
+                                                                    forceSelection="true" id="acColl"
                                                                     completeMethod="#{institutionController.completeCollectingCenter}" 
                                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                                         <p:column>#{vt.institutionCode}</p:column>
