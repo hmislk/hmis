@@ -22,7 +22,8 @@ public enum FeeType {
     Matrix,
     Issue,
     Additional,
-    Service,;
+    Service,
+    CollectingCentre;
 
     public String getLabel() {
         switch (this) {
@@ -36,6 +37,8 @@ public enum FeeType {
                 return "Regent Fee";
             case Service:
                 return "Service Fee";
+            case CollectingCentre:
+                return "Collecting Centre";
             default:
                 return this.toString();
         }

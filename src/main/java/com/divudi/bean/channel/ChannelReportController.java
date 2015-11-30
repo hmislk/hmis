@@ -62,10 +62,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
-/**
- *
- * @author safrin
- */
 @Named
 @SessionScoped
 public class ChannelReportController implements Serializable {
@@ -3502,6 +3498,15 @@ public class ChannelReportController implements Serializable {
         agentHistorys = new ArrayList<>();
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, null);
+
+    }
+    
+    public void createCollectingCentreHistoryTable() {
+        agentHistorys = new ArrayList<>();
+        HistoryType[] hts={HistoryType.CollectingCentreBalanceUpdateBill,HistoryType.CollectingCentreDeposit,HistoryType.CollectingCentreDepositCancel};
+        List<HistoryType> historyTypes=Arrays.asList(hts);
+
+        agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);
 
     }
 

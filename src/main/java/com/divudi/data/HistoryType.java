@@ -22,5 +22,8 @@ public enum HistoryType {
     ChannelDeposit,
     ChannelDepositCancel,
     AgentBalanceUpdateBill,
+    CollectingCentreBalanceUpdateBill,
+    CollectingCentreDeposit,
+    CollectingCentreDepositCancel,
     MonthlyRecord,   
 }

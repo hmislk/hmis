@@ -4887,9 +4887,17 @@ public class SearchController implements Serializable {
         billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public void createChannelAgencyPaymentTable(){
+        createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
+    }
+    
+    public void createCollectingCentrePaymentTable(){
+        createAgentPaymentTable(BillType.CollectingCentrePaymentReceiveBill);
+    }
 
-    public void createAgentPaymentTable() {
-        bills = null;
+    public void createAgentPaymentTable(BillType billType) {
+        bills = new ArrayList<>();
         String sql;
         Map temMap = new HashMap();
 
@@ -4919,7 +4927,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 
-        temMap.put("billType", BillType.AgentPaymentReceiveBill);
+        temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
