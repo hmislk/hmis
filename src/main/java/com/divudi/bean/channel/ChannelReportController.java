@@ -3503,7 +3503,7 @@ public class ChannelReportController implements Serializable {
     
     public void createCollectingCentreHistoryTable() {
         agentHistorys = new ArrayList<>();
-        HistoryType[] hts={HistoryType.CollectingCentreBalanceUpdateBill,HistoryType.CollectingCentreDeposit,HistoryType.CollectingCentreDepositCancel};
+        HistoryType[] hts={HistoryType.CollectingCentreBalanceUpdateBill,HistoryType.CollectingCentreDeposit,HistoryType.CollectingCentreDepositCancel,};
         List<HistoryType> historyTypes=Arrays.asList(hts);
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);

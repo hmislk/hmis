@@ -24,6 +24,7 @@ public enum BillType {
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
+    CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
     OpdPreBill,
