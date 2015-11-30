@@ -5,7 +5,6 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
@@ -318,7 +317,7 @@
                                                     <p:outputLabel value="Referring Doctor"></p:outputLabel>
                                                 </p:column>
                                                 <p:column >
-                                                    <p:autoComplete class="mediuminput" forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
+                                                    <p:autoComplete styleClass="mediuminput" forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
                                                     </p:autoComplete>
                                                     <p:spacer width="20" height="1" ></p:spacer>
                                                     <p:commandButton id="btnAddNewDoc" type="button" value="Add" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" style="float: right;"/>  
@@ -671,5 +670,9 @@
             </h:form>
 
         </h:panelGroup>
+   
+    
+    
+    
     </ui:define>
 </ui:composition>
