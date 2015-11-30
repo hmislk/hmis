@@ -144,7 +144,7 @@ public class CollectingCentreBillController implements Serializable {
     //Interface Data
     private PaymentScheme paymentScheme;
     private Institution collectingCentre;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod = PaymentMethod.Agent;
     private Patient newPatient;
     private Patient searchedPatient;
     private Doctor referredBy;
@@ -297,11 +297,11 @@ public class CollectingCentreBillController implements Serializable {
 
         temp.setComments(comment);
 
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//        getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
+        temp.setPaymentMethod(getPaymentMethod());
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
@@ -313,7 +313,7 @@ public class CollectingCentreBillController implements Serializable {
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
-        Payment p = createPayment(temp, paymentMethod);
+        Payment p = createPayment(temp, getPaymentMethod());
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
         List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
@@ -373,11 +373,11 @@ public class CollectingCentreBillController implements Serializable {
 
         temp.setComments(comment);
 
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//        getBillBean().setPaymentMethodData(temp, getPaymentMethod(), getPaymentMethodData());
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
+        temp.setPaymentMethod(getPaymentMethod());
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
@@ -460,259 +460,7 @@ public class CollectingCentreBillController implements Serializable {
         return Sex.values();
     }
 
-    public List<Bill> completeOpdCreditBill(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and c.billType= :btp "
-                    + " and c.paymentMethod= :pm "
-                    + " and c.cancelledBill is null "
-                    + " and c.refundedBill is null "
-                    + " and c.retired=false "
-                    + " and (upper(c.insId) like :q or"
-                    + " upper(c.patient.person.name) like :q "
-                    + " or upper(c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
-            hash.put("btp", BillType.OpdBill);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findBySQL(sql, hash);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeBillFromDealor(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
-        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and c.billType in :bts "
-                    + " and c.createdAt is not null "
-                    + " and c.deptId is not null "
-                    + " and c.cancelledBill is null "
-                    + " and c.retired=false "
-                    + " and c.paymentMethod=:pm  "
-                    + " and ((upper(c.deptId) like :q ) "
-                    + " or (upper(c.fromInstitution.name)  like :q ))"
-                    + " order by c.fromInstitution.name";
-            hash.put("bts", billTypesListBilled);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 20);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeBillFromDealorStore(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and (c.billType= :btp1 or c.billType= :btp2  )"
-                    + " and c.createdAt is not null "
-                    + " and c.deptId is not null "
-                    + " and c.cancelledBill is null "
-                    + " and c.retired=false "
-                    + " and c.paymentMethod=:pm  "
-                    + " and c.fromInstitution.institutionType=:insTp  "
-                    + " and ((upper(c.deptId) like :q ) "
-                    + " or (upper(c.fromInstitution.name)  like :q ))"
-                    + " order by c.fromInstitution.name";
-            hash.put("btp1", BillType.PharmacyGrnBill);
-            hash.put("btp2", BillType.PharmacyPurchaseBill);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("insTp", InstitutionType.StoreDealor);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 10);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeSurgeryBills(String qry) {
-
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BilledBill b "
-                + " where b.billType = :billType "
-                + " and b.cancelled=false "
-                + " and b.retired=false "
-                + " and b.patientEncounter.discharged=false ";
-
-        sql += " and  ((upper(b.patientEncounter.patient.person.name) like :q )";
-        sql += " or  (upper(b.patientEncounter.bhtNo) like :q )";
-        sql += " or  (upper(b.insId) like :q )";
-        sql += " or  (upper(b.procedure.item.name) like :q ))";
-        sql += " order by b.insId desc  ";
-
-        temMap.put("billType", BillType.SurgeryBill);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
-        List<Bill> tmps = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 20);
-
-        return tmps;
-    }
-
-    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
-        String sql;
-        HashMap hash = new HashMap();
-
-        sql = "select c from BilledBill c where "
-                + " abs(c.netTotal)-abs(c.paidAmount)>:val"
-                + " and c.billType in :bts"
-                + " and c.createdAt is not null "
-                + " and c.deptId is not null "
-                + " and c.cancelled=false"
-                + " and c.retired=false"
-                + " and c.paymentMethod=:pm  "
-                + " and c.fromInstitution=:ins "
-                + " order by c.id ";
-        hash.put("bts", billTypes);
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("val", 0.1);
-        hash.put("ins", institution);
-        //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
-
-        if (bill == null) {
-            bill = new ArrayList<>();
-        }
-
-        return bill;
-    }
-
-    public List<Bill> getCreditBills(Institution institution) {
-        String sql;
-        HashMap hash = new HashMap();
-
-        sql = "select c from BilledBill c  where"
-                + " abs(c.netTotal)-abs(c.paidAmount)>:val "
-                + " and c.billType= :btp"
-                + " and c.createdAt is not null "
-                + " and c.deptId is not null "
-                + " and c.cancelled=false"
-                + " and c.retired=false"
-                + " and c.paymentMethod=:pm  "
-                + " and c.creditCompany=:ins "
-                + " order by c.id ";
-        hash.put("btp", BillType.OpdBill);
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("val", 0.1);
-        hash.put("ins", institution);
-        //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
-
-        if (bill == null) {
-            bill = new ArrayList<>();
-        }
-
-        return bill;
-    }
-
-    public List<Bill> getBills(Date fromDate, Date toDate, BillType billType1, BillType billType2, Institution institution) {
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "Select b From Bill b where"
-                + "  b.retired=false"
-                + "  and b.createdAt between :frm and :to"
-                + " and (b.fromInstitution=:ins "
-                + " or b.toInstitution=:ins) "
-                + " and (b.billType=:tp1"
-                + " or b.billType=:tp2)";
-        hm.put("frm", fromDate);
-        hm.put("to", toDate);
-        hm.put("ins", institution);
-        hm.put("tp1", billType1);
-        hm.put("tp2", billType2);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-
-    }
-
-    public void getOpdBills() {
-        BillType[] billTypes = {BillType.OpdBill};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
-        if (r == null) {
-            r = new BillListWithTotals();
-            bills = r.getBills();
-            netTotal = r.getNetTotal();
-            discount = r.getDiscount();
-            grosTotal = r.getGrossTotal();
-            return;
-        }
-        if (r.getBills() != null) {
-            bills = r.getBills();
-        }
-        if (r.getNetTotal() != null) {
-            netTotal = r.getNetTotal();
-        }
-        if (r.getDiscount() != null) {
-            discount = r.getDiscount();
-        }
-        if (r.getGrossTotal() != null) {
-            grosTotal = r.getGrossTotal();
-        }
-    }
-
-    public void getPharmacySaleBills() {
-        BillType[] billTypes;
-        if (billType == null) {
-            billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
-        } else {
-            billTypes = new BillType[]{billType};
-        }
-
-        BillListWithTotals r = null;
-
-        if (paymentMethod == null) {
-            r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
-        } else {
-            PaymentMethod[] pms = new PaymentMethod[]{
-                paymentMethod,};
-            r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, pms);
-        }
-
-        if (r == null) {
-            r = new BillListWithTotals();
-            bills = r.getBills();
-            netTotal = r.getNetTotal();
-            discount = r.getDiscount();
-            grosTotal = r.getGrossTotal();
-            return;
-        }
-        if (r.getBills() != null) {
-            bills = r.getBills();
-        }
-        if (r.getNetTotal() != null) {
-            netTotal = r.getNetTotal();
-        }
-        if (r.getDiscount() != null) {
-            discount = r.getDiscount();
-        }
-        if (r.getGrossTotal() != null) {
-            grosTotal = r.getGrossTotal();
-        }
-    }
+    
 
     public Double getGrosTotal() {
         return grosTotal;
@@ -722,33 +470,7 @@ public class CollectingCentreBillController implements Serializable {
         this.grosTotal = grosTotal;
     }
 
-    public void getPharamacyWholeSaleCreditBills() {
-        BillType[] billTypes = {BillType.PharmacyWholeSale};
-        PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
-        bills = r.getBills();
-        netTotal = r.getNetTotal();
-        discount = r.getDiscount();
-        grosTotal = r.getGrossTotal();
-    }
-
-    public void getPharmacyBills() {
-        BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
-        bills = r.getBills();
-        netTotal = r.getNetTotal();
-        discount = r.getDiscount();
-        grosTotal = r.getGrossTotal();
-    }
-
-    public void getPharmacyWholeBills() {
-        BillType[] billTypes = {BillType.PharmacySale};
-        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
-        bills = r.getBills();
-        netTotal = r.getNetTotal();
-        discount = r.getDiscount();
-        grosTotal = r.getGrossTotal();
-    }
+    
 
     public BillEjb getBillEjb() {
         return billEjb;
@@ -874,7 +596,6 @@ public class CollectingCentreBillController implements Serializable {
                 break;
         }
     }
-    
 
     public boolean putToBills() {
         bills = new ArrayList<>();
@@ -882,7 +603,7 @@ public class CollectingCentreBillController implements Serializable {
         for (BillEntry e : lstBillEntries) {
             billDepts.add(e.getBillItem().getItem().getDepartment());
         }
-
+Bill temBill=new Bill();
         for (Department d : billDepts) {
             Bill myBill = new BilledBill();
             myBill = saveBill(d, myBill);
@@ -904,20 +625,25 @@ public class CollectingCentreBillController implements Serializable {
                 }
             }
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                myBill.setCashPaid(cashPaid);
-            }
-
-            myBill.setReferralNumber(referralId);
-            updateBallance(collectingCentre, 0 - Math.abs(myBill.getNetTotal()), HistoryType.ChannelBooking, myBill, myBill.getReferralNumber());
             
+            myBill.setReferralNumber(referralId);
+
             getBillFacade().edit(myBill);
 
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
 
             bills.add(myBill);
+            temBill = myBill;
         }
+
+        double feeTotalExceptCcfs = 0.0;
+        for (BillFee bf : lstBillFees) {
+            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                feeTotalExceptCcfs += bf.getFeeValue();
+            }
+        }
+        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
 
         return true;
     }
@@ -955,13 +681,20 @@ public class CollectingCentreBillController implements Serializable {
             b.setBalance(0.0);
             b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
             b.setReferralNumber(referralId);
-            
+
             createPaymentsForBills(b, getLstBillEntries());
-            
+
             getBillFacade().edit(b);
             getBills().add(b);
 
-            updateBallance(collectingCentre, 0 - Math.abs(b.getNetTotal()), HistoryType.ChannelBooking, b, b.getReferralNumber());
+            double feeTotalExceptCcfs = 0.0;
+            for (BillFee bf : lstBillFees) {
+                if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                    feeTotalExceptCcfs += bf.getFeeValue();
+                }
+            }
+
+            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferralNumber());
 
         } else {
             boolean result = putToBills();
@@ -994,9 +727,7 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public boolean checkBillValues(Bill b) {
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            return false;
-        }
+       
 
         Double[] billItemValues = billBean.fetchBillItemValues(b);
         double billItemTotal = billItemValues[0];
@@ -1037,9 +768,9 @@ public class CollectingCentreBillController implements Serializable {
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
-        tmp.setBillType(BillType.OpdBathcBill);
+        tmp.setBillType(BillType.CollectingCentreBatchBill);
         tmp.setPaymentScheme(paymentScheme);
-        tmp.setPaymentMethod(paymentMethod);
+        tmp.setPaymentMethod(getPaymentMethod());
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(tmp);
@@ -1123,14 +854,14 @@ public class CollectingCentreBillController implements Serializable {
         temp.setReferredByInstitution(referredByInstitution);
         temp.setComments(comment);
 
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
         temp.setPaymentScheme(getPaymentScheme());
-        temp.setPaymentMethod(paymentMethod);
+        temp.setPaymentMethod(getPaymentMethod());
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
 
@@ -1223,11 +954,9 @@ public class CollectingCentreBillController implements Serializable {
         if (referralId == null || referralId.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a referrance number");
             return true;
-        } else {
-            if (institutionReferranceNumberExist()) {
-                JsfUtil.addErrorMessage("Referral number alredy entered");
-                return true;
-            }
+        } else if (institutionReferranceNumberExist()) {
+            JsfUtil.addErrorMessage("Referral number alredy entered");
+            return true;
         }
 
         if (getLstBillEntries().isEmpty()) {
@@ -1266,8 +995,8 @@ public class CollectingCentreBillController implements Serializable {
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
-        } else {
-            //System.out.println("billSessions = " + billSessions);
+        } else //System.out.println("billSessions = " + billSessions);
+        {
             if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
@@ -1413,21 +1142,11 @@ public class CollectingCentreBillController implements Serializable {
     MembershipSchemeController membershipSchemeController;
 
     public void calTotals() {
-//     //   //System.out.println("calculating totals");
-        if (paymentMethod == null) {
-            return;
-        }
-
-        if (toStaff != null) {
-            paymentScheme = null;
-            creditCompany = null;
-        }
-
+       
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
-
+       
         for (BillEntry be : getLstBillEntries()) {
             ////System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1436,29 +1155,7 @@ public class CollectingCentreBillController implements Serializable {
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
-                Department department = null;
-                Item item = null;
-                PriceMatrix priceMatrix;
-                Category category = null;
-
-                if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-                    department = bf.getBillItem().getItem().getDepartment();
-
-                    item = bf.getBillItem().getItem();
-                }
-
-                //Membership Scheme
-                if (membershipScheme != null) {
-                    priceMatrix = getPriceMatrixController().getOpdMemberDisCount(paymentMethod, membershipScheme, department, category);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, membershipScheme, bi.getItem(), priceMatrix);
-                    //System.out.println("priceMetrix = " + priceMatrix);
-
-                } else {
-                    //Payment  Scheme && Credit Company
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
-                    getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
-                }
-
+                Department dept = null;
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
@@ -1483,28 +1180,8 @@ public class CollectingCentreBillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            //System.out.println("cashPaid = " + cashPaid);
-            //System.out.println("billNet = " + billNet);
-            if (cashPaid >= billNet) {
-                //System.out.println("fully paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(billNet);
-                setCashBalance(cashPaid - billNet - billDiscount);
-                //System.out.println("cashBalance = " + cashBalance);
-            } else {
-                //System.out.println("half paid = ");
-                setDiscount(billDiscount);
-                setTotal(billGross);
-                setNetTotal(cashPaid);
-                setCashBalance(billNet - cashPaid - billDiscount);
-                //System.out.println("cashBalance = " + cashBalance);
-            }
-            cashRemain = cashPaid;
-        }
-
-        //      ////System.out.println("bill tot is " + billGross);
+        
+        System.out.println("bill tot is " + billGross);
     }
 
     public void feeChanged() {
@@ -1538,7 +1215,7 @@ public class CollectingCentreBillController implements Serializable {
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
-        paymentMethod = null;
+        paymentMethod = PaymentMethod.Agent;
         printPreview = false;
 
     }

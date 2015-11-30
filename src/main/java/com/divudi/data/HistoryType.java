@@ -25,5 +25,6 @@ public enum HistoryType {
     CollectingCentreBalanceUpdateBill,
     CollectingCentreDeposit,
     CollectingCentreDepositCancel,
+    CollectingCentreBilling,
     MonthlyRecord,   
 }
