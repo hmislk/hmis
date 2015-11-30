@@ -140,7 +140,7 @@ public class ItemController implements Serializable {
             ni.setDepartment(department);
             ni.setItemFee(null);
             System.out.println("ni.getReportedAs() in master = " + i.getReportedAs());
-            System.out.println("ni.getReportedAs() in created = " + ni.getReportedAs());            
+            System.out.println("ni.getReportedAs() in created = " + ni.getReportedAs());
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
             //System.out.println("ni = " + ni);
@@ -183,9 +183,34 @@ public class ItemController implements Serializable {
             //System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
     }
-    
-    public void updateItemsFromMasterItems(){
-        
+
+    public void updateItemsFromMasterItems() {
+        if (instituion == null) {
+            JsfUtil.addErrorMessage("Select institution");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Select department");
+            return;
+        }
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Select Items");
+            return;
+        }
+
+        for (Item i : selectedList) {
+            if (i.getDepartment() != null) {
+                i.setDepartment(department);
+            }
+
+            if (i.getInstitution() != null) {
+                i.setInstitution(instituion);
+            }
+            getFacade().edit(i);
+        }
+
+        selectedList = null;
+
     }
 
     public void updateItemsAndFees() {
@@ -201,7 +226,6 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Select Items");
             return;
         }
-
 
         for (ItemFee fee : selectedItemFeeList) {
             if (fee.getDepartment() != null) {

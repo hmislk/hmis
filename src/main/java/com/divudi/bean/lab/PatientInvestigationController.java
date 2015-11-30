@@ -480,7 +480,7 @@ public class PatientInvestigationController implements Serializable {
 
         if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             messageBody = "Dear Sir/Madam,\n"
-                    + "Thank you for using RHD services. Report number" + bill.getInsId() + "is ready for collection\n"
+                    + "Thank you for using RHD services. Report number " + bill.getInsId() + " is ready for collection\n"
                     + "\"RHD your trusted diagnostics partner\"";
         } else {
             messageBody = "Reports ready. ";
