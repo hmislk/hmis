@@ -48,6 +48,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -1222,6 +1223,15 @@ public class BillController implements Serializable {
                 return true;
             }
         }
+        for (BillEntry be : getLstBillEntries()) {
+            System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
+            if (be.getBillItem().getItem() instanceof Investigation) {
+                if (referredBy==null) {
+                    UtilityController.addErrorMessage("Please Select Refering Doctor.Refering Doctor is Requierd for Investigations.");
+                    return true;
+                }
+            }
+        }
 
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
             if (referralId == null || referralId.trim().equals("")) {
@@ -1336,10 +1346,10 @@ public class BillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-        if (billSessions == null || !billSessions.isEmpty()) {
-            //System.out.println("new array");
-            billSessions = new ArrayList<>();
-        }
+         if (billSessions == null || !billSessions.isEmpty()) {
+                //System.out.println("new array");
+                billSessions = new ArrayList<>();
+            }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
