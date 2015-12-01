@@ -24,21 +24,22 @@
 
                             <autocomplete:completeStaff value="#{staffController.current}"/>
                             <h:commandButton value="Refresh" />
-                            
+
                             <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
-                            
+
                             <h:commandButton id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
+                            <h:commandButton id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
                             <p:defaultCommand target="btnSave"/>
-                            
+
                             <p:graphicImage  value="#{staffImageController.signatureById}" >
-                                    <f:param name="id" value="#{staffController.current.id}" />
-                                </p:graphicImage>
+                                <f:param name="id" value="#{staffController.current.id}" />
+                            </p:graphicImage>
                         </h:panelGrid>
 
 
                     </h:form>
 
-              
+
 
                 </p:panel>
 

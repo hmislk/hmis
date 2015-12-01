@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions" >
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Collecting Centre Reference Book" styleClass="verticalAndHorizontalCenteringLarge">
+
+                <p:panelGrid columns="2" >
+                    <p:outputLabel value="Collecting Centre Name" />
+                    <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
+                                    forceSelection="true"
+                                    completeMethod="#{institutionController.completeCollectingCenter}" 
+                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                        <p:column>#{vt.institutionCode}</p:column>
+                        <p:column>#{vt.name}</p:column>
+                    </p:autoComplete>
+                    <p:outputLabel value="Book Number" />
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
+                    <p:outputLabel value="Strarting Reference Number" />
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
+                    <p:outputLabel value="Ending Reference Number" />
+                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
+                    
+                    <p:commandButton action="#{agentReferenceBookController.saveLabBook}" value="Save" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
+
+                </p:panelGrid>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

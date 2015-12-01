@@ -37,7 +37,7 @@
                                 <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.settleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.channellAgencyPaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
 

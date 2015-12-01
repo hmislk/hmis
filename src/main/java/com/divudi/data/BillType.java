@@ -23,6 +23,8 @@ public enum BillType {
     OpdBathcBillPre,
     SurgeryBill,
     LabBill,
+    CollectingCentreBill,
+    CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
     OpdPreBill,
@@ -40,6 +42,7 @@ public enum BillType {
     CashRecieveBill,
     PettyCash,
     AgentPaymentReceiveBill,
+    CollectingCentrePaymentReceiveBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,

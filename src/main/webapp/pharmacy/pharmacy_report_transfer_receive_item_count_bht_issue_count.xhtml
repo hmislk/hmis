@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+
+                    <p:panel header="Transfer Recive Vs BHT Issue Quntity Totals By Item(Consider Theater)" >
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Transfer From" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="Transfer To" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.fromDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{reportsTransfer.toDate}" navigator="true" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.fillTheaterTransfersReceiveWithBHTIssue()}" ></p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont"  
+                                         value="#{reportsTransfer.itemBHTIssueCountTrancerReciveCounts}" var="i"  
+                                         >
+
+                                <f:facet name="header">
+                                    <h:panelGrid >
+                                        <h:outputLabel value="Issue From  #{reportsTransfer.fromDepartment.name} Recive To #{reportsTransfer.toDepartment.name} &amp; BHT Issue From #{reportsTransfer.toDepartment.name}"/>
+                                    </h:panelGrid>
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="Item Descreption">
+                                    <h:outputLabel value="#{i.i.name}"  >                                      
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Issue Qty" style="text-align: right;">
+                                    <h:outputLabel value="#{i.countIssue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsTransfer.totalIssueQty}"  >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Issue Value" style="text-align: right;">
+                                    <h:outputLabel value="#{i.totalIssue}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsTransfer.totalIssueValue}"  >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="BHT Issue Qty" style="text-align: right;">
+                                    <h:outputLabel value="#{i.countBht}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsTransfer.totalBHTIssueQty}"  >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="BHT Issue Value" style="text-align: right;">
+                                    <h:outputLabel value="#{i.totalBht}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{reportsTransfer.totalBHTIssueValue}"  >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

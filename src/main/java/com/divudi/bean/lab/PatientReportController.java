@@ -234,13 +234,22 @@ public class PatientReportController implements Serializable {
             UtilityController.addErrorMessage("Report Items values is empty");
             return;
         }
+        String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                String sql = "select i from IxCal i where i.retired=false and i.calIxItem.id = " + priv.getInvestigationItem().getId();
-                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql);
+                String sql = "select i "
+                        + " from IxCal i "
+                        + " where (i.retired=false or i.retired is null) "
+                        + " and i.calIxItem = :iii "
+                        + " order by i.id";
+                Map m = new HashMap();
+                m.put("iii", priv.getInvestigationItem());
+                System.out.println("m = " + m);
+                System.out.println("sql = " + sql);
+                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql,m);
                 double result = 0;
                 System.out.println("ixcals size is " + ixCals.size());
-                String calString = "";
+                calString = "";
                 for (IxCal c : ixCals) {
                     if (c.getCalculationType() == CalculationType.Constant) {
                         calString = calString + c.getConstantValue();

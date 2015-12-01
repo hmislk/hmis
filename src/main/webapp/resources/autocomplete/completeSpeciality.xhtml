@@ -7,6 +7,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="value"/>
+        <cc:attribute name="disable"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -17,7 +18,7 @@
                           var="mys" 
                           itemLabel="#{mys.name}" 
                           itemValue="#{mys}"
-                          converter="specilityCon"   >              
+                          converter="specilityCon" disabled="#{cc.attrs.disable}"   >              
         </p:autoComplete> 
         <p:watermark for="speciality" value="Speciality"/>
     </cc:implementation>

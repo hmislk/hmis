@@ -290,24 +290,13 @@
                                                   forceSelection="true"
                                                   completeMethod="#{itemController.completeStoreInventryItem}" 
                                                   var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item" style="width: 20px;" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
+                                    
                                     <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" 
                                             listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
                                 </p:autoComplete>
@@ -381,7 +370,6 @@
 
 
                         </h:panelGroup>
-
 
                     </p:dialog>  
 

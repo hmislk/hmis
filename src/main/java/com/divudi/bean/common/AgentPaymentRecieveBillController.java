@@ -99,9 +99,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
         return false;
     }
     
-    private void saveBill(BillType billType) {
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, BillNumberSuffix.AGNPAY));
+    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix) {
+        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getCurrent().setBillType(billType);
         
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -145,7 +145,15 @@ public class AgentPaymentRecieveBillController implements Serializable {
         this.comment = comment;
     }
     
-    public void settleBill() {
+    public void collectingCentrePaymentRecieveSettleBill(){
+        settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
+    }
+    
+    public void channellAgencyPaymentRecieveSettleBill(){
+        settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
+    }
+    
+    public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
         addToBill();
         if (errorCheck()) {
             return;
@@ -155,15 +163,15 @@ public class AgentPaymentRecieveBillController implements Serializable {
         
         getCurrent().setTotal(getCurrent().getNetTotal());
         
-        saveBill(BillType.AgentPaymentReceiveBill);
+        saveBill(billType, billNumberSuffix);
         saveBillItem();
         //for channel agencyHistory Update
-        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), HistoryType.ChannelDeposit, getCurrent());
+        createAgentHistory(getCurrent().getFromInstitution(), getCurrent().getNetTotal(), historyType, getCurrent());
         //for channel agencyHistory Update
 
         //Update Agent Max Credit Limit
         if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit()))&&(getCurrent().getFromInstitution().getMaxCreditLimit()!= getCurrent().getFromInstitution().getStandardCreditLimit())) {
-            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), HistoryType.AgentBalanceUpdateBill, "Agent Payment Allowed Credit Limit Update");
+            institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), updatHistoryType, "Agent Payment Allowed Credit Limit Update");
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
         }

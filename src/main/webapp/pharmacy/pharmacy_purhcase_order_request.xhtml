@@ -84,7 +84,7 @@
                     </p:tab>
 
                 </p:tabView>
-                
+
                 <p:dataTable styleClass="noBorder" rowIndexVar="i" var="bi" scrollable="true"
                              rowKey="#{bi.searialNo}"
                              scrollHeight="250" value="#{purchaseOrderRequestController.billItems}" 
@@ -94,37 +94,41 @@
                     <f:facet name="header">  
                         <h:outputLabel  value="Pharmacy Bill Item"/>
                         <p:commandButton ajax="false" value="Remove All" 
-                                        action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                         action="#{purchaseOrderRequestController.removeSelected()}"/>
                     </f:facet>  
 
-                    <p:column selectionMode="multiple"/>
+                    <p:column selectionMode="multiple" style="width: 30px;"/>
 
 
-                    <p:column headerText="No" >
+                    <p:column headerText="No" style="width: 50px;" >
                         #{bi.searialNo+1}
                     </p:column>
 
                     <p:column headerText="Item Name"  >  
                         #{bi.item.name} 
                     </p:column>
-                    
-                    <p:column headerText="Qty" > 
+
+                    <p:column headerText="Code" styleClass="shortNumericColumn"  >  
+                        #{bi.item.code} 
+                    </p:column>
+
+                    <p:column headerText="Qty" styleClass="averageNumericColumn" > 
                         <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">  
                             <f:convertNumber pattern="#00.00"/>
                             <f:ajax event="blur" render="total :#{p:component('tot')} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                         </p:inputText>
                     </p:column> 
-                    
-                    <p:column headerText="Free Qty" > 
+
+                    <p:column headerText="Free Qty" styleClass="averageNumericColumn" > 
                         <p:inputText autocomplete="off"  id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%" label="Qty">  
                             <f:convertNumber pattern="#00.00"/>
                             <f:ajax event="blur" render="total :#{p:component('tot')} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                         </p:inputText>
                     </p:column>
-                    
-                    <p:column headerText="Purchase Price" >  
+
+                    <p:column headerText="Purchase Price" styleClass="averageNumericColumn" >  
                         <h:panelGroup id="price">
                             <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">
                                 <f:convertNumber pattern="#00.00"/>
@@ -134,7 +138,7 @@
                         </h:panelGroup>
                     </p:column>  
 
-                    <p:column headerText="Total" >  
+                    <p:column headerText="Total" styleClass="averageNumericColumn" >  
                         <h:panelGroup id="total">
                             <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -142,7 +146,7 @@
                         </h:panelGroup>
                     </p:column>  
 
-                    <p:column style="width:10%">
+                    <p:column styleClass="averageNumericColumn" >
                         <p:commandButton value="Remove" ajax="false" action="#{purchaseOrderRequestController.removeItem(bi)}"/>
                     </p:column>
 

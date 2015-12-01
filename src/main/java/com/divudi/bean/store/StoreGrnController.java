@@ -992,8 +992,9 @@ public class StoreGrnController implements Serializable {
 
     public void addChildItemListener(BillItem bi) {
         System.out.println("Add accessories = " + bi);
-        currentBillItem = null;
-        parentBillItem = bi;
+        parentBillItem = new BillItem();
+        currentBillItem = new BillItem();
+        parentBillItem.copy(bi);
     }
 
     public void addDetailItemListener(BillItem bi) {
@@ -1046,6 +1047,7 @@ public class StoreGrnController implements Serializable {
         }
 
         System.err.println("******Update*************");
+        JsfUtil.addSuccessMessage("Updated.");
 
     }
 

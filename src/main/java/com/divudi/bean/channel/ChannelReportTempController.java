@@ -445,6 +445,15 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
     }
+    
+    public void createCollectingCenterPaymentTable() {
+        bills = new ArrayList<>();
+        BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
+        Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
+        bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
+        System.out.println("bills.size() = " + bills.size());
+
+    }
 
     public void createAgentReferenceBooks() {
         String sql;
@@ -756,6 +765,18 @@ public class ChannelReportTempController implements Serializable {
                 + " and c.institutionType=:typ ";
 
         m.put("typ", InstitutionType.Agency);
+
+        agencies = getInstitutionFacade().findBySQL(sql, m);
+    }
+    
+    public void createCollectingcenterBalanceTable() {
+        String sql;
+        HashMap m = new HashMap();
+        sql = "select c from Institution c "
+                + " where c.retired=false "
+                + " and c.institutionType=:typ ";
+
+        m.put("typ", InstitutionType.CollectingCentre);
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
     }
