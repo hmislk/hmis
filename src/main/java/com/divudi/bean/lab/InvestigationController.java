@@ -110,6 +110,7 @@ public class InvestigationController implements Serializable {
     List<PatientReport> selectedPatientReports;
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
+    List<ItemWithFee> itemWithFees;
 
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
@@ -981,6 +982,56 @@ public class InvestigationController implements Serializable {
     public void fillItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.department.name, i.name";
         items = getFacade().findBySQL(sql);
+    }
+
+    public void createInvestigationWithFees() {
+        itemWithFees = new ArrayList<>();
+        List<Item> temp;
+        String sql = "select distinct(c.item) from ItemFee c where c.retired = false "
+                + " and type(c.item) =Investigation "
+                + " order by c.item.name";
+        temp = getItemFacade().findBySQL(sql);
+        for (Item item : temp) {
+            ItemWithFee iwf = new ItemWithFee();
+            iwf.setItem(item);
+            System.out.println("iwf.getItem().getName() = " + iwf.getItem().getName());
+            sql = "select c from ItemFee c where c.retired = false "
+                    + " and type(c.item) =Investigation "
+                    + " and c.item.id=" + item.getId() + " order by c.item.name";
+            iwf.setItemFees(getItemFeeFacade().findBySQL(sql));
+            System.out.println("iwf.getItemFees().size() = " + iwf.getItemFees().size());
+            itemWithFees.add(iwf);
+        }
+    }
+
+    public class ItemWithFee {
+
+        Item item;
+        List<ItemFee> itemFees;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public List<ItemFee> getItemFees() {
+            return itemFees;
+        }
+
+        public void setItemFees(List<ItemFee> itemFees) {
+            this.itemFees = itemFees;
+        }
+    }
+
+    public List<ItemWithFee> getItemWithFees() {
+        return itemWithFees;
+    }
+
+    public void setItemWithFees(List<ItemWithFee> itemWithFees) {
+        this.itemWithFees = itemWithFees;
     }
 
     public SpecialityFacade getSpecialityFacade() {
