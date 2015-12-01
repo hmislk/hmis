@@ -1436,7 +1436,7 @@ public class ReportsTransfer implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt", billType);
-        m.put("fdept", fromDepartment);
+        m.put("fdept", toDepartment);
         m.put("i", i);
 
         sql = "select sum(b.pharmaceuticalBillItem.qty),sum(b.pharmaceuticalBillItem.qty*b.pharmaceuticalBillItem.itemBatch.purcahseRate) "
