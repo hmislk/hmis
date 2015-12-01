@@ -17,6 +17,7 @@ import com.divudi.data.SymanticType;
 import com.divudi.data.lab.InvestigationWithCount;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
@@ -91,6 +92,7 @@ public class InvestigationController implements Serializable {
      * Properties
      */
     List<Investigation> selectedItems;
+    List<Investigation> selectedInvestigations;
     private Investigation current;
     private List<Investigation> items = null;
     String selectText = "";
@@ -572,6 +574,44 @@ public class InvestigationController implements Serializable {
         return selectedItems;
     }
 
+    public List<Investigation> getSelectedInvestigations() {
+        return selectedInvestigations;
+    }
+
+    public void setSelectedInvestigations(List<Investigation> selectedInvestigations) {
+        this.selectedInvestigations = selectedInvestigations;
+    }
+
+    public void deleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(true);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        selectedInvestigations = null;
+    }
+
+    public void unDeleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(false);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        selectedInvestigations = null;
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -744,9 +784,9 @@ public class InvestigationController implements Serializable {
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
-        List<InvestigationItemWithInvestigationItemValueFlags> lisFlags=new ArrayList<>();
+        List<InvestigationItemWithInvestigationItemValueFlags> lisFlags = new ArrayList<>();
         for (InvestigationItem ii : fetchInvestigationItemsOfDynamicLabelType(i)) {
-            InvestigationItemWithInvestigationItemValueFlags flags=new InvestigationItemWithInvestigationItemValueFlags();
+            InvestigationItemWithInvestigationItemValueFlags flags = new InvestigationItemWithInvestigationItemValueFlags();
             System.out.println("ii.getName() = " + ii.getName());
             flags.setInvestigationItem(ii);
             flags.setFlags(fetchDynamicLabels(ii));
