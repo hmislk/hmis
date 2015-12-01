@@ -343,6 +343,12 @@ public class EnumController implements Serializable {
         return p;
     }
 
+    public PaymentMethod[] getCollectingCentrePaymentMethods() {
+        PaymentMethod[] p = {
+            PaymentMethod.Agent,};
+        return p;
+    }
+
     public PaymentMethod[] getPaymentMethodsWithoutCredit() {
         PaymentMethod[] p = {PaymentMethod.Cash,
             PaymentMethod.Card,

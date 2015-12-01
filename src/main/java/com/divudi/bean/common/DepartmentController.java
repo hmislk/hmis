@@ -130,6 +130,30 @@ public class DepartmentController implements Serializable {
         }
         return deps;
     }
+    
+    public Department getDefaultDepatrment(Institution ins) {
+        Department dep;
+        if (ins == null) {
+            dep = null;
+        } else {
+            Map m = new HashMap();
+            m.put("ins", ins);
+            String sql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins ";
+            dep = getFacade().findFirstBySQL(sql, m);
+            if(dep==null){
+                dep = new Department();
+                dep.setCreatedAt(new Date());
+                dep.setCreater(getSessionController().getLoggedUser());
+                dep.setDepartmentType(DepartmentType.Opd);
+                dep.setInstitution(ins);
+                dep.setName(ins.getName());
+                getFacade().create(dep);
+            }
+        }
+        return dep;
+    }
 
     public List<Department> getLogedDepartments() {
 

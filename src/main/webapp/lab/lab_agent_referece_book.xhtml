@@ -12,13 +12,13 @@
 
         <h:form>
 
-            <p:panel header="Cannel Agent Reference Book" styleClass="verticalAndHorizontalCenteringLarge">
+            <p:panel header="Collecting Centre Reference Book" styleClass="verticalAndHorizontalCenteringLarge">
 
                 <p:panelGrid columns="2" >
-                    <p:outputLabel value="Agent Name" />
+                    <p:outputLabel value="Collecting Centre Name" />
                     <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
                                     forceSelection="true"
-                                    completeMethod="#{agencyController.completeAgency}" 
+                                    completeMethod="#{institutionController.completeCollectingCenter}" 
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                         <p:column>#{vt.institutionCode}</p:column>
                         <p:column>#{vt.name}</p:column>

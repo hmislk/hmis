@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:poue="http://primefaces.org/ui/extensions"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                >
+
+
+    <ui:define name="content">
+
+
+        <h:form id="form"  >
+
+            <p:growl autoUpdate="true" />
+            <p:panel id="panIx">
+
+                <f:facet name="header" >
+                    <h:outputLabel value="Dynamic Lable Report" styleClass="nonPrintBlock" ></h:outputLabel>
+                </f:facet>
+                <p:commandButton ajax="false" value="Fill" action="#{investigationController.createInvestigationWithDynamicLables}"
+                                 styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:panel styleClass="summeryBorder" id="gpBillPreview" header="Dynamic Lable Report">
+                    <p:dataGrid value="#{investigationController.investigationWithInvestigationItemses}" var="i" columns="1">
+                        <br></br>
+                        <h3><p:outputLabel value="#{i.i.name} - #{i.i.id}" /></h3>
+                        <p:dataTable id="tbl" var="ii" value="#{i.flags}" >
+
+                            <p:subTable value="#{ii.flags}" var="f" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="#{ii.investigationItem.name}" />
+                                </f:facet>
+                                <p:column headerText="Sex">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sex" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{f.sex}" />
+                                </p:column>
+                                <p:column headerText="From Age">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="From Age" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{f.fromAge}" />
+                                </p:column>
+                                <p:column headerText="To Age">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="To Age" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{f.toAge}" />
+                                </p:column>
+
+                                <p:column headerText="Message">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Message" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{f.flagMessage}" />
+                                </p:column>
+                            </p:subTable>
+                        </p:dataTable>
+                    </p:dataGrid>
+                </p:panel>
+
+
+
+
+
+
+            </p:panel>
+
+        </h:form>
+
+
+
+
+
+    </ui:define>
+
+</ui:composition>

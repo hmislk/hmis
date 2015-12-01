@@ -15,7 +15,7 @@
                 <p:panel rendered="#{!agentPaymentRecieveBillController.printPreview}" >
                     <f:facet name="header" >
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="Agent Payment Bills" />
+                            <h:outputLabel value="Collecting Centre Payment Bills" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{agentPaymentRecieveBillController.current.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
@@ -37,7 +37,7 @@
                                 <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.channellAgencyPaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.collectingCentrePaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
 
@@ -47,8 +47,8 @@
                     </f:facet>
 
                     <p:panelGrid columns="2" style="min-width: 100%;">
-                        <p:outputLabel value="Agency" />
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}"  completeMethod="#{agencyController.completeAgency}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:outputLabel value="Collecting Centre" />
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{agentPaymentRecieveBillController.current.fromInstitution}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             <f:ajax  event="itemSelect" execute="creditCom"  />
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>

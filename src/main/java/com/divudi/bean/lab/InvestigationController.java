@@ -20,11 +20,15 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.lab.InvestigationItem;
+import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InvestigationFacade;
+import com.divudi.facade.InvestigationItemFacade;
+import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
@@ -79,6 +83,10 @@ public class InvestigationController implements Serializable {
     private SpecialityFacade specialityFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    InvestigationItemFacade investigationItemFacade;
+    @EJB
+    InvestigationItemValueFlagFacade investigationItemValueFlagFacade;
     /**
      * Properties
      */
@@ -99,6 +107,7 @@ public class InvestigationController implements Serializable {
     List<Investigation> selectedIxs;
     List<PatientReport> selectedPatientReports;
     List<Investigation> ixWithoutSamples;
+    List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
 
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
@@ -243,18 +252,18 @@ public class InvestigationController implements Serializable {
         allIxs = getFacade().findBySQL(sql);
         return "/lab/lab_investigation_list";
     }
-    
-    public void prepareSelectedReportSamples(){
+
+    public void prepareSelectedReportSamples() {
         System.out.println("prepareSelectedReportSamples");
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
         System.err.println("selectedIxs.size() = " + selectedIxs.size());
-        for(Investigation ix:selectedIxs){
+        for (Investigation ix : selectedIxs) {
             System.err.println("ix.getName() = " + ix.getName());
             PatientReport pr = patientReportController.getLastPatientReport(ix);
-            if(pr!=null){
+            if (pr != null) {
                 selectedPatientReports.add(pr);
-            }else{
+            } else {
                 ixWithoutSamples.add(ix);
             }
         }
@@ -276,8 +285,6 @@ public class InvestigationController implements Serializable {
         this.ixWithoutSamples = ixWithoutSamples;
     }
 
-    
-    
     public List<Investigation> getInvestigationItems() {
         String sql;
         sql = "Select i from Investigation i "
@@ -722,6 +729,128 @@ public class InvestigationController implements Serializable {
         getItems();
     }
 
+    public void createInvestigationWithDynamicLables() {
+        investigationWithInvestigationItemses = new ArrayList<>();
+        for (Investigation in : fetchInvestigations()) {
+            InvestigationWithInvestigationItems items = new InvestigationWithInvestigationItems();
+            items.setI(in);
+            System.out.println("in.getName() = " + in.getName());
+            items.setFlags(fetchFlags(in));
+            if (items.getFlags().isEmpty()) {
+                continue;
+            }
+            investigationWithInvestigationItemses.add(items);
+        }
+    }
+
+    public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
+        List<InvestigationItemWithInvestigationItemValueFlags> lisFlags=new ArrayList<>();
+        for (InvestigationItem ii : fetchInvestigationItemsOfDynamicLabelType(i)) {
+            InvestigationItemWithInvestigationItemValueFlags flags=new InvestigationItemWithInvestigationItemValueFlags();
+            System.out.println("ii.getName() = " + ii.getName());
+            flags.setInvestigationItem(ii);
+            flags.setFlags(fetchDynamicLabels(ii));
+            if (flags.getFlags().isEmpty()) {
+                continue;
+            }
+            lisFlags.add(flags);
+        }
+        return lisFlags;
+    }
+
+    public List<Investigation> fetchInvestigations() {
+        List<Investigation> investigations;
+        String sql;
+
+        sql = "select c from Investigation c "
+                + " where c.retired=false ";
+
+        if (listMasterItemsOnly == true) {
+            sql += " and c.institution is null ";
+        }
+        sql += " order by c.name";
+
+        investigations = getFacade().findBySQL(sql);
+        System.out.println("investigations.size() = " + investigations.size());
+        return investigations;
+    }
+
+    public List<InvestigationItem> fetchInvestigationItemsOfDynamicLabelType(Investigation i) {
+        List<InvestigationItem> investigationItemsOfDynamicLabelType;
+        String sql;
+        Map m = new HashMap();
+        sql = " select i from InvestigationItem i where i.retired=false "
+                + " and i.item=:i "
+                + " and i.ixItemType=:ixType ";
+
+        m.put("i", i);
+        m.put("ixType", InvestigationItemType.DynamicLabel);
+
+        investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findBySQL(sql, m);
+        System.out.println("investigationItemsOfDynamicLabelType.size() = " + investigationItemsOfDynamicLabelType.size());
+        return investigationItemsOfDynamicLabelType;
+    }
+
+    public List<InvestigationItemValueFlag> fetchDynamicLabels(InvestigationItem ii) {
+        List<InvestigationItemValueFlag> dynamicLabels;
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
+                + " i.investigationItemOfLabelType=:ii ";
+
+        m.put("ii", ii);
+        dynamicLabels = getInvestigationItemValueFlagFacade().findBySQL(sql, m);
+        System.out.println("dynamicLabels.size() = " + dynamicLabels.size());
+        return dynamicLabels;
+    }
+
+    public class InvestigationWithInvestigationItems {
+
+        Investigation i;
+        List<InvestigationItemWithInvestigationItemValueFlags> flags;
+
+        public Investigation getI() {
+            return i;
+        }
+
+        public void setI(Investigation i) {
+            this.i = i;
+        }
+
+        public List<InvestigationItemWithInvestigationItemValueFlags> getFlags() {
+            return flags;
+        }
+
+        public void setFlags(List<InvestigationItemWithInvestigationItemValueFlags> flags) {
+            this.flags = flags;
+        }
+
+    }
+
+    public class InvestigationItemWithInvestigationItemValueFlags {
+
+        InvestigationItem investigationItem;
+        List<InvestigationItemValueFlag> flags;
+
+        public InvestigationItem getInvestigationItem() {
+            return investigationItem;
+        }
+
+        public void setInvestigationItem(InvestigationItem investigationItem) {
+            this.investigationItem = investigationItem;
+        }
+
+        public List<InvestigationItemValueFlag> getFlags() {
+            return flags;
+        }
+
+        public void setFlags(List<InvestigationItemValueFlag> flags) {
+            this.flags = flags;
+        }
+
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -852,6 +981,30 @@ public class InvestigationController implements Serializable {
 
     public void setAllIxs(List<Investigation> allIxs) {
         this.allIxs = allIxs;
+    }
+
+    public InvestigationItemFacade getInvestigationItemFacade() {
+        return investigationItemFacade;
+    }
+
+    public void setInvestigationItemFacade(InvestigationItemFacade investigationItemFacade) {
+        this.investigationItemFacade = investigationItemFacade;
+    }
+
+    public InvestigationItemValueFlagFacade getInvestigationItemValueFlagFacade() {
+        return investigationItemValueFlagFacade;
+    }
+
+    public void setInvestigationItemValueFlagFacade(InvestigationItemValueFlagFacade investigationItemValueFlagFacade) {
+        this.investigationItemValueFlagFacade = investigationItemValueFlagFacade;
+    }
+
+    public List<InvestigationWithInvestigationItems> getInvestigationWithInvestigationItemses() {
+        return investigationWithInvestigationItemses;
+    }
+
+    public void setInvestigationWithInvestigationItemses(List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses) {
+        this.investigationWithInvestigationItemses = investigationWithInvestigationItemses;
     }
 
     /**
