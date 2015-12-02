@@ -25,16 +25,37 @@
                                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
                                     <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 </h:panelGrid>
-                                <h:panelGrid columns="7" >
+                                <h:panelGrid columns="8" >
                                     <h:outputLabel value="Bill No"/>
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value="Patient Phone"/>                               
                                     <h:outputLabel value="Investigation Name"/>
+                                    <h:outputLabel value="BHT"/>
                                     <h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
+                                    
+                                    <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                    value="#{searchController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >                                
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                                 </h:panelGrid>
                             </h:panelGrid>

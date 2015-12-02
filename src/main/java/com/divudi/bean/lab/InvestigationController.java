@@ -92,6 +92,7 @@ public class InvestigationController implements Serializable {
      * Properties
      */
     List<Investigation> selectedItems;
+    List<Investigation> selectedInvestigations;
     private Investigation current;
     private List<Investigation> items = null;
     String selectText = "";
@@ -572,6 +573,44 @@ public class InvestigationController implements Serializable {
         sql += " order by c.name";
         selectedItems = getFacade().findBySQL(sql, m);
         return selectedItems;
+    }
+
+    public List<Investigation> getSelectedInvestigations() {
+        return selectedInvestigations;
+    }
+
+    public void setSelectedInvestigations(List<Investigation> selectedInvestigations) {
+        this.selectedInvestigations = selectedInvestigations;
+    }
+
+    public void deleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(true);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        selectedInvestigations = null;
+    }
+
+    public void unDeleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(false);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        selectedInvestigations = null;
     }
 
     public Institution getInstitution() {
