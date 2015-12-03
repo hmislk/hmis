@@ -561,7 +561,11 @@ public class StoreGrnController implements Serializable {
             billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
 
-        billItem.setParentBillItem(getParentBillItem());
+//        billItem.setParentBillItem(getParentBillItem());
+        try {
+            billItem.getParentBillItem().copy(getParentBillItem());
+        } catch (Exception e) {
+        }
 
         //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
         billItem.setSearialNo(getBillItems().size());
@@ -569,7 +573,9 @@ public class StoreGrnController implements Serializable {
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(billItem);
-//
+        System.out.println("billItem.getSearialNo() = " + billItem.getSearialNo());
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+//      
 //        getBillItemController().setItems(getBillItems());
     }
 
@@ -994,6 +1000,7 @@ public class StoreGrnController implements Serializable {
         System.out.println("Add accessories = " + bi);
         parentBillItem = new BillItem();
         currentBillItem = new BillItem();
+        currentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
         parentBillItem.copy(bi);
     }
 
@@ -1056,6 +1063,12 @@ public class StoreGrnController implements Serializable {
             System.out.println("bi = " + bi.getSearialNo());
             System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
             System.out.println("bi.getQty() = " + bi.getQty());
+            System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
+            try {
+                System.out.println("bi.getPharmaceuticalBillItem() = " + bi.getPharmaceuticalBillItem());
+                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -1110,37 +1123,28 @@ public class StoreGrnController implements Serializable {
 //                UtilityController.addErrorMessage("Please Qty must be 1 for Asset");
 //                return;
 //            }
-            if (getCurrentBillItem().getPharmaceuticalBillItem().getQty() > 1) {
 
-                int j = (int) getCurrentBillItem().getPharmaceuticalBillItem().getQty();
+            int j = (int) getCurrentBillItem().getPharmaceuticalBillItem().getQty();
+            System.out.println("j = " + j);
 
-                for (int i = 0; i < j; i++) {
-                    BillItem bi = new BillItem();
-                    bi.copy(getCurrentBillItem());
-                    bi.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                    bi.getPharmaceuticalBillItem().setBillItem(bi);
-                    bi.getPharmaceuticalBillItem().copy(getCurrentBillItem().getPharmaceuticalBillItem());
-                    //System.out.println("Item Number = " + i);
-                    bi.getPharmaceuticalBillItem().setQty(1);
-                    bi.setQty(1.0);
+            for (int i = 0; i < j; i++) {
+                BillItem bi = new BillItem();
+                bi.copy(getCurrentBillItem());
+                bi.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
+                bi.getPharmaceuticalBillItem().setBillItem(bi);
+                bi.getPharmaceuticalBillItem().copy(getCurrentBillItem().getPharmaceuticalBillItem());
+                //System.out.println("Item Number = " + i);
+                bi.getPharmaceuticalBillItem().setQty(1);
+                bi.setQty(1.0);
 
-                    //System.out.println("****Inventory Code 1****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
-                    createSerialNumber(bi);
-                    //System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
-
-                    addBillItem(bi);
-                    calTotal();
-                }
-                currentBillItem = null;
-            } else {
-                //System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
-                createSerialNumber(getCurrentBillItem());
-                //System.out.println("****Inventory Code 2****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
-
-                addBillItem(getCurrentBillItem());
-                currentBillItem = null;
+                //System.out.println("****Inventory Code 1****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
+                createSerialNumber(bi);
+                //System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
+                addBillItem(bi);
                 calTotal();
             }
+            currentBillItem = null;
+
         }
 //        //System.out.println("****Inventory Code 1****" + getCurrentBillItem().getPharmaceuticalBillItem().getCode() + "*******");
 //        createSerialNumber(getCurrentBillItem());

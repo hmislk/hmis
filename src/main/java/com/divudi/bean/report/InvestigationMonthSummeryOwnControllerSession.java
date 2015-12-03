@@ -121,6 +121,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        totalCount=0l;
         for (Item w : ixs) {
             if (totalCount == null) {
                 totalCount = 0l;
