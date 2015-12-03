@@ -3119,7 +3119,11 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
+        //get ruhunu hospital All hospital fees(hos fee+cc fee)
+        FeeType[] feeTypes={FeeType.OwnInstitution,FeeType.CollectingCentre};
+        //get ruhunu hospital All hospital fees(hos fee+cc fee)
+        opdHospitalTotal = getBillBean().calFeeValue(Arrays.asList(feeTypes), getFromDate(), getToDate(), getInstitution());
+//        opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
         outSideFeeTotal = getBillBean().calOutSideInstitutionFees(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
         pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);

@@ -595,12 +595,13 @@ public class InvestigationController implements Serializable {
             i.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(i);
         }
+        UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
     }
 
     public void unDeleteSelectedItems() {
         if (selectedInvestigations.isEmpty()) {
-            UtilityController.addErrorMessage("Nothing to Delete");
+            UtilityController.addErrorMessage("Nothing to Un-Delete");
             return;
         }
 
@@ -610,8 +611,41 @@ public class InvestigationController implements Serializable {
             i.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(i);
         }
+        UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
     }
+    
+    public void markSelectedActive() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Active");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setActive(true);
+            getFacade().edit(i);
+        }
+        
+        UtilityController.addSuccessMessage("Successfully Actived");
+        selectedInvestigations = null;
+    }
+    
+    public void markSelectedInactive() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Inactive");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setActive(false);
+            getFacade().edit(i);
+        }
+        
+        UtilityController.addSuccessMessage("Successfully Inactived");
+        selectedInvestigations = null;
+    }
+    
+    
 
     public Institution getInstitution() {
         return institution;

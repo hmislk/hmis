@@ -40,6 +40,9 @@
 
                     <p:commandButton value="Delete Selected" action="#{investigationController.deleteSelectedItems}" ajax="false" ></p:commandButton>
                     <p:commandButton value="Un-Delete Selected" action="#{investigationController.unDeleteSelectedItems}" ajax="false" ></p:commandButton>
+                    
+                    <p:commandButton value="Active Selected" action="#{investigationController.markSelectedActive}" ajax="false" ></p:commandButton>
+                    <p:commandButton value="Inactive Selected" action="#{investigationController.markSelectedInactive}" ajax="false" ></p:commandButton>
 
 
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.items}" var="ix"  
