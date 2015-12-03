@@ -37,6 +37,8 @@
                             <p:columnGroup  type="header">
                                 <p:row>
                                     <p:column headerText="Fee Type"/>
+                                    <p:column headerText="Department"/>
+                                    <p:column headerText="Institution"/>
                                     <p:column headerText="Staff"/>
                                     <p:column headerText="Fee"/>
                                 </p:row>
@@ -49,21 +51,18 @@
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Fee Type" >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Fee Type"/>    
-                                    </f:facet>
                                     <h:outputLabel value="#{ix.feeType}" ></h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Department" >
+                                    <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >
+                                    <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Staff" >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Staff"/>    
-                                    </f:facet>
                                     <h:outputLabel value="#{ix.staff.person.name}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Hospiatal Fee" styleClass="numberCol" >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Hospital Fee"/>    
-                                    </f:facet>
                                     <h:outputLabel value="#{ix.fee}" >
                                         <f:convertNumber pattern="#,###.##" />
                                     </h:outputLabel>
