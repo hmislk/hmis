@@ -4170,7 +4170,7 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-        bills.size();
+        System.out.println("size"+bills.size());
 
     }
 
