@@ -998,14 +998,18 @@ public class ServiceSummery implements Serializable {
         hm.put("b", bi);
         hm.put("ftp", feeType);
 
-        for (BillFee bf : (List<BillFee>) getBillFeeFacade().findBySQL(sql, hm)) {
-            if ("".equalsIgnoreCase(name)) {
-                name += bf.getStaff().getPerson().getName();
-            } else {
-                name += " ," + bf.getStaff().getPerson().getName();
+        try {
+            for (BillFee bf : (List<BillFee>) getBillFeeFacade().findBySQL(sql, hm)) {
+                if ("".equalsIgnoreCase(name)) {
+
+                } else {
+                    name += " ," + bf.getStaff().getPerson().getName();
+                }
+                System.out.println("bf.getStaff().getPerson().getName() = " + bf.getStaff().getPerson().getName());
+                System.out.println("name = " + name);
             }
-            System.out.println("bf.getStaff().getPerson().getName() = " + bf.getStaff().getPerson().getName());
-            System.out.println("name = " + name);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return name;

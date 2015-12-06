@@ -92,6 +92,7 @@ public class InvestigationController implements Serializable {
      * Properties
      */
     List<Investigation> selectedItems;
+    List<Investigation> selectedInvestigations;
     private Investigation current;
     private List<Investigation> items = null;
     String selectText = "";
@@ -573,6 +574,78 @@ public class InvestigationController implements Serializable {
         selectedItems = getFacade().findBySQL(sql, m);
         return selectedItems;
     }
+
+    public List<Investigation> getSelectedInvestigations() {
+        return selectedInvestigations;
+    }
+
+    public void setSelectedInvestigations(List<Investigation> selectedInvestigations) {
+        this.selectedInvestigations = selectedInvestigations;
+    }
+
+    public void deleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(true);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        UtilityController.addSuccessMessage("Successfully Deleted");
+        selectedInvestigations = null;
+    }
+
+    public void unDeleteSelectedItems() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Un-Delete");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setRetired(false);
+            i.setRetiredAt(new Date());
+            i.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(i);
+        }
+        UtilityController.addSuccessMessage("Successfully Deleted");
+        selectedInvestigations = null;
+    }
+    
+    public void markSelectedActive() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Active");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setActive(true);
+            getFacade().edit(i);
+        }
+        
+        UtilityController.addSuccessMessage("Successfully Actived");
+        selectedInvestigations = null;
+    }
+    
+    public void markSelectedInactive() {
+        if (selectedInvestigations.isEmpty()) {
+            UtilityController.addErrorMessage("Nothing to Inactive");
+            return;
+        }
+
+        for (Investigation i : selectedInvestigations) {
+            i.setActive(false);
+            getFacade().edit(i);
+        }
+        
+        UtilityController.addSuccessMessage("Successfully Inactived");
+        selectedInvestigations = null;
+    }
+    
+    
 
     public Institution getInstitution() {
         return institution;

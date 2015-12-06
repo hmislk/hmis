@@ -296,7 +296,9 @@
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    
+                                    <p:column headerText="Item" style="width: 20px;" >
+                                        <h:outputLabel value="#{vt.departmentType}"></h:outputLabel>
+                                    </p:column>
                                     <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" 
                                             listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
                                 </p:autoComplete>

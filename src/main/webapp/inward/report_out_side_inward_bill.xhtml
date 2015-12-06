@@ -77,7 +77,17 @@
                                 <p:outputLabel value="Discription" />
                             </f:facet>
                             <p:outputLabel value="#{bi.bill.comments}" />
-                        </p:column>                   
+                        </p:column>
+                        
+                        <p:column headerText="Discharge At">
+                            <f:facet name="header">
+                                <p:outputLabel value="Discharge At" />
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.patientEncounter.dateOfDischarge}" >
+                                <f:convertDateTime pattern="dd MM yyyy hh:mm a"/>
+                            </p:outputLabel>
+                        </p:column>
+                        
                         <p:column headerText="Cancelled/Refunded" >    
                             <f:facet name="header">
                                 <p:outputLabel value="Cancelled/Refunded" />
