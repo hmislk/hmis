@@ -4115,8 +4115,16 @@ public class SearchController implements Serializable {
 
     @Inject
     WebUserController webUserController;
+    
+    public void createOpdBillSearch(){
+        createTableByKeyword(BillType.OpdBill);
+    }
+    
+    public void createCollectingCentreBillSearch(){
+        createTableByKeyword(BillType.CollectingCentreBill);
+    }
 
-    public void createTableByKeyword() {
+    public void createTableByKeyword(BillType billType) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -4156,12 +4164,13 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.OpdBill);
+        temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.out.println("size"+bills.size());
 
     }
 
