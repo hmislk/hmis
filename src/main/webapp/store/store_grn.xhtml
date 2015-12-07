@@ -350,7 +350,7 @@
                                 <h:outputLabel value="Warranty Certification No"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
                                 <h:outputLabel value="Warranty Duration"/>
-                                <p:outputLabel  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" />
                                 <h:outputLabel value="Depreciation Rate"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
                                 <h:outputLabel value="Manufacturer"/>
@@ -365,7 +365,7 @@
 
                                 <p:commandButton id="btnAdd" value="Add Item" 
                                                  action="#{storeGrnController.addItem}" 
-                                                 ajax="false"/>
+                                                 process="dialogChannelAdded" update="@this dialogChannelAdded itemList"/>
 
 
                             </p:panelGrid>
