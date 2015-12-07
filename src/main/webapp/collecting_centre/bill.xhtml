@@ -22,9 +22,9 @@
         <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
             <h:form id="form">
 
-                <p:panel >
-                    <f:facet name="header">
-                        <h:panelGrid columns="6" >
+                <p:panel  >
+                    <f:facet name="header" rendered="#{!collectingCentreBillController.printPreview}">
+                        <h:panelGrid columns="6" rendered="#{!collectingCentreBillController.printPreview}">
                             <h:outputLabel value="Collecting Centre Billing"/>
                             <p:spacer width="20" height="1" ></p:spacer>
                             <p:commandButton  value="Settle" action="#{collectingCentreBillController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
@@ -539,7 +539,7 @@
                                 </div>
                                 <h:panelGroup id="gpBillPreview">
                                     <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">
-                                        <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                        <bi:opdCCBillPrintRuhunu bill="#{bill}" dup="false"/>
                                     </ui:repeat>
                                 </h:panelGroup>
                             </h:panelGroup>
