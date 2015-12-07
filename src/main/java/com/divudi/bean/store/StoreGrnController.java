@@ -1144,29 +1144,23 @@ public class StoreGrnController implements Serializable {
                 //System.out.println("Item Number = " + i);
                 bi.getPharmaceuticalBillItem().setQty(1);
                 bi.setQty(1.0);
-                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getModel());
-                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getDescription());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getQty());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getModel());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getDescription());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getMake().getName() = " + getCurrentBillItem().getPharmaceuticalBillItem().getMake().getName());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getCode() = " + getCurrentBillItem().getPharmaceuticalBillItem().getCode());
-                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getBarcode() = " + getCurrentBillItem().getPharmaceuticalBillItem().getBarcode());
+//                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getModel());
+//                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getDescription());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getQty());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getModel());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getQty() = " + getCurrentBillItem().getPharmaceuticalBillItem().getDescription());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getMake().getName() = " + getCurrentBillItem().getPharmaceuticalBillItem().getMake().getName());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getCode() = " + getCurrentBillItem().getPharmaceuticalBillItem().getCode());
+//                System.out.println("getCurrentBillItem().getPharmaceuticalBillItem().getBarcode() = " + getCurrentBillItem().getPharmaceuticalBillItem().getBarcode());
                 //System.out.println("****Inventory Code 1****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
                 createSerialNumber(bi);
                 //System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
                 //        billItem.setParentBillItem(getParentBillItem());
-                if (getParentBillItem() != null) {
-                    System.out.println("getParentBillItem().getItem() = " + getParentBillItem().getItem());
-                }
+                
                 bi.setParentBillItem(new BillItem());
                 bi.getParentBillItem().copy(getParentBillItem());
-                System.out.println("billItem.getParentBillItem().getItem().getName() = " + bi.getParentBillItem().getItem().getName());
-
-                if (bi.getParentBillItem() != null) {
-                    System.out.println("2.billItem.getParentBillItem().getItem() = " + bi.getParentBillItem().getItem());
-                }
+                
                 addBillItem(bi);
                 calTotal();
             }
