@@ -121,9 +121,6 @@
                     <div class="itemsPrintingRuhunu" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
                             <h:column >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="&nbsp;" />
-                                </f:facet>
                                 <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
@@ -139,25 +136,21 @@
                         </h:dataTable>
                     </div>
                     
+                    <p:outputLabel value="CC Fee" style="position: absolute;left: 75%;top: 34.5%;text-align: right;font-size: 7pt;" />
                     <div class="ratesCollectingCenterPrintingRuhunu"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="CC Fee" />
-                                </f:facet>
                                 <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                     </div>
-
+                    
+                    <p:outputLabel value="Hos Fee" style="position: absolute;left: 85%;top: 34.5%;text-align: right;font-size: 7pt;" />
                     <div class="ratesWithOutCollectingCenterPrintingRuhunu"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip2"  >
                             <h:column >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Hos Fee" />
-                                </f:facet>
                                 <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
