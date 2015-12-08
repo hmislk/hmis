@@ -2099,6 +2099,28 @@ public class BillSearch implements Serializable {
         createBillItemsForRetire();
         createBillFees();
         createBillItemsAll();
+        createCollectingCenterfees();
+    }
+    
+    public void createCollectingCenterfees(){
+        for (BillItem bi : getBill().getBillItems()) {
+            bi.setTransCCFee(0.0);
+            bi.setTransWithOutCCFee(0.0);
+            for (BillFee bf : createBillFees(bi)) {
+                if (bf.getFee().getFeeType()==FeeType.CollectingCentre) {
+                    bi.setTransCCFee(bi.getTransCCFee()+bf.getFeeValue());
+                }else{
+                    bi.setTransWithOutCCFee(bi.getTransWithOutCCFee()+bf.getFeeValue());
+                }
+            }
+        }
+    }
+    
+    private List<BillFee> createBillFees(BillItem bi) {
+        List<BillFee>bfs=new ArrayList<>();
+        String sql = "SELECT b FROM BillFee b WHERE b.billItem.id=" + bi.getId();
+        bfs = getBillFeeFacade().findBySQL(sql);
+        return bfs;
     }
 
     public void fillBillTypeIncomeRecords() {
