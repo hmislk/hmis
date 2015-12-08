@@ -120,7 +120,7 @@
 
                                 <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                     <div style="#{myIi.cssStyle}; position:absolute;">
-                                        <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.name}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
+                                        <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
                                     </div>
                                 </ui:repeat>
 

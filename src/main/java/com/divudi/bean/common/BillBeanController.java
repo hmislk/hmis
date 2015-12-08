@@ -2649,6 +2649,8 @@ public class BillBeanController implements Serializable {
 
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
+        double ccfee=0.0;
+        double woccfee=0.0;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -2661,8 +2663,15 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
+            if (bf.getFee().getFeeType()==FeeType.CollectingCentre) {
+                ccfee+=bf.getFeeValue();
+            } else {
+                woccfee+=bf.getFeeValue();
+            }
             list.add(bf);
         }
+        e.getBillItem().setTransCCFee(ccfee);
+        e.getBillItem().setTransWithOutCCFee(woccfee);
 
         return list;
     }
