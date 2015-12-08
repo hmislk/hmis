@@ -17,9 +17,9 @@
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
 
-                            <p:commandButton ajax="false" value="To Cancel" action="bill_cancel" disabled="#{billSearch.bill.cancelled or true}" onclick="onSubmitButton();">                           
+                            <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                           
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="To Refund" action="bill_refund" disabled="#{billSearch.bill.cancelled or true}" onclick="onSubmitButton();">                          
+                            <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
                             </p:commandButton>
                         </f:facet>
 
