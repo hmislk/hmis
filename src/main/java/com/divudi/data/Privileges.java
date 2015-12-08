@@ -80,6 +80,7 @@ public enum Privileges {
     LabBillSearch,
     LabBillItemSearch,
     LabBillCancelling,
+    CollectingCentreCancelling,
     LabBillReturning,
     LabBillReprint,
     LabBillRefunding,

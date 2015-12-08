@@ -14,10 +14,17 @@
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
                             <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
-                                               disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" >
+                                               disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                 <f:selectItem itemLabel="Select paymentMethod"/>
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
+                            
+                            <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
+                                               disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                <f:selectItem itemLabel="Select paymentMethod"/>
+                                <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                            </p:selectOneMenu>
+                            
                             <h:commandButton value="Cancel" action="#{billSearch.cancelBill()}" >
                             </h:commandButton>                            
                         </p:panel>
