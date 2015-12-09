@@ -557,7 +557,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private double getTotalValue(Bill bill, Item item) {
         String sql;
         Map temMap = new HashMap();
-        sql = "select sum(bi.total) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
+        sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType=:bType and bi.item =:itm"
                 + " and type(bi.bill)=:billClass and bi.bill.collectingCentre=:col "
                 + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.name";
         temMap.put("toDate", getToDate());
