@@ -38,7 +38,7 @@
                 </h:panelGrid>
                 <h:panelGrid columns="4">
                     <p:spacer height="1" width="110"/>
-                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+                    <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemNewChanges()}" ></p:commandButton>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -50,7 +50,7 @@
 
             </p:panel>
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
-                <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
+                
 
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
                              rows="20"
@@ -75,7 +75,7 @@
 
                     </f:facet>
 
-                    <p:column headerText="Test Name" style="text-align:center"
+                    <p:column headerText="Test Name"
                               sortBy="#{c.investigation.name}" 
                               filterBy="#{c.investigation.name}"
                               filterMatchMode="contains">

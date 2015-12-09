@@ -28,6 +28,7 @@ import com.divudi.facade.MachineFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -392,6 +393,37 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //
 //        countTotal = billed - (refunded + cancelled);
     }
+    
+    public void createItemNewChanges() {
+        itemsLab = new ArrayList<>();
+        countTotal = 0;
+        itemValue = 0;
+        BillType[]bts={BillType.LabBill,BillType.CollectingCentreBill};
+        for (Item w : getInvestigations3(bts)) {
+            InvestigationSummeryData temp = new InvestigationSummeryData();
+            temp.setInvestigation(w);
+            long temCoint = calculateInvestigationBilledCount(w,bts);
+            temp.setCount(temCoint);
+            countTotal += temCoint;
+            double tempTotal = calculateInvestigationBilledValue(w,bts);
+            temp.setTotal(tempTotal);
+            itemValue += tempTotal;
+            if (temp.getCount() != 0 || temp.getTotal() != 0) {
+                itemsLab.add(temp);
+            }
+            
+        }
+//        countTotal = 0;
+//
+//        long billed = getCount2(new BilledBill());
+//        //System.out.println("billed = " + billed);
+//        long cancelled = getCount2(new CancelledBill());
+//        //System.out.println("cancelled = " + cancelled);
+//        long refunded = getCount2(new RefundBill());
+//        //System.out.println("refunded = " + refunded);
+//
+//        countTotal = billed - (refunded + cancelled);
+    }
 
     public List<InvestigationSummeryData> getItems3() {
 
@@ -553,6 +585,23 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    private long getCount3(Bill bill, Item item,BillType[]bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi where bi.bill.billType in :bTypes and bi.item =:itm"
+                + " and type(bi.bill)=:billClass "
+                + " and (bi.bill.collectingCentre=:col or bi.bill.institution=:col) "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", item);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bTypes", Arrays.asList(bts));
+        temMap.put("col", getCreditCompany());
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     private double getTotalValue(Bill bill, Item item) {
         String sql;
@@ -566,7 +615,24 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double getTotalValue(Bill bill, Item item,BillType[]bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType in :bTypes and bi.item =:itm"
+                + " and type(bi.bill)=:billClass "
+                + " and (bi.bill.collectingCentre=:col or bi.bill.institution=:col) "
+                + " and bi.bill.createdAt between :fromDate and :toDate order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", item);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bTypes", Arrays.asList(bts));
+        temMap.put("col", getCreditCompany());
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -704,11 +770,25 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         long refunded = getCount3(new RefundBill(), w);
         return billed - (cancelled + refunded);
     }
+    
+    private long calculateInvestigationBilledCount(Item w,BillType[]bts) {
+        long billed = getCount3(new BilledBill(), w,bts);
+        long cancelled = getCount3(new CancelledBill(), w,bts);
+        long refunded = getCount3(new RefundBill(), w,bts);
+        return billed - (cancelled + refunded);
+    }
 
     private double calculateInvestigationBilledValue(Item w) {
         double billed = getTotalValue(new BilledBill(), w);
         double cancelled = getTotalValue(new CancelledBill(), w);
         double refunded = getTotalValue(new RefundBill(), w);
+        return billed - (cancelled + refunded);
+    }
+    
+    private double calculateInvestigationBilledValue(Item w,BillType[]bts) {
+        double billed = getTotalValue(new BilledBill(), w,bts);
+        double cancelled = getTotalValue(new CancelledBill(), w,bts);
+        double refunded = getTotalValue(new RefundBill(), w,bts);
         return billed - (cancelled + refunded);
     }
 
@@ -779,6 +859,24 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
+        temMap.put("col", getCreditCompany());
+        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return investigations;
+    }
+    
+    public List<Item> getInvestigations3(BillType[]bts) {
+        Map temMap = new HashMap();
+        String sql = "select distinct ix from BillItem bi join bi.item ix "
+                + " where type(ix) =:ixtype  "
+                + " and bi.bill.billType in :bTypes "
+                + " and (bi.bill.collectingCentre=:col or bi.bill.institution=:col) "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ixtype", Investigation.class);
+        temMap.put("bTypes", Arrays.asList(bts));
         temMap.put("col", getCreditCompany());
         investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
