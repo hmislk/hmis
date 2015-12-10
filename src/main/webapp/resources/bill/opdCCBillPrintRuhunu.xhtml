@@ -138,9 +138,16 @@
                     
                     <p:outputLabel value="CC Fee" style="position: absolute;left: 75%;top: 34.5%;text-align: right;font-size: 7pt;" />
                     <div class="ratesCollectingCenterPrintingRuhunu"  >
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1" rendered="#{cc.attrs.bill.cancelledBill eq null}"  >
                             <h:column >
                                 <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </h:column>
+                        </h:dataTable>
+                        <h:dataTable value="#{cc.attrs.bill.cancelledBill.billItems}" var="bip1" rendered="#{cc.attrs.bill.cancelledBill ne null}"  >
+                            <h:column >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -149,9 +156,16 @@
                     
                     <p:outputLabel value="Hos Fee" style="position: absolute;left: 85%;top: 34.5%;text-align: right;font-size: 7pt;" />
                     <div class="ratesWithOutCollectingCenterPrintingRuhunu"  >
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip2"  >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip2" rendered="#{cc.attrs.bill.cancelledBill eq null}"  >
                             <h:column >
                                 <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </h:column>
+                        </h:dataTable>
+                        <h:dataTable value="#{cc.attrs.bill.cancelledBill.billItems}" var="bip2" rendered="#{cc.attrs.bill.cancelledBill ne null}"  >
+                            <h:column >
+                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -182,7 +196,10 @@
                                     <h:outputLabel value="TOTAL" />
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" rendered="#{cc.attrs.bill.cancelledBill eq null}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.total}" rendered="#{cc.attrs.bill.cancelledBill ne null}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
