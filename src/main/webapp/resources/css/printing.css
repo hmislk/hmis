@@ -841,6 +841,22 @@ root {
 
 }
 
+.agentPrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 18.3%;
+
+}
+
+.refNoPrintingRuhunu{
+    font-size: 12px!important;
+    position: absolute;
+    left: 36%;
+    top: 20.8%;
+
+}
+
 .referenceInstitutionPrintingRuhunu{
     font-size: 12px!important;
     position: absolute;
@@ -904,6 +920,22 @@ root {
 .ratesPrintingRuhunu{    
     position: absolute;
     left: 80%;
+    top: 37%;
+    text-align: right;
+
+}
+
+.ratesCollectingCenterPrintingRuhunu{    
+    position: absolute;
+    left: 75%;
+    top: 37%;
+    text-align: right;
+
+}
+
+.ratesWithOutCollectingCenterPrintingRuhunu{    
+    position: absolute;
+    left: 85%;
     top: 37%;
     text-align: right;
 

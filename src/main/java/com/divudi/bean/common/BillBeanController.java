@@ -248,6 +248,35 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public double calFeeValue(List<FeeType> feeTypes, Date fromDate,
+            Date toDate, Institution institution) {
+        String sql = "SELECT sum(bf.feeValue)"
+                + " FROM BillFee bf "
+                + " WHERE bf.bill.billType=:bTp"
+                + " and bf.fee.feeType in :fts "
+                + " and bf.bill.institution=:ins "
+                + " and bf.bill.toInstitution=:ins "
+                + " and bf.department.institution=:ins "
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and ( bf.bill.paymentMethod = :pm1 "
+                + " or  bf.bill.paymentMethod = :pm2"
+                + " or  bf.bill.paymentMethod = :pm3 "
+                + " or  bf.bill.paymentMethod = :pm4)";
+
+        HashMap temMap = new HashMap();
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("fts", feeTypes);
+        temMap.put("pm1", PaymentMethod.Cash);
+        temMap.put("pm2", PaymentMethod.Card);
+        temMap.put("pm3", PaymentMethod.Cheque);
+        temMap.put("pm4", PaymentMethod.Slip);
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public double calFeeValue(FeeType feeType, BillItem billItem) {
         String sql = "SELECT sum(bf.feeValue)"
@@ -2620,6 +2649,8 @@ public class BillBeanController implements Serializable {
 
     public List<BillFee> saveBillFee(BillEntry e, Bill b, WebUser wu) {
         List<BillFee> list = new ArrayList<>();
+        double ccfee=0.0;
+        double woccfee=0.0;
         for (BillFee bf : e.getLstBillFees()) {
             bf.setCreatedAt(Calendar.getInstance().getTime());
             bf.setCreater(wu);
@@ -2632,8 +2663,15 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
+            if (bf.getFee().getFeeType()==FeeType.CollectingCentre) {
+                ccfee+=bf.getFeeValue();
+            } else {
+                woccfee+=bf.getFeeValue();
+            }
             list.add(bf);
         }
+        e.getBillItem().setTransCCFee(ccfee);
+        e.getBillItem().setTransWithOutCCFee(woccfee);
 
         return list;
     }

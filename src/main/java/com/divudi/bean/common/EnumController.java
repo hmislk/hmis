@@ -246,7 +246,8 @@ public class EnumController implements Serializable {
             BillType.PharmacySale,
             BillType.ChannelCash,
             BillType.ChannelPaid,
-            BillType.GrnPaymentPre, //            BillType.PharmacyPurchaseBill,
+            BillType.GrnPaymentPre,
+            BillType.CollectingCentrePaymentReceiveBill,//            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 

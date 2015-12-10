@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                            <h:outputLabel value="Collecting Center Bill Search"/>                          
                             <h:panelGrid columns="5" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createOpdBillSearch}"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createCollectingCentreBillSearch}"/>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -54,7 +54,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column headerText="View">
-                                <p:commandButton ajax="false" value="View Bill" action="bill_reprint">
+                                <p:commandButton ajax="false" value="View Bill" action="/bill_reprint">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandButton>
                             </p:column>
