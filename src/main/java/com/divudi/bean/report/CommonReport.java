@@ -892,16 +892,18 @@ public class CommonReport implements Serializable {
 
         Map temMap = new HashMap();
         List<Bill> tmp;
+        BillType billType[]={BillType.LabBill,BillType.CollectingCentreBill};
+        List<BillType> bts=Arrays.asList(billType);
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("bType", BillType.LabBill);
+        temMap.put("bType", bts);
         String sql;
 
         if (collectingIns == null) {
-            sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType=:bType and  b.institution=:ins and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
+            sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType in :bType and  b.institution=:ins and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
         } else {
-            sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType =:bType and b.institution=:ins and b.collectingCentre=:col and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
+            sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType in :bType and b.institution=:ins and b.collectingCentre=:col and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
             temMap.put("col", getCollectingIns());
         }
         tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
