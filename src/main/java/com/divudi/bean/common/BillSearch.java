@@ -659,11 +659,26 @@ public class BillSearch implements Serializable {
             getBill().setRefundedBill(rb);
             getBillFacade().edit(getBill());
 
+            if (getBill().getBillType() == BillType.CollectingCentreBill) {
+                double feeTotalExceptCcfs = 0.0;
+                for (BillItem bi : refundingItems) {
+                    String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
+                    List<BillFee> rbf = getBillFeeFacade().findBySQL(sql);
+                    for (BillFee bf : rbf) {
+                        if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                            feeTotalExceptCcfs += bf.getFeeValue();
+                        }
+                    }
+                }
+
+                collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferralNumber());
+            }
+
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
 
             printingBill = getBillFacade().find(rb.getId());
-
+            createCollectingCenterfees(printingBill);
             printPreview = true;
             //UtilityController.addSuccessMessage("Refunded");
 
@@ -1098,7 +1113,7 @@ public class BillSearch implements Serializable {
                         }
                     }
 
-                    collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill(), getBill().getReferralNumber());
+                    collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getCancelledBill(), getBill().getReferralNumber());
                 }
 
                 if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
@@ -2104,20 +2119,7 @@ public class BillSearch implements Serializable {
 
     public void createCollectingCenterfees(Bill b) {
         System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
-        if (b.getCancelledBill() == null) {
-            System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
-            for (BillItem bi : b.getBillItems()) {
-                bi.setTransCCFee(0.0);
-                bi.setTransWithOutCCFee(0.0);
-                for (BillFee bf : createBillFees(bi)) {
-                    if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
-                        bi.setTransCCFee(bi.getTransCCFee() + bf.getFeeValue());
-                    } else {
-                        bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());
-                    }
-                }
-            }
-        }else{
+        if (b.getCancelledBill() != null) {
             System.out.println("b.getBillItems().getCancelledBill().size() = " + b.getCancelledBill().getBillItems().size());
             for (BillItem bi : b.getCancelledBill().getBillItems()) {
                 bi.setTransCCFee(0.0);
@@ -2130,6 +2132,33 @@ public class BillSearch implements Serializable {
                     }
                 }
             }
+        } else if (b.getRefundedBill() != null) {
+            System.out.println("b.getBillItems().getRefundedBill().size() = " + b.getRefundedBill().getBillItems().size());
+            for (BillItem bi : b.getRefundedBill().getBillItems()) {
+                bi.setTransCCFee(0.0);
+                bi.setTransWithOutCCFee(0.0);
+                for (BillFee bf : createBillFees(bi)) {
+                    if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                        bi.setTransCCFee(bi.getTransCCFee() + bf.getFeeValue());
+                    } else {
+                        bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());
+                    }
+                }
+            }
+        } else {
+            System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
+            for (BillItem bi : b.getBillItems()) {
+                bi.setTransCCFee(0.0);
+                bi.setTransWithOutCCFee(0.0);
+                for (BillFee bf : createBillFees(bi)) {
+                    if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                        bi.setTransCCFee(bi.getTransCCFee() + bf.getFeeValue());
+                    } else {
+                        bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());
+                    }
+                }
+            }
+
         }
     }
 
