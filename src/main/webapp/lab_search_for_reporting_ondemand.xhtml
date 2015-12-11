@@ -64,8 +64,10 @@
 
 
 
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
-
+                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
+                            <p:column  headerText="No" styleClass="alignTop" >
+                                <p:outputLabel value="#{i+1}" />
+                            </p:column>
                             <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
