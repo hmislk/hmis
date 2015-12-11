@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.collectingCentre;
 
+import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -902,6 +903,9 @@ public class CollectingCentreBillController implements Serializable {
         return true;
     }
 
+    @Inject
+    AgentReferenceBookController agentReferenceBookController;
+
     private boolean errorCheck() {
         if (collectingCentre == null) {
             UtilityController.addErrorMessage("Please select a collecting centre");
@@ -957,10 +961,33 @@ public class CollectingCentreBillController implements Serializable {
                 feeTotalExceptCcfs += bf.getFeeValue();
             }
         }
-        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) > collectingCentre.getStandardCreditLimit()) {
-            UtilityController.addErrorMessage("This bill excees the Collecting Centre Limit");
+
+        ///not wanted 
+//        if ((collectingCentre.getBallance() - Math.abs(feeTotalExceptCcfs)) < 0 - collectingCentre.getStandardCreditLimit()) {
+//            UtilityController.addErrorMessage("This bill excees the Collecting Centre Limit");
+//            return true;
+//        }
+        if (collectingCentre.getBallance() - feeTotalExceptCcfs < 0 - collectingCentre.getAllowedCredit()) {
+            UtilityController.addErrorMessage("Collecting Centre Ballance is Not Enough");
             return true;
         }
+
+        if (agentReferenceBookController.checkAgentReferenceNumber(getReferralId())) {
+            UtilityController.addErrorMessage("Invaild Reference Number.");
+            return true;
+        }
+
+        if (agentReferenceBookController.checkAgentReferenceNumberAlredyExsist(getReferralId(), collectingCentre, BillType.CollectingCentreBill, PaymentMethod.Agent)) {
+            UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+            setReferralId("");
+            return true;
+        }
+
+        if (agentReferenceBookController.checkAgentReferenceNumber(collectingCentre, getReferralId())) {
+            UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+            return true;
+        }
+
         return false;
     }
 
@@ -983,10 +1010,12 @@ public class CollectingCentreBillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-         if (billSessions == null || !billSessions.isEmpty()) {
+        {
+            if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
+        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
@@ -1038,7 +1067,7 @@ public class CollectingCentreBillController implements Serializable {
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
-        
+
         if (collectingCentre == null) {
             System.out.println("Collecting Center ?");
             UtilityController.addErrorMessage("Please Select Collecting Center");
@@ -1200,7 +1229,7 @@ public class CollectingCentreBillController implements Serializable {
         paymentMethodData = null;
         paymentScheme = null;
         paymentMethod = PaymentMethod.Agent;
-        collectingCentre=null;
+        collectingCentre = null;
     }
 
     public void makeNull() {

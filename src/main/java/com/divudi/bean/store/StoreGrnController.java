@@ -299,7 +299,7 @@ public class StoreGrnController implements Serializable {
                 if (bi.getParentBillItem() != null) {
                     System.out.println("bi.getParentBillItem().getItem() = " + bi.getParentBillItem().getItem());
                     System.out.println("i.getItem() = " + i.getItem());
-                    if (bi.getParentBillItem().getItem().equals(i.getItem())) {
+                    if (bi.getParentBillItem().getItem().equals(i.getItem()) && bi.getParentBillItem().getSearialNo() == i.getSearialNo()) {
                         bi.setParentBillItem(i);
                     }
                 }
@@ -1157,16 +1157,16 @@ public class StoreGrnController implements Serializable {
                 createSerialNumber(bi);
                 //System.out.println("****Inventory Code 2****" + bi.getPharmaceuticalBillItem().getCode() + "*******");
                 //        billItem.setParentBillItem(getParentBillItem());
-                
+
                 bi.setParentBillItem(new BillItem());
                 bi.getParentBillItem().copy(getParentBillItem());
-                
+
                 addBillItem(bi);
                 calTotal();
             }
             currentBillItem = new BillItem();
             currentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-            parentBillItem=new BillItem();
+            parentBillItem = new BillItem();
             parentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
             JsfUtil.addSuccessMessage("Accessory Added.");
         }

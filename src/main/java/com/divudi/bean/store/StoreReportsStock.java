@@ -226,8 +226,13 @@ public class StoreReportsStock implements Serializable {
         Map m = new HashMap();
         String sql;
         sql = "select s from Stock s where s.department=:d"
-                + " and s.itemBatch.item.departmentType=:depty"
-                + " order by s.itemBatch.item.name";
+                + " and s.itemBatch.item.departmentType=:depty";
+        if (item!=null) {
+            sql+=" and s.itemBatch.item=:itm ";
+            m.put("itm", item);
+        }
+                
+        sql+= " order by s.itemBatch.item.name";
 
         m.put("depty", DepartmentType.Inventry);
         m.put("d", department);
