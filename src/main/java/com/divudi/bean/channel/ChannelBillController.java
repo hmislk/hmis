@@ -1241,7 +1241,7 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
-            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution,BillType.ChannelAgent,PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                 UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                 setAgentRefNo("");
