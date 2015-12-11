@@ -249,7 +249,7 @@ public class AgentReferenceBookController implements Serializable {
         }
     }
 
-    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution) {
+    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
         Double dbl = null;
         try {
             dbl = Double.parseDouble(refNumber);
@@ -268,8 +268,8 @@ public class AgentReferenceBookController implements Serializable {
                 + " and b.creditCompany=:ins "
                 + " and (upper(ah.referenceNo) like :rn) ";
 
-        m.put("bt", BillType.ChannelAgent);
-        m.put("pm", PaymentMethod.Agent);
+        m.put("bt", bt);
+        m.put("pm", pm);
         m.put("ins", institution);
         m.put("rn", "%" + refNumber.toUpperCase() + "%");
 
