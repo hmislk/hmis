@@ -685,7 +685,8 @@ public class CollectingCentreBillController implements Serializable {
             }
 
             updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferralNumber());
-
+            AgentHistory ah=billSearch.fetchCCHistory(b);
+            b.setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
         } else {
             boolean result = putToBills();
             if (result == false) {
