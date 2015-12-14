@@ -14,7 +14,7 @@
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.paymentMethod}" required="true"  >
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                <f:selectItems value="#{enumController.paymentMethods}"  />
                             </p:selectOneMenu>
                             <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyReturnCashCancel()}" >
                             </h:commandButton>                            
@@ -31,6 +31,12 @@
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ></h:outputLabel>
                                     <h:outputLabel value="Net Total :" ></h:outputLabel>
                                     <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></h:outputLabel>
+                                    <h:outputLabel value="Paymnet Methord :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.paymentMethod}" ></h:outputLabel>
+                                    <h:outputLabel value="Paymnet Methord :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.fromStaff.person.name}" ></h:outputLabel>
+                                    <h:outputLabel value="Paymnet Methord :" ></h:outputLabel>
+                                    <h:outputLabel value="#{pharmacyBillSearch.bill.toStaff.person.name}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
                         </p:panelGrid>
