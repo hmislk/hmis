@@ -61,6 +61,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node00 = new PrivilageNode("Billing Menu", node0, Privileges.Opd);
         TreeNode node01 = new PrivilageNode("Bill", node0, Privileges.OpdBilling);
         TreeNode node01a = new PrivilageNode("Pre Billing", node0, Privileges.OpdPreBilling);
+        TreeNode node01aa = new PrivilageNode("Collecting Centre Billing", node0, Privileges.OpdCollectingCentreBilling);
         TreeNode node02 = new PrivilageNode("Bill Search", node0, Privileges.OpdBillSearch);
         TreeNode node03 = new PrivilageNode("Bill Item Search", node0, Privileges.OpdBillItemSearch);
         TreeNode node04 = new PrivilageNode("Reprint", node0, Privileges.OpdReprint);
@@ -149,6 +150,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node205 = new PrivilageNode("Lab Bill Reprint", node2, Privileges.LabBillReprint);
         TreeNode node206 = new PrivilageNode("Lab Bill Return", node2, Privileges.LabBillReturning);
         TreeNode node207 = new PrivilageNode("Lab Bill Cancel", node2, Privileges.LabBillCancelling);
+        TreeNode node226 = new PrivilageNode("CC Bill Cancel", node2, Privileges.CollectingCentreCancelling);
         TreeNode node208 = new PrivilageNode("Reactivate", node2, Privileges.LabBillReactivating);
         TreeNode node209 = new PrivilageNode("Sample Collection", node2, Privileges.LabSampleCollecting);
         TreeNode node210 = new PrivilageNode("Sample Receive", node2, Privileges.LabSampleReceiving);

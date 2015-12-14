@@ -58,6 +58,7 @@ public class InstitutionController implements Serializable {
     private List<Institution> banks = null;
     private List<Institution> suppliers = null;
     private List<Institution> agencies = null;
+    List<Institution> collectingCentre = null;
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
@@ -77,6 +78,15 @@ public class InstitutionController implements Serializable {
             selectedAgencies = completeInstitution(null, types);
         } else {
             selectedAgencies = completeInstitution(selectText, types);
+        }
+    }
+    
+    public void fetchSelectedCollectingCentre() {
+        InstitutionType[] types={InstitutionType.CollectingCentre};
+        if (selectText.trim().equals("")) {
+            collectingCentre = completeInstitution(null, types);
+        } else {
+            collectingCentre = completeInstitution(selectText, types);
         }
     }
 
@@ -111,6 +121,18 @@ public class InstitutionController implements Serializable {
 
     public void setSuppliers(List<Institution> suppliers) {
         this.suppliers = suppliers;
+    }
+
+    public List<Institution> getCollectingCentre() {
+        if (collectingCentre == null) {
+            collectingCentre = completeInstitution(null, InstitutionType.CollectingCentre);
+        }
+        
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(List<Institution> collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
     public List<Institution> getAgencies() {
@@ -178,12 +200,12 @@ public class InstitutionController implements Serializable {
         return banks;
     }
     
-    public List<Institution> getCollectingCenter() {
-        if (banks == null) {
-            banks = completeInstitution(null, InstitutionType.CollectingCentre);
-        }
-        return banks;
-    }
+//    public List<Institution> getCollectingCenter() {
+//        if (banks == null) {
+//            banks = completeInstitution(null, InstitutionType.CollectingCentre);
+//        }
+//        return banks;
+//    }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {
         String sql;
@@ -284,8 +306,16 @@ public class InstitutionController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void updateAgentCreditLimit(){
+        updateCreditLimit(HistoryType.AgentBalanceUpdateBill);
+    }
+    
+    public void updateCollectingCentreCreditLimit(){
+        updateCreditLimit(HistoryType.CollectingCentreBalanceUpdateBill);
+    }
 
-    public void updateCreditLimit() {
+    public void updateCreditLimit(HistoryType historyType) {
         if (current == null || current.getId() == null) {
             UtilityController.addErrorMessage("Please Select a Agency");
             return;
@@ -324,7 +354,7 @@ public class InstitutionController implements Serializable {
         if (current.getStandardCreditLimit() != scl) {
             System.err.println("Update Standard Credit Limit");
             System.out.println("scl = " + scl);
-            createAgentCreditLimitUpdateHistory(current,scl , current.getStandardCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Standard Credit Limit");
+            createAgentCreditLimitUpdateHistory(current,scl , current.getStandardCreditLimit(), historyType,"Standard Credit Limit");
             System.err.println("Update Standard Credit Limit");
             UtilityController.addSuccessMessage("Standard Credit Limit Updated");
         }
@@ -332,7 +362,7 @@ public class InstitutionController implements Serializable {
         if (current.getAllowedCredit() != acl) {
             System.err.println("Update Allowed Credit Limit");
             System.out.println("acl = " + acl);
-            createAgentCreditLimitUpdateHistory(current,acl , current.getAllowedCredit(), HistoryType.AgentBalanceUpdateBill,"Allowed Credit Limit");
+            createAgentCreditLimitUpdateHistory(current,acl , current.getAllowedCredit(), historyType,"Allowed Credit Limit");
             System.err.println("Update Allowed Credit Limit");
             UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
         }
@@ -340,12 +370,18 @@ public class InstitutionController implements Serializable {
         if (current.getMaxCreditLimit() != mcl) {
             System.err.println("Update Max Credit Limit");
             System.out.println("mcl = " + mcl);
-            createAgentCreditLimitUpdateHistory(current,mcl , current.getMaxCreditLimit(), HistoryType.AgentBalanceUpdateBill,"Max Credit Limit");
+            createAgentCreditLimitUpdateHistory(current,mcl , current.getMaxCreditLimit(), historyType,"Max Credit Limit");
             System.err.println("Update Max Credit Limit");
             UtilityController.addSuccessMessage("Max Credit Limit Updated");
         }
         getFacade().edit(current);
-        getAgencies();
+        
+        switch(historyType){
+            case AgentBalanceUpdateBill:
+                getAgencies();break;
+            case CollectingCentreBalanceUpdateBill:
+                getCollectingCentre();break;
+        }
     }
 
     public void createAgentCreditLimitUpdateHistory(Institution ins,double historyValue, double transactionValue, HistoryType historyType,String comment) {

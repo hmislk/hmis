@@ -28,11 +28,11 @@
                                 <h:panelGrid columns="3" styleClass="noPrintButton">
                                     <h:outputLabel value="From"/>
                                     <h:outputLabel value=" : "/>
-                                    <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy " >
+                                    <p:calendar styleClass="dateTimePicker" navigator="true" id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
                                     <h:outputLabel value="To"/>
                                     <h:outputLabel value=" : "/>
-                                    <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy " >
+                                    <p:calendar styleClass="dateTimePicker" navigator="true" id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                                     </p:calendar>
                                 </h:panelGrid>
                             </td>

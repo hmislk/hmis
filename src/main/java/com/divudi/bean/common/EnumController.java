@@ -246,7 +246,8 @@ public class EnumController implements Serializable {
             BillType.PharmacySale,
             BillType.ChannelCash,
             BillType.ChannelPaid,
-            BillType.GrnPaymentPre, //            BillType.PharmacyPurchaseBill,
+            BillType.GrnPaymentPre,
+            BillType.CollectingCentrePaymentReceiveBill,//            BillType.PharmacyPurchaseBill,
         //            BillType.GrnPayment,
         };
 
@@ -340,6 +341,12 @@ public class EnumController implements Serializable {
             PaymentMethod.Slip,
             PaymentMethod.Credit,};
 
+        return p;
+    }
+
+    public PaymentMethod[] getCollectingCentrePaymentMethods() {
+        PaymentMethod[] p = {
+            PaymentMethod.Agent,};
         return p;
     }
 
