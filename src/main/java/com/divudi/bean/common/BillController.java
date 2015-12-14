@@ -11,6 +11,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -1223,16 +1224,17 @@ public class BillController implements Serializable {
                 return true;
             }
         }
-        for (BillEntry be : getLstBillEntries()) {
-            System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
-            if (be.getBillItem().getItem() instanceof Investigation) {
-                if (referredBy==null) {
-                    UtilityController.addErrorMessage("Please Select Refering Doctor.Refering Doctor is Requierd for Investigations.");
-                    return true;
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+            for (BillEntry be : getLstBillEntries()) {
+                System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
+                if (be.getBillItem().getItem() instanceof Investigation) {
+                    if (referredBy == null) {
+                        UtilityController.addErrorMessage("Please Select Refering Doctor.Refering Doctor is Requierd for Investigations.");
+                        return true;
+                    }
                 }
             }
         }
-
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
             if (referralId == null || referralId.trim().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
@@ -1346,10 +1348,12 @@ public class BillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-         if (billSessions == null || !billSessions.isEmpty()) {
+        {
+            if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
+        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
