@@ -28,7 +28,7 @@
                                 <h:outputLabel value= " by #{patientEncounterController.current.opdDoctor.person.nameWithTitle}" >
                                 </h:outputLabel>
                                 <p:spacer width="10" ></p:spacer>
-                                <h:panelGrid columns="7">
+                                <h:panelGrid columns="6">
                                     <p:commandButton ajax="false" value="Save Visit" action="#{patientEncounterController.saveSelected()}"  onclick="onSubmitButton();" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Pharmacy Issue" action="#{patientEncounterController.issueItems()}"  onclick="onSubmitButton();"></p:commandButton>
                                     <p:commandButton ajax="false" value="Services/Investigation" action="#{patientEncounterController.issueServices()}"  onclick="onSubmitButton();"></p:commandButton>
@@ -36,9 +36,7 @@
                                     <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
 
-                                    <p:commandButton ajax="false" value="Back to Queue"
-
-                                                     action="/clinical/clinical_queue.xhtml" style="float: right;" ></p:commandButton>
+                                    
 
                                     <p:commandButton ajax="false" value="Back to Previous Visit" 
                                                      disabled="#{patientEncounterController.startedEncounter eq patientEncounterController.current}"
