@@ -21,7 +21,22 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
-                            </h:panelGrid>
+                            <h:outputLabel value="Item"/>                             
+                            <p:autoComplete   value="#{storeReportsStock.item}" 
+                                              forceSelection="true"
+                                              completeMethod="#{itemController.completeStoreInventryItem}" 
+                                              var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column headerText="Item" style="width: 20px;" >
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" >
+                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Item" style="width: 20px;" >
+                                    <h:outputLabel value="#{vt.departmentType}"></h:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
                         <h:panelGrid columns="4" > 
                             <p:spacer width="80" height="1"/>
                             <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentInventryStocks()}" ></p:commandButton>
@@ -42,7 +57,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="#{storeReportsStock.department.name} Department Asset Registry"/>                                     
                                 </f:facet> 
-                                
+
                                 <p:column>
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
@@ -114,22 +129,25 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-                                
-                                
+
+
                                 <p:column headerText="View" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="View"/>                                     
                                     </f:facet>
                                     #{i.id}<br/>
                                     #{i.childStocks.size()}<br/>
-                                    #{i.childStocks}<br/>
+                                    <ui:repeat value="#{i.childStocks}" var="ii">
+                                        <p:outputLabel value="#{ii.itemBatch.item.name}" />
+                                    </ui:repeat>
+                                    <br/>
                                     <p:commandButton value="Fixed Asset Addition Form" ajax="false" action="report_fixed_asset_addition_form">
                                         <f:setPropertyActionListener value="#{i}" target="#{storeReportsStock.selectedInventoryStock}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                 </p:column>
-                                
-                                
-                                
+
+
+
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column colspan="6" footerText="Total">
@@ -141,7 +159,7 @@
                                             <f:facet name="footer" >
                                                 <h:outputLabel value="#{storeReportsStock.stockPurchaseValue}" >
                                                     <f:convertNumber parent="#,##0.00" />
-                                                 </h:outputLabel>
+                                                </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column></p:column>
@@ -154,7 +172,7 @@
                                         </p:column>
                                     </p:row>
                                 </p:columnGroup>
-                                
+
                                 <f:facet name="footer" >
                                     <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                                 </f:facet>

@@ -38,7 +38,7 @@
                 </h:panelGrid>
                 <h:panelGrid columns="4">
                     <p:spacer height="1" width="110"/>
-                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+                    <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemNewChanges()}" ></p:commandButton>
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
@@ -50,7 +50,7 @@
 
             </p:panel>
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
-                <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnController.createItemList3()}" ></p:commandButton>
+                
 
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
                              rows="20"
@@ -75,7 +75,7 @@
 
                     </f:facet>
 
-                    <p:column headerText="Test Name" style="text-align:center"
+                    <p:column headerText="Test Name"
                               sortBy="#{c.investigation.name}" 
                               filterBy="#{c.investigation.name}"
                               filterMatchMode="contains">
@@ -87,7 +87,7 @@
                     <p:column headerText="Count" style="text-align: center" sortBy="#{c.count}">
                         <h:outputLabel value="#{c.count}" />
                     </p:column>
-                    <p:column headerText="Total Value" style="text-align: center" sortBy="#{c.count}">
+                    <p:column headerText="Total Value" style="text-align: right;" sortBy="#{c.count}">
                         <h:outputLabel value="#{c.total}" />
                     </p:column>
                     <p:columnGroup type="footer">  
@@ -95,14 +95,14 @@
                             <p:column footerText="Total" colspan="1" style="text-align:left"/>
                             <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal2}">
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal}">
 
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal2}">
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.itemValue}">
 
                                     </h:outputLabel>
                                 </f:facet>

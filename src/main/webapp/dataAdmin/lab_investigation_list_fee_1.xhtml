@@ -46,6 +46,10 @@
                             <p:subTable value="#{i.itemFees}" var="ix" >
                                 <f:facet name="header">
                                     <h:outputLabel  value="#{i.item.name}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <h:outputLabel  value="Institution: #{i.item.institution.name}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <h:outputLabel  value="Department: #{i.item.department.name}" />
                                     <h:outputLabel value="#{i.item.total}" style="float: right;">
                                         <f:convertNumber pattern="#,###.##" />
                                     </h:outputLabel>

@@ -52,7 +52,7 @@
                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                         value="#{patientController.current}" 
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                        var="apt" itemLabel="#{apt.person.nameWithTitle}" 
+                                                        var="apt" itemLabel="#{apt.person.name}" 
                                                         itemValue="#{apt}" size="30"  style="width: 400px;">
                                             <p:column headerText="Name">
                                                 <h:outputLabel value="#{apt.person.nameWithTitle}" />

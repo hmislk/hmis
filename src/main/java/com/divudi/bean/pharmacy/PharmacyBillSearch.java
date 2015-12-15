@@ -638,6 +638,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public PaymentMethod getPaymentMethod() {
+        if (paymentMethod==null) {
+            paymentMethod=getBill().getPaymentMethod();
+        }
         return paymentMethod;
     }
 
@@ -1877,6 +1880,17 @@ public class PharmacyBillSearch implements Serializable {
             getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
             UtilityController.addSuccessMessage("Cancelled");
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                //   //System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                if (getBill().getToStaff() != null) {
+                    //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                    UtilityController.addSuccessMessage("Staff Credit Updated");
+                    cb.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(cb);
+                }
+            }
 
             printPreview = true;
 

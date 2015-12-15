@@ -310,7 +310,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         List<PatientInvestigation> temPis = billEjb.getPatientInvestigations(item,
                 fromDate,
                 toDate,
-                new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill},
+                new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill},
                 new Class[]{BilledBill.class},
                 true,
                 null,

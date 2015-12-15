@@ -1008,6 +1008,7 @@ public class PharmacySaleReport implements Serializable {
     private double getHandOverValue(Date date) {
 
         String sql;
+        Map m = new HashMap();
 //
 //        sql = "select abs(sum(f.total))"
 //                + " from Bill f "
@@ -1032,13 +1033,17 @@ public class PharmacySaleReport implements Serializable {
                 + " or f.paymentMethod = :pm4) "
                 + " and f.createdAt between :fd and :td "
                 + " and f.toInstitution=:ins ";
+        
+        if (toDepartment!=null) {
+            sql+=" and f.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
 
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
         System.err.println("From " + fd);
 
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -1057,6 +1062,7 @@ public class PharmacySaleReport implements Serializable {
     private double getHandOverDiscountValue(Date date) {
 
         String sql;
+        Map m = new HashMap();
 
         sql = "select sum(f.discount)"
                 + " from Bill f "
@@ -1069,11 +1075,14 @@ public class PharmacySaleReport implements Serializable {
                 + " or f.paymentMethod=:pm4 )"
                 + " and f.toInstitution=:ins ";
         //   + " and f.institution=:billedIns ";
+        if (toDepartment!=null) {
+            sql+=" and f.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
 
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -1093,6 +1102,7 @@ public class PharmacySaleReport implements Serializable {
     private double getHandOverProfValue(Date date) {
 
         String sql;
+        Map m = new HashMap();
 
         sql = "select sum(f.staffFee)"
                 + " from Bill f "
@@ -1105,11 +1115,15 @@ public class PharmacySaleReport implements Serializable {
                 + " or f.paymentMethod=:pm4 )"
                 + " and f.toInstitution=:ins ";
         //      + " and f.institution=:billedIns ";
+        
+        if (toDepartment!=null) {
+            sql+=" and f.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
 
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
-        Map m = new HashMap();
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -1861,6 +1875,10 @@ public class PharmacySaleReport implements Serializable {
                 + " or i.paymentMethod=:pm3 "
                 + " or i.paymentMethod=:pm4 )"
                 + " and i.createdAt between :fromDate and :toDate ";
+        if (toDepartment!=null) {
+            sql+=" and i.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -1888,6 +1906,10 @@ public class PharmacySaleReport implements Serializable {
                 + " or i.paymentMethod=:pm3 "
                 + " or i.paymentMethod=:pm4 )"
                 + " and i.createdAt between :fromDate and :toDate ";
+        if (toDepartment!=null) {
+            sql+=" and i.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -1915,6 +1937,10 @@ public class PharmacySaleReport implements Serializable {
                 + " or i.paymentMethod=:pm3 "
                 + " or i.paymentMethod=:pm4 )"
                 + " and i.createdAt between :fromDate and :toDate ";
+        if (toDepartment != null) {
+            sql += " and i.toDepartment=:dep";
+            m.put("dep", toDepartment);
+        }
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }

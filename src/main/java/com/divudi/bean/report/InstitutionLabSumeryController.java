@@ -272,6 +272,10 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("billedIns", getSessionController().getInstitution());
+        if (department!=null) {
+            sql+=" and f.toDepartment=:dep";
+            tm.put("dep", department);
+        }
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
@@ -297,7 +301,10 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("billedIns", getSessionController().getInstitution());
-
+        if (department!=null) {
+            sql+=" and f.toDepartment=:dep";
+            tm.put("dep", department);
+        }
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
@@ -322,7 +329,10 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("billedIns", getSessionController().getInstitution());
-
+        if (department!=null) {
+            sql+=" and f.toDepartment=:dep";
+            tm.put("dep", department);
+        }
         return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
 
     }
@@ -953,8 +963,8 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " or f.paymentMethod = :pm4 ) "
                 + " and f.institution=:ins "
                 + " and f.toInstitution=:toIns "
-                + " and f.createdAt  between :fromDate and :toDate"
-                + " order by type(f), f.insId";
+                + " and f.createdAt  between :fromDate and :toDate";
+                
 
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -966,6 +976,11 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("ins", getSessionController().getInstitution());
         tm.put("toIns", getInstitution());
+        if (department!=null) {
+            sql+=" and f.toDepartment=:dep";
+            tm.put("dep", department);
+        }
+        sql+=" order by type(f), f.insId ";
         List<Bill> list = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
 
         return list;

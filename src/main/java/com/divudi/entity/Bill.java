@@ -297,7 +297,14 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
-
+    
+    @Transient
+    double  transTotalCCFee;
+    @Transient
+    double  transTotalWithOutCCFee;
+    @Transient
+    double  transCurrentCCBalance;
+    
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
     }
@@ -1627,6 +1634,30 @@ public class Bill implements Serializable {
 
     public void setSmsedAt(Date smsedAt) {
         this.smsedAt = smsedAt;
+    }
+
+    public double getTransTotalCCFee() {
+        return transTotalCCFee;
+    }
+
+    public void setTransTotalCCFee(double transTotalCCFee) {
+        this.transTotalCCFee = transTotalCCFee;
+    }
+
+    public double getTransTotalWithOutCCFee() {
+        return transTotalWithOutCCFee;
+    }
+
+    public void setTransTotalWithOutCCFee(double transTotalWithOutCCFee) {
+        this.transTotalWithOutCCFee = transTotalWithOutCCFee;
+    }
+
+    public double getTransCurrentCCBalance() {
+        return transCurrentCCBalance;
+    }
+
+    public void setTransCurrentCCBalance(double transCurrentCCBalance) {
+        this.transCurrentCCBalance = transCurrentCCBalance;
     }
 
 }
