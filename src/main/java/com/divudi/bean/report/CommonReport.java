@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -13,6 +14,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -25,6 +27,7 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -71,6 +74,8 @@ public class CommonReport implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    BillSearch billSearch;
     /**
      *
      * Properties
@@ -892,11 +897,10 @@ public class CommonReport implements Serializable {
 
         Map temMap = new HashMap();
         List<Bill> tmp;
-        BillType billType[]={BillType.LabBill,BillType.CollectingCentreBill};
-        List<BillType> bts=Arrays.asList(billType);
+        BillType billType[] = {BillType.LabBill, BillType.CollectingCentreBill};
+        List<BillType> bts = Arrays.asList(billType);
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
-        temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bType", bts);
         String sql;
 
@@ -952,6 +956,8 @@ public class CommonReport implements Serializable {
     }
 
     private double total;
+    private double totalHos;
+    private double totalCC;
 
     public BillsTotals getUserRefundedBillsOwn() {
 
@@ -1348,8 +1354,8 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getCollectingCentreRecieves() {
-        if(collectingCentreRecieves==null){
-            collectingCentreRecieves= new BillsTotals();
+        if (collectingCentreRecieves == null) {
+            collectingCentreRecieves = new BillsTotals();
         }
         return collectingCentreRecieves;
     }
@@ -1359,10 +1365,10 @@ public class CommonReport implements Serializable {
     }
 
     public BillsTotals getCollectingCentreCancelBill() {
-        if(collectingCentreCancelBill==null){
-            collectingCentreCancelBill= new BillsTotals();
+        if (collectingCentreCancelBill == null) {
+            collectingCentreCancelBill = new BillsTotals();
         }
-        
+
         return collectingCentreCancelBill;
     }
 
@@ -2481,8 +2487,7 @@ public class CommonReport implements Serializable {
         getAgentCancelBill().setCheque(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getAgentCancelBill().setCredit(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getAgentCancelBill().setSlip(calValue(new CancelledBill(), BillType.AgentPaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
-        
+
         //Collecting Centre Recieve
         getCollectingCentreRecieves().setBills(userBillsOwn(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, getWebUser(), getDepartment()));
         getCollectingCentreRecieves().setCard(calValue(new BilledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Card, getWebUser(), getDepartment()));
@@ -2498,7 +2503,6 @@ public class CommonReport implements Serializable {
         getCollectingCentreCancelBill().setCheque(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Cheque, getWebUser(), getDepartment()));
         getCollectingCentreCancelBill().setCredit(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getCollectingCentreCancelBill().setSlip(calValue(new CancelledBill(), BillType.CollectingCentrePaymentReceiveBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
-        
 
         //Inward Payment
         getInwardPayments().setBills(userBillsOwn(new BilledBill(), BillType.InwardPaymentBill, getWebUser(), getDepartment()));
@@ -3995,6 +3999,63 @@ public class CommonReport implements Serializable {
         return list;
     }
 
+    public void createCollectingCenterBillTable() {
+        bills = new ArrayList<>();
+
+        BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
+
+        bills = getBillList(billTypes);
+        total = 0.0;
+        totalCC = 0.0;
+        totalHos = 0.0;
+        for (Bill b : bills) {
+            createCollectingCenterfees(b);
+            totalHos += b.getTransTotalWithOutCCFee();
+            totalCC += b.getTransTotalCCFee();
+            total += b.getNetTotal();
+        }
+    }
+
+    public List<Bill> getBillList(BillType[] bts) {
+        Map m = new HashMap();
+        String sql = "select b from Bill b "
+                + " where b.billType in :bTypes "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (collectingIns != null) {
+            sql += " and (b.collectingCentre=:col or b.fromInstitution=:col) ";
+            m.put("col", collectingIns);
+        } else {
+            sql += " and (b.collectingCentre is not null or b.fromInstitution is not null) ";
+        }
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("bTypes", Arrays.asList(bts));
+
+        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public void createCollectingCenterfees(Bill b) {
+        AgentHistory ah = new AgentHistory();
+        b.setTransTotalCCFee(0.0);
+        b.setTransTotalWithOutCCFee(0.0);
+        System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
+        for (BillItem bi : b.getBillItems()) {
+            bi.setTransCCFee(0.0);
+            bi.setTransWithOutCCFee(0.0);
+            for (BillFee bf : billSearch.createBillFees(bi)) {
+                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    bi.setTransCCFee(bi.getTransCCFee() + bf.getFeeValue());
+                } else {
+                    bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());
+                }
+            }
+            b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
+            b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
+        }
+    }
+
     public void setDataTableData(List<String1Value1> dataTableData) {
         this.dataTableData = dataTableData;
     }
@@ -4437,6 +4498,22 @@ public class CommonReport implements Serializable {
 
     public void setToReciptNo(String toReciptNo) {
         this.toReciptNo = toReciptNo;
+    }
+
+    public double getTotalHos() {
+        return totalHos;
+    }
+
+    public void setTotalHos(double totalHos) {
+        this.totalHos = totalHos;
+    }
+
+    public double getTotalCC() {
+        return totalCC;
+    }
+
+    public void setTotalCC(double totalCC) {
+        this.totalCC = totalCC;
     }
 
 }

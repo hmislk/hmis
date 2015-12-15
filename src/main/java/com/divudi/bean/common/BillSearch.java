@@ -2188,7 +2188,7 @@ public class BillSearch implements Serializable {
         
     }
 
-    private List<BillFee> createBillFees(BillItem bi) {
+    public List<BillFee> createBillFees(BillItem bi) {
         List<BillFee> bfs = new ArrayList<>();
         String sql = "SELECT b FROM BillFee b WHERE b.billItem.id=" + bi.getId();
         bfs = getBillFeeFacade().findBySQL(sql);
