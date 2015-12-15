@@ -51,7 +51,7 @@
 
                                 </p:tooltip>
 
-                                <h:panelGrid columns="8" >
+                                <h:panelGrid columns="9" >
                                     <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                      value="Save" 
                                                      action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
@@ -77,6 +77,9 @@
                                     </p:commandButton>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
+                                    
+                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    
                                 </h:panelGrid>
 
 

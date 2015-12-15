@@ -9,8 +9,8 @@
 
     <h:body>
 
-        
-        
+
+
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
@@ -36,9 +36,13 @@
                                     <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
                                     <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
 
+                                    
+
                                     <p:commandButton ajax="false" value="Back to Previous Visit" 
                                                      disabled="#{patientEncounterController.startedEncounter eq patientEncounterController.current}"
                                                      action="#{patientEncounterController.backToStartingEncounter()}" style="float: right;" ></p:commandButton>
+
+
 
                                 </h:panelGrid>
 
@@ -53,14 +57,14 @@
                                 <p:panel styleClass="alignTop" >
                                     <f:facet name="header" >
                                         <h:outputText value="Prescreption" >
-                                           
+
                                         </h:outputText>
                                         <p:spacer width="30" height="1" ></p:spacer>
                                         <p:commandButton ajax="false" value="Print" >
                                             <p:printer target="txtComments" ></p:printer>
                                         </p:commandButton>
                                     </f:facet>
-                                    
+
                                     <p:inputTextarea id="txtComments" 
                                                      queryDelay="0"
                                                      style="width: 420px;height: 300px;" 
@@ -328,7 +332,7 @@
 
                                         </p:dataTable>
                                     </p:panel>
-                                    
+
                                     <p:panel header="Channellings" >
                                         <p:dataTable value="#{patientEncounterController.currentChannelBills}" 
                                                      var="bill" rows="5"

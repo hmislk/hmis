@@ -136,50 +136,50 @@
                         </h:dataTable>
                     </div>
                     
-                    <p:outputLabel value="CC Fee" style="position: absolute;left: 75%;top: 34.5%;text-align: right;font-size: 7pt;" />
-                    <div class="ratesCollectingCenterPrintingRuhunu"  >
+                    <p:outputLabel value="Hos Fee" style="position: absolute;left: 72%;top: 34.5%;text-align: right;font-size: 7pt;" />
+                    <div class="ratesWithOutCollectingCenterPrintingRuhunu"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;float: right;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                         <h:dataTable value="#{cc.attrs.bill.cancelledBill.billItems}" var="bip1" rendered="#{cc.attrs.bill.cancelledBill ne null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                         <h:dataTable value="#{cc.attrs.bill.refundedBill.billItems}" var="bip1" rendered="#{cc.attrs.bill.refundedBill ne null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip1.transCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                     </div>
                     
-                    <p:outputLabel value="Hos Fee" style="position: absolute;left: 85%;top: 34.5%;text-align: right;font-size: 7pt;" />
-                    <div class="ratesWithOutCollectingCenterPrintingRuhunu"  >
+                    <p:outputLabel value="CC Fee" style="position: absolute;left: 85%;top: 34.5%;text-align: right;font-size: 7pt;" />
+                    <div class="ratesCollectingCenterPrintingRuhunu"  >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip2" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                         <h:dataTable value="#{cc.attrs.bill.cancelledBill.billItems}" var="bip2" rendered="#{cc.attrs.bill.cancelledBill ne null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.cancelledBill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
                         </h:dataTable>
                         <h:dataTable value="#{cc.attrs.bill.refundedBill.billItems}" var="bip2" rendered="#{cc.attrs.bill.refundedBill ne null}"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;" >
+                                <h:outputLabel  rendered="#{bip2.bill.id eq cc.attrs.bill.refundedBill.id}"  value="#{bip2.transWithOutCCFee}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </h:column>
@@ -190,7 +190,7 @@
                          left: 30%!important;
                          bottom:10%!important;
                          /*top: 13.8cm;*/
-                         font-size: 20px;
+                         font-size: 12px;
                          font-weight: bolder;
                          text-align: right;">
 
@@ -204,54 +204,72 @@
                                     <br/>
                                     <br/>
                                 </td>
+                                <td>
+                                    <br/>
+                                    <br/>
+                                </td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="TOTAL" />
+                                    <h:outputLabel value="Total Hos Fee" />
+                                </td>
+                                
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel value="#{cc.attrs.bill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalWithOutCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td>
+                                    <h:outputLabel value="&nbsp;" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; min-width: 3cm;">
+                                    <h:outputLabel value="Total CC Fee" />
+                                </td>
+                                <td>
+                                    <h:outputLabel value="&nbsp;" />
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" >
+                                    <h:outputLabel value="#{cc.attrs.bill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.total}" rendered="#{cc.attrs.bill.cancelledBill ne null}">
+                                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transTotalCCFee}" rendered="#{cc.attrs.bill.cancelledBill ne null}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{cc.attrs.bill.refundedBill.total}" rendered="#{cc.attrs.bill.refundedBill ne null}">
+                                    <h:outputLabel value="#{cc.attrs.bill.refundedBill.transTotalCCFee}" rendered="#{cc.attrs.bill.refundedBill ne null}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
+                                <td style="text-align: left; min-width: 3cm;">
+                                    <h:outputLabel value="Current Credit Balance" />
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount}"  style=" text-align: right!important;  font-size: 15px!important;   ">
+                                    <h:outputLabel value="#{cc.attrs.bill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.cancelledBill eq null and cc.attrs.bill.refundedBill eq null}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.cancelledBill ne null}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{cc.attrs.bill.refundedBill.transCurrentCCBalance}" rendered="#{cc.attrs.bill.refundedBill ne null}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
-                                </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                <td>
+                                    <h:outputLabel value="&nbsp;" />
                                 </td>
                             </tr>
-
-
                         </table>
 
                     </div>
-
-
-
-
-
-
 
                 </h:panelGroup>
             </div>

@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
 
@@ -36,6 +37,8 @@
                                     <f:selectItem itemLabel="Select Institution"/>
                                     <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
                                 </p:selectOneMenu>
+                                <h:outputLabel value="Department"/>
+                                <au:department value="#{institutionLabSumeryController.department}" />
                             </h:panelGrid>
                             <h:panelGrid columns="6">
                                 <p:spacer width="70" height="1"/>
@@ -56,7 +59,7 @@
                                 <p:commandButton value="Pdf" ajax="false">
                                     <pe:exporter type="pdf" target="tbl,sum" fileName="33" />
                                 </p:commandButton>
-                           </h:panelGrid>
+                            </h:panelGrid>
                         </p:panel>
                         <p:panel id="panelReport" styleClass="noBorder summeryBorder">
 
@@ -65,15 +68,15 @@
                                     <h:outputLabel value="Handover Reports"/>
                                     <br/>
                                     <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/><br/>
-                                        <h:outputLabel value="From : "/>
-                                        <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                                        </h:outputLabel>
-                                        <p:spacer width="30" height="1"/>
-                                        <h:outputLabel value="To :"/>
-                                        <h:outputLabel value="#{institutionLabSumeryController.toDate}">
-                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
-                                        </h:outputLabel>
+                                    <h:outputLabel value="From : "/>
+                                    <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <p:spacer width="30" height="1"/>
+                                    <h:outputLabel value="To :"/>
+                                    <h:outputLabel value="#{institutionLabSumeryController.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
                                 </f:facet>
 
 
@@ -229,8 +232,8 @@
                                 </p:column>
                             </p:dataTable>
                             <f:facet name="footer">
-                                        <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
-                                    </f:facet>
+                                <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                            </f:facet>
                         </p:panel>
                     </p:panel>
                 </h:form>
