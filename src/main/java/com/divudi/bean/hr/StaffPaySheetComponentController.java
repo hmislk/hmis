@@ -214,7 +214,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
         if (getReportKeyWord().getInstitution() != null) {
             sql += " and ss.staff.workingDepartment.institution=:ins ";
-            hm.put("ins", getReportKeyWord().getDepartment());
+            hm.put("ins", getReportKeyWord().getInstitution());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
