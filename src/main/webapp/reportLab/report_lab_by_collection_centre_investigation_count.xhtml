@@ -50,8 +50,6 @@
 
             </p:panel>
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
-
-
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
                              rows="20"
                              paginator="true"
@@ -61,19 +59,18 @@
                              >
 
                     <f:facet name="header">
-
                         <h:outputLabel value="Collecting Centre Collection Count Report"/>
                         <br></br>
                         <h:panelGrid rendered="#{investigationMonthSummeryOwnController.creditCompany ne null}">
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.creditCompany.name}"/>
                         </h:panelGrid>
                         <h:outputLabel value="From "/>
-                        <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
                         <h:outputLabel value="- To "/>
-                        <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
                     </f:facet>
                     <p:column headerText="No" style="text-align: center">
