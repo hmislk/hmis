@@ -43,8 +43,8 @@
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                        <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
+                    <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Count_Report"   />
                     </p:commandButton>
                 </h:panelGrid>
 
@@ -53,10 +53,6 @@
 
 
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
-                             rows="20"
-                             paginator="true"
-                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20, 50, 100,500" 
                              rowIndexVar="i"
                              >
 
@@ -69,11 +65,11 @@
                         </h:panelGrid>
                         <h:outputLabel value="From "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-                        <h:outputLabel value="- To "/>
+                        <h:outputLabel value=" - To "/>
                         <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
                     </f:facet>
                     <p:column headerText="No" style="text-align: center">
