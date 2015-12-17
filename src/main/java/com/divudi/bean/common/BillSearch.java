@@ -2120,13 +2120,13 @@ public class BillSearch implements Serializable {
         createBillItemsAll();
         if (getBill().getBillType() == BillType.CollectingCentreBill) {
             createCollectingCenterfees(getBill());
-            
+
         }
     }
 
     public void createCollectingCenterfees(Bill b) {
         System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
-        AgentHistory ah=new AgentHistory();
+        AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
             b.getCancelledBill().setTransTotalCCFee(0.0);
             b.getCancelledBill().setTransTotalWithOutCCFee(0.0);
@@ -2144,8 +2144,11 @@ public class BillSearch implements Serializable {
                 b.getCancelledBill().setTransTotalCCFee(b.getCancelledBill().getTransTotalCCFee() + bi.getTransCCFee());
                 b.getCancelledBill().setTransTotalWithOutCCFee(b.getCancelledBill().getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
             }
-            ah=fetchCCHistory(b.getCancelledBill());
-            b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b.getCancelledBill());
+            if (ah != null) {
+                b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
+
         } else if (b.getRefundedBill() != null) {
             b.getRefundedBill().setTransTotalCCFee(0.0);
             b.getRefundedBill().setTransTotalWithOutCCFee(0.0);
@@ -2163,8 +2166,10 @@ public class BillSearch implements Serializable {
                 b.getRefundedBill().setTransTotalCCFee(b.getRefundedBill().getTransTotalCCFee() + bi.getTransCCFee());
                 b.getRefundedBill().setTransTotalWithOutCCFee(b.getRefundedBill().getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
             }
-            ah=fetchCCHistory(b.getRefundedBill());
-            b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b.getRefundedBill());
+            if (ah != null) {
+                b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
         } else {
             b.setTransTotalCCFee(0.0);
             b.setTransTotalWithOutCCFee(0.0);
@@ -2182,10 +2187,12 @@ public class BillSearch implements Serializable {
                 b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
                 b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
             }
-            ah=fetchCCHistory(b);
-            b.setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b);
+            if (ah != null) {
+                b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
         }
-        
+
     }
 
     public List<BillFee> createBillFees(BillItem bi) {
@@ -2194,15 +2201,15 @@ public class BillSearch implements Serializable {
         bfs = getBillFeeFacade().findBySQL(sql);
         return bfs;
     }
-    
-    public AgentHistory fetchCCHistory(Bill b){
+
+    public AgentHistory fetchCCHistory(Bill b) {
         String sql;
         Map m = new HashMap();
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
-                + " and ah.bill.id="+b.getId();
-        AgentHistory ah=agentHistoryFacade.findFirstBySQL(sql);
-        
+                + " and ah.bill.id=" + b.getId();
+        AgentHistory ah = agentHistoryFacade.findFirstBySQL(sql);
+
         return ah;
     }
 
