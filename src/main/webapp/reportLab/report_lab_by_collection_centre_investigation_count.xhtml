@@ -15,7 +15,7 @@
 
             <p:panel>
                 <f:facet name="header" >
-                    <p:outputLabel value="REPORT BY COLLECTION CENTER COUNT" />
+                    <p:outputLabel value="Collecting Centre Collection Count Report" />
                 </f:facet>
                 <h:panelGrid columns="2">
                     <h:outputLabel value="From Date"/>
@@ -25,7 +25,7 @@
                     <h:outputLabel value="To Date"/>
                     <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
-                    <h:outputLabel value="Credit Company"/>
+                    <h:outputLabel value="Collecting Center"/>
                     <p:autoComplete forceSelection="true" value="#{investigationMonthSummeryOwnController.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                         <p:column>
                             #{ix.name}
@@ -50,31 +50,35 @@
 
             </p:panel>
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
-                
-
                 <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
                              rows="20"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20, 50, 100" 
+                             rowsPerPageTemplate="20, 50, 100,500" 
+                             rowIndexVar="i"
                              >
 
                     <f:facet name="header">
-
-                        <h:outputLabel value="Investigation Month End Summary By "/>
-                        <h:outputLabel value="#{investigationMonthSummeryOwnController.creditCompany.name} "/>
-                        <br/> 
-                        <h:outputLabel value="From : "/>
-                        <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="Collecting Centre Collection Count Report"/>
+                        <br></br>
+                        <h:panelGrid rendered="#{investigationMonthSummeryOwnController.creditCompany ne null}">
+                            <h:outputLabel value="#{investigationMonthSummeryOwnController.creditCompany.name}"/>
+                        </h:panelGrid>
+                        <h:outputLabel value="From "/>
+                        <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-                        <h:outputLabel value="To &emsp;: "/>
-                        <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate} ">
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        <h:outputLabel value="- To "/>
+                        <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-
                     </f:facet>
-
+                    <p:column headerText="No" style="text-align: center">
+                        <f:facet name="header">
+                            <h:outputLabel value="No"/>
+                        </f:facet>
+                        <h:outputLabel value="#{i+1}" />
+                    </p:column>
                     <p:column headerText="Test Name"
                               sortBy="#{c.investigation.name}" 
                               filterBy="#{c.investigation.name}"
@@ -85,25 +89,35 @@
                         <h:outputLabel value="#{c.investigation.name}"  />
                     </p:column>
                     <p:column headerText="Count" style="text-align: center" sortBy="#{c.count}">
-                        <h:outputLabel value="#{c.count}" />
+                        <f:facet name="header">
+                            <h:outputLabel value="Count"/>
+                        </f:facet>
+                        <h:outputLabel value="#{c.count}" >
+                            <f:convertNumber pattern="#,##0" />
+                        </h:outputLabel>
                     </p:column>
                     <p:column headerText="Total Value" style="text-align: right;" sortBy="#{c.count}">
-                        <h:outputLabel value="#{c.total}" />
+                        <f:facet name="header">
+                            <h:outputLabel value="Total Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{c.total}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
                     </p:column>
                     <p:columnGroup type="footer">  
                         <p:row>                              
-                            <p:column footerText="Total" colspan="1" style="text-align:left"/>
+                            <p:column footerText="Total" colspan="2" style="text-align:left"/>
                             <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal}">
-
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.countTotal2}">
+                                        <f:convertNumber pattern="#,##0" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            <p:column footerText="#{investigationMonthSummeryOwnController.countTotal2}" >
+                            <p:column footerText="#{investigationMonthSummeryOwnController.itemValue}"  >
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.itemValue}">
-
+                                    <h:outputLabel value="#{investigationMonthSummeryOwnController.itemValue}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column> 

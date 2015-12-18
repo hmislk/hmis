@@ -15,17 +15,17 @@
 
             <p:panel >
                 <f:facet name="header"  >
-                    <p:outputLabel value="Collecting Centre Sale Report" styleClass="noPrintButton"/>
+                    <p:outputLabel value="Collecting Centre Collection Detail Report" styleClass="noPrintButton"/>
                 </f:facet>
                 <h:panelGrid columns="2" styleClass="noPrintButton">
-                    <h:outputLabel value="From :"/>
-                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    <h:outputLabel value="From"/>
+                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" styleClass="dateTimePicker" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
 
-                    <h:outputLabel value="To &emsp;:"/>
-                    <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <h:outputLabel value="To"/>
+                    <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
-                    <h:outputLabel/>
+                    <h:outputLabel value="Collecting Center"/>
                     <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                         <p:column>
                             #{ix.name}
@@ -38,102 +38,72 @@
                 </h:panelGrid> 
                 <h:panelGrid columns="4" styleClass="noPrintButton">
                     <p:spacer width="40"/>
-                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton" style="float: right;" />
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton " style="float: right;" action="#{commonReport.createCollectingCenterBillTable}" />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                        <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report" />
-                    </p:commandButton>  
+                    <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Detail_Report"   />
+                    </p:commandButton> 
                 </h:panelGrid>
 
             </p:panel>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-
-                <p:dataTable id="tbl" value="#{commonReport.billsByCollectingOwn}" var="d" 
-                             rows="20"
-                             paginator="true"
-                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20, 50, 100" 
-                             >
+                <p:dataTable id="tbl" value="#{commonReport.bills}" var="d" rowIndexVar="i">
                     <f:facet name="header">
-                        <h:outputLabel value="#{commonReport.collectingIns.name}"/>                    
+                        <h:outputLabel value="Collecting Centre Collection Detail Report"/> 
+                        <br></br>
+                        <h:panelGrid rendered="#{commonReport.collectingIns ne null}">
+                            <h:outputLabel value="#{commonReport.collectingIns.name}"/>
+                        </h:panelGrid>
+                        <h:outputLabel value="From  "/>                     
                         <h:outputLabel value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-
-                        <h:outputLabel value="---"/>                       
+                        <h:outputLabel value="- To "/>                       
                         <h:outputLabel value="#{commonReport.toDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-
+                                          
                     </f:facet>
-
-                    <p:column exportable="false">
-                        <p:commandButton value="Edit" action="lab_bill_edit" ajax="false">
-                            <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
-                        </p:commandButton>
-                    </p:column>
-                    <p:column headerText="Bill Code"
-                              sortBy="#{d.insId}" 
-                              filterBy="#{d.insId}"
-                              filterMatchMode="contains">
+                    <p:column headerText="No">
                         <f:facet name="header">
-                            <h:outputLabel value="Bill Code"/>                        
+                            <h:outputLabel value="No"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{i+1}"/>
+                    </p:column>
+                    <p:column headerText="Bill No">
+                        <f:facet name="header">
+                            <h:outputLabel value="Bill No"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.insId}"/>
                     </p:column>
-                    <!--                    <p:column headerText="Bill Code"  exportable="false">
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Bill Code"/>                        
-                                            </f:facet>
-                                            <h:panelGrid columns="2" >
-                                                <h:outputLabel value="#{d.insId}"/>
-                                                <p:commandLink ajax="false" value="(Edit)" action="lab_bill_edit"  styleClass="nonPrintBlock" style="text-decoration: underline;">
-                                                    <f:setPropertyActionListener value="#{d}" target="#{labBillEditController.bill}" ></f:setPropertyActionListener>
-                                                </p:commandLink>
-                                            </h:panelGrid>
-                                        </p:column>-->
-                    <p:column headerText="Patient Name"  
-                              sortBy="#{d.patient.person.nameWithTitle}" 
-                              filterBy="#{d.patient.person.nameWithTitle}"
-                              filterMatchMode="contains">
+                    <p:column headerText="Patient Name">
                         <f:facet name="header">
                             <h:outputLabel value="Patient Name"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column headerText="Patient Name" rendered="#{commonReport.collectingIns eq null}"  
-                              sortBy="#{d.collectingCentre.name}" 
-                              filterBy="#{d.collectingCentre.name}"
-                              filterMatchMode="contains">
+                    <p:column headerText="Col. Center Name" rendered="#{commonReport.collectingIns eq null}">
                         <f:facet name="header">
-                            <h:outputLabel value="Collecting Centre"/>                        
+                            <h:outputLabel value="Col. Center Name"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.collectingCentre.name}"/>
+                        <h:outputLabel value="#{d.collectingCentre.name}" rendered="#{d.collectingCentre ne null}"/>
+                        <h:outputLabel value="#{d.fromInstitution.name}" rendered="#{d.collectingCentre eq null}"/>
                     </p:column>
-                    <p:column headerText="Cancel Or Refunded" >
+                    <p:column headerText="Reference Bill" >
                         <f:facet name="header">
-                            <h:outputLabel value="Cancel oR Refunded"/>                        
+                            <h:outputLabel value="Reference Bill"/>                        
                         </f:facet>
-                        <h:outputLabel rendered="#{d.cancelled}" value="Cancelled"/>
-                        <h:outputLabel rendered="#{d.refunded}" value="Refunded"/>
-                    </p:column>
-
-                    <p:column headerText="Discount" styleClass="averageNumericColumn" >
+                        <h:outputLabel value="#{d.cancelledBill.insId}" rendered="#{d.cancelledBill ne null}"/>
+                        <h:outputLabel value="#{d.referenceBill.insId}" rendered="#{d.referenceBill ne null}"/>
+                    </p:column>                   
+                    <p:column headerText="CC Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
-                            <h:outputLabel value="Discount"/>                        
+                            <h:outputLabel value="CC Total"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.discount}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>                    
-                    <p:column headerText="Pro Total" styleClass="averageNumericColumn">
-                        <f:facet name="header">
-                            <h:outputLabel value="Pro Total"/>                        
-                        </f:facet>
-                        <h:outputLabel value="#{d.staffFee}">
+                        <h:outputLabel value="#{d.transTotalCCFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -142,7 +112,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Hos Total"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.performInstitutionFee}">
+                        <h:outputLabel value="#{d.transTotalWithOutCCFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -158,17 +128,33 @@
 
                     <p:columnGroup type="footer">  
                         <p:row>                              
-                            <p:column footerText="Total" colspan="4"/>
+                            <p:column footerText="Total" colspan="5" rendered="#{commonReport.collectingIns eq null}"/>
+                            <p:column footerText="Total" colspan="4" rendered="#{commonReport.collectingIns ne null}"/>
+                            <p:column footerText="#{commonReport.totalCC}" style=" text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{commonReport.totalCC}" style=" text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column> 
+                            <p:column footerText="#{commonReport.totalHos}" style=" text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{commonReport.totalHos}" style=" text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
                             <p:column footerText="#{commonReport.total}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.total}" style=" text-align: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
-                            </p:column>                             
+                            </p:column>
                         </p:row>  
                     </p:columnGroup>  
                 </p:dataTable>
+
             </p:panel>   
 
         </h:form>

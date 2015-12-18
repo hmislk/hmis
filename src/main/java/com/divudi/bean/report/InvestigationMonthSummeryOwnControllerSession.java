@@ -883,11 +883,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private InvestigationSummeryData setIxSummeryCount(Item w) {
         InvestigationSummeryData is = new InvestigationSummeryData();
         is.setInvestigation(w);
-        long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, true, null);
+        long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, true, null);
         System.out.println("billed = " + billed);
-        long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{CancelledBill.class}, true, null, true, null, true, null, true, null);
+        long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, true, null, true, null, true, null, true, null);
         System.out.println("cancelled = " + cancelled);
-        long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, true, null);
+        long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, true, null);
         System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);

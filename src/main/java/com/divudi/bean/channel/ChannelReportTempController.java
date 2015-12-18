@@ -12,6 +12,7 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
@@ -19,12 +20,14 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
@@ -102,6 +105,7 @@ public class ChannelReportTempController implements Serializable {
     List<ChannelSummeryDateRangeBillTotalTable> channelSummeryDateRangeBillTotalTables;
     List<ItemFee> itemFees;
     List<Institution> agencies;
+    List<ChannelDateDetailRow> channelDateDetailRows;
     //
     Date fromDate;
     Date toDate;
@@ -166,12 +170,10 @@ public class ChannelReportTempController implements Serializable {
         Map m = new HashMap();
         if (count) {
             sql = " select count(b) ";
+        } else if (withOutDocFee) {
+            sql = " select sum(b.netTotal-b.staffFee) ";
         } else {
-            if (withOutDocFee) {
-                sql = " select sum(b.netTotal-b.staffFee) ";
-            } else {
-                sql = " select sum(b.netTotal) ";
-            }
+            sql = " select sum(b.netTotal) ";
         }
 
         sql += " from Bill b "
@@ -255,7 +257,7 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
-    public List<Staff> fetchBillsStaffs(Speciality s,List<BillType> billTypes) {
+    public List<Staff> fetchBillsStaffs(Speciality s, List<BillType> billTypes) {
 
         String sql;
         Map m = new HashMap();
@@ -445,7 +447,7 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
     }
-    
+
     public void createCollectingCenterPaymentTable() {
         bills = new ArrayList<>();
         BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
@@ -513,6 +515,107 @@ public class ChannelReportTempController implements Serializable {
         m.put("td", toDate);
 
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser,Date fd,Date td) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and type(b)=:bill "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (wUser != null) {
+            sql += " and b.creater=:w ";
+            temMap.put("w", wUser);
+        }
+
+        if (paymentMethod == PaymentMethod.OnCall || paymentMethod == PaymentMethod.Staff) {
+            if (billClass instanceof BilledBill) {
+                sql += " and b.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            } else {
+                sql += " and b.billedBill.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            }
+
+        } else {
+            sql += " and b.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btp", billType);
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    public void createUsercollectionByDate() {
+        if (getReportKeyWord().getWebUser()==null) {
+            JsfUtil.addErrorMessage("Please Select User.");
+            return;
+        }
+        channelDateDetailRows = new ArrayList<>();
+        Date nowDate = getFromDate();
+        while (nowDate.before(getToDate())) {
+            ChannelDateDetailRow row = new ChannelDateDetailRow();
+            String formatedDate;
+            Date fd;
+            Date td;
+            fd = commonFunctions.getStartOfDay(nowDate);
+            td = commonFunctions.getEndOfDay(nowDate);
+            System.out.println("td = " + td);
+            System.out.println("fd = " + fd);
+            System.out.println("nowDate = " + nowDate);
+
+            DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
+            formatedDate = df.format(fd);
+            System.out.println("formatedDate = " + formatedDate);
+            row.setDate(formatedDate);
+            row.setCash(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setAgent(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setCard(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setCheque(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setOnCall(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setSlip(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(),fd,td));
+            
+            row.setStaff(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td)
+                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(),fd,td));
+
+            channelDateDetailRows.add(row);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            cal.add(Calendar.DATE, 1);
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
     }
 
     public void updateDecactivateAgentBook(AgentReferenceBook a) {
@@ -616,7 +719,7 @@ public class ChannelReportTempController implements Serializable {
         double totalDocfee = 0;
         double totalHosfee = 0;
 
-        for (Staff s : fetchBillsStaffs(sp,null)) {
+        for (Staff s : fetchBillsStaffs(sp, null)) {
 
             ChannelSummeryDateRangeBillTotalRow acsr = new ChannelSummeryDateRangeBillTotalRow();
             Double[] d = new Double[3];
@@ -673,7 +776,7 @@ public class ChannelReportTempController implements Serializable {
 
     public void fetchStaffWiseChannelTotalOrCount() {
         channelSummeryDateRangeBillTotalTables = new ArrayList<>();
-        for (Staff s : fetchBillsStaffs(null,null)) {
+        for (Staff s : fetchBillsStaffs(null, null)) {
             ChannelSummeryDateRangeBillTotalTable sws = new ChannelSummeryDateRangeBillTotalTable();
             sws.setStaff(s);
             sws.setChannelSummeryDateRangeBillTotalRows(fetchChannelSummeryRows(null, null, new BillType[]{BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff}, withOutDocPayment, count, s, byDate, null));
@@ -708,7 +811,7 @@ public class ChannelReportTempController implements Serializable {
         double[] d = new double[4];
         BillType[] bts = new BillType[]{BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> billTypes = Arrays.asList(bts);
-        for (Staff s : fetchBillsStaffs(null,billTypes)) {
+        for (Staff s : fetchBillsStaffs(null, billTypes)) {
             ChannelSummeryDateRangeBillTotalTable sws = new ChannelSummeryDateRangeBillTotalTable();
             sws.setStaff(s);
 
@@ -768,7 +871,7 @@ public class ChannelReportTempController implements Serializable {
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
     }
-    
+
     public void createCollectingcenterBalanceTable() {
         String sql;
         HashMap m = new HashMap();
@@ -919,6 +1022,83 @@ public class ChannelReportTempController implements Serializable {
         public void setTotalDocFee(double totalDocFee) {
             this.totalDocFee = totalDocFee;
         }
+    }
+
+    public class ChannelDateDetailRow {
+
+        String date;
+        double cash;
+        double card;
+        double slip;
+        double cheque;
+        double agent;
+        double staff;
+        double onCall;
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public double getCash() {
+            return cash;
+        }
+
+        public void setCash(double cash) {
+            this.cash = cash;
+        }
+
+        public double getCard() {
+            return card;
+        }
+
+        public void setCard(double card) {
+            this.card = card;
+        }
+
+        public double getSlip() {
+            return slip;
+        }
+
+        public void setSlip(double slip) {
+            this.slip = slip;
+        }
+
+        public double getCheque() {
+            return cheque;
+        }
+
+        public void setCheque(double cheque) {
+            this.cheque = cheque;
+        }
+
+        public double getAgent() {
+            return agent;
+        }
+
+        public void setAgent(double agent) {
+            this.agent = agent;
+        }
+
+        public double getStaff() {
+            return staff;
+        }
+
+        public void setStaff(double staff) {
+            this.staff = staff;
+        }
+
+        public double getOnCall() {
+            return onCall;
+        }
+
+        public void setOnCall(double onCall) {
+            this.onCall = onCall;
+        }
+
     }
 
     //Getters and Setters
@@ -1199,6 +1379,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setAgencies(List<Institution> agencies) {
         this.agencies = agencies;
+    }
+
+    public List<ChannelDateDetailRow> getChannelDateDetailRows() {
+        return channelDateDetailRows;
+    }
+
+    public void setChannelDateDetailRows(List<ChannelDateDetailRow> channelDateDetailRows) {
+        this.channelDateDetailRows = channelDateDetailRows;
     }
 
 }

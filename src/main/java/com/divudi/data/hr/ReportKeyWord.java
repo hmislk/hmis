@@ -13,6 +13,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
+import com.divudi.entity.WebUser;
 import com.divudi.entity.hr.Designation;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.Roster;
@@ -52,6 +53,7 @@ public class ReportKeyWord {
     Sex sex;
     EmployeeStatus employeeStatus;
     boolean additionalDetails;
+    WebUser webUser;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -260,6 +262,14 @@ public class ReportKeyWord {
         this.additionalDetails = additionalDetails;
     }
 
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
     public void resetKeyWord(){
         dayTypes = null;
         staff = null;
@@ -286,6 +296,7 @@ public class ReportKeyWord {
         sex = null;
         employeeStatus = null;
         additionalDetails=false;
+        webUser=null;
     }
     
 }
