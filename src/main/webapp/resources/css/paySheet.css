@@ -130,13 +130,9 @@ root {
 
 
 .headingBill{
-    // position: absolute;
     text-align: center!important;
     font-weight: bold!important;
     font-size: 150%!important;
-    // text-align: center;
-    //  width: 90%;
-
 }
 
 .poDetail{
@@ -151,8 +147,6 @@ root {
 .normalFont div ,
 .normalFont table *,
 .normalFont td{
-    //  border: none!important;
-    //  border-top:none!important;
     font-family: Verdana!important;
     font-size: 11px!important;
     font-weight: normal!important;
