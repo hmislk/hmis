@@ -22,6 +22,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
@@ -104,6 +105,7 @@ public class SearchController implements Serializable {
     Bill cancellingIssueBill;
     Bill bill;
     Speciality speciality;
+    PatientEncounter patientEncounter;
     Staff staff;
     Item item;
     double dueTotal;
@@ -196,14 +198,14 @@ public class SearchController implements Serializable {
         item = null;
         makeListNull();
     }
-    
+
     public void createPatientInvestigationsTableLogin() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
                 + " b.createdAt between :fromDate and :toDate  "
                 + " and b.department=:dep ";
-        
+
         Map temMap = new HashMap();
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -224,6 +226,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
             sql += " and  (upper(i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (patientEncounter != null) {
+            sql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
         }
 
         sql += " order by pi.id desc  ";
@@ -3327,6 +3334,11 @@ public class SearchController implements Serializable {
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
+        if (patientEncounter != null) {
+            sql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
+        }
+
         sql += " order by pi.id desc  ";
 //    
 
@@ -3460,6 +3472,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
             sql += " and  (upper(i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (patientEncounter != null) {
+            sql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
         }
 
         sql += " order by pi.id desc  ";
@@ -4040,7 +4057,7 @@ public class SearchController implements Serializable {
         temMap.put("insTp", institutionTypes);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-      //  temMap.put("ins", getSessionController().getInstitution());
+        //  temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
@@ -4089,7 +4106,7 @@ public class SearchController implements Serializable {
         temMap.put("insTp", InstitutionType.StoreDealor);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-      //  temMap.put("ins", getSessionController().getInstitution());
+        //  temMap.put("ins", getSessionController().getInstitution());
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
@@ -4099,7 +4116,15 @@ public class SearchController implements Serializable {
     @Inject
     WebUserController webUserController;
 
-    public void createTableByKeyword() {
+    public void createOpdBillSearch() {
+        createTableByKeyword(BillType.OpdBill);
+    }
+
+    public void createCollectingCentreBillSearch() {
+        createTableByKeyword(BillType.CollectingCentreBill);
+    }
+
+    public void createTableByKeyword(BillType billType) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -4108,8 +4133,11 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
 
         if (!webUserController.hasPrivilege("AdminFilterWithoutDepartment")) {
-            sql += " and b.institution=:ins ";
-            temMap.put("ins", getSessionController().getInstitution());
+            if (billType != BillType.CollectingCentreBill) {
+                sql += " and b.institution=:ins ";
+                temMap.put("ins", getSessionController().getInstitution());
+            }
+
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -4139,12 +4167,13 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.OpdBill);
+        temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.out.println("size" + bills.size());
 
     }
 
@@ -4888,8 +4917,16 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createAgentPaymentTable() {
-        bills = null;
+    public void createChannelAgencyPaymentTable() {
+        createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
+    }
+
+    public void createCollectingCentrePaymentTable() {
+        createAgentPaymentTable(BillType.CollectingCentrePaymentReceiveBill);
+    }
+
+    public void createAgentPaymentTable(BillType billType) {
+        bills = new ArrayList<>();
         String sql;
         Map temMap = new HashMap();
 
@@ -4919,7 +4956,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 
-        temMap.put("billType", BillType.AgentPaymentReceiveBill);
+        temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("ins", getSessionController().getInstitution());
@@ -5825,6 +5862,14 @@ public class SearchController implements Serializable {
         this.speciality = speciality;
     }
 
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
     public Staff getStaff() {
         return staff;
     }
@@ -6012,6 +6057,4 @@ public class SearchController implements Serializable {
         this.selectedBillSession = selectedBillSession;
     }
 
-    
-    
 }

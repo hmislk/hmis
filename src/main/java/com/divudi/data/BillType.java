@@ -23,6 +23,8 @@ public enum BillType {
     OpdBathcBillPre,
     SurgeryBill,
     LabBill,
+    CollectingCentreBill,
+    CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
     OpdPreBill,
@@ -40,6 +42,7 @@ public enum BillType {
     CashRecieveBill,
     PettyCash,
     AgentPaymentReceiveBill,
+    CollectingCentrePaymentReceiveBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,
@@ -144,7 +147,7 @@ public enum BillType {
                 return "Pharmacy Purchase Return";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
-           
+
             case PharmacyPre:
                 return "Pharmacy Sale Bill (Pre)";
             case PharmacyAdjustment:
@@ -203,6 +206,8 @@ public enum BillType {
                 return "OPD Bills To Pay";
             case OpdBathcBill:
                 return "OPD Accepet Payment";
+            case CollectingCentrePaymentReceiveBill:
+                return "Collecting Centre Payment";
 
         }
 

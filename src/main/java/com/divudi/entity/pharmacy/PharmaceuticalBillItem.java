@@ -224,6 +224,22 @@ public class PharmaceuticalBillItem implements Serializable {
         stringValue = ph.getStringValue();
         //  remainingQty=ph.getRemainingQty();
 
+        make= ph.getMake();
+        model=ph.getModel();
+        code=ph.getCode();
+        description=ph.getDescription();
+        barcode=ph.getBarcode();
+        serialNo=ph.getSerialNo();
+        registrationNo=ph.getRegistrationNo();
+        chassisNo=ph.getChassisNo();
+        engineNo=ph.getEngineNo();
+        colour=ph.getColour();
+        warrentyCertificateNumber=ph.getWarrentyCertificateNumber();
+        warrentyDuration=ph.getWarrentyDuration();
+        deprecitionRate=ph.getDeprecitionRate();
+        manufacturer=ph.getManufacturer();
+        otherNotes=ph.getOtherNotes();
+
     }
 
     public void invertValue(PharmaceuticalBillItem ph) {

@@ -21,6 +21,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.WebUserFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,8 @@ public class CashierReportController implements Serializable {
     private Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
+    String fromReciptNo;
+    String toReciptNo;
     private List<WebUser> cashiers;
     private List<CashierSummeryData> cashierDatas;
     private double finalCashTot;
@@ -65,6 +68,8 @@ public class CashierReportController implements Serializable {
     private List<String1Value1> dataTableDatas;
     @Inject
     private EnumController enumController;
+    @Inject
+    CommonReport commonReport;
 
     /**
      * Creates a new instance of CashierReportController
@@ -79,6 +84,12 @@ public class CashierReportController implements Serializable {
         cashiers = null;
         currentCashier = null;
         dataTableDatas = null;
+    }
+    
+    public void recreteModal2() {
+        fromReciptNo = null;
+        toReciptNo = null;
+        recreteModal();
     }
 
     public CashierReportController() {
@@ -310,6 +321,32 @@ public class CashierReportController implements Serializable {
         }
 
     }
+    
+    public void calCashierDataUsingReciptNo() {
+        fromDate = null;
+        toDate = null;
+        if (fromReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        fromDate = commonReport.fetchDate(fromReciptNo);
+        System.out.println("fromDate = " + fromDate);
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
+            return;
+        }
+        if (toReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        toDate = commonReport.fetchDate(toReciptNo);
+        System.out.println("toDate = " + toDate);
+        if (toDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
+            return;
+        }
+        calCashierData();
+    }
 
     public void calCashierDataTotalOnly() {
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -393,6 +430,32 @@ public class CashierReportController implements Serializable {
 
         }
 
+    }
+    
+    public void calCashierDataTotalOnlyUsingReciptNo() {
+        fromDate = null;
+        toDate = null;
+        if (fromReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        fromDate = commonReport.fetchDate(fromReciptNo);
+        System.out.println("fromDate = " + fromDate);
+        if (fromDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
+            return;
+        }
+        if (toReciptNo == null) {
+            JsfUtil.addErrorMessage("Please Enter Check Bill No");
+            return;
+        }
+        toDate = commonReport.fetchDate(toReciptNo);
+        System.out.println("toDate = " + toDate);
+        if (toDate == null) {
+            JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
+            return;
+        }
+        calCashierDataTotalOnly();
     }
 
     public void calCashierDataTotalOnlyWithoutPro() {
@@ -1184,5 +1247,21 @@ public class CashierReportController implements Serializable {
 
     public void setEnumController(EnumController enumController) {
         this.enumController = enumController;
+    }
+
+    public String getFromReciptNo() {
+        return fromReciptNo;
+    }
+
+    public void setFromReciptNo(String fromReciptNo) {
+        this.fromReciptNo = fromReciptNo;
+    }
+
+    public String getToReciptNo() {
+        return toReciptNo;
+    }
+
+    public void setToReciptNo(String toReciptNo) {
+        this.toReciptNo = toReciptNo;
     }
 }

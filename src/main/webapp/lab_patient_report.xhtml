@@ -51,7 +51,7 @@
 
                                 </p:tooltip>
 
-                                <h:panelGrid columns="8" >
+                                <h:panelGrid columns="9" >
                                     <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                      value="Save" 
                                                      action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
@@ -77,6 +77,9 @@
                                     </p:commandButton>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
+                                    
+                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    
                                 </h:panelGrid>
 
 
@@ -359,7 +362,7 @@
                                                 <td id="micromemos">
                                                     <table>
                                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop lt 50 }" >
+                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
                                                                 <tr style="vertical-align: top;">
                                                                     <td style="min-width: 250px;padding-left: 1px; padding-right: 1px;">
                                                                         <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"  />
@@ -371,7 +374,7 @@
                                                             </h:panelGroup>
                                                         </ui:repeat>
                                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel' and prv.investigationItem.retired eq false and prv.investigationItem.transCssTop  lt 50 }" >
+                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel' and prv.investigationItem.retired eq false and prv.investigationItem.riTop  lt 50 }" >
                                                                 <tr >
                                                                     <td >
                                                                         <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  />
@@ -434,7 +437,7 @@
                                                 <td id="miccomments">
                                                     <table>
                                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.transCssTop gt 50 }" >
+                                                            <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop gt 50 }" >
                                                                 <tr>
                                                                     <td style="min-width: 250px;padding-left: 1px; padding-right: 1px; vertical-align: top;">
                                                                         <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />

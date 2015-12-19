@@ -290,23 +290,14 @@
                                                   forceSelection="true"
                                                   completeMethod="#{itemController.completeStoreInventryItem}" 
                                                   var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item" style="width: 20px;" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                    <p:column headerText="Item" style="width: 20px;" >
+                                        <h:outputLabel value="#{vt.departmentType}"></h:outputLabel>
                                     </p:column>
                                     <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" 
                                             listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
@@ -359,7 +350,7 @@
                                 <h:outputLabel value="Warranty Certification No"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
                                 <h:outputLabel value="Warranty Duration"/>
-                                <p:outputLabel  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" />
                                 <h:outputLabel value="Depreciation Rate"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
                                 <h:outputLabel value="Manufacturer"/>
@@ -374,14 +365,13 @@
 
                                 <p:commandButton id="btnAdd" value="Add Item" 
                                                  action="#{storeGrnController.addItem}" 
-                                                 ajax="false"/>
+                                                 process="dialogChannelAdded" update="@this dialogChannelAdded itemList"/>
 
 
                             </p:panelGrid>
 
 
                         </h:panelGroup>
-
 
                     </p:dialog>  
 

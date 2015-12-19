@@ -10,6 +10,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.channel.ReferenceBookEnum;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
@@ -71,8 +72,16 @@ public class AgentReferenceBookController implements Serializable {
 
         return suggestions;
     }
+    
+    public void saveLabBook(){
+        saveAgentBook(ReferenceBookEnum.LabBook);
+    }
+    
+    public void saveChannelBook(){
+        saveAgentBook(ReferenceBookEnum.ChannelBook);
+    }
 
-    public void saveAgentBook() {
+    public void saveAgentBook(ReferenceBookEnum bookEnum) {
         if (agentReferenceBook.getInstitution() == null) {
             UtilityController.addErrorMessage("Please Select Institution.");
             return;
@@ -90,12 +99,16 @@ public class AgentReferenceBookController implements Serializable {
             return;
         }
 
+        HashMap hm= new  HashMap();
         String sql;
         sql = "select a from AgentReferenceBook a where "
                 + " a.retired=false "
-                + " and a.deactivate=false ";
+                + " and a.deactivate=false "
+                + " and a.referenceBookEnum=:rfe ";
+        
+        hm.put("rfe", bookEnum);
 
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql);
+        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, hm);
 
         for (AgentReferenceBook arb : agentReferenceBooks) {
             if (arb.getBookNumber() == agentReferenceBook.getBookNumber()) {
@@ -124,6 +137,8 @@ public class AgentReferenceBookController implements Serializable {
                 return;
             }
         }
+        
+        getAgentReferenceBook().setReferenceBookEnum(bookEnum);
         getAgentReferenceBook().setCreatedAt(new Date());
         getAgentReferenceBook().setCreater(getSessionController().getLoggedUser());
         getAgentReferenceBook().setDeactivate(false);
@@ -234,7 +249,7 @@ public class AgentReferenceBookController implements Serializable {
         }
     }
 
-    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution) {
+    public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
         Double dbl = null;
         try {
             dbl = Double.parseDouble(refNumber);
@@ -253,8 +268,8 @@ public class AgentReferenceBookController implements Serializable {
                 + " and b.creditCompany=:ins "
                 + " and (upper(ah.referenceNo) like :rn) ";
 
-        m.put("bt", BillType.ChannelAgent);
-        m.put("pm", PaymentMethod.Agent);
+        m.put("bt", bt);
+        m.put("pm", pm);
         m.put("ins", institution);
         m.put("rn", "%" + refNumber.toUpperCase() + "%");
 

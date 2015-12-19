@@ -70,6 +70,9 @@ public enum BillNumberSuffix {
     //Agent
     AGNPAY,//Payment 
     AGNCAN,//Payment Cancel
+    //Collecting Centre
+    CCPAY,//Payment 
+    CCCAN,//Payment Cancel
     //Credit Company
     CRDPAY,//Payment
     CRDCAN,//Cancel

@@ -5,11 +5,14 @@
  */
 package com.divudi.entity.channel;
 
+import com.divudi.data.channel.ReferenceBookEnum;
 import com.divudi.entity.Institution;
 import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -57,6 +60,8 @@ public class AgentReferenceBook implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+    @Enumerated(EnumType.STRING)
+    ReferenceBookEnum referenceBookEnum;
     ////////////////
 
     public Long getId() {
@@ -211,5 +216,15 @@ public class AgentReferenceBook implements Serializable {
     public void setCheckeAt(Date checkeAt) {
         this.checkeAt = checkeAt;
     }
+
+    public ReferenceBookEnum getReferenceBookEnum() {
+        return referenceBookEnum;
+    }
+
+    public void setReferenceBookEnum(ReferenceBookEnum referenceBookEnum) {
+        this.referenceBookEnum = referenceBookEnum;
+    }
+    
+    
     
 }

@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                >
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl autoUpdate="true" />
+                <p:panel >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Investigations"></h:outputLabel>
+                        <p:commandButton ajax="false" value="Fill" styleClass="noPrintButton" action="#{investigationController.createInvestigationWithFees}" />
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:printer target="panIx" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
+                            <pe:exporter type="xlsx" target="tbl" subTable="true" fileName="DepartmentIncome" />
+                        </p:commandButton>
+
+                    </f:facet>
+
+                    <p:panel id="panIx" styleClass="noBorder summeryBorder" >
+                        <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.itemWithFees}" var="i"  >
+                            <f:facet name="header">
+                                <h:outputLabel  value="Investigation Pice List" />
+                            </f:facet>
+                            <p:columnGroup  type="header">
+                                <p:row>
+                                    <p:column headerText="Fee Type"/>
+                                    <p:column headerText="Department"/>
+                                    <p:column headerText="Institution"/>
+                                    <p:column headerText="Staff"/>
+                                    <p:column headerText="Fee"/>
+                                </p:row>
+                            </p:columnGroup>
+                            <p:subTable value="#{i.itemFees}" var="ix" >
+                                <f:facet name="header">
+                                    <h:outputLabel  value="#{i.item.name}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <h:outputLabel  value="Institution: #{i.item.institution.name}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <h:outputLabel  value="Department: #{i.item.department.name}" />
+                                    <h:outputLabel value="#{i.item.total}" style="float: right;">
+                                        <f:convertNumber pattern="#,###.##" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Fee Type" >
+                                    <h:outputLabel value="#{ix.feeType}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Department" >
+                                    <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Institution" >
+                                    <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Staff" >
+                                    <h:outputLabel value="#{ix.staff.person.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Hospiatal Fee" styleClass="numberCol" >
+                                    <h:outputLabel value="#{ix.fee}" >
+                                        <f:convertNumber pattern="#,###.##" />
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:subTable>
+                        </p:dataTable>
+                    </p:panel>
+
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

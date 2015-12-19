@@ -27,6 +27,7 @@ public enum Privileges {
     CashTransaction,
     //Submenu Privileges
     OpdBilling,
+    OpdCollectingCentreBilling,
     OpdPreBilling,
     OpdBillSearch,
     OpdBillItemSearch,
@@ -79,6 +80,7 @@ public enum Privileges {
     LabBillSearch,
     LabBillItemSearch,
     LabBillCancelling,
+    CollectingCentreCancelling,
     LabBillReturning,
     LabBillReprint,
     LabBillRefunding,

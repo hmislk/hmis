@@ -519,6 +519,7 @@ public class StoreCalculation {
         ib.setOtherNotes(pbi.getOtherNotes());
         ib.setLastPurchaseBillItem(tmp);
         ib.setSerialNo(tmp.getPharmaceuticalBillItem().getSerialNo());
+        ib.setManufacturer(pbi.getManufacturer());
         getItemBatchFacade().edit(ib);
         return ib;
     }

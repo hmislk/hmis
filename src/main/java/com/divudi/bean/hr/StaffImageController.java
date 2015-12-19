@@ -115,6 +115,14 @@ public class StaffImageController implements Serializable {
 
     }
 
+    public void removeSignature() {
+        getStaffController().getCurrent().setRetireComments(null);
+        getStaffController().getCurrent().setFileName(null);
+        getStaffController().getCurrent().setFileType(null);
+        getStaffController().getCurrent().setBaImage(null);
+        getStaffFacade().edit(getStaffController().getCurrent());
+    }
+
     public StreamedContent getSignatureById() {
         //System.err.println("Get Sigature By Id");
         FacesContext context = FacesContext.getCurrentInstance();
@@ -164,17 +172,14 @@ public class StaffImageController implements Serializable {
         Staff temStaff = getStaffFacade().findFirstBySQL("select s from Staff s where s.baImage != null and s.id = " + stfId);
 
         ////System.out.println("Printing");
-
         if (temStaff == null) {
             return new DefaultStreamedContent();
+        } else if (temStaff.getId() != null && temStaff.getBaImage() != null) {
+            ////System.out.println(temStaff.getFileType());
+            ////System.out.println(temStaff.getFileName());
+            return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
         } else {
-            if (temStaff.getId() != null && temStaff.getBaImage() != null) {
-                ////System.out.println(temStaff.getFileType());
-                ////System.out.println(temStaff.getFileName());
-                return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
-            } else {
-                return new DefaultStreamedContent();
-            }
+            return new DefaultStreamedContent();
         }
     }
 
