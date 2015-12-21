@@ -40,6 +40,9 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
+                        <p:commandButton actionListener="#{channelReportController.channelBillClassListByPaymentMethord()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_cashier_summery_date"  />
+                        </p:commandButton>
                     </h:panelGrid> 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
