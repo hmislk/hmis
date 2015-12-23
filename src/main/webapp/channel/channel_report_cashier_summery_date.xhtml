@@ -40,7 +40,7 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
-                        <p:commandButton actionListener="#{channelReportController.channelBillClassListByPaymentMethord()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton actionListener="#{channelReportTempController.createUsercollectionByDate()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_cashier_summery_date"  />
                         </p:commandButton>
                     </h:panelGrid> 
@@ -69,6 +69,9 @@
                             </f:facet>
                             <p:outputLabel value="#{a.date}" >
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="Total" />
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -77,6 +80,11 @@
                             <p:outputLabel value="#{a.cash}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.cashTotal}" style="float: right" >
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -85,6 +93,11 @@
                             <p:outputLabel value="#{a.onCall}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.onCallTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -93,6 +106,11 @@
                             <p:outputLabel value="#{a.agent}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.agentTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -101,6 +119,11 @@
                             <p:outputLabel value="#{a.staff}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.staffTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -109,6 +132,11 @@
                             <p:outputLabel value="#{a.card}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.cardTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -117,6 +145,11 @@
                             <p:outputLabel value="#{a.cheque}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.chequeTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
@@ -125,14 +158,30 @@
                             <p:outputLabel value="#{a.slip}" >
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.slipTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column styleClass="numberCol">
                             <f:facet name="header">
                                 <p:outputLabel value="Total" />
                             </f:facet>
-                            <p:outputLabel value="#{a.cash+a.onCall+a.agent+a.staff+a.card+a.cheque+a.slip}" >
+                            <p:outputLabel value="#{a.cash+a.onCall+a.agent+a.staff+a.card+a.cheque+a.slip}"  style="float: right">
                                 <f:convertNumber pattern="##,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.agentTotal
+                                                        +channelReportTempController.channelTotal.cardTotal
+                                                        +channelReportTempController.channelTotal.cashTotal
+                                                        +channelReportTempController.channelTotal.chequeTotal
+                                                        +channelReportTempController.channelTotal.onCallTotal
+                                                        +channelReportTempController.channelTotal.slipTotal
+                                                        +channelReportTempController.channelTotal.staffTotal}"  style="float: right">
+                                    <f:convertNumber pattern="##,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
                     </p:dataTable>
                 </p:panel>

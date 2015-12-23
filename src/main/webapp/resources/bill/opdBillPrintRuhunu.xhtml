@@ -43,14 +43,17 @@
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null 
                                                    and cc.attrs.bill.cancelled eq true}"/> 
 
-                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
+<!--                        <h:outputLabel value="#{cc.attrs.bill.refundedBill.insId} **Refunded" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId ne null 
-                                                   and cc.attrs.bill.refunded eq true}"/> 
+                                                   and cc.attrs.bill.refunded eq true}"/> -->
+                         
 
                         <h:outputLabel value="#{cc.attrs.bill.insId} **Duplicate" 
                                        rendered="#{cc.attrs.bill.refundedBill.insId eq null and
                                                    cc.attrs.bill.cancelledBill.insId eq null 
                                                    and cc.attrs.dup eq true}"/>
+                        <h:outputLabel value="**Refunded" 
+                                       rendered="#{cc.attrs.bill.billClassType eq 'RefundBill'}"/>
                     </div>
 
                     <div class="billdatePrintingRuhunu" >                       

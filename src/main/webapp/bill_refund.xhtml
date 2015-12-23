@@ -122,7 +122,7 @@
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
                                     </div>
-                                    <ui:repeat value="#{billSearch.printingBill}" var="b">
+                                    <ui:repeat value="#{billSearch.bill}" var="b">
                                         <bi:opdBillPrintRuhunu bill="#{b}" dup="false"/>
                                     </ui:repeat>
 
@@ -134,7 +134,7 @@
                                             <p:printer target="gpBillPreviewCoop" ></p:printer>
                                         </p:commandButton>
                                     </div>
-                                    <ui:repeat value="#{billSearch.printingBill}" var="b">
+                                    <ui:repeat value="#{billSearch.bill}" var="b">
                                         <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
                                     </ui:repeat>
 
@@ -150,7 +150,7 @@
                                                 <p:printer target="gpBillPreviewCC" ></p:printer>
                                             </p:commandButton>
                                         </div>
-                                        <bi:opdCCBillPrintRuhunu bill="#{billSearch.printingBill}" dup="true"/>
+                                        <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
                                         <!--  <br/>
                                                                 <h:panelGroup >
                                                                     <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
