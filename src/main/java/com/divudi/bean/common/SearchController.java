@@ -242,6 +242,7 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        checkRefundBillItems(patientInvestigations);
 
     }
 
@@ -3347,7 +3348,7 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        checkRefundBillItems(patientInvestigations);
     }
 
     public void createPatientInvestigationsTableByLoggedInstitution() {
@@ -3487,7 +3488,29 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        checkRefundBillItems(patientInvestigations);
 
+    }
+    
+    public void checkRefundBillItems(List<PatientInvestigation> pis){
+        for (PatientInvestigation pi : pis) {
+            markRefundBillItem(pi);
+        }
+    }
+    
+    public void markRefundBillItem(PatientInvestigation pi){
+        String sql;
+        Map m=new HashMap();
+        sql = "select bi from BillItem bi "
+                + " where bi.referanceBillItem.id=:bi ";
+        m.put("bi", pi.getBillItem().getId());
+        List<BillItem> bis=getBillItemFacade().findBySQL(sql, m);
+        System.out.println("bis.size() = " + bis.size());
+        if (bis.isEmpty()) {
+            pi.getBillItem().setTransRefund(false);
+        }else{
+            pi.getBillItem().setTransRefund(true);
+        }
     }
 
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
