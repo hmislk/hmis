@@ -19,7 +19,7 @@
 
                             <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" onclick="onSubmitButton();">                           
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" onclick="onSubmitButton();">                          
+                            <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
                             </p:commandButton>
                         </f:facet>
 
@@ -128,7 +128,11 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
-                                <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
+                                <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+                                
+                                <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                    <bi:opdBillPrintRuhunu bill="#{bill}" dup="true" />
+                                </ui:repeat>
                                 <!--  <br/>
                                                         <h:panelGroup >
                                                             <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
@@ -236,7 +240,11 @@
                                         <p:printer target="gpBillPreviewCC" ></p:printer>
                                     </p:commandButton>
                                 </div>
-                                <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
+                                <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+                                
+                                <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                    <bi:opdCCBillPrintRuhunu bill="#{bill}" dup="true" />
+                                </ui:repeat>
                                 <!--  <br/>
                                                         <h:panelGroup >
                                                             <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        

@@ -767,7 +767,6 @@ body {
 }
 
 .highLight{
-    //color: red;
     font-weight: bolder!important;
     font-style:italic!important;
     font-size: 125%!important;
@@ -775,7 +774,6 @@ body {
 }
 
 .highLight2{
-    //color: red;
     font-weight: bolder!important;
     font-style:italic!important;
 }
@@ -785,7 +783,6 @@ body {
 {
     text-wrap:none!important;
     white-space:nowrap!important;
-    //overflow:hidden;
     overflow-x: visible!important;
     text-overflow:ellipsis!important;
 }

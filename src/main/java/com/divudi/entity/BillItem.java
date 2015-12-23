@@ -139,6 +139,8 @@ public class BillItem implements Serializable {
     double  transCCFee;
     @Transient
     double  transWithOutCCFee;
+    @Transient
+    boolean transRefund;
 
     public double getHospitalFee() {
         return hospitalFee;
@@ -754,6 +756,14 @@ public class BillItem implements Serializable {
 
     public void setTransWithOutCCFee(double transWithOutCCFee) {
         this.transWithOutCCFee = transWithOutCCFee;
+    }
+
+    public boolean isTransRefund() {
+        return transRefund;
+    }
+
+    public void setTransRefund(boolean transRefund) {
+        this.transRefund = transRefund;
     }
 
 }

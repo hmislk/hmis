@@ -313,8 +313,6 @@ public class BookKeepingSummery implements Serializable {
     public void setCollectingCentrePaymentTotal(double collectingCentrePaymentTotal) {
         this.collectingCentrePaymentTotal = collectingCentrePaymentTotal;
     }
-    
-    
 
     public double getInwardPaymentTotal() {
         return inwardPaymentTotal;
@@ -3016,7 +3014,7 @@ public class BookKeepingSummery implements Serializable {
                 + pharmacyTotal
                 + inwardPaymentTotal
                 + agentPaymentTotal
-                +collectingCentrePaymentTotal
+                + collectingCentrePaymentTotal
                 + creditCompanyTotal
                 + creditCompanyTotalInward
                 + pettyCashTotal;
@@ -3033,7 +3031,7 @@ public class BookKeepingSummery implements Serializable {
                 + channelTotal
                 + inwardPaymentTotal
                 + agentPaymentTotal
-                +collectingCentrePaymentTotal
+                + collectingCentrePaymentTotal
                 + creditCompanyTotal
                 + creditCompanyTotalInward
                 + pettyCashTotal;
@@ -3120,7 +3118,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         ///////////////////
         //get ruhunu hospital All hospital fees(hos fee+cc fee)
-        FeeType[] feeTypes={FeeType.OwnInstitution,FeeType.CollectingCentre};
+        FeeType[] feeTypes = {FeeType.OwnInstitution, FeeType.CollectingCentre};
         //get ruhunu hospital All hospital fees(hos fee+cc fee)
         opdHospitalTotal = getBillBean().calFeeValue(Arrays.asList(feeTypes), getFromDate(), getToDate(), getInstitution());
 //        opdHospitalTotal = getBillBean().calFeeValue(FeeType.OwnInstitution, getFromDate(), getToDate(), getInstitution());
@@ -3553,7 +3551,8 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
-        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdHospitalTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.OwnInstitution, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+        opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, getInstitution(), creditCompany, Arrays.asList(paymentMethods));
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
         pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);

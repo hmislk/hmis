@@ -662,9 +662,8 @@ public class BillSearch implements Serializable {
             getBill().setRefunded(true);
             getBill().setRefundedBill(rb);
             getBillFacade().edit(getBill());
-
+            double feeTotalExceptCcfs = 0.0;
             if (getBill().getBillType() == BillType.CollectingCentreBill) {
-                double feeTotalExceptCcfs = 0.0;
                 for (BillItem bi : refundingItems) {
                     String sql = "select c from BillFee c where c.billItem.id = " + bi.getId();
                     List<BillFee> rbf = getBillFeeFacade().findBySQL(sql);
@@ -678,11 +677,21 @@ public class BillSearch implements Serializable {
                 collectingCentreBillController.updateBallance(getBill().getInstitution(), Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, getBill().getRefundedBill(), getBill().getReferralNumber());
             }
 
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                //   //System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                if (getBill().getToStaff() != null) {
+                    //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    staffBean.updateStaffCredit(getBill().getToStaff(), 0 - feeTotalExceptCcfs);
+                    UtilityController.addSuccessMessage("Staff Credit Updated");
+                }
+            }
+
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(rb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
 
-            bill = billFacade.find(bill.getId());
-            createCollectingCenterfees(getBill());
+            bill = billFacade.find(rb.getId());
+            createCollectingCenterfees(bill);
             printPreview = true;
             //UtilityController.addSuccessMessage("Refunded");
 
@@ -2120,13 +2129,30 @@ public class BillSearch implements Serializable {
         createBillItemsAll();
         if (getBill().getBillType() == BillType.CollectingCentreBill) {
             createCollectingCenterfees(getBill());
-            
+
+        }
+        System.out.println("getBill().getRefundedBill() = " + getBill().getRefundedBill());
+        if (getBill().getRefundedBill() != null) {
+            System.out.println("getBill().getRefundedBill() = " + getBill().getRefundedBill());
+            System.out.println("getBill().getId() = " + getBill().getId());
+            System.out.println("getBill().getRefundedBill().getBilledBill() = " + getBill().getRefundedBill().getBilledBill());
+            bills = new ArrayList<>();
+            String sql;
+            Map m=new HashMap();
+            sql = "Select b from Bill b where "
+                    + " b.billedBill.id=:bid";
+            m.put("bid", getBill().getId());
+            bills = getBillFacade().findBySQL(sql,m);
+            for (Bill b : bills) {
+                createCollectingCenterfees(b);
+            }
+            System.out.println("bills.size() = " + bills.size());
         }
     }
 
     public void createCollectingCenterfees(Bill b) {
         System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
-        AgentHistory ah=new AgentHistory();
+        AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
             b.getCancelledBill().setTransTotalCCFee(0.0);
             b.getCancelledBill().setTransTotalWithOutCCFee(0.0);
@@ -2144,8 +2170,11 @@ public class BillSearch implements Serializable {
                 b.getCancelledBill().setTransTotalCCFee(b.getCancelledBill().getTransTotalCCFee() + bi.getTransCCFee());
                 b.getCancelledBill().setTransTotalWithOutCCFee(b.getCancelledBill().getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
             }
-            ah=fetchCCHistory(b.getCancelledBill());
-            b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b.getCancelledBill());
+            if (ah != null) {
+                b.getCancelledBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
+
         } else if (b.getRefundedBill() != null) {
             b.getRefundedBill().setTransTotalCCFee(0.0);
             b.getRefundedBill().setTransTotalWithOutCCFee(0.0);
@@ -2163,8 +2192,10 @@ public class BillSearch implements Serializable {
                 b.getRefundedBill().setTransTotalCCFee(b.getRefundedBill().getTransTotalCCFee() + bi.getTransCCFee());
                 b.getRefundedBill().setTransTotalWithOutCCFee(b.getRefundedBill().getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
             }
-            ah=fetchCCHistory(b.getRefundedBill());
-            b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b.getRefundedBill());
+            if (ah != null) {
+                b.getRefundedBill().setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
         } else {
             b.setTransTotalCCFee(0.0);
             b.setTransTotalWithOutCCFee(0.0);
@@ -2173,19 +2204,27 @@ public class BillSearch implements Serializable {
                 bi.setTransCCFee(0.0);
                 bi.setTransWithOutCCFee(0.0);
                 for (BillFee bf : createBillFees(bi)) {
+                    System.out.println("bf.getFeeValue() = " + bf.getFeeValue());
+                    System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
                     if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
                         bi.setTransCCFee(bi.getTransCCFee() + bf.getFeeValue());
                     } else {
                         bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());
                     }
+                    System.out.println("bi.getTransWithOutCCFee() = " + bi.getTransWithOutCCFee());
+                    System.out.println("bi.getTransCCFee() = " + bi.getTransCCFee());
                 }
                 b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
                 b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
+                System.out.println("b.getTransTotalCCFee() = " + b.getTransTotalCCFee());
+                System.out.println("b.getTransTotalWithOutCCFee() = " + b.getTransTotalWithOutCCFee());
             }
-            ah=fetchCCHistory(b);
-            b.setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            ah = fetchCCHistory(b);
+            if (ah != null) {
+                b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+            }
         }
-        
+
     }
 
     public List<BillFee> createBillFees(BillItem bi) {
@@ -2194,14 +2233,14 @@ public class BillSearch implements Serializable {
         bfs = getBillFeeFacade().findBySQL(sql);
         return bfs;
     }
-    
-    public AgentHistory fetchCCHistory(Bill b){
+
+    public AgentHistory fetchCCHistory(Bill b) {
         String sql;
         Map m = new HashMap();
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
-                + " and ah.bill.id="+b.getId();
-        AgentHistory ah=agentHistoryFacade.findFirstBySQL(sql);
+                + " and ah.bill.id=" + b.getId();
+        AgentHistory ah = agentHistoryFacade.findFirstBySQL(sql);
         
         return ah;
     }

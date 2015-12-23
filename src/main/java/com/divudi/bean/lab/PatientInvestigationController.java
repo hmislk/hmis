@@ -31,6 +31,8 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -46,6 +49,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -537,7 +545,7 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-
+    
     public void markAsSampled() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to sample");

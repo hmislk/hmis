@@ -13,7 +13,6 @@ root {
 
 @media print{
     .fiveinchbill{
-        // page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
@@ -25,7 +24,6 @@ root {
     }
 
     .fiveinchbillBreak{
-        // page-break-before: always!important;
         page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
@@ -38,7 +36,6 @@ root {
     }
 
     .fiveinchbillNoBreak{
-        // page-break-before: always!important;
         page-break-after:always!important; 
         font-family: sans-serif!important;
         page-break-inside: avoid;
@@ -108,13 +105,10 @@ root {
 
 
     .summery{
-        // page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
         margin: 0px!important; 
-        //    width: 95%!important;
-        //    height: 95%!important;
         padding: 0px!important;
         font-size: 100%!important;
     }
@@ -127,15 +121,8 @@ root {
 @media screen{
     .summery{
         position: relative!important;
-        //   padding: 5px!important;
-        //   height:550px!important;
-        //    width:550px!important; 
-        //     overflow:hidden!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
-        // margin: auto!important; 
-        //   background-size: 100% auto!important; 
-        //     border: 1px solid!important;
         font-size: 100%!important;
     }
 
@@ -185,7 +172,6 @@ root {
 
 @media print{
     .staffFive{
-        // page-break-after:always!important; 
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
@@ -327,9 +313,6 @@ root {
     position: absolute;
     left: 75%;
     top: 25%;
-    // text-align: center;
-    //  width: 90%;
-
 }
 
 .phone{

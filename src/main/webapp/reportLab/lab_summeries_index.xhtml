@@ -12,69 +12,66 @@
                     <p:panel header="Lab Summeries">                        
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <h:panelGrid columns="1" >
-                                <p:panel header="Monthly Summeries" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="1)Monthly Summeries" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Counts" action="investigation_counts"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time Average" action="turn_over_time"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Turn Over Time By Bills" action="turn_over_time_bills"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre" action="report_lab_collection_centre.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor" action="report_lab_by_refering_doctor.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by day" action="report_lab_by_date_summery.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Investigation Counts" action="investigation_counts"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Turn Over Time Average" action="turn_over_time"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)Turn Over Time By Bills" action="turn_over_time_bills"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)Report by Collection Centre" action="report_lab_collection_centre.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="5)Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="6)Report by Referring Doctor" action="report_lab_by_refering_doctor.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="7)Report Summary Department" action="report_cashier_detailed_by_department.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="8)Report Summary by day" action="report_lab_by_date_summery.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="9)Investigation Summary Fee Type" action="report_investigation_summery_by_feetype"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="10)Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee"/>
 
                                     </p:panelGrid>
                                 </p:panel>
-                                <p:panel header="Lab Summary Inward" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="2)Lab Summary Inward" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                 <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="1)Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="2)Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="3)Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="4)Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
 
                                 </p:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
-                                <p:panel header="Lab Investigation Summaries with Credit" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="3)Lab Investigation Summaries with Credit" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery" action="report_lab_by_date_summery_cash_credit.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery with Counts" action="report_lab_by_date_summery_cash_credit_counts.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery" action="daily_inward_fee_summery.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery with Counts" action="daily_inward_fee_summery_counts.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)Daily OPD Fee Summery" action="report_lab_by_date_summery_cash_credit.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="5)Daily OPD Fee Summery with Counts" action="report_lab_by_date_summery_cash_credit_counts.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="6)Daily Inward Fee Summery" action="daily_inward_fee_summery.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="7)Daily Inward Fee Summery with Counts" action="daily_inward_fee_summery_counts.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="8)Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
 
                                     </p:panelGrid>
                                 </p:panel>
-                                <p:panel header="Counts" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="4)Counts" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)By Billed Institution" action="report_lab_by_billed_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)By Billed Department" action="report_lab_by_billed_department"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)By Reported Institution" action="report_lab_by_reported_institution"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)By Reported Department" action="report_lab_by_reported_department"/>
                                         
                                     </p:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
-                                <p:panel header="Lab Summary" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="5)Lab Summary" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                     <p:panelGrid columns="1" styleClass="alignTop">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
-                                       
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Daily Summary" action="report_opd_service_summery"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="5)Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
                                     </p:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
-                            
-                            
                         </h:panelGrid>
                     </p:panel> 
                     
