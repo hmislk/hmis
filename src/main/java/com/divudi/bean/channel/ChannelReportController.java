@@ -108,6 +108,7 @@ public class ChannelReportController implements Serializable {
     boolean paid = false;
     boolean sessoinDate = false;
     boolean withDates = false;
+    boolean agncyOnCall = false;
     PaymentMethod paymentMethod;
     /////
     private List<ChannelDoctor> channelDoctors;
@@ -160,6 +161,7 @@ public class ChannelReportController implements Serializable {
         totalRefund = 0.0;
         staff = null;
         sessoinDate = false;
+        institution=null;
     }
 
     public Institution getInstitution() {
@@ -1013,9 +1015,9 @@ public class ChannelReportController implements Serializable {
         cancelBills = new ArrayList<>();
         refundBills = new ArrayList<>();
 
-        billedBills = channelListByBillClass(new BilledBill(), webUser, sessoinDate);
-        cancelBills = channelListByBillClass(new CancelledBill(), webUser, sessoinDate);
-        refundBills = channelListByBillClass(new RefundBill(), webUser, sessoinDate);
+        billedBills = channelListByBillClass(new BilledBill(), webUser, sessoinDate,institution,agncyOnCall);
+        cancelBills = channelListByBillClass(new CancelledBill(), webUser, sessoinDate,institution,agncyOnCall);
+        refundBills = channelListByBillClass(new RefundBill(), webUser, sessoinDate,institution,agncyOnCall);
 
         totalBilled = calTotal(billedBills);
         totalCancel = calTotal(cancelBills);
@@ -1072,14 +1074,13 @@ public class ChannelReportController implements Serializable {
 
     }
 
-    public List<Bill> channelListByBillClass(Bill bill, WebUser webUser, boolean sd) {
+    public List<Bill> channelListByBillClass(Bill bill, WebUser webUser, boolean sd,Institution agent,boolean crditAgent) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
 
         String sql = " select b from Bill b "
-                + " where b.billType in :bt "
-                + " and b.retired=false "
+                + " where b.retired=false "
                 + " and type(b)=:class ";
 
         if (webUser != null) {
@@ -1091,9 +1092,22 @@ public class ChannelReportController implements Serializable {
         } else {
             sql += " and b.createdAt between :fd and :td ";
         }
+        if (crditAgent) {
+            if (agent!=null) {
+                sql += " and b.creditCompany=:a ";
+                hm.put("a", agent);
+            }else{
+                sql += " and b.creditCompany is not null ";
+            }
+            sql+=" and b.billType=:bt ";
+            hm.put("bt", BillType.ChannelOnCall);
+        }else{
+            sql+=" and b.billType in :bts ";
+            hm.put("bts", bts);
+        }
         sql += " order by b.singleBillSession.sessionDate ";
 
-        hm.put("bt", bts);
+        
         hm.put("class", bill.getClass());
         hm.put("fd", getFromDate());
         hm.put("td", getToDate());
@@ -1102,7 +1116,7 @@ public class ChannelReportController implements Serializable {
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-
+    
     private List<Bill> fetchBills(Bill billClass, BillType bt, PaymentMethod paymentMethod, WebUser wUser, Date fd, Date td) {
         String sql;
         Map temMap = new HashMap();
@@ -4025,6 +4039,14 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isAgncyOnCall() {
+        return agncyOnCall;
+    }
+
+    public void setAgncyOnCall(boolean agncyOnCall) {
+        this.agncyOnCall = agncyOnCall;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
