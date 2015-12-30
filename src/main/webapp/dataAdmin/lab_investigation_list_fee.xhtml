@@ -50,12 +50,50 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.item.name}" ></h:outputLabel>
                         </p:column>
-                         <p:column headerText="Department Name" >
+                        
+                        <p:column headerText="Investigation Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Investigation Name"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.item.retired}" ></h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Institution Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Institution Name"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Department Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Department Name"/>    
                             </f:facet>
-                             <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                            <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                         </p:column>
+                        
+                         <p:column headerText="Item Institution Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Institution Name"/>    
+                            </f:facet>
+                             <h:outputLabel value="#{ix.item.institution.name}" ></h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Item Department Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Department Name"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.item.department.name}" ></h:outputLabel>
+                        </p:column>
+                        
+                        <p:column headerText="Item Category Name" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Category Name"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.item.category.name}" ></h:outputLabel>
+                        </p:column>
+                        
+                        
 
                         <p:column headerText="Hospiatal Fee" >
                             <f:facet name="header">

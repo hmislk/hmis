@@ -15,9 +15,16 @@
                     <h:form>
                         <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                             <p:panel  header="Cancellation">
-                                <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}" required="true"  >
-                                    <f:selectItem itemLabel="Select Payment Method"/>
-                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
+                                                   disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{enumController.paymentMethods}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
+                                                   disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                    <f:selectItem itemLabel="Select paymentMethod"/>
+                                    <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" value="Refund" action="#{billSearch.refundBill()}"
                                                  onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
@@ -108,30 +115,50 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{billSearch.printPreview}" >
+                            <p:panel rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
+                                <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                                    <div class="nonPrintBlock">
+                                        <p:commandButton value="Print" ajax="false" action="#"  >
+                                            <p:printer target="gpBillPreview" ></p:printer>
+                                        </p:commandButton>
+                                    </div>
+                                    <ui:repeat value="#{billSearch.bill}" var="b">
+                                        <bi:opdBillPrintRuhunu bill="#{b}" dup="false"/>
+                                    </ui:repeat>
 
-                            <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
-                                </div>
-                                <ui:repeat value="#{billSearch.printingBill}" var="b">
-                                    <bi:opdBillPrintRuhunu bill="#{b}" dup="false"/>
-                                </ui:repeat>
+                                </h:panelGroup>
 
-                            </h:panelGroup>
+                                <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                                    <div class="nonPrintBlock">
+                                        <p:commandButton value="Print" ajax="false" action="#"  >
+                                            <p:printer target="gpBillPreviewCoop" ></p:printer>
+                                        </p:commandButton>
+                                    </div>
+                                    <ui:repeat value="#{billSearch.bill}" var="b">
+                                        <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
+                                    </ui:repeat>
 
-                            <h:panelGroup id="gpBillPreviewCoop" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="gpBillPreviewCoop" ></p:printer>
-                                    </p:commandButton>
-                                </div>
-                                <ui:repeat value="#{billSearch.printingBill}" var="b">
-                                    <bi:opdBillPrintCoop bill="#{b}" refund="true"/>
-                                </ui:repeat>
+                                </h:panelGroup>
+                            </p:panel>
+                            <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                    <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false
+                                                                                   and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
+                                                                                   and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
+                                        <div class="nonPrintBlock">
+                                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                                <p:printer target="gpBillPreviewCC" ></p:printer>
+                                            </p:commandButton>
+                                        </div>
+                                        <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true"/>
+                                        <!--  <br/>
+                                                                <h:panelGroup >
+                                                                    <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
+                                                                </h:panelGroup>-->
 
-                            </h:panelGroup>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </p:panel>
                         </h:panelGroup>
 
                     </h:form>

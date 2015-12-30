@@ -62,10 +62,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
-/**
- *
- * @author safrin
- */
 @Named
 @SessionScoped
 public class ChannelReportController implements Serializable {
@@ -110,6 +106,10 @@ public class ChannelReportController implements Serializable {
     ChannelBillTotals billTotals;
     Department department;
     boolean paid = false;
+    boolean sessoinDate = false;
+    boolean withDates = false;
+    boolean agncyOnCall = false;
+    PaymentMethod paymentMethod;
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -148,6 +148,21 @@ public class ChannelReportController implements Serializable {
     StaffFacade staffFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+
+    public void clearAll() {
+        billedBills = new ArrayList<>();
+        cancelBills = new ArrayList<>();
+        refundBills = new ArrayList<>();
+        netTotal = 0.0;
+        cancelTotal = 0.0;
+        refundTotal = 0.0;
+        totalBilled = 0.0;
+        totalCancel = 0.0;
+        totalRefund = 0.0;
+        staff = null;
+        sessoinDate = false;
+        institution=null;
+    }
 
     public Institution getInstitution() {
         return institution;
@@ -1000,29 +1015,147 @@ public class ChannelReportController implements Serializable {
         cancelBills = new ArrayList<>();
         refundBills = new ArrayList<>();
 
-        billedBills = channelListByBillClass(new BilledBill());
-        cancelBills = channelListByBillClass(new CancelledBill());
-        refundBills = channelListByBillClass(new RefundBill());
+        billedBills = channelListByBillClass(new BilledBill(), webUser, sessoinDate,institution,agncyOnCall);
+        cancelBills = channelListByBillClass(new CancelledBill(), webUser, sessoinDate,institution,agncyOnCall);
+        refundBills = channelListByBillClass(new RefundBill(), webUser, sessoinDate,institution,agncyOnCall);
+
+        totalBilled = calTotal(billedBills);
+        totalCancel = calTotal(cancelBills);
+        totalRefund = calTotal(refundBills);
+        netTotal = totalBilled + totalCancel + totalRefund;
+
     }
 
-    public List<Bill> channelListByBillClass(Bill bill) {
+    public void channelBillClassListByPaymentMethord() {
+        if (webUser == null) {
+            JsfUtil.addErrorMessage("Select User......");
+            return;
+        }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select Payment Methord.....");
+            return;
+        }
+        billedBills = new ArrayList<>();
+        cancelBills = new ArrayList<>();
+        refundBills = new ArrayList<>();
+        BillType bt=null;
+        switch (paymentMethod) {
+            case Cash:
+                bt = BillType.ChannelCash;
+                break;
+            case Cheque:
+                bt = BillType.ChannelCash;
+                break;
+            case Slip:
+                bt = BillType.ChannelCash;
+                break;
+            case Card:
+                bt = BillType.ChannelCash;
+                break;
+            case Agent:
+                bt = BillType.ChannelAgent;
+                break;
+            case OnCall:
+                bt = BillType.ChannelPaid;
+                break;
+            case Staff:
+                bt = BillType.ChannelPaid;
+                break;
+        }
+        System.out.println("bt = " + bt);
+        billedBills = fetchBills(new BilledBill(), bt, paymentMethod, webUser, fromDate, toDate);
+        cancelBills = fetchBills(new CancelledBill(), bt, paymentMethod, webUser, fromDate, toDate);
+        refundBills = fetchBills(new RefundBill(), bt, paymentMethod, webUser, fromDate, toDate);
+
+        totalBilled = calTotal(billedBills);
+        totalCancel = calTotal(cancelBills);
+        totalRefund = calTotal(refundBills);
+        netTotal = totalBilled + totalCancel + totalRefund;
+
+    }
+
+    public List<Bill> channelListByBillClass(Bill bill, WebUser webUser, boolean sd,Institution agent,boolean crditAgent) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
         HashMap hm = new HashMap();
 
         String sql = " select b from Bill b "
-                + " where b.billType in :bt "
-                + " and b.retired=false "
-                + " and type(b)=:class "
-                + " and b.createdAt between :fDate and :tDate "
-                + " order by b.singleBillSession.sessionDate ";
+                + " where b.retired=false "
+                + " and type(b)=:class ";
 
-        hm.put("bt", bts);
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            hm.put("web", webUser);
+        }
+        if (sd) {
+            sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and b.createdAt between :fd and :td ";
+        }
+        if (crditAgent) {
+            if (agent!=null) {
+                sql += " and b.creditCompany=:a ";
+                hm.put("a", agent);
+            }else{
+                sql += " and b.creditCompany is not null ";
+            }
+            sql+=" and b.billType=:bt ";
+            hm.put("bt", BillType.ChannelOnCall);
+        }else{
+            sql+=" and b.billType in :bts ";
+            hm.put("bts", bts);
+        }
+        sql += " order by b.singleBillSession.sessionDate ";
+
+        
         hm.put("class", bill.getClass());
-        hm.put("fDate", getFromDate());
-        hm.put("tDate", getToDate());
-
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    private List<Bill> fetchBills(Bill billClass, BillType bt, PaymentMethod paymentMethod, WebUser wUser, Date fd, Date td) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and type(b)=:bill "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (wUser != null) {
+            sql += " and b.creater=:w ";
+            temMap.put("w", wUser);
+        }
+
+        if (paymentMethod == PaymentMethod.OnCall || paymentMethod == PaymentMethod.Staff) {
+            if (billClass instanceof BilledBill) {
+                sql += " and b.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            } else {
+                sql += " and b.billedBill.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
+            }
+
+        } else {
+            sql += " and b.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("btp", bt);
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bill", billClass.getClass());
+
+        sql += " order by b.insId ";
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2179,14 +2312,14 @@ public class ChannelReportController implements Serializable {
             doctorPaymentSummeryRowSub.setConsultant(staff);
             doctorPaymentSummeryRowSub.setBills(getChannelUnPaidBillListbyClassTypes(bts, d, staff));
             doctorPaymentSummeryRowSub.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRowSub.getBills()));
-            doctorPaymentSummeryRowSub.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRowSub.getBills()));            
+            doctorPaymentSummeryRowSub.setStaffFeeTotal(getStaffFeeTotal(doctorPaymentSummeryRowSub.getBills()));
 
             if (!doctorPaymentSummeryRowSub.getBills().isEmpty()) {
                 System.out.println("Adding");
                 doctorPaymentSummeryRowSubs.add(doctorPaymentSummeryRowSub);
             }
 
-        }   
+        }
 
         return doctorPaymentSummeryRowSubs;
     }
@@ -3505,6 +3638,15 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void createCollectingCentreHistoryTable() {
+        agentHistorys = new ArrayList<>();
+        HistoryType[] hts = {HistoryType.CollectingCentreBalanceUpdateBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreDepositCancel, HistoryType.CollectingCentreBilling};
+        List<HistoryType> historyTypes = Arrays.asList(hts);
+
+        agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);
+
+    }
+
     public void createAgentHistorySubTable() {
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Agency.");
@@ -3873,6 +4015,38 @@ public class ChannelReportController implements Serializable {
 
     public void setPaid(boolean paid) {
         this.paid = paid;
+    }
+
+    public boolean isSessoinDate() {
+        return sessoinDate;
+    }
+
+    public void setSessoinDate(boolean sessoinDate) {
+        this.sessoinDate = sessoinDate;
+    }
+
+    public boolean isWithDates() {
+        return withDates;
+    }
+
+    public void setWithDates(boolean withDates) {
+        this.withDates = withDates;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isAgncyOnCall() {
+        return agncyOnCall;
+    }
+
+    public void setAgncyOnCall(boolean agncyOnCall) {
+        this.agncyOnCall = agncyOnCall;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

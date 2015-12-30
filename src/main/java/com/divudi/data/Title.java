@@ -33,29 +33,31 @@ public enum Title {
             case Baby_Of:
                 return "Baby of ";
             case DrMiss:
-                return "Dr. (Miss)";
+                return "Dr. (Miss) ";
             case DrMrs:
-                return "Dr. (Mrs.)";
+                return "Dr. (Mrs.) ";
             case DrMs:
-                return "Dr. (Ms.)";
+                return "Dr. (Ms.) ";
             case Hon:
-                return "Hon.";
+                return "Hon. ";
             case Dr:
-                return "Dr.";
+                return "Dr. ";
             case Mr:
-                return "Mr.";
+                return "Mr. ";
+            case Miss:
+                return "Miss. ";
             case Mrs:
-                return "Mrs.";
+                return "Mrs. ";
             case Ms:
-                return "Ms.";
+                return "Ms. ";
             case Prof:
-                return "Prof.";
+                return "Prof. ";
             case Rev:
-                return "Rev.";
+                return "Rev. ";
             case RtHon:
-                return "Rt. Hon.";
+                return "Rt. Hon. ";
             case RtRev:
-                return "Rt. Rev.";
+                return "Rt. Rev. ";
             case Other:
                 return "Other";
             default:

@@ -25,16 +25,37 @@
                                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
                                     <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 </h:panelGrid>
-                                <h:panelGrid columns="7" >
+                                <h:panelGrid columns="8" >
                                     <h:outputLabel value="Bill No"/>
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value="Patient Phone"/>                               
                                     <h:outputLabel value="Investigation Name"/>
+                                    <h:outputLabel value="BHT"/>
                                     <h:outputLabel/><h:outputLabel/><h:outputLabel/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
+                                    
+                                    <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                    value="#{searchController.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >                                
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                                 </h:panelGrid>
                             </h:panelGrid>
@@ -43,12 +64,14 @@
 
 
 
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
-
+                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
+                            <p:column  headerText="No" styleClass="alignTop" >
+                                <p:outputLabel value="#{i+1}" />
+                            </p:column>
                             <p:column  headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
-                                               value="#{pi.billItem.bill.deptId}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
+                                               value="#{pi.billItem.bill.insId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
                                 <p:tooltip for="lblBillNo"  >
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                     <br/>
@@ -84,7 +107,7 @@
                             <p:column  headerText="Dep ID" styleClass="alignTop" >
                                 <h:outputLabel id="lblInvNo" 
                                                value="#{pi.billItem.bill.deptId}" 
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
                                 <p:tooltip for="lblBillNo"  >
                                     <h:outputLabel value="Bill No : #{pi.billItem.bill.deptId}" ></h:outputLabel>
                                     <br/>
@@ -121,7 +144,7 @@
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
                                                action="patient" 
                                                style="text-decoration:underline;"
-                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
                                                >
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
@@ -151,22 +174,22 @@
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
-                                    <p:commandLink process="btnSample" update="tblBills"  
-                                                   disabled="#{pi.collected}"   
+                                    <p:commandLink process="btnSample" update="tblBills"
+                                                   disabled="#{pi.collected or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   
                                                    id="btnSample" 
                                                    action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="lab_single_worksheet">
+                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="lab_single_worksheet" disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
+                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received or pi.billItem.bill.cancelled or pi.billItem.transRefund}" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image/icon" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>
@@ -174,6 +197,7 @@
                                         <p:commandLink process="btnSms" update="tblBills"  
                                                        id="btnSms" 
                                                        rendered="#{!pi.billItem.bill.smsed}"
+                                                       disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
                                                        action="#{patientInvestigationController.sendSms()}" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image/icon" styleClass="standedicon" name="sms.jpg" ></p:graphicImage>
@@ -181,12 +205,14 @@
                                         <p:commandLink process="btnSmsSent" update="tblBills"  
                                                        id="btnSmsSent"
                                                        rendered="#{pi.billItem.bill.smsed}"
+                                                       disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
                                                        action="#{patientInvestigationController.sendSms()}" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image/icon" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
                                         </p:commandLink>
                                         <p:commandLink process="btnEmail" update="tblBills"  
                                                        id="btnEmail" 
+                                                       disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
                                                        action="#" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image/icon" styleClass="standedicon" name="email.jpg" ></p:graphicImage>

@@ -11,6 +11,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -30,6 +31,8 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -45,6 +49,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -89,7 +98,7 @@ public class PatientInvestigationController implements Serializable {
     SmsFacade smsFacade;
     @EJB
     BillFacade billFacade;
-    
+
     List<Investigation> investSummery;
     Date sampledOutsideDate;
     boolean sampledOutSide;
@@ -98,7 +107,7 @@ public class PatientInvestigationController implements Serializable {
     private boolean listIncludingSampled;
     boolean listIncludingApproved;
     List<PatientInvestigation> selectedToReceive;
-    
+
     Sms sms;
 
     public void resetLists() {
@@ -114,11 +123,10 @@ public class PatientInvestigationController implements Serializable {
         toReceive = null;
     }
 
-    
-    public PatientInvestigation getPatientInvestigationFromBillItem(BillItem bi){
+    public PatientInvestigation getPatientInvestigationFromBillItem(BillItem bi) {
         String j;
         Map m = new HashMap();
-        j="select pi "
+        j = "select pi "
                 + " from PatientInvestigation pi "
                 + " where pi.billItem =:bi "
                 + " and pi.retired=false "
@@ -128,8 +136,7 @@ public class PatientInvestigationController implements Serializable {
         pi.isRetired();
         return pi;
     }
-    
-    
+
     public boolean sampledForAnyItemInTheBill(Bill bill) {
         //System.out.println("bill = " + bill);
         String jpql;
@@ -141,15 +148,15 @@ public class PatientInvestigationController implements Serializable {
         for (PatientInvestigation pi : pis) {
             //System.out.println("pi = " + pi);
             if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
-                    //System.out.println("can not cancel now." );
-                    return true;
+                //System.out.println("can not cancel now." );
+                return true;
             }
         }
         return false;
     }
 
     public boolean sampledForBillItem(BillItem billItem) {
-       //System.out.println("bill = " + billItem);
+        //System.out.println("bill = " + billItem);
         String jpql;
         jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
         Map m = new HashMap();
@@ -159,8 +166,8 @@ public class PatientInvestigationController implements Serializable {
         for (PatientInvestigation pi : pis) {
             //System.out.println("pi = " + pi);
             if (pi.getCollected() == true || pi.getReceived() == true || pi.getDataEntered() == true) {
-                    //System.out.println("can not return." );
-                    return true;
+                //System.out.println("can not return." );
+                return true;
             }
         }
         return false;
@@ -445,7 +452,7 @@ public class PatientInvestigationController implements Serializable {
 
     @Inject
     private InstitutionLabSumeryController labReportSearchByInstitutionController;
-    
+
     public void sendSms() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to send sms");
@@ -467,24 +474,28 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
 
-        
-        
         String sendingNo = bill.getPatient().getPerson().getPhone();
-        if(sendingNo.contains("077") || sendingNo.contains("076")
-                || sendingNo.contains("071")||sendingNo.contains("072")||
-                sendingNo.contains("075")||sendingNo.contains("078")){
-        }else{
+        if (sendingNo.contains("077") || sendingNo.contains("076")
+                || sendingNo.contains("071") || sendingNo.contains("072")
+                || sendingNo.contains("075") || sendingNo.contains("078")) {
+        } else {
             return;
         }
-        
+
         StringBuilder sb = new StringBuilder(sendingNo);
         sb.deleteCharAt(3);
         sendingNo = sb.toString();
 
-        messageBody = "Reports ready. ";
-        messageBody = messageBody + bill.getInstitution().getName() + ". ";
-        messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
-        messageBody = messageBody + bill.getInstitution().getWeb();
+        if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+            messageBody = "Dear Sir/Madam,\n"
+                    + "Thank you for using RHD services. Report number " + bill.getInsId() + " is ready for collection\n"
+                    + "\"RHD your trusted diagnostics partner\"";
+        } else {
+            messageBody = "Reports ready. ";
+            messageBody = messageBody + bill.getInstitution().getName() + ". ";
+            messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
+            messageBody = messageBody + bill.getInstitution().getWeb();
+        }
 
         try {
             System.out.println("id = " + id);
@@ -511,28 +522,25 @@ public class PatientInvestigationController implements Serializable {
         sms.setBill(bill);
         sms.setSendingUrl(url);
         sms.setSendingMessage(messageBody);
-        
+
         System.out.println("Updating current PtIx = " + getCurrent());
-        
+
         System.out.println("SMS status before updating " + getCurrent().getBillItem().getBill().getSmsed());
-        
+
         getCurrent().getBillItem().getBill().setSmsed(true);
         getCurrent().getBillItem().getBill().setSmsedAt(new Date());
         getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
         getFacade().edit(current);
         getCurrent().getBillItem().getBill().getSentSmses().add(sms);
-        
-        
+
         System.out.println("SMS status aftr updating " + getCurrent().getBillItem().getBill().getSmsed());
-        
+
         billFacade.edit(getCurrent().getBillItem().getBill());
-        
+
         System.out.println("sms before saving = " + sms);
         getSmsFacade().create(sms);
         System.out.println("sms after saving " + sms);
 
-        
-        
         UtilityController.addSuccessMessage("Sms send");
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
@@ -543,9 +551,7 @@ public class PatientInvestigationController implements Serializable {
             UtilityController.addErrorMessage("Nothing to sample");
             return;
         }
-        
-        
-        
+
         getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
         if (current.getSampleOutside()) {
             getCurrent().setSampledAt(sampledOutsideDate);
@@ -566,14 +572,14 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-    
+
     public void revertMarkedSample() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to Revert");
             return;
         }
         getCurrent().setSampleCollecter(getSessionController().getLoggedUser());
-        
+
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setCollected(Boolean.FALSE);
             getCurrent().setReceived(Boolean.FALSE);
@@ -692,8 +698,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markAsReceived() {
-        
-        
+
         if (getCurrent().getId() != null || getCurrent().getId() != 0) {
             getCurrent().setReceived(Boolean.TRUE);
             getCurrent().setReceivedAt(new Date());

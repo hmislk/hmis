@@ -15,6 +15,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.ejb.StaffBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillFeePayment;
@@ -77,6 +78,8 @@ public class SaleReturnController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    StaffBean staffBean;
 
     PaymentMethodData paymentMethodData;
 
@@ -421,6 +424,17 @@ public class SaleReturnController implements Serializable {
 
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
+        if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            //   //System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+            //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+            if (getBill().getToStaff() != null) {
+                //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                UtilityController.addSuccessMessage("Staff Credit Updated");
+                getReturnBill().setFromStaff(getBill().getToStaff());
+                getBillFacade().edit(getReturnBill());
+            }
+        }
 
     }
 
@@ -572,6 +586,14 @@ public class SaleReturnController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    public StaffBean getStaffBean() {
+        return staffBean;
+    }
+
+    public void setStaffBean(StaffBean staffBean) {
+        this.staffBean = staffBean;
     }
 
 }

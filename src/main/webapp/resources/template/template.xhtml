@@ -55,7 +55,23 @@
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
                                 <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
                                 <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
-                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{collectingCentreBillController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+
+                                    <p:submenu styleClass="rightBordrOnly" label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
+                                        <p:menuitem ajax="false" action="/collecting_centre/bill"  
+                                                    actionListener="#{billController.prepareNewBill}" 
+                                                    value="CC Billing" 
+                                                    rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                                        </p:menuitem>
+                                        
+                                        <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
+                                                    actionListener="#{searchController.makeListNull}"
+                                                    value="CC Bill Search" 
+                                                    rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
+                                        </p:menuitem>
+                                    </p:submenu>
+
+
                                     <p:menuitem ajax="false" action="/opd_pre_bill"  actionListener="#{opdPreBillController.prepareNewBill}" value="Bills For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:menuitem>
 
                                     <p:submenu label="Packages">
@@ -131,7 +147,20 @@
                                         <p:menuitem ajax="false" action="/inward/inward_bill_service" value="Add Inward Services" actionListener="#{billBhtController.makeNull}" rendered="#{!webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/lab/lab_inward_search_service" value="Search Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBill')}" ></p:menuitem>  
                                     </p:submenu>
-                                    <p:submenu label="Collecting Centre Billing" >
+                                    <p:submenu label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
+                                        <p:menuitem ajax="false" action="/collecting_centre/bill"  
+                                                    actionListener="#{billController.prepareNewBill}" 
+                                                    value="CC Billing" 
+                                                    rendered="#{webUserController.hasPrivilege('LabBilling')}" >
+                                        </p:menuitem>
+                                        
+                                        <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
+                                                    actionListener="#{searchController.makeListNull}"
+                                                    value="CC Bill Search" 
+                                                    rendered="#{webUserController.hasPrivilege('LabBilling')}" >
+                                        </p:menuitem>
+                                    </p:submenu>
+                                    <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                         <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     </p:submenu>
@@ -552,7 +581,29 @@
                                             <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/agent_bill_search_own"
                                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
-                                        </p:submenu>                                    
+                                        </p:submenu>
+
+                                        <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own"
+                                                         actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                                        </p:submenu>
+
+                                    </p:submenu>
+
+                                    <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
+                                        <p:submenu label="Collecting Centre Book Issuing">
+                                            <p:menuitem  ajax="false"  action="/lab/lab_agent_referece_book" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/lab/institutions_udate_credit_limit" value="Collecting Centre Credit Limit Update"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/reportLab/collecting_centre_report_agent_history" value="Collecting Centre History"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill" value="Collecting Centre Diposits"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance" value="Collecting Center Current Balance"  ></p:menuitem>
+                                        </p:submenu>
+
+                                        <p:submenu label="Channell Agency Book Issuing">
+
+                                        </p:submenu>
+
                                     </p:submenu>
                                 </p:submenu>
 

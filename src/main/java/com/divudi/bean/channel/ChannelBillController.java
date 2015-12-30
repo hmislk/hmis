@@ -87,6 +87,7 @@ public class ChannelBillController implements Serializable {
     PaymentMethod refundPaymentMethod;
     PaymentMethodData paymentMethodData;
     Institution institution;
+    Institution institutionOnCallAgency;
     Institution settleInstitution;
     Bill printingBill;
     Staff toStaff;
@@ -228,7 +229,7 @@ public class ChannelBillController implements Serializable {
         temp.setBillType(BillType.ChannelPaid);
         String insId = generateBillNumberInsId(temp);
         temp.setInsId(insId);
-        String deptId=generateBillNumberDeptId(temp);
+        String deptId = generateBillNumberDeptId(temp);
         temp.setDeptId(deptId);
 //        temp.setInsId(getBillSession().getBill().getInsId());
         temp.setBookingId(billNumberBean.bookingIdGenerator(sessionController.getInstitution(), temp));
@@ -853,7 +854,7 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         cb.setInsId(insId);
-        
+
         String deptId = generateBillNumberDeptId(cb);
 
         if (deptId.equals("")) {
@@ -1024,9 +1025,9 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         rb.setInsId(insId);
-        
+
         String deptId = generateBillNumberDeptId(rb);
-        
+
         if (deptId.equals("")) {
             return null;
         }
@@ -1167,6 +1168,7 @@ public class ChannelBillController implements Serializable {
         billItems = null;
         paymentMethod = null;
         institution = null;
+        institutionOnCallAgency = null;
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
@@ -1241,7 +1243,7 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
-            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                 UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                 setAgentRefNo("");
@@ -1602,6 +1604,11 @@ public class ChannelBillController implements Serializable {
         switch (paymentMethod) {
             case OnCall:
                 bill.setBillType(BillType.ChannelOnCall);
+                //agent on-call record
+                if (institutionOnCallAgency != null) {
+                    System.out.println("institution.getName() = " + institutionOnCallAgency.getName());
+                }
+                bill.setCreditCompany(institutionOnCallAgency);
                 break;
             case Cash:
                 bill.setBillType(BillType.ChannelCash);
@@ -1637,9 +1644,9 @@ public class ChannelBillController implements Serializable {
             return null;
         }
         bill.setInsId(insId);
-        
-        String deptId=generateBillNumberDeptId(bill);
-        
+
+        String deptId = generateBillNumberDeptId(bill);
+
         if (deptId.equals("")) {
             return null;
         }
@@ -2270,6 +2277,14 @@ public class ChannelBillController implements Serializable {
 
     public void setCommentR(String commentR) {
         this.commentR = commentR;
+    }
+
+    public Institution getInstitutionOnCallAgency() {
+        return institutionOnCallAgency;
+    }
+
+    public void setInstitutionOnCallAgency(Institution institutionOnCallAgency) {
+        this.institutionOnCallAgency = institutionOnCallAgency;
     }
 
 }

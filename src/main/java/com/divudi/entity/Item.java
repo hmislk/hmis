@@ -123,6 +123,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
+    boolean active=false;
     @ManyToOne
     Institution manufacturer;
     @ManyToOne
@@ -225,6 +226,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setMarginNotAllowed(boolean marginNotAllowed) {
         this.marginNotAllowed = marginNotAllowed;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public List<WorksheetItem> getWorksheetItems() {

@@ -116,7 +116,25 @@
 
                         <p:columnGroup type="footer">  
                             <p:row>                              
-                                <p:column footerText="Total" colspan="4"/>
+                                <p:column footerText="Total"/>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalOpdCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalOpdCount}">
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalccCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalccCount}">
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalInwardCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalInwardCount}">
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.totalCount}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.totalCount}">

@@ -134,6 +134,13 @@ public class BillItem implements Serializable {
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
+    
+    @Transient
+    double  transCCFee;
+    @Transient
+    double  transWithOutCCFee;
+    @Transient
+    boolean transRefund;
 
     public double getHospitalFee() {
         return hospitalFee;
@@ -733,6 +740,30 @@ public class BillItem implements Serializable {
 
     public void setChiledBillItems(List<BillItem> chiledBillItems) {
         this.chiledBillItems = chiledBillItems;
+    }
+
+    public double getTransCCFee() {
+        return transCCFee;
+    }
+
+    public void setTransCCFee(double transCCFee) {
+        this.transCCFee = transCCFee;
+    }
+
+    public double getTransWithOutCCFee() {
+        return transWithOutCCFee;
+    }
+
+    public void setTransWithOutCCFee(double transWithOutCCFee) {
+        this.transWithOutCCFee = transWithOutCCFee;
+    }
+
+    public boolean isTransRefund() {
+        return transRefund;
+    }
+
+    public void setTransRefund(boolean transRefund) {
+        this.transRefund = transRefund;
     }
 
 }

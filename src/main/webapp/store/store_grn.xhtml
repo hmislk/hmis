@@ -28,6 +28,8 @@
                     </p:selectOneMenu>
                     <p:commandButton   value="Settle" action="#{storeGrnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
+                    <p:commandButton   value="Check" action="#{storeGrnController.checkItemDetail}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                    </p:commandButton>
                 </h:panelGrid>
 
 
@@ -53,7 +55,7 @@
                                            process="@this" 
                                            update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;" 
-                                          actionListener="#{storeGrnController.addDetailItemListener(bi)}"
+                                           actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
                         </p:commandButton>
                     </p:column>
@@ -62,11 +64,10 @@
                         <p:commandButton   value="Add Accessories" process="@this" 
                                            update=":#{p:component('dialogChannelDetail')}"
                                            style="float: right;"                                            
-                                          actionListener="#{storeGrnController.addChildItemListener(bi)}"
+                                           actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
                     </p:column>
-
                     <p:column headerText="Item Name" style="width: 250px!important;"  > 
 
                         <h:outputText id="item" value="#{bi.item.name}" >                                   
@@ -122,32 +123,13 @@
                             </f:facet>                       
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" >
-<!--                                    <p:ajax process="@this" event="keyup" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />
-                                    <p:ajax process="@this" event="blur" update="retail retailIn retailIn1 retailIn2" listener="#{storeGrnController.purchaseRateUpdateListner(bi)}" />-->
+
                                 </p:inputText>
-                                
+
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>                  
 
-<!--                    <p:column headerText="Issue Price" > 
-                        <p:cellEditor>
-                            <f:facet name="output">
-                                <h:panelGroup id="retail">
-                                    <p:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}" id="retailIn"  > 
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-                                    <p:outputLabel id="retailIn1" value=" X (#{bi.item.dblValue})" rendered="#{bi.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/> 
-                                </h:panelGroup>
-                            </f:facet>  
-                            <f:facet name="input">
-                                <p:inputText id="retailIn2" autocomplete="off" value="#{bi.pharmaceuticalBillItem.retailRate}"  > 
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </p:inputText>
-                            </f:facet>
-                        </p:cellEditor>                      
-                    </p:column>-->
-                    
                     <p:column headerText="Last Purchase Price Price"  > 
                         <h:outputText  value="#{bi.pharmaceuticalBillItem.lastPurchaseRate}" >                                   
                         </h:outputText>                      
@@ -231,7 +213,7 @@
                                              value="#{storeGrnController.currentExpense.rate}" style="width:100%" />  
                                 <p:inputText maxlength="250" value="#{storeGrnController.currentExpense.descreption}" ></p:inputText>
                                 <p:commandButton id="btnAddExpense" value="Add Expense" 
-                                                action="#{storeGrnController.addExpense()}" 
+                                                 action="#{storeGrnController.addExpense()}" 
                                                  process="billExpenseGrid" 
                                                  update="tblExpenses billExpenseGrid tot focusExpense "/>
                             </h:panelGrid>
@@ -291,8 +273,8 @@
                             <p:outputLabel id="net"  value="#{0-storeGrnController.grnBill.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
-                            
-                             
+
+
                         </p:panelGrid>
                     </p:panelGrid>
                     <p:dialog id="dialogChannelAdded" header="Add Chiled Item" widgetVar="dlgAdd" 
@@ -308,23 +290,14 @@
                                                   forceSelection="true"
                                                   completeMethod="#{itemController.completeStoreInventryItem}" 
                                                   var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                    <p:column headerText="Item" >
+                                    <p:column headerText="Item" style="width: 20px;" >
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Code" >
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
-                                    </p:column>
-                                    <p:column headerText="Pack Size" >
-                                        <p:outputLabel value=" X #{vt.dblValue}" 
-                                                       rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                    <p:column headerText="Item" style="width: 20px;" >
+                                        <h:outputLabel value="#{vt.departmentType}"></h:outputLabel>
                                     </p:column>
                                     <f:ajax event="itemSelect" execute="@this" render="txtInventoryCode" 
                                             listener="#{storeGrnController.createSerialNumber()}" ></f:ajax>
@@ -377,7 +350,7 @@
                                 <h:outputLabel value="Warranty Certification No"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
                                 <h:outputLabel value="Warranty Duration"/>
-                                <p:outputLabel  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" />
                                 <h:outputLabel value="Depreciation Rate"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
                                 <h:outputLabel value="Manufacturer"/>
@@ -391,8 +364,8 @@
                                 </p:inputTextarea>
 
                                 <p:commandButton id="btnAdd" value="Add Item" 
-                                                action="#{storeGrnController.addItem}" 
-                                               ajax="false"/>
+                                                 action="#{storeGrnController.addItem}" 
+                                                 process="dialogChannelAdded" update="@this dialogChannelAdded itemList"/>
 
 
                             </p:panelGrid>
@@ -400,14 +373,13 @@
 
                         </h:panelGroup>
 
-
                     </p:dialog>  
 
                     <p:dialog id="dialogChannelDetail"  widgetVar="dlgDetail" 
                               modal="true" height="400" width="600">
                         <f:facet name="header">                            
                             <h:outputLabel value="Add Detail"/>
-                            <p:commandButton  value="Update" process="dialogChannelDetail" update="itemList"/>
+                            <p:commandButton  value="Update" process="dialogChannelDetail" update="itemList" action="#{storeGrnController.updateItemDetail}"/>
 
                         </f:facet>
                         <h:panelGroup>
@@ -440,7 +412,7 @@
                                 <h:outputLabel value="Warranty Certification No"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyCertificateNumber}" ></p:inputText>
                                 <h:outputLabel value="Warranty Duration"/>
-                                <p:outputLabel  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" ></p:outputLabel>
+                                <p:inputText  value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.warrentyDuration}" />
                                 <h:outputLabel value="Depreciation Rate"/>
                                 <p:inputText value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.deprecitionRate}" ></p:inputText>
                                 <h:outputLabel value="Manufacturer"/>

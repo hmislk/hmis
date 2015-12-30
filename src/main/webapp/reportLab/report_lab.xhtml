@@ -18,7 +18,7 @@
                             <h:panelGrid columns="1" >
                                 <p:panel header="1) Lab Investigation With Credit" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <h:panelGrid columns="1" >
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Month End Detail" action="report_lab_investigation_month_end_detail"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Investigation Month End Detail" action="report_lab_investigation_month_end_detail"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -26,8 +26,8 @@
                             <h:panelGrid columns="1" >
                                 <p:panel header="2) Lab Investigation Without Credit" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <h:panelGrid columns="1" >                            
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Month end Details without credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Month end Summary without credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Month end Details without credit" action="report_lab_investigation_month_end_detail_without_credit.xhtml"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Month end Summary without credit" action="report_lab_investigation_month_end_summery_without_credit.xhtml"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -36,15 +36,15 @@
                                 <p:panel header="3) Investigation Counts" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <h:panelGrid columns="1" >              
                                         <p:commandButton styleClass="linkButton" ajax="false" 
-                                                         value="Fees for outside institutions" 
+                                                         value="1)Fees for outside institutions" 
                                                          action="#{commonReport.displayOutsideBillFees()}"/>
 
                                         <p:commandButton styleClass="linkButton" ajax="false" 
-                                                         value="Investigation Counts by Institution And Collecting Centre" 
+                                                         value="2)Investigation Counts by Institution And Collecting Centre" 
                                                          action="#{investigationMonthSummeryOwnController.ixCountByInstitutionAndCollectingCentre()}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Machine Count" action="count_by_machine"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Machine Count By Bill Type" action="count_by_machine_and_bill_type"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Machine and Investigation Count By Bill Type" action="count_by_machine_and_item"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Machine Count" action="count_by_machine"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)Machine Count By Bill Type" action="count_by_machine_and_bill_type"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)Machine and Investigation Count By Bill Type" action="count_by_machine_and_item"/>
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>

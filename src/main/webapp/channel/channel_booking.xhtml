@@ -254,7 +254,7 @@
                                     <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                     <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl 
-                                            creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank 
+                                            creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
                                             lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessions}" />
                                 </p:selectOneMenu>
                                 <h:outputScript>
@@ -269,6 +269,13 @@
                                     });
                                 </h:outputScript>
                             </h:panelGroup>
+                            <h:outputLabel rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
+                            <p:autoComplete rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
+                                            value="#{channelBillController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
+                                <p:column>#{ix.institutionCode}</p:column>
+                                <p:column>#{ix.name}</p:column>                                
+                            </p:autoComplete>
                             <p:outputLabel value="Discount Scheme"/>
                             <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
                                 <f:selectItem itemLabel="Select Discount Scheme"/>
@@ -485,7 +492,7 @@
                             <div >
 
                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
-                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" >
                                         <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
 <!--                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>-->
                                     </h:panelGroup>
@@ -497,8 +504,12 @@
                                         <ch:channelReciptPosDouble bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                        <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
+                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
+                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                        <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                     </h:panelGroup>
 
                                 </h:panelGroup>
@@ -554,6 +565,8 @@
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment Method"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.creditCompany ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{bookingController.selectedBillSession.bill.creditCompany ne null}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -663,6 +676,8 @@
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
+                                        <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.creditCompany ne null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.creditCompany.name}" rendered="#{bookingController.selectedBillSession.bill.creditCompany ne null}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.fromInstitution.name}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Agent Ref No" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -718,7 +733,7 @@
 
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">
-                                            <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
+                                        <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
                                     </h:panelGroup>
                                 </div>
 
@@ -736,8 +751,12 @@
                                             <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
                                             <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                            <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                         </h:panelGroup>
 
                                     </h:panelGroup>
