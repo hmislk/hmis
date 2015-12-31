@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:cc="http://java.sun.com/jsf/composite">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" class="com.divudi.entity.Bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="dup" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+
+
+        <h:panelGroup>
+            <h:outputStylesheet library="css" name="channellingpos.css" ></h:outputStylesheet>
+
+            <h:panelGroup id="panelAddedBillPrint">
+                <div class="channelCoop">
+                    <div style="position: absolute!important; font-size: 15px!important; left: 20%!important; top: 8%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.paidBill eq null}" style="font-size: 14px!important;"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.deptId}" rendered="#{cc.attrs.bill.paidBill ne null}" style="font-size: 14px!important;"></h:outputLabel>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 70%!important; top: 7%!important;">
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                            <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size:30px !important;  font-weight: bold; margin: 5px;padding: 5px;border: 1px solid black; color: red;" ></h:outputLabel>
+                        </ui:repeat>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 27%!important; top: 17%!important;">
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                            <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" style="font-size: 14px!important;"></h:outputLabel>
+                        </ui:repeat>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 35%!important; top: 30%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" style="font-size: 14px!important;"></h:outputLabel>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 30%!important; top: 42%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" style="font-size: 14px!important;">
+                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 70%!important; top: 42%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" style="font-size: 14px!important;">
+                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 22%!important; top: 53%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.roomNo}" style="font-size: 14px!important;">
+                        </h:outputLabel>
+                    </div>
+                    <div style="position: absolute!important; font-size: 15px!important; left: 60%!important; top: 67%!important;">                        
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
+                            <f:convertNumber pattern="0.00"/>
+                        </h:outputLabel>                        
+                    </div>
+
+                    <div style="position: absolute!important; font-size: 15px!important; left: 20%!important; top: 67%!important;">                        
+                        <h:outputLabel value="#{cc.attrs.bill.staffFee}" style="font-size: 14px!important;">
+                            <f:convertNumber pattern="0.00"/>
+                        </h:outputLabel>                        
+                    </div>
+
+                    <div style="position: absolute!important; font-size: 15px!important; left: 15%!important; top: 79%!important;">                        
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 14px!important;">
+                            <f:convertNumber pattern="0.00"/>
+                        </h:outputLabel>                        
+                    </div>
+
+                    <div style="position: absolute!important; font-size: 15px!important; left: 55%!important; top: 88%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-size: 14px!important;">
+                            <f:convertDateTime pattern="dd MM yy hh:mm a" ></f:convertDateTime>
+                        </h:outputLabel>
+                    </div>
+                    
+                    <div style="position: absolute!important; font-size: 15px!important; left: 55%!important; top: 80%!important;">
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.code}" style="font-size: 14px!important;" rendered="#{cc.attrs.bill.paidBill ne null}" ></h:outputLabel>
+                    </div>
+                </div>
+            </h:panelGroup>
+        </h:panelGroup>
+    </cc:implementation>
+</html>

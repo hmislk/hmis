@@ -1,4 +1,13 @@
 @media print{
+    .channelCoop{
+        overflow:hidden!important; 
+        border: 1px solid!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 9.5cm!important;
+        overflow:hidden!important; 
+        margin: auto!important; 
+    }
     .posbill{
         position: relative!important;  
         margin-top: -2cm!important;       
@@ -62,6 +71,18 @@
 
 
 @media screen{
+    .channelCoop{
+        position: relative!important;
+        overflow:hidden!important; 
+        font-family: sans-serif!important; 
+        border: 1px solid!important;
+        padding: 5px!important;
+        width: 12cm!important;
+        height: 9.5cm!important;
+        overflow:hidden!important; 
+        margin: auto!important; 
+        background-size: 100% auto!important;
+    }
     .posbill{
         position: relative!important;
 
