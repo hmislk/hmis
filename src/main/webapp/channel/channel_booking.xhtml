@@ -509,7 +509,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                        <ch:channelReciptPos_coop bill="#{channelBillController.printingBill}" dup="false"/>
+                                        <ch:channelReciptPos_coop_1 bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
 
                                 </h:panelGroup>
@@ -756,7 +756,7 @@
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                            <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                            <ch:channelReciptPos_coop_1 bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                         </h:panelGroup>
 
                                     </h:panelGroup>
@@ -947,7 +947,7 @@
                                                     </h:panelGroup>
 
                                                     <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                                        <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                        <ch:channelReciptPos_coop_1 bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                                     </h:panelGroup>
 
                                                 </h:panelGroup>
