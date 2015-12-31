@@ -101,7 +101,8 @@
                                 <h:outputLabel value=":" ></h:outputLabel>
                             </td>
                             <td align="justify" >
-                                <h:outputLabel value="#{cc.attrs.bill.deptId}" ></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.paidBill eq null}"></h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.paidBill.deptId}" rendered="#{cc.attrs.bill.paidBill ne null}"></h:outputLabel>
                             </td>
 
                         </tr>
