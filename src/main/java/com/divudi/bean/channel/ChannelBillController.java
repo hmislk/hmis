@@ -1093,8 +1093,10 @@ public class ChannelBillController implements Serializable {
         amount = 0.0;
         if (!foriegn) {
             amount = getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFee();
+            System.err.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFfee(); = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFee());
         } else {
             amount = getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFfee();
+            System.err.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFfee(); = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getTotalFfee());
         }
         return amount;
     }
@@ -1232,8 +1234,10 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Please select Agency");
                 return true;
             }
-
-            if (institution.getBallance() - amount < 0 - institution.getAllowedCredit()) {
+            System.out.println("amount = " + getAmount());
+            System.out.println("institution.getBallance() = " + institution.getBallance());
+            System.out.println("institution.getAllowedCredit() = " + institution.getAllowedCredit());
+            if (institution.getBallance() - getAmount() < 0 - institution.getAllowedCredit()) {
                 errorText = "Agency Ballance is Not Enough";
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
@@ -1275,6 +1279,22 @@ public class ChannelBillController implements Serializable {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
             return true;
+        }
+
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                if (institutionOnCallAgency != null) {
+                    if (institutionOnCallAgency.getBallance() != 0.0
+                            || institutionOnCallAgency.getAllowedCredit() != 0.0
+                            || institutionOnCallAgency.getMaxCreditLimit() != 0.0
+                            || institutionOnCallAgency.getStandardCreditLimit() != 0.0) {
+                        errorText = "You can't Add Booking to this Agent.This is Credit Agent.";
+                        UtilityController.addErrorMessage("You can't Add Booking to this Agent.This is Credit Agent.");
+                        return true;
+
+                    }
+                }
+            }
         }
 
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
