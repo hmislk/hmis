@@ -143,6 +143,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilled-channelReportController.totalBilledDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" /> 
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -151,6 +156,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilledDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" /> 
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -266,6 +276,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalCancel-channelReportController.totalCancelDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -274,6 +289,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalCancelDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -383,6 +403,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalRefund-channelReportController.totalRefundDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -391,6 +416,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalRefundDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -429,11 +459,22 @@
 
                         </p:dataTable>
                         <f:facet name="footer" >
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            <h:outputLabel value="Channel Hos. Total : &nbsp;" style="float: left"/>
+                            <h:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: left">
+                                <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                            <br></br>
+                            <h:outputLabel value="Channel Doc. Total : &nbsp;" style="float: left"/>
+                            <h:outputLabel value="#{channelReportController.netTotalDoc}" style="float: left">
+                                <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                            <br></br>
                             <h:outputLabel value="Channel Net Total : &nbsp;" style="float: left"/>
                             <h:outputLabel value="#{channelReportController.netTotal}" style="float: left">
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            
                         </f:facet>
                     </p:panel>
                 </p:panel>

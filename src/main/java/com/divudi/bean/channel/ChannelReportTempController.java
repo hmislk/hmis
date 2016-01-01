@@ -170,7 +170,7 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
-    public double fetchBillsTotal(BillType[] billTypes, BillType bt, Class[] bills, Class[] nbills, Bill b, Date fd, Date td, Institution billedInstitution, Institution creditCompany, boolean withOutDocFee, boolean count, Staff staff, Speciality sp) {
+    public double fetchBillsTotal(BillType[] billTypes, BillType bt, Class[] bills, Class[] nbills, Bill b, Date fd, Date td, Institution billedInstitution, Institution creditCompany, boolean withOutDocFee, boolean count, Staff staff, Speciality sp,WebUser webUser) {
 
         String sql;
         Map m = new HashMap();
@@ -220,6 +220,10 @@ public class ChannelReportTempController implements Serializable {
         if (staff != null) {
             sql += " and b.staff=:s ";
             m.put("s", staff);
+        }
+        if (webUser != null) {
+            sql += " and b.creater=:wu ";
+            m.put("wu", webUser);
         }
         if (sp != null) {
             sql += " and b.staff.speciality=:sp ";
@@ -523,15 +527,20 @@ public class ChannelReportTempController implements Serializable {
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
-    private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Date fd, Date td) {
+    private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Date fd, Date td,boolean sd) {
         String sql;
         Map temMap = new HashMap();
 
         sql = "SELECT sum(b.netTotal) FROM Bill b WHERE b.retired=false "
                 + " and b.billType=:btp "
                 + " and type(b)=:bill "
-                + " and b.institution=:ins "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " and b.institution=:ins ";
+        
+        if (sd) {
+            sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and b.createdAt between :fd and :td ";
+        }
 
         if (wUser != null) {
             sql += " and b.creater=:w ";
@@ -552,8 +561,8 @@ public class ChannelReportTempController implements Serializable {
             temMap.put("pm", paymentMethod);
         }
 
-        temMap.put("fromDate", fd);
-        temMap.put("toDate", td);
+        temMap.put("fd", fd);
+        temMap.put("td", td);
         temMap.put("btp", billType);
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bill", billClass.getClass());
@@ -588,39 +597,39 @@ public class ChannelReportTempController implements Serializable {
             formatedDate = df.format(fd);
             System.out.println("formatedDate = " + formatedDate);
             row.setDate(formatedDate);
-            row.setCash(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td));
+            row.setCash(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cash, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.cashTotal += row.getCash();
 
-            row.setAgent(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td));
+            row.setAgent(calValue(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelAgent, PaymentMethod.Agent, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.agentTotal += row.getAgent();
 
-            row.setCard(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td));
+            row.setCard(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Card, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.cardTotal += row.getCard();
 
-            row.setCheque(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td));
+            row.setCheque(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Cheque, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.chequeTotal += row.getCheque();
 
-            row.setOnCall(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td));
+            row.setOnCall(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.OnCall, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.onCallTotal += row.getOnCall();
 
-            row.setSlip(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td));
+            row.setSlip(calValue(new BilledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelCash, PaymentMethod.Slip, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.slipTotal += row.getSlip();
 
-            row.setStaff(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td)
-                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td));
+            row.setStaff(calValue(new BilledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new CancelledBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td,sessoinDate)
+                    + calValue(new RefundBill(), BillType.ChannelPaid, PaymentMethod.Staff, reportKeyWord.getWebUser(), fd, td,sessoinDate));
             channelTotal.staffTotal += row.getStaff();
 
             channelDateDetailRows.add(row);
@@ -749,11 +758,11 @@ public class ChannelReportTempController implements Serializable {
             ChannelSummeryDateRangeBillTotalRow acsr = new ChannelSummeryDateRangeBillTotalRow();
             acsr.setDate(formatedDate);
 
-            acsr.setCanceledTotal(fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp));
+            acsr.setCanceledTotal(fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp,null));
             ctot += acsr.getCanceledTotal();
-            acsr.setRefundTotal(fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp));
+            acsr.setRefundTotal(fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp,null));
             rtot += acsr.getRefundTotal();
-            acsr.setBillTotal(fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp));
+            acsr.setBillTotal(fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp,null));
             btot += acsr.getBillTotal();
 
             acsrs.add(acsr);
@@ -930,11 +939,11 @@ public class ChannelReportTempController implements Serializable {
         for (WebUser webUser : fetchCashiers(bts)) {
             ChannelSummeryUserRow row = new ChannelSummeryUserRow();
             row.setUser(webUser);
-            row.setBillCount(fetchBillsTotal(bts, null, null, null, new BilledBill(), fDate, tDate, null, null, false, true, null, null));
-            row.setCanceledCount(fetchBillsTotal(bts, null, null, null, new CancelledBill(), fDate, tDate, null, null, false, true, null, null));
-            row.setRefundCount(fetchBillsTotal(bts, null, null, null, new RefundBill(), fDate, tDate, null, null, false, true, null, null));
-            double netTotal = fetchBillsTotal(bts, null, null, null, null, fDate, tDate, null, null, false, false, null, null);
-            double hosTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fDate, tDate, null, null, true, false, null, null);
+            row.setBillCount(fetchBillsTotal(bts, null, null, null, new BilledBill(), fDate, tDate, null, null, false, true, null, null,webUser));
+            row.setCanceledCount(fetchBillsTotal(bts, null, null, null, new CancelledBill(), fDate, tDate, null, null, false, true, null, null,webUser));
+            row.setRefundCount(fetchBillsTotal(bts, null, null, null, new RefundBill(), fDate, tDate, null, null, false, true, null, null,webUser));
+            double netTotal = fetchBillsTotal(bts, null, null, null, null, fDate, tDate, null, null, false, false, null, null,webUser);
+            double hosTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fDate, tDate, null, null, true, false, null, null,webUser);
             row.setTotalHosFee(hosTotal);
             row.setTotalDocFee(netTotal - hosTotal);
             row.setBold(false);
@@ -987,11 +996,11 @@ public class ChannelReportTempController implements Serializable {
             formatedDate = df.format(fd);
             System.out.println("formatedDate = " + formatedDate);
             row.setDate(formatedDate);
-            row.setBillCount(fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, false, true, null, null));
-            row.setCanceledCount(fetchBillsTotal(bts, null, null, null, new CancelledBill(), fd, td, null, null, false, true, null, null));
-            row.setRefundCount(fetchBillsTotal(bts, null, null, null, new RefundBill(), fd, td, null, null, false, true, null, null));
-            double netTotal = fetchBillsTotal(bts, null, null, null, null, fd, td, null, null, false, false, null, null);
-            double hosTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, true, false, null, null);
+            row.setBillCount(fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, false, true, null, null,webUser));
+            row.setCanceledCount(fetchBillsTotal(bts, null, null, null, new CancelledBill(), fd, td, null, null, false, true, null, null,webUser));
+            row.setRefundCount(fetchBillsTotal(bts, null, null, null, new RefundBill(), fd, td, null, null, false, true, null, null,webUser));
+            double netTotal = fetchBillsTotal(bts, null, null, null, null, fd, td, null, null, false, false, null, null,webUser);
+            double hosTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, true, false, null, null,webUser);
             row.setTotalHosFee(hosTotal);
             row.setTotalDocFee(netTotal - hosTotal);
             row.setBold(false);

@@ -15,7 +15,7 @@
             <p:commandButton ajax="false" action="#{channelReportController.fillNurseView()}" value="Refresh"  ></p:commandButton>
             <p:commandButton ajax="false" action="#{channelReportController.markAsAbsent()}" value="Mark Selected as Absent"  ></p:commandButton>
             <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" ></p:commandButton>
-            <p:panel id="nurseView">
+            <p:panel id="nurseView" styleClass="noBorder summeryBorder">
                 <f:facet name="header">
                     <h:panelGrid columns="2">
                         <p:outputLabel value="Consultant"/>
@@ -32,10 +32,12 @@
                 <p:dataTable value="#{channelReportController.nurseViewSessions}" selection="#{channelReportController.selectedBillSessions}" var="bs" rowKey="#{bs.id}">
 
                     <p:column headerText="No">
-                        #{bs.serialNo}&nbsp;&nbsp;<p:inputText style="width: 20px;"/>
+                        #{bs.serialNo}&nbsp;&nbsp;<p:inputText style="width: 20px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                     </p:column>
                     
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                    
+                    <p:column headerText="Bill No">#{bs.bill.deptId}</p:column>
                     
                     <p:column headerText="Remark">
                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="To Paid" style="color: red;"/>
@@ -65,7 +67,7 @@
                         <p:outputLabel value="#{bs.billItem.agentRefNo}" rendered="#{bs.billItem.agentRefNo ne null}"/>
                         <p:outputLabel value="-" rendered="#{bs.billItem.agentRefNo eq ''}"/>
                     </p:column>
-                    <p:column selectionMode="multiple" headerText="Mark Absent" style="text-align: center;"></p:column>
+                    <p:column selectionMode="multiple" headerText="Mark Absent" style="text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"></p:column>
                     <p:column headerText="P/A">
                         <p:outputLabel value="Absent"  rendered="#{bs.absent}" style="color: red;"/>
                         <p:outputLabel value="Present"  rendered="#{!bs.absent}" style="color: green;"/>

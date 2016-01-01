@@ -29,6 +29,8 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
                         </p:calendar>
+                        <h:outputLabel value="By Session Date"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.sessoinDate}" />
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                         forceSelection="true"

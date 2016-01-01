@@ -80,10 +80,14 @@ public class ChannelReportController implements Serializable {
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     double netTotal;
+    double netTotalDoc;
     double cancelTotal;
     double refundTotal;
     double totalBilled;
     double totalCancel;
+    double totalRefundDoc;
+    double totalBilledDoc;
+    double totalCancelDoc;
     double totalRefund;
     double grantTotalBilled;
     double grantTotalCancel;
@@ -1022,7 +1026,11 @@ public class ChannelReportController implements Serializable {
         totalBilled = calTotal(billedBills);
         totalCancel = calTotal(cancelBills);
         totalRefund = calTotal(refundBills);
+        totalBilledDoc = calTotalDoc(billedBills);
+        totalCancelDoc = calTotalDoc(cancelBills);
+        totalRefundDoc = calTotalDoc(refundBills);
         netTotal = totalBilled + totalCancel + totalRefund;
+        netTotalDoc = totalBilledDoc + totalCancelDoc + totalRefundDoc;
 
     }
 
@@ -1105,7 +1113,7 @@ public class ChannelReportController implements Serializable {
             sql+=" and b.billType in :bts ";
             hm.put("bts", bts);
         }
-        sql += " order by b.singleBillSession.sessionDate ";
+//        sql += " order by b.singleBillSession.sessionDate ";
 
         
         hm.put("class", bill.getClass());
@@ -1188,6 +1196,15 @@ public class ChannelReportController implements Serializable {
         double departmentTotal = 0.0;
         for (Bill bill : bills) {
             departmentTotal += bill.getNetTotal();
+        }
+        return departmentTotal;
+    }
+    
+    public double calTotalDoc(List<Bill> bills) {
+
+        double departmentTotal = 0.0;
+        for (Bill bill : bills) {
+            departmentTotal += bill.getStaffFee();
         }
         return departmentTotal;
     }
@@ -4047,6 +4064,38 @@ public class ChannelReportController implements Serializable {
 
     public void setAgncyOnCall(boolean agncyOnCall) {
         this.agncyOnCall = agncyOnCall;
+    }
+
+    public double getTotalRefundDoc() {
+        return totalRefundDoc;
+    }
+
+    public void setTotalRefundDoc(double totalRefundDoc) {
+        this.totalRefundDoc = totalRefundDoc;
+    }
+
+    public double getTotalBilledDoc() {
+        return totalBilledDoc;
+    }
+
+    public void setTotalBilledDoc(double totalBilledDoc) {
+        this.totalBilledDoc = totalBilledDoc;
+    }
+
+    public double getTotalCancelDoc() {
+        return totalCancelDoc;
+    }
+
+    public void setTotalCancelDoc(double totalCancelDoc) {
+        this.totalCancelDoc = totalCancelDoc;
+    }
+
+    public double getNetTotalDoc() {
+        return netTotalDoc;
+    }
+
+    public void setNetTotalDoc(double netTotalDoc) {
+        this.netTotalDoc = netTotalDoc;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
