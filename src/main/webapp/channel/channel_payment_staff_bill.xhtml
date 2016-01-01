@@ -91,19 +91,24 @@
                                         <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                     </p:column>
 
-                                    <p:column headerText="Booked on">
+                                    <p:column headerText="Booked on" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}">
                                         <h:outputLabel value="#{bf.bill.createdAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Channel on">
+                                    <p:column headerText="Channel on" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
+                                    
+                                    <p:column headerText="Appoinment No">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                    <p:column headerText="Appoinment At">
+                                    <p:column headerText="Appoinment Date">
                                         <h:outputLabel value="#{bf.bill.appointmentAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>

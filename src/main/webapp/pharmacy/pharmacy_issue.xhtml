@@ -320,11 +320,7 @@
 
                             <h:panelGroup   id="gpBillPreviewSingle" >
 
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>
-                                    </h:panelGroup>
-                                </div>
+                                
 
                             </h:panelGroup>
 
@@ -333,6 +329,12 @@
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacyIssueController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+                                
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>
                                     </h:panelGroup>
                                 </div>
 

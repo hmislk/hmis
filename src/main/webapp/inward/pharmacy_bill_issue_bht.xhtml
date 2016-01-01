@@ -233,11 +233,7 @@
 
                             <h:panelGroup   id="gpBillPreviewSingle" >
 
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
-                                    </h:panelGroup>
-                                </div>
+                                
 
                             </h:panelGroup>
 
@@ -246,6 +242,12 @@
                                 <div >
                                     <h:panelGroup     rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+                                
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                                     </h:panelGroup>
                                 </div>
 
