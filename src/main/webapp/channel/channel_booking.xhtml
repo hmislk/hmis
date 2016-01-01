@@ -546,7 +546,7 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                        <p:outputLabel value="Serial No"/>
+                                        <p:outputLabel value="Appo. No"/>
                                         <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                             <p:outputLabel value="#{bis.billSession.serialNo}"/>
                                         </ui:repeat>
@@ -603,7 +603,7 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                        <p:outputLabel value="Serial No"/>
+                                        <p:outputLabel value="Appo. No"/>
                                         <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                             <p:outputLabel value="#{bis.billSession.serialNo}"/>
                                         </ui:repeat>
@@ -657,7 +657,7 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
-                                        <p:outputLabel value="Serial No"/>
+                                        <p:outputLabel value="Appo. No"/>
                                         <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                             <p:outputLabel value="#{bis.billSession.serialNo}"/>
                                         </ui:repeat>
@@ -976,7 +976,7 @@
                                     <p:outputLabel value="#{bis.billSession.serialNo}">                                        
                                     </p:outputLabel>
                                 </ui:repeat>
-                                <p:outputLabel value="Serial No"/>
+                                <p:outputLabel value="Appo. No"/>
                                 <p:inputText autocomplete="off" value="#{bookingController.serealNo}">                                        
                                 </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
