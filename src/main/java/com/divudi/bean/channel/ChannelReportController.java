@@ -3489,7 +3489,7 @@ public class ChannelReportController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, hh, TemporalType.DATE);
-
+        System.out.println("bills = " + bills);
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
