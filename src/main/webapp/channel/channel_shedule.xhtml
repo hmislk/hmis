@@ -74,7 +74,8 @@
                     </f:facet>
 
                     <p:panelGrid columns="2">  
-
+                        <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
+                        <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
                         
