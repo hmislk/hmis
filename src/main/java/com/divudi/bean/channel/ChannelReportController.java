@@ -1078,8 +1078,12 @@ public class ChannelReportController implements Serializable {
         totalBilled = calTotal(billedBills);
         totalCancel = calTotal(cancelBills);
         totalRefund = calTotal(refundBills);
+        totalBilledDoc = calTotalDoc(billedBills);
+        totalCancelDoc = calTotalDoc(cancelBills);
+        totalRefundDoc = calTotalDoc(refundBills);
         netTotal = totalBilled + totalCancel + totalRefund;
-
+        netTotalDoc = totalBilledDoc + totalCancelDoc + totalRefundDoc;
+        
     }
 
     public List<Bill> channelListByBillClass(Bill bill, WebUser webUser, boolean sd, Institution agent, boolean crditAgent) {
