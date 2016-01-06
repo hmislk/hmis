@@ -34,43 +34,47 @@
                     <p:column headerText="No">
                         #{bs.serialNo}&nbsp;&nbsp;<p:inputText style="width: 20px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                     </p:column>
-                    
+
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                    
-                    <p:column headerText="Bill No">#{bs.bill.deptId}</p:column>
-                    
+
+                    <p:column headerText="Bill No">
+                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}" />
+                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}" />
+                    </p:column>
+
                     <p:column headerText="Remark">
-                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="To Paid" style="color: red;"/>
+                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid" style="color: green;"/>
                     </p:column>
-                    
-                    
+
+
                     <p:column headerText="C / R" style="text-align: center;">
                         <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled eq true}" style="color: red;"/>
                         <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded eq true}" style="color: red;"/>
                         <p:outputLabel value="-" rendered="#{bs.bill.refunded eq false and bs.bill.cancelled eq false}"/>
-                        
+
                     </p:column>
                     <p:column headerText="Agent/Emp" style="text-align: center;">
-                        <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.creditCompany ne null}"/>  
+                        <p:outputLabel value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.creditCompany ne null and sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>  
                         <p:outputLabel value="(#{bs.bill.creditCompany.institutionCode})" rendered="#{bs.bill.creditCompany ne null}"/>
-                        
+
                         <p:outputLabel value="#{bs.bill.toStaff.person.name}" rendered="#{bs.bill.toStaff ne null}"/>  
                         <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
 
                         <p:outputLabel value="-" rendered="#{bs.bill.toStaff eq null and bs.bill.creditCompany eq null}"/>
 
-                        
+
 
                     </p:column>                
                     <p:column headerText="Agent Ref No" style="text-align: center;">                        
                         <p:outputLabel value="#{bs.billItem.agentRefNo}" rendered="#{bs.billItem.agentRefNo ne null}"/>
                         <p:outputLabel value="-" rendered="#{bs.billItem.agentRefNo eq ''}"/>
                     </p:column>
-                    <p:column selectionMode="multiple" headerText="Mark Absent" style="text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"></p:column>
+                    <p:column selectionMode="multiple" headerText="Mark Absent" style="text-align: center;" styleClass="noPrintButton"></p:column>
                     <p:column headerText="P/A">
-                        <p:outputLabel value="Absent"  rendered="#{bs.absent}" style="color: red;"/>
-                        <p:outputLabel value="Present"  rendered="#{!bs.absent}" style="color: green;"/>
+                        <p:outputLabel value="Absent"  rendered="#{bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: red;"/>
+                        <p:outputLabel value="Present"  rendered="#{!bs.absent and(!bs.bill.cancelled and !bs.bill.refunded)}" style="color: green;"/>
+                        <p:outputLabel value="-"  rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
                     </p:column> 
 
                 </p:dataTable>

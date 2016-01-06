@@ -923,7 +923,8 @@
                                     <p:dialog id="dialogChannelSettle" header="Booked" widgetVar="dlgSettle" 
                                               modal="true" height="400" width="600" closable="false">
                                         <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
-
+                                        <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
+                                                         rendered="#{!channelBillController.settleSucessFully}" />
                                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                             <p:printer target="panelAddedBillPrintSettle" ></p:printer>
                                         </p:commandButton>
@@ -953,6 +954,11 @@
                                                 </h:panelGroup>
                                             </div>
                                         </h:panelGroup>
+                                        <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
+                                            <br/>
+                                            <br/>
+                                            <p:outputLabel value="#{channelBillController.errorText}" style="color:#ff0000; font-size: xx-large;" /> 
+                                        </h:panelGroup>
                                     </p:dialog>
                                 </h:panelGroup>
 
@@ -969,8 +975,9 @@
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Name"/>
                                 <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
-                                <p:outputLabel value="Patient"/>
-                                <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
+                                <h:outputLabel value="Phone"/>
+                                <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" value="#{bookingController.selectedBillSession.bill.patient.person.phone}">
+                                </p:inputMask>
                                 <p:outputLabel value="Current Serial No"/>
                                 <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                     <p:outputLabel value="#{bis.billSession.serialNo}">                                        
@@ -981,14 +988,15 @@
                                 </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingController.selectedBillSession.absent}" >
+                                    <p:ajax process="@this" event="change" listener="#{bookingController.listnerMarkAbsent}" />
                                 </p:selectBooleanCheckbox>
 
-                                <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}"
+                                <p:commandButton ajax="false" value="Update Serial" action="#{bookingController.updateSerial()}" 
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                             or bookingController.selectedBillSession.bill.refunded==true or !webUserController.hasPrivilege('ChannellingEditSerialNo')}" onclick="onSubmitButton();"/>
                                 <p:commandButton ajax="false" value="Update Patient" action="#{bookingController.updatePatient}"
                                                  disabled="#{bookingController.selectedBillSession.bill.cancelled==true
-                                                             or bookingController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                             or bookingController.selectedBillSession.bill.refunded==true or (!webUserController.hasPrivilege('ChannellingEditPatientDetails') and channelBillController.billSession.bill.paidAmount ne 0)}" onclick="onSubmitButton();"/>
 
                             </h:panelGrid>
 
