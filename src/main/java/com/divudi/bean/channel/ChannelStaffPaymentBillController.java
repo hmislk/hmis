@@ -322,10 +322,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.bill.singleBillSession.serviceSession.originatingSession=:ss";
             hm.put("ss", getSelectedServiceSession());
         }
-
-        if (true) {
-            sql += " and b.bill.singleBillSession.absent=false ";
-        }
+        
+        sql += " and (b.bill.singleBillSession.absent=false or b.bill.referenceBill.singleBillSession.absent=false) ";
+        
+        sql+=" order by b.bill.singleBillSession.serialNo ";
 
         hm.put("stf", getCurrentStaff());
         //hm.put("ins", sessionController.getInstitution());
@@ -708,7 +708,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         return billFacade;
     }
 
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
@@ -890,7 +889,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void setBillFee(BillFee billFee) {
-        if (billFee!=null) {
+        if (billFee != null) {
             setSpeciality(billFee.getSpeciality());
             setCurrentStaff(billFee.getStaff());
             calculateDueFees();
