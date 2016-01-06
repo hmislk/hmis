@@ -267,6 +267,9 @@ public enum Privileges {
     ChannellingPaymentDueSearch,
     ChannellingPaymentDoneSearch,
     ChannellingApoinmentNumberCountEdit,
+    ChannellingEditSerialNo,
+    ChannellingEditPatientDetails,
+    
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,

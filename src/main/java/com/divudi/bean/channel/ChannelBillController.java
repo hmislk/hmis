@@ -177,7 +177,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void settleCredit() {
+        errorText = "";
         if (errorCheckForSettle()) {
+            settleSucessFully = false;
             return;
         }
 
@@ -199,6 +201,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
+        settleSucessFully = true;
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        System.out.println("bs = " + bs);
 //        System.out.println("getBillSession() = " + getBillSession().getName());
@@ -285,15 +288,28 @@ public class ChannelBillController implements Serializable {
                     && getBillSession().getBill().getFromInstitution().getBallance()
                     - getBillSession().getBill().getTotal() < -getBillSession().getBill().getFromInstitution().getAllowedCredit()) {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
+                errorText="Agency Ballance is Not Enough";
                 return true;
             }
         }
 
         if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
             UtilityController.addErrorMessage("Please select Agency");
+            errorText="Please select Agency";
             return true;
         }
-
+        
+        Bill b=getBillFacade().find(getBillSession().getBill().getId());
+        System.out.println("b = " + b);
+        System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
+        System.out.println("b.getPaidBill() = " + b.getPaidBill());
+        System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
+        if (b.getPaidBill()!=null) {
+            UtilityController.addErrorMessage("Please Refresh The channeling Interface,Because this Channel Already Paid.");
+            errorText="Please Refresh The channeling Interface,Because this Channel Already Paid.";
+            return true;
+        }
+        
         return false;
     }
 

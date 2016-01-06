@@ -110,7 +110,7 @@
                             </p:column>
                             
                             <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.billCount+dt.canceledCount+dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.billCount-dt.canceledCount-dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>                                
                             </p:column>
@@ -164,9 +164,9 @@
                                     </f:facet>
                                 </p:column>
                                 
-                                <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount+channelReportTempController.channelTotal.totalCanceledCount+channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
+                                <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount+channelReportTempController.channelTotal.totalCanceledCount+channelReportTempController.channelTotal.totalRefundCount}">
+                                        <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}">
                                             <f:convertNumber pattern="#,##0" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -248,7 +248,7 @@
                             </p:column>
                             
                             <p:column styleClass="averageNumericColumn">
-                                <h:outputLabel value="#{dt.billCount+dt.canceledCount+dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
+                                <h:outputLabel value="#{dt.billCount-dt.canceledCount-dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>                                
                             </p:column>
@@ -303,9 +303,9 @@
                                     </f:facet>
                                 </p:column>
                                 
-                                <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount+channelReportTempController.channelTotal.totalCanceledCount+channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
+                                <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount+channelReportTempController.channelTotal.totalCanceledCount+channelReportTempController.channelTotal.totalRefundCount}">
+                                        <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}">
                                             <f:convertNumber pattern="#,##0" />
                                         </h:outputLabel>
                                     </f:facet>
