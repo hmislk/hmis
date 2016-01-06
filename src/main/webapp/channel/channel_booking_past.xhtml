@@ -803,6 +803,34 @@
                                 </p:column> 
                             </p:dataTable> 
                         </p:tab>
+                        <p:tab title="Views">
+                            <h:panelGrid columns="2">
+                                <p:panel header="Selected Session">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}"  onclick="onSubmitButton();" >                                       
+                                        </p:commandButton>
+                                        <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                    </h:panelGrid>
+
+                                </p:panel>
+                                <p:panel header="Today's">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                    </h:panelGrid>                                    
+                                </p:panel>
+                            </h:panelGrid>
+
+                        </p:tab>
                     </p:tabView>
                 </p:panel>
             </h:panelGrid>
