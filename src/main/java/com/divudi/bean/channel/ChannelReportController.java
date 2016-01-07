@@ -3639,13 +3639,13 @@ public class ChannelReportController implements Serializable {
                     if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid) {
                         if (b instanceof BilledBill) {
                             cd.setBillCount(cd.getBillCount() + 1);
-                            cd.setBillFee(cd.getBillFee() + getBillFees(b,FeeType.Staff));
+                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
                         } else if (b instanceof CancelledBill) {
                             cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
-                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b,FeeType.Staff));
+                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
                         } else if (b instanceof RefundBill) {
                             cd.setRefundedCount(cd.getRefundedCount() + 1);
-                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b,FeeType.Staff));
+                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
                         }
                     }
                 }
@@ -3657,11 +3657,41 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void createTodayAbsentList() {
+
+        billSessions = new ArrayList<>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select bs From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and type(bs.bill)=:class "
+                + " and bs.bill.billType in :bts "
+                + " and bs.sessionDate= :ssDate";
+        m.put("bts", Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid}));
+        m.put("ssDate", Calendar.getInstance().getTime());
+        m.put("class", BilledBill.class);
+        billSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("billSessions = " + billSessions.size());
+        calTotalBS(billSessions);
+
+    }
+
     private void calTotal() {
         total = 0.0;
         for (ChannelDoctor cd : channelDoctors) {
-            total += cd.getBillFee() + cd.getBillCanncelFee()+cd.getRefundFee();
+            total += cd.getBillFee() + cd.getBillCanncelFee() + cd.getRefundFee();
 
+        }
+
+    }
+
+    private void calTotalBS(List<BillSession> billSessions) {
+        netTotal = 0.0;
+        netTotalDoc = 0.0;
+        for (BillSession bs : billSessions) {
+            netTotal +=bs.getBill().getNetTotal();
+            netTotalDoc += bs.getBill().getStaffFee();
         }
 
     }
@@ -3675,12 +3705,12 @@ public class ChannelReportController implements Serializable {
     private double getBillFees(Bill b, FeeType ft) {
         Map m = new HashMap();
         String sql;
-        
+
         sql = "Select sum(b.feeValue) From BillFee b "
                 + " where b.retired=false "
                 + " and b.fee.feeType=:ft "
                 + " and b.bill.id=" + b.getId();
-        
+
         m.put("ft", ft);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m);
