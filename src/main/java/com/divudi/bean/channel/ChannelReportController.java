@@ -3666,8 +3666,9 @@ public class ChannelReportController implements Serializable {
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and type(bs.bill)=:class "
+                + " and bs.absent=true "
                 + " and bs.bill.billType in :bts "
-                + " and bs.sessionDate= :ssDate";
+                + " and bs.sessionDate= :ssDate ";
         m.put("bts", Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid}));
         m.put("ssDate", Calendar.getInstance().getTime());
         m.put("class", BilledBill.class);
