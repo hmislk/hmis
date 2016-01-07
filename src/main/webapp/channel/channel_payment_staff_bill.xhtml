@@ -107,7 +107,27 @@
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
                                     </p:column>
-
+                                    
+                                    <p:column headerText="Refundable" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.serviceSession.originatingSession.refundable}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    
+                                    <p:column headerText="Absent" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.singleBillSession.absent}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Cancel" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.cancelled}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Refund" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <h:outputLabel value="#{bf.bill.refunded}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    
                                     <p:column headerText="Appoinment Date">
                                         <h:outputLabel value="#{bf.bill.appointmentAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />

@@ -301,8 +301,16 @@ public class BookingController implements Serializable {
         //System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
         }else{
             UtilityController.addSuccessMessage("Mark As Present");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
         }
     }
 
