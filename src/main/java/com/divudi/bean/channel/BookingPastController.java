@@ -155,6 +155,7 @@ public class BookingPastController implements Serializable {
 
     public String nurse() {
         if (preSet()) {
+            getChannelReportController().fillNurseView();
             return "channel_nurse_view";
         } else {
             return "";
@@ -163,6 +164,7 @@ public class BookingPastController implements Serializable {
 
     public String doctor() {
         if (preSet()) {
+            getChannelReportController().fillDoctorView();
             return "channel_doctor_view";
         } else {
             return "";
