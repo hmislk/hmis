@@ -1412,6 +1412,7 @@ public class ChannelBillController implements Serializable {
         bookingController.fillBillSessions();
         bookingController.generateSessions();
         settleSucessFully = true;
+        sessionController.setBill(printingBill);
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 
@@ -2170,7 +2171,15 @@ public class ChannelBillController implements Serializable {
 
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod == null) {
-            paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+            if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+                if (sessionController.getBill()!=null) {
+                    paymentMethod = sessionController.getBill().getPaymentMethod();
+                } else {
+                    paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+                }
+            } else {
+                paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+            }
         }
         return paymentMethod;
     }
