@@ -3662,7 +3662,7 @@ public class ChannelReportController implements Serializable {
         createTodayList(true, false);
 
     }
-    
+
     public void createTodayCancelList() {
 
         createTodayList(false, true);
@@ -3806,6 +3806,43 @@ public class ChannelReportController implements Serializable {
         agentHistorys = new ArrayList<>();
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, null);
+
+    }
+
+    public void createAgentBookings() {
+        HashMap m = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.retired=false ";
+//                + " and type(b)=:class ";
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            m.put("web", webUser);
+        }
+        if (sessoinDate) {
+            sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and b.createdAt between :fd and :td ";
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany=:a ";
+            m.put("a", institution);
+        } else {
+            sql += " and b.creditCompany is not null ";
+        }
+        sql += " and b.billType=:bt ";
+        m.put("bt", BillType.ChannelAgent);
+
+        sql += " order by b.deptId ";
+//        m.put("class", BilledBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+
+        channelBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        netTotal=calTotal(channelBills);
+        netTotalDoc=calTotalDoc(channelBills);
 
     }
 

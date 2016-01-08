@@ -113,6 +113,7 @@
                                 <p:panel header="New Channel Reports" style="width: 400px;margin: auto;"  toggleable="true">
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportController.clearAll}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportController.clearAll}"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery" action="/channel/channel_report_cashier_summery_date"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportController.clearAll}"/>
