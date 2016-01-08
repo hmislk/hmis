@@ -13,4 +13,5 @@
     <jdbc-resource enabled="true" jndi-name="dscoop" object-type="user" pool-name="mysql_hmis_rootPool"/>
     <jdbc-resource enabled="true" jndi-name="dscoop2" object-type="user" pool-name="mysql_hmis_rootPool"/>
     <jdbc-resource enabled="true" jndi-name="dsCoop" object-type="user" pool-name="mysql_hmis_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="dsCoop1" object-type="user" pool-name="mysql_hmis_rootPool"/>
 </resources>
