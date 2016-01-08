@@ -353,6 +353,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node230100 = new PrivilageNode("Edit Appoinment Count", node23010, Privileges.ChannellingApoinmentNumberCountEdit);
         TreeNode node230101 = new PrivilageNode("Edit Appoinment Number", node23010, Privileges.ChannellingEditSerialNo);
         TreeNode node230102 = new PrivilageNode("Edit Patient Details", node23010, Privileges.ChannellingEditPatientDetails);
+        TreeNode node230103 = new PrivilageNode("Delete Shedule", node23010, Privileges.ChannellingChannelShedulRemove);
         
 
         return tmproot;

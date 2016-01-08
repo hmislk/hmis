@@ -347,9 +347,16 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
+        calRefundTotal();
+        System.out.println("getRefundableTotal() = " + getRefundableTotal());
+        if (getRefundableTotal()==0.0) {
+            UtilityController.addErrorMessage("Please enter Correct Refundable Amount");
+            return;
+        }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
+        UtilityController.addSuccessMessage("Sucesssfully Refunded.");
     }
 
     public void refundAgentBill() {
@@ -538,10 +545,11 @@ public class ChannelBillController implements Serializable {
         billSession = bs;
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
-            if (bf.getFee().getFeeType() == FeeType.Staff && getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna||getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
                 bf.setTmpChangedValue(bf.getFeeValue());
             }
         }
+        calRefundTotal();
     }
 
     public BookingController getBookingController() {
@@ -985,7 +993,7 @@ public class ChannelBillController implements Serializable {
         billItemFacade.edit(bt);
     }
 
-    double refundableTotal = 0;
+    double refundableTotal;
 
     public double getRefundableTotal() {
         return refundableTotal;
