@@ -3841,8 +3841,14 @@ public class ChannelReportController implements Serializable {
         m.put("td", getToDate());
 
         channelBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        netTotal=calTotal(channelBills);
-        netTotalDoc=calTotalDoc(channelBills);
+        for (Bill b : channelBills) {
+            if (b.getPaymentMethod() == PaymentMethod.Cash && (b instanceof CancelledBill || b instanceof RefundBill)) {
+                b.setStaffFee(0);
+                b.setNetTotal(0);
+            }
+        }
+        netTotal = calTotal(channelBills);
+        netTotalDoc = calTotalDoc(channelBills);
 
     }
 

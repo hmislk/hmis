@@ -45,7 +45,7 @@
                     </h:panelGrid> 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" rowIndexVar="i">
+                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" rowIndexVar="i" rowStyleClass="#{b.billClassType eq 'CancelledBill' or b.billClassType eq 'RefundBill' ? 'crossLine':''}">
                         <f:facet name="header">
                             <p:outputLabel value="From - " />
                             <p:outputLabel value="#{channelReportController.fromDate}" >
@@ -82,6 +82,9 @@
                                 <p:outputLabel value="Bill No" />
                             </f:facet>
                             <p:outputLabel value="#{b.deptId}" >
+                            </p:outputLabel>
+                            
+                            <p:outputLabel value=" -#{b.billedBill.deptId}" >
                             </p:outputLabel>
                         </p:column>
                         <p:column>
@@ -124,7 +127,7 @@
                             </p:outputLabel>
                             <f:facet name="footer">
                                 <p:outputLabel value="#{channelReportController.netTotalDoc}" style="float: right;">
-                                    <f:convertNumber pattern="#,##,###.00" />
+                                    <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
                         </p:column>
@@ -133,11 +136,11 @@
                                 <p:outputLabel value="Hos Fee" />
                             </f:facet>
                             <p:outputLabel value="#{b.netTotal-b.staffFee}" >
-                                <f:convertNumber pattern="#,##,###.00" />
+                                <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
                                 <p:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: right;">
-                                    <f:convertNumber pattern="#,##,###.00" />
+                                    <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
                         </p:column>
@@ -146,11 +149,11 @@
                                 <p:outputLabel value="Total" />
                             </f:facet>
                             <p:outputLabel value="#{b.netTotal}" >
-                                <f:convertNumber pattern="#,##,###.00" />
+                                <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
                                 <p:outputLabel value="#{channelReportController.netTotal}" style="float: right;" >
-                                    <f:convertNumber pattern="#,##,###.00" />
+                                    <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
                         </p:column>
