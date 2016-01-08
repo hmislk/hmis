@@ -862,7 +862,7 @@
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
-
+ 
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
