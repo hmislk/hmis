@@ -44,7 +44,8 @@
                         <h:outputLabel value="#{channelReportTempController.toDate}">
                             <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                         </h:outputLabel><br/>
-
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/>
                     </f:facet>
                     <f:facet name="footer">
                         <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" />
@@ -60,7 +61,7 @@
                     </h:panelGrid>
                     <br/>
                     <p:dataTable id="tbl" value="#{channelReportTempController.channelSummeryDateRangeOrUserRows}" var="csh" rendered="#{!channelReportTempController.byDate}">
-
+                        
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column headerText="Date"/>
@@ -81,7 +82,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="#{csh.user.webUserPerson.name}"/>
                             </f:facet>
-                            
+
                             <p:column>
                                 <h:outputLabel value="#{dt.date}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                                 <h:outputLabel value="Total" rendered="#{dt.date eq null}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
@@ -104,7 +105,7 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>                                
                             </p:column>
-                            
+
                             <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.billCount-dt.canceledCount-dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0" />
@@ -151,7 +152,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalRefundCount}">
@@ -159,7 +160,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}">
@@ -175,7 +176,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalHosFee}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalHosFee}">
@@ -183,7 +184,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalDocFee+channelReportTempController.channelTotal.totalHosFee}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalDocFee+channelReportTempController.channelTotal.totalHosFee}">
@@ -196,7 +197,7 @@
                         </p:columnGroup>
 
                     </p:dataTable>
-                    
+
                     <p:dataTable id="tbl2" value="#{channelReportTempController.channelSummeryDateRangeOrUserRows}" var="csh" rendered="#{channelReportTempController.byDate}">
 
                         <p:columnGroup type="header">
@@ -219,7 +220,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="#{csh.date}"/>
                             </f:facet>
-                            
+
                             <p:column>
                                 <h:outputLabel value="#{dt.user.webUserPerson.name}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
                                 <h:outputLabel value="Total" rendered="#{dt.user eq null}" style="#{dt.bold?'font-weight: bold':''}"></h:outputLabel>
@@ -242,7 +243,7 @@
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>                                
                             </p:column>
-                            
+
                             <p:column styleClass="averageNumericColumn">
                                 <h:outputLabel value="#{dt.billCount-dt.canceledCount-dt.refundCount}" style="#{dt.bold?'font-weight: bold':''}">
                                     <f:convertNumber pattern="#,##0" />
@@ -267,7 +268,7 @@
                                 </h:outputLabel>                                
                             </p:column>
                         </p:subTable>
-                        
+
                         <p:columnGroup type="footer">
                             <p:row>
 
@@ -290,7 +291,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalRefundCount}">
@@ -298,7 +299,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalBillCount-channelReportTempController.channelTotal.totalCanceledCount-channelReportTempController.channelTotal.totalRefundCount}">
@@ -314,7 +315,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalHosFee}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalHosFee}">
@@ -322,7 +323,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column footerText="#{channelReportTempController.channelTotal.totalDocFee+channelReportTempController.channelTotal.totalHosFee}" style="text-align: right;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{channelReportTempController.channelTotal.totalDocFee+channelReportTempController.channelTotal.totalHosFee}">
@@ -335,7 +336,7 @@
                         </p:columnGroup>
 
                     </p:dataTable>
-                    
+
                 </p:panel>  
             </h:form>
 

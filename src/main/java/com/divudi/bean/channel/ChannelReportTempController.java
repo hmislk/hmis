@@ -940,12 +940,18 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createChannelCountByUserOrDate2() {
+        long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
+
+        if (Math.abs(lng) > 2) {
+            UtilityController.addErrorMessage("Date Range is too Long");
+            return;
+        }
         channelSummeryDateRangeOrUserRows = new ArrayList<>();
         channelTotal = new ChannelTotal();
         BillType[] bts;
         bts = new BillType[]{BillType.ChannelCash, BillType.ChannelPaid,};
 
-        for (WebUser webUser : fetchCashiers(bts)) {
+        for (WebUser webUser : fetchCashiersSession(bts)) {
             ChannelSummeryDateRangeOrUserRow row = new ChannelSummeryDateRangeOrUserRow();
             row.setUser(webUser);
             //
@@ -1182,6 +1188,32 @@ public class ChannelReportTempController implements Serializable {
                 + " and b.institution=:ins "
                 + " and b.billType in :btp "
                 + " and b.createdAt between :fromDate and :toDate "
+                + " group by us "
+                + " having sum(b.netTotal)!=0 ";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("btp", btys);
+        m.put("ins", sessionController.getInstitution());
+        cashiers = getWebUserFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (cashiers == null) {
+            cashiers = new ArrayList<>();
+        }
+
+        return cashiers;
+    }
+    
+    public List<WebUser> fetchCashiersSession(BillType[] bts) {
+        List<WebUser> cashiers = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+        List<BillType> btys = Arrays.asList(bts);
+        sql = "select us from "
+                + " Bill b "
+                + " join b.creater us "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
+                + " and b.billType in :btp "
+                + " and b.singleBillSession.sessionDate between :fromDate and :toDate "
                 + " group by us "
                 + " having sum(b.netTotal)!=0 ";
         m.put("toDate", getToDate());
