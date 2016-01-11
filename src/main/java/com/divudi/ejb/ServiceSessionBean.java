@@ -228,7 +228,7 @@ public class ServiceSessionBean {
         //System.out.println("sql = " + sql);
         //System.out.println("hh = " + hh);
         //System.out.println("lgValue= " + lgValue);
-        //System.out.println("value" + lgValue);
+        System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;
         }
@@ -272,25 +272,25 @@ public class ServiceSessionBean {
             temStr = serviceSession.getCreditNumbers();
         }
 
-        //System.out.println("temStr = " + temStr);
-        availabeNumbers = stringNumbersToInts(temStr);
-        //System.out.println("availableNumbers = " + availabeNumbers.toString());
+        System.out.println("temStr = " + temStr);
+        availabeNumbers = stringNumbersToInts(temStr,serviceSession);
+        System.out.println("availableNumbers = " + availabeNumbers.toString());
 
         boolean numberGiven;
 
         for (Integer i : availabeNumbers) {
-            //System.out.println("i = " + i);
+            System.out.println("i = " + i);
             numberGiven = false;
             for (BillSession bs : lgValue) {
-                //System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
+                System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
                 if (i == bs.getSerialNo()) {
                     //System.out.println("break");
                     numberGiven = true;
                     break;
                 }
             }
-            //System.out.println("i = " + i);
-            //System.out.println("numberGiven = " + numberGiven);
+            System.out.println("i = " + i);
+            System.out.println("numberGiven = " + numberGiven);
             if (numberGiven == false) {
                 return i;
             }
@@ -304,11 +304,16 @@ public class ServiceSessionBean {
         }
     }
 
-    public List<Integer> stringNumbersToInts(String str) {
+    public List<Integer> stringNumbersToInts(String str,ServiceSession ss) {
         int maxNo = 100;
         List<Integer> nits = new ArrayList();
         if (str == null || str.trim().equals("")) {
-            addToIntList(1, maxNo, nits);
+            if (ss.getStartingNo()>0) {
+                addToIntList(ss.getStartingNo(), maxNo, nits);
+            }else{
+                addToIntList(1, maxNo, nits);
+            }
+            
             return nits;
         }
         if (str.contains(">")) {

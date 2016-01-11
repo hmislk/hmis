@@ -54,7 +54,7 @@
                             </f:ajax>
                         </p:commandButton>
                         <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                            return false;" action="#{sheduleController.delete()}"  value="Delete" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
+                                    return false;" action="#{sheduleController.delete()}"  value="Delete" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
                         </p:commandButton>
 
 
@@ -78,7 +78,7 @@
                         <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
                         <p:outputLabel value="Session Name"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}"/>
-                        
+
                         <h:outputText value="Institution" ></h:outputText>
                         <p:selectOneMenu id="cmbIns" value="#{sheduleController.current.institution}" >
                             <f:selectItem itemLabel="Please select a Institution"/>
@@ -102,11 +102,14 @@
                         <p:outputLabel value="Start Time"/>                        
                         <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
-                        
-                         <p:outputLabel value="End Time"/>                        
-                         <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+
+                        <p:outputLabel value="End Time"/>                        
+                        <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
                         </p:calendar>
-                        
+
+                        <p:outputLabel value="Starting Number"/>
+                        <p:inputText autocomplete="off" value="#{sheduleController.current.startingNo}"/>
+
                         <p:outputLabel value="Max Number"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
 

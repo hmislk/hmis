@@ -288,28 +288,28 @@ public class ChannelBillController implements Serializable {
                     && getBillSession().getBill().getFromInstitution().getBallance()
                     - getBillSession().getBill().getTotal() < -getBillSession().getBill().getFromInstitution().getAllowedCredit()) {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
-                errorText="Agency Ballance is Not Enough";
+                errorText = "Agency Ballance is Not Enough";
                 return true;
             }
         }
 
         if (settlePaymentMethod == PaymentMethod.Agent && settleInstitution == null) {
             UtilityController.addErrorMessage("Please select Agency");
-            errorText="Please select Agency";
+            errorText = "Please select Agency";
             return true;
         }
-        
-        Bill b=getBillFacade().find(getBillSession().getBill().getId());
+
+        Bill b = getBillFacade().find(getBillSession().getBill().getId());
         System.out.println("b = " + b);
         System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
         System.out.println("b.getPaidBill() = " + b.getPaidBill());
         System.out.println("getBillSession().getBill().getPaidBill() = " + getBillSession().getBill().getPaidBill());
-        if (b.getPaidBill()!=null) {
+        if (b.getPaidBill() != null) {
             UtilityController.addErrorMessage("Please Refresh The channeling Interface,Because this Channel Already Paid.");
-            errorText="Please Refresh The channeling Interface,Because this Channel Already Paid.";
+            errorText = "Please Refresh The channeling Interface,Because this Channel Already Paid.";
             return true;
         }
-        
+
         return false;
     }
 
@@ -349,7 +349,7 @@ public class ChannelBillController implements Serializable {
         }
         calRefundTotal();
         System.out.println("getRefundableTotal() = " + getRefundableTotal());
-        if (getRefundableTotal()==0.0) {
+        if (getRefundableTotal() == 0.0) {
             UtilityController.addErrorMessage("Please enter Correct Refundable Amount");
             return;
         }
@@ -545,7 +545,7 @@ public class ChannelBillController implements Serializable {
         billSession = bs;
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
-            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna||getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
                 bf.setTmpChangedValue(bf.getFeeValue());
             }
         }
@@ -1466,6 +1466,9 @@ public class ChannelBillController implements Serializable {
 
         int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession(), getbookingController().getSelectedServiceSession().getSessionDate(), bs);
         System.err.println("count" + count);
+        System.out.println("getbookingController().getSelectedServiceSession().getStartingNo() = " + getbookingController().getSelectedServiceSession().getStartingNo());
+        System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getStartingNo() = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getStartingNo());
+
         bs.setSerialNo(count);
 
         getBillSessionFacade().create(bs);
@@ -2179,8 +2182,8 @@ public class ChannelBillController implements Serializable {
 
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod == null) {
-            if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
-                if (sessionController.getBill()!=null) {
+            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+                if (sessionController.getBill() != null) {
                     paymentMethod = sessionController.getBill().getPaymentMethod();
                 } else {
                     paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
