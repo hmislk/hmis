@@ -3616,7 +3616,8 @@ public class ChannelReportController implements Serializable {
         sql = "Select bs.bill From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
-                + " and bs.sessionDate= :ssDate";
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
