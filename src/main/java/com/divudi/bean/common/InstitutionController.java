@@ -51,6 +51,7 @@ public class InstitutionController implements Serializable {
     List<Institution> selectedItems;
     List<Institution> selectedAgencies;
     private Institution current;
+    Institution agency;
     private List<Institution> items = null;
     private List<Institution> itemsToRemove = null;
     private List<Institution> companies = null;
@@ -71,18 +72,18 @@ public class InstitutionController implements Serializable {
         }
         return selectedItems;
     }
-    
+
     public void fetchSelectedAgencys() {
-        InstitutionType[] types={InstitutionType.Agency};
+        InstitutionType[] types = {InstitutionType.Agency};
         if (selectText.trim().equals("")) {
             selectedAgencies = completeInstitution(null, types);
         } else {
             selectedAgencies = completeInstitution(selectText, types);
         }
     }
-    
+
     public void fetchSelectedCollectingCentre() {
-        InstitutionType[] types={InstitutionType.CollectingCentre};
+        InstitutionType[] types = {InstitutionType.CollectingCentre};
         if (selectText.trim().equals("")) {
             collectingCentre = completeInstitution(null, types);
         } else {
@@ -127,7 +128,7 @@ public class InstitutionController implements Serializable {
         if (collectingCentre == null) {
             collectingCentre = completeInstitution(null, InstitutionType.CollectingCentre);
         }
-        
+
         return collectingCentre;
     }
 
@@ -136,9 +137,12 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getAgencies() {
-        if (agencies == null) {
+        if (selectText.trim().equals("")) {
             agencies = completeInstitution(null, InstitutionType.Agency);
+        } else {
+            agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
+
         return agencies;
     }
 
@@ -154,7 +158,7 @@ public class InstitutionController implements Serializable {
     public List<Institution> completeCompany(String qry) {
         return completeInstitution(qry, InstitutionType.Company);
     }
-    
+
     public List<Institution> completeCollectingCenter(String qry) {
         return completeInstitution(qry, InstitutionType.CollectingCentre);
     }
@@ -199,14 +203,13 @@ public class InstitutionController implements Serializable {
         }
         return banks;
     }
-    
+
 //    public List<Institution> getCollectingCenter() {
 //        if (banks == null) {
 //            banks = completeInstitution(null, InstitutionType.CollectingCentre);
 //        }
 //        return banks;
 //    }
-
     public Institution getInstitutionByName(String name, InstitutionType type) {
         String sql;
         Map m = new HashMap();
@@ -229,14 +232,35 @@ public class InstitutionController implements Serializable {
     }
 
     private Boolean checkCodeExist() {
-        String sql = "SELECT i FROM Institution i where i.retired=false ";
+        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
         List<Institution> ins = getEjbFacade().findBySQL(sql);
         if (ins != null) {
             for (Institution i : ins) {
+                System.out.println("i.getInstitutionCode() = " + i.getInstitutionCode());
+                System.out.println("getCurrent().getInstitutionCode() = " + getCurrent().getInstitutionCode());
                 if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
                     continue;
                 }
                 if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getCurrent().getInstitutionCode())) {
+                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private Boolean checkCodeExistAgency() {
+        String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
+        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        if (ins != null) {
+            for (Institution i : ins) {
+                System.out.println("i.getInstitutionCode() = " + i.getInstitutionCode());
+                System.out.println("getCurrent().getInstitutionCode() = " + getAgency().getInstitutionCode());
+                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                    continue;
+                }
+                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getAgency().getInstitutionCode())) {
                     UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
@@ -252,8 +276,8 @@ public class InstitutionController implements Serializable {
 
     public void prepareAddAgency() {
         codeDisabled = false;
-        current = new Institution();
-        current.setInstitutionType(InstitutionType.Agency);
+        agency = new Institution();
+        agency.setInstitutionType(InstitutionType.Agency);
     }
 
     public void setSelectedItems(List<Institution> selectedItems) {
@@ -307,11 +331,43 @@ public class InstitutionController implements Serializable {
         getItems();
     }
     
-    public void updateAgentCreditLimit(){
+    public void saveSelectedAgency() {
+        if (getAgency().getInstitutionType() == null) {
+            UtilityController.addErrorMessage("Select Instituion Type");
+            return;
+        }
+
+        if (getAgency().getId() != null && getAgency().getId() > 0) {
+
+            if (getAgency().getInstitutionCode() != null) {
+                getAgency().setInstitutionCode(getAgency().getInstitutionCode());
+            }
+            getFacade().edit(getAgency());
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            System.out.println("getAgency().getInstitutionCode() = " + getAgency().getInstitutionCode());
+            if (getAgency().getInstitutionCode() != null) {
+                if (!checkCodeExistAgency()) {
+                    getAgency().setInstitutionCode(getAgency().getInstitutionCode());
+
+                } else {
+                    return;
+                }
+            }
+            getAgency().setCreatedAt(new Date());
+            getAgency().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(getAgency());
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        fetchSelectedAgencys();
+    }
+
+    public void updateAgentCreditLimit() {
         updateCreditLimit(HistoryType.AgentBalanceUpdateBill);
     }
-    
-    public void updateCollectingCentreCreditLimit(){
+
+    public void updateCollectingCentreCreditLimit() {
         updateCreditLimit(HistoryType.CollectingCentreBalanceUpdateBill);
     }
 
@@ -354,7 +410,7 @@ public class InstitutionController implements Serializable {
         if (current.getStandardCreditLimit() != scl) {
             System.err.println("Update Standard Credit Limit");
             System.out.println("scl = " + scl);
-            createAgentCreditLimitUpdateHistory(current,scl , current.getStandardCreditLimit(), historyType,"Standard Credit Limit");
+            createAgentCreditLimitUpdateHistory(current, scl, current.getStandardCreditLimit(), historyType, "Standard Credit Limit");
             System.err.println("Update Standard Credit Limit");
             UtilityController.addSuccessMessage("Standard Credit Limit Updated");
         }
@@ -362,7 +418,7 @@ public class InstitutionController implements Serializable {
         if (current.getAllowedCredit() != acl) {
             System.err.println("Update Allowed Credit Limit");
             System.out.println("acl = " + acl);
-            createAgentCreditLimitUpdateHistory(current,acl , current.getAllowedCredit(), historyType,"Allowed Credit Limit");
+            createAgentCreditLimitUpdateHistory(current, acl, current.getAllowedCredit(), historyType, "Allowed Credit Limit");
             System.err.println("Update Allowed Credit Limit");
             UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
         }
@@ -370,21 +426,23 @@ public class InstitutionController implements Serializable {
         if (current.getMaxCreditLimit() != mcl) {
             System.err.println("Update Max Credit Limit");
             System.out.println("mcl = " + mcl);
-            createAgentCreditLimitUpdateHistory(current,mcl , current.getMaxCreditLimit(), historyType,"Max Credit Limit");
+            createAgentCreditLimitUpdateHistory(current, mcl, current.getMaxCreditLimit(), historyType, "Max Credit Limit");
             System.err.println("Update Max Credit Limit");
             UtilityController.addSuccessMessage("Max Credit Limit Updated");
         }
         getFacade().edit(current);
-        
-        switch(historyType){
+
+        switch (historyType) {
             case AgentBalanceUpdateBill:
-                getAgencies();break;
+                getAgencies();
+                break;
             case CollectingCentreBalanceUpdateBill:
-                getCollectingCentre();break;
+                getCollectingCentre();
+                break;
         }
     }
 
-    public void createAgentCreditLimitUpdateHistory(Institution ins,double historyValue, double transactionValue, HistoryType historyType,String comment) {
+    public void createAgentCreditLimitUpdateHistory(Institution ins, double historyValue, double transactionValue, HistoryType historyType, String comment) {
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
@@ -448,7 +506,7 @@ public class InstitutionController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String j;
-            j="select i from Institution i where i.retired=false order by i.name";
+            j = "select i from Institution i where i.retired=false order by i.name";
             items = getFacade().findBySQL(j);
         }
         return items;
@@ -494,7 +552,7 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getSelectedAgencies() {
-        if (selectedAgencies==null) {
+        if (selectedAgencies == null) {
             fetchSelectedAgencys();
         }
         return selectedAgencies;
@@ -502,6 +560,18 @@ public class InstitutionController implements Serializable {
 
     public void setSelectedAgencies(List<Institution> selectedAgencies) {
         this.selectedAgencies = selectedAgencies;
+    }
+
+    public Institution getAgency() {
+        if (agency==null) {
+            agency=new Institution();
+            agency.setInstitutionType(InstitutionType.Agency);
+        }
+        return agency;
+    }
+
+    public void setAgency(Institution agency) {
+        this.agency = agency;
     }
 
     @FacesConverter("institutionConverter")

@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="inward" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="Channel Billed Bills" rendered="#{!cc.attrs.agent}"/>
                 <h:outputLabel value="Channel Agency Billed Bills" rendered="#{cc.attrs.agent}"/>

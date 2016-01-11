@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="refundPh" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="brPh" sortBy="#{brPh.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" styleClass="noBorder"  value="#{cc.attrs.data.bills}" var="brPh" sortBy="#{brPh.billType}"  rendered="#{cc.attrs.data.bills.size()>0}" >
 
             <f:facet name="header">  
                 <h:outputLabel value="Pharmacy Return" />
