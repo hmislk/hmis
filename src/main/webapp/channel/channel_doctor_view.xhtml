@@ -14,21 +14,23 @@
             </p:commandButton>
             <p:commandButton ajax="false" action="/channel/channel_booking" value="Back" ></p:commandButton>
             <p:panel id="doctorView" styleClass="noBorder summeryBorder">
-                <f:facet name="header">
-                    <h:panelGrid columns="2">
-                        <p:outputLabel value="Consultant"/>
-                        <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/>
-                        <p:outputLabel value="Date"/>
-                        <h:outputLabel value="#{channelReportController.serviceSession.sessionDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
-                        </h:outputLabel>
-                        <p:outputLabel value="Session Name"/>
-                        <h:outputLabel value="#{channelReportController.serviceSession.name}" />
-                    </h:panelGrid>
-                </f:facet>
+
 
                 <p:dataTable value="#{channelReportController.doctorViewSessions}" var="bs" sortBy="#{bs.bill.billClass}">
-
+                    <f:facet name="header">
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
+                        <p:outputLabel value="Doctor View"/>
+                        <br></br>
+                        <p:outputLabel value="Consultant : "/>
+                        <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/><br></br>
+                        <p:outputLabel value="Date : "/>
+                        <h:outputLabel value="#{channelReportController.serviceSession.sessionDate}" >
+                            <f:convertDateTime pattern="dd MM yyyy"/>
+                        </h:outputLabel><br></br>
+                        <p:outputLabel value="Session Name : "/>
+                        <h:outputLabel value="#{channelReportController.serviceSession.name}" />
+                    </f:facet>
                     <p:column headerText="No">#{bs.serialNo}</p:column>               
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Bill No">
