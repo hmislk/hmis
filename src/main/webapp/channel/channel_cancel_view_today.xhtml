@@ -16,6 +16,8 @@
                     <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                         <p:printer target="pan1" />
                     </p:commandButton>
+                    <p:commandButton value="Back" action="/channel/channel_booking" styleClass="noPrintButton">
+                    </p:commandButton>
                 </f:facet>
                 <p:dataTable value="#{channelReportController.billSessions}" var="bs" rowIndexVar="i" >
                     <f:facet name="header">
@@ -23,7 +25,7 @@
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                         <p:outputLabel value="Full Paid Cancel Patient List"/><br></br>
                         <p:outputLabel value="Date: "/>
-                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                        <p:outputLabel value="#{channelReportController.date}" >
                             <f:convertDateTime pattern="yyyy MMMM dd" />
                         </p:outputLabel>     
                     </f:facet>

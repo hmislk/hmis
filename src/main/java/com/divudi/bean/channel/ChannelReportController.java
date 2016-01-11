@@ -105,6 +105,7 @@ public class ChannelReportController implements Serializable {
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
+    Date date;
     Institution institution;
     WebUser webUser;
     Staff staff;
@@ -167,6 +168,7 @@ public class ChannelReportController implements Serializable {
         staff = null;
         sessoinDate = false;
         institution = null;
+        date=null;
     }
 
     public Institution getInstitution() {
@@ -3687,9 +3689,10 @@ public class ChannelReportController implements Serializable {
             sql += " and bs.bill.cancelled=true ";
         }
         m.put("bts", Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid}));
-        m.put("ssDate", Calendar.getInstance().getTime());
+        m.put("ssDate", getDate());
         m.put("class", BilledBill.class);
         billSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("m = " + m);
         System.out.println("billSessions = " + billSessions.size());
         calTotalBS(billSessions);
 
@@ -4293,6 +4296,17 @@ public class ChannelReportController implements Serializable {
 
     public void setNetTotalDoc(double netTotalDoc) {
         this.netTotalDoc = netTotalDoc;
+    }
+
+    public Date getDate() {
+        if (date==null) {
+            date=new Date();
+        }
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

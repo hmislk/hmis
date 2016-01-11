@@ -184,6 +184,19 @@
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>                                                            
                                     </p:column>
+                                    <p:column headerText="Starting No" style="width: 20px!important; text-align: center;" rendered="#{webUserController.hasPrivilege('ChannellingApoinmentNumberCountEdit')}">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputText value="#{ses.startingNo}">
+                                                    <f:convertNumber pattern="00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{ses.startingNo}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+
+                                    </p:column>
                                     <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{webUserController.hasPrivilege('ChannellingApoinmentNumberCountEdit')}">
                                         <p:cellEditor>
                                             <f:facet name="output" >

@@ -1168,9 +1168,11 @@
                                         </p:commandButton>
                                         <p:commandButton value="All Doctor" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctor()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" onclick="onSubmitButton();">    
+                                            <f:setPropertyActionListener value="#{null}" target="#{channelReportController.date}"/>
                                         </p:commandButton>
-                                        <p:commandButton value="All Cancel" action="channel_cancel_view_today" actionListener="#{channelReportController.createTodayCancelList()}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Cancel" action="channel_cancel_view_today" actionListener="#{channelReportController.createTodayCancelList()}" ajax="false" onclick="onSubmitButton();">        
+                                            <f:setPropertyActionListener value="#{null}" target="#{channelReportController.date}"/>
                                         </p:commandButton>
                                     </h:panelGrid>                                    
                                 </p:panel>
