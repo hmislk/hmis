@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}"  value="#{cc.attrs.data.bills}" var="b" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{b.billType}"  >
+        <p:dataTable id="billed"  value="#{cc.attrs.data.bills}" var="b" rendered="#{cc.attrs.data.bills.size()>0}" sortBy="#{b.billType}"  >
             <f:facet name="header">  
                 <h:outputLabel value="Opd Bills "/>
             </f:facet>     
