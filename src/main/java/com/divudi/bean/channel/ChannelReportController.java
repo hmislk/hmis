@@ -105,6 +105,7 @@ public class ChannelReportController implements Serializable {
     ReportKeyWord reportKeyWord;
     Date fromDate;
     Date toDate;
+    Date date;
     Institution institution;
     WebUser webUser;
     Staff staff;
@@ -167,6 +168,7 @@ public class ChannelReportController implements Serializable {
         staff = null;
         sessoinDate = false;
         institution = null;
+        date=null;
     }
 
     public Institution getInstitution() {
@@ -3614,7 +3616,8 @@ public class ChannelReportController implements Serializable {
         sql = "Select bs.bill From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
-                + " and bs.sessionDate= :ssDate";
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
@@ -3662,7 +3665,7 @@ public class ChannelReportController implements Serializable {
         createTodayList(true, false);
 
     }
-    
+
     public void createTodayCancelList() {
 
         createTodayList(false, true);
@@ -3687,9 +3690,10 @@ public class ChannelReportController implements Serializable {
             sql += " and bs.bill.cancelled=true ";
         }
         m.put("bts", Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid}));
-        m.put("ssDate", Calendar.getInstance().getTime());
+        m.put("ssDate", getDate());
         m.put("class", BilledBill.class);
         billSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("m = " + m);
         System.out.println("billSessions = " + billSessions.size());
         calTotalBS(billSessions);
 
@@ -3806,6 +3810,49 @@ public class ChannelReportController implements Serializable {
         agentHistorys = new ArrayList<>();
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, null);
+
+    }
+
+    public void createAgentBookings() {
+        HashMap m = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.retired=false ";
+//                + " and type(b)=:class ";
+
+        if (webUser != null) {
+            sql += " and b.creater=:web ";
+            m.put("web", webUser);
+        }
+        if (sessoinDate) {
+            sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+        } else {
+            sql += " and b.createdAt between :fd and :td ";
+        }
+
+        if (institution != null) {
+            sql += " and b.creditCompany=:a ";
+            m.put("a", institution);
+        } else {
+            sql += " and b.creditCompany is not null ";
+        }
+        sql += " and b.billType=:bt ";
+        m.put("bt", BillType.ChannelAgent);
+
+        sql += " order by b.deptId ";
+//        m.put("class", BilledBill.class);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+
+        channelBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        for (Bill b : channelBills) {
+            if (b.getPaymentMethod() == PaymentMethod.Cash && (b instanceof CancelledBill || b instanceof RefundBill)) {
+                b.setStaffFee(0);
+                b.setNetTotal(0);
+            }
+        }
+        netTotal = calTotal(channelBills);
+        netTotalDoc = calTotalDoc(channelBills);
 
     }
 
@@ -4250,6 +4297,17 @@ public class ChannelReportController implements Serializable {
 
     public void setNetTotalDoc(double netTotalDoc) {
         this.netTotalDoc = netTotalDoc;
+    }
+
+    public Date getDate() {
+        if (date==null) {
+            date=new Date();
+        }
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
