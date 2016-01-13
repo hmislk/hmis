@@ -40,11 +40,12 @@ public class StockHistoryController implements Serializable {
     Date toDate;
     Date historyDate;
     Department department;
-    
-    
+
+    double totalStockSaleValue;
+    double totalStockPurchaseValue;
 
     public void fillHistoryAvailableDays() {
-        
+
         String jpql;
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -69,6 +70,34 @@ public class StockHistoryController implements Serializable {
         //System.out.println("m = " + m);
         //System.out.println("jpql = " + jpql);
         pharmacyStockHistories = facade.findBySQL(jpql, m);
+        totalStockPurchaseValue = 0.0;
+        totalStockSaleValue = 0.0;
+        for (StockHistory psh : pharmacyStockHistories) {
+            totalStockPurchaseValue += psh.getStockPurchaseValue();
+            totalStockSaleValue += psh.getStockSaleValue();
+        }
+    }
+    
+    public void fillStockHistoriesWithOutZero() {
+        String jpql;
+        Map m = new HashMap();
+        m.put("hd", historyDate);
+        m.put("ht", HistoryType.MonthlyRecord);
+        if (department == null) {
+            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
+        } else {
+            m.put("d", department);
+            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
+        }
+        //System.out.println("m = " + m);
+        //System.out.println("jpql = " + jpql);
+        pharmacyStockHistories = facade.findBySQL(jpql, m);
+        totalStockPurchaseValue = 0.0;
+        totalStockSaleValue = 0.0;
+        for (StockHistory psh : pharmacyStockHistories) {
+            totalStockPurchaseValue += psh.getStockPurchaseValue();
+            totalStockSaleValue += psh.getStockSaleValue();
+        }
     }
 
     public Date getHistoryDate() {
@@ -98,8 +127,8 @@ public class StockHistoryController implements Serializable {
         }
         return toDate;
     }
-    
-    public String viewPharmacyStockHistory(){
+
+    public String viewPharmacyStockHistory() {
         getFromDate();
         getToDate();
         fillHistoryAvailableDays();
@@ -109,15 +138,15 @@ public class StockHistoryController implements Serializable {
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
+
     @EJB
     StockHistoryRecorder stockHistoryRecorder;
-    
-    public void recordHistory(){
-        try{
+
+    public void recordHistory() {
+        try {
             stockHistoryRecorder.myTimer();
             JsfUtil.addSuccessMessage("History Saved");
-        }catch (Exception e){
+        } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
     }
@@ -146,10 +175,10 @@ public class StockHistoryController implements Serializable {
 
     @Inject
     SessionController sessionController;
-    
+
     public Department getDepartment() {
-        if(department==null){
-            department=sessionController.getDepartment();
+        if (department == null) {
+            department = sessionController.getDepartment();
         }
         return department;
     }
@@ -158,6 +187,20 @@ public class StockHistoryController implements Serializable {
         this.department = department;
     }
 
-    
-    
+    public double getTotalStockSaleValue() {
+        return totalStockSaleValue;
+    }
+
+    public void setTotalStockSaleValue(double totalStockSaleValue) {
+        this.totalStockSaleValue = totalStockSaleValue;
+    }
+
+    public double getTotalStockPurchaseValue() {
+        return totalStockPurchaseValue;
+    }
+
+    public void setTotalStockPurchaseValue(double totalStockPurchaseValue) {
+        this.totalStockPurchaseValue = totalStockPurchaseValue;
+    }
+
 }

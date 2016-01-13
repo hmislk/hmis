@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -123,7 +124,8 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
-    boolean active=false;
+    @Column(name = "active")
+    boolean inactive=false;
     @ManyToOne
     Institution manufacturer;
     @ManyToOne
@@ -228,12 +230,12 @@ public class Item implements Serializable, Comparable<Item> {
         this.marginNotAllowed = marginNotAllowed;
     }
 
-    public boolean isActive() {
-        return active;
+    public boolean isInactive() {
+        return inactive;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
     }
 
     public List<WorksheetItem> getWorksheetItems() {

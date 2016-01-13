@@ -770,6 +770,7 @@ public class ItemController implements Serializable {
 
         sql = "select c from Item c "
                 + " where c.retired=false "
+                + " and (c.inactive=false or c.inactive is null) "
                 + " and type(c)!=:pac "
                 + " and type(c)!=:inw "
                 + " and (type(c)=:ser "

@@ -64,9 +64,9 @@
 
                         <p:panel id="detailPan" >
                             <f:facet name="header" >
-                                <h:outputLabel value="Details" ></h:outputLabel>
-                                <h:outputLabel value="Active" rendered="#{investigationController.current.active}"></h:outputLabel>
-                                <h:outputLabel value="Inactive" rendered="#{!investigationController.current.active}"></h:outputLabel>
+                                <h:outputLabel value="Details - " ></h:outputLabel>
+                                <h:outputLabel value="Active" rendered="#{!investigationController.current.inactive}"></h:outputLabel>
+                                <h:outputLabel value="Inactive" rendered="#{investigationController.current.inactive}" style="color: red;"></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save" 
                                                  action="#{investigationController.saveSelected()}" styleClass="buttons" 
                                                  ajax="false" onclick="onSubmitButton();"  >
@@ -179,7 +179,7 @@
                                     </p:selectOneMenu>
                                     
                                     <h:outputText value="" ></h:outputText>
-                                    <p:selectBooleanCheckbox value="#{investigationController.current.active}" itemLabel="Item Active"/>
+                                    <p:selectBooleanCheckbox value="#{investigationController.current.inactive}" itemLabel="Item Inactive"/>
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{investigationController.current.userChangable}" itemLabel="Can change Rate"/>
