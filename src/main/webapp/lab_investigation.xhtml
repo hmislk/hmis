@@ -65,7 +65,7 @@
                         <p:panel id="detailPan" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Details - " ></h:outputLabel>
-                                <h:outputLabel value="Active" rendered="#{!investigationController.current.inactive}"></h:outputLabel>
+                                <h:outputLabel value="Active" rendered="#{!investigationController.current.inactive}" style="color: green;"></h:outputLabel>
                                 <h:outputLabel value="Inactive" rendered="#{investigationController.current.inactive}" style="color: red;"></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save" 
                                                  action="#{investigationController.saveSelected()}" styleClass="buttons" 
