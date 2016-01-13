@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="inward" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel value="Channel Cancel Bills" rendered="#{!cc.attrs.agent}"/>
                 <h:outputLabel value="Channel Agency Cancel Bills(Agent Cancel)" rendered="#{cc.attrs.agent}"/>
@@ -32,13 +32,13 @@
                 <f:facet name="header">  
                     <h:outputLabel value="ID"/>
                 </f:facet>
-                <h:outputLabel value="#{b.insId}"/>
+                <h:outputLabel value="#{b.deptId}"/>
             </p:column>
             <p:column headerText="Ref Bill No"  >
                 <f:facet name="header">  
                     <h:outputLabel value="Ref Bill No"/>
                 </f:facet>
-                <h:outputLabel  value="#{b.billedBill.insId}"/>
+                <h:outputLabel  value="#{b.billedBill.deptId}"/>
             </p:column>
             <p:column headerText="Id" rendered="#{cc.attrs.agent}" >
                 <f:facet name="header">  

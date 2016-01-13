@@ -532,17 +532,19 @@
                         <h:panelGroup   id="gpBillPreview" >
 
                             <h:panelGroup   id="gpBillPreviewSingle" >
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
-                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
-                                    </h:panelGroup>
-                                </div>
+                                
                             </h:panelGroup>
 
                             <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false and sessionController.institutionPreference.pharmacyBillWithOutItem eq true}" > 
                                         <phi:saleBill_without_item bill="#{pharmacySaleController.printBill}"></phi:saleBill_without_item>                                        
+                                    </h:panelGroup>
+                                </div>
+                                
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill bill="#{pharmacySaleController.printBill}"></phi:saleBill>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>

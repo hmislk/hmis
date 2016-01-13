@@ -40,8 +40,19 @@
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="sum1,sum2,sum11,sum22" fileName="Cashier_Detailed_Report"  />
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="opd_b:opd_b,opd_c:opd_c,opd_r:opd_r,
+                                             phy_b:phy_b,phy_c:phy_c,phy_r:phy_r,
+                                             phyw_b:phyw_b,phyw_c:phyw_c,phyw_r:phyw_r,
+                                             phyg_b:phyg_b,phyg_c:phyg_c,phyg_r:phyg_r,
+                                             pay_b:pay_b,pay_c:pay_c,pet_b:pet_b,pet_c:pet_c,
+                                             com_b:com_b,com_c:com_c,age_b:age_b,age_c:age_c,
+                                             col_b:col_b,col_c:col_c,inpay_b:inpay_b,inpay_c:inpay_c,inpay_r:inpay_r,
+                                             ch_b:ch_b,ch_c:ch_c,ch_r:ch_r,cha_b:cha_b,cha_c:cha_c,cha_r:cha_r,
+                                             chpay_b:chpay_b,chpay_c:chpay_c,chpay_r:chpay_r,
+                                             chagen_b:chagen_b,chagen_c:chagen_c,chagen_r:chagen_r,
+                                             pty_b:pty_b,pty_c:pty_c,
+                                             sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,sum10" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
                         </f:facet>
                         <f:facet name="footer">
@@ -70,152 +81,152 @@
 
                         </h:panelGrid>
 
-                        <ca:opdBilled data="#{commonReport.userBillsOwn}"/>
+                        <ca:opdBilled id="opd_b" data="#{commonReport.userBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:opdCancelled data="#{commonReport.userCancelledBillsOwn}"/>
+                        <ca:opdCancelled id="opd_c" data="#{commonReport.userCancelledBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:opdRefunded data="#{commonReport.userRefundedBillsOwn}"/>
+                        <ca:opdRefunded id="opd_r" data="#{commonReport.userRefundedBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyBilled data="#{commonReport.userBillsOwnPh}"/>                        
+                        <ca:pharmacyBilled id="phy_b" data="#{commonReport.userBillsOwnPh}"/>                        
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
+                        <ca:pharmacyCancelled id="phy_c" data="#{commonReport.userCancelledBillsOwnPh}"  />
 
                         <p:spacer height="30"/>
 
-                        <ca:phrmacyRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+                        <ca:phrmacyRefunded id="phy_r" data="#{commonReport.userRefundedBillsOwnPh}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeBilled data="#{commonReport.billedPhWholeSale}"/>                        
+                        <ca:pharmacyWholeBilled id="phyw_b" data="#{commonReport.billedPhWholeSale}"/>                        
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyWholeCancelled data="#{commonReport.cancelledPhWholeSale}"  />
+                        <ca:pharmacyWholeCancelled id="phyw_c" data="#{commonReport.cancelledPhWholeSale}"  />
 
                         <p:spacer height="30"/>
 
-                        <ca:phrmacyWholeRefunded data="#{commonReport.refundedPhWholeSale}"/>
+                        <ca:phrmacyWholeRefunded id="phyw_r" data="#{commonReport.refundedPhWholeSale}"/>
                         
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
+                        <ca:pharmacyGrnPayment id="phyg_b" data="#{commonReport.grnPaymentBill}"/>                        
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyGrnPaymentCancell data="#{commonReport.grnPaymentCancell}"  />
+                        <ca:pharmacyGrnPaymentCancell id="phyg_c" data="#{commonReport.grnPaymentCancell}"  />
 
                         <p:spacer height="30"/>
 
-                        <ca:pharmacyGrnPaymentRefund data="#{commonReport.grnPaymentReturn}"/>
+                        <ca:pharmacyGrnPaymentRefund id="phyg_r" data="#{commonReport.grnPaymentReturn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:paymentBill data="#{commonReport.userPaymentBillsOwn}"/>
+                        <ca:paymentBill id="pay_b" data="#{commonReport.userPaymentBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:paymentCancel data="#{commonReport.userPaymentCancelBillsOwn}"/>
+                        <ca:paymentCancel id="pay_c" data="#{commonReport.userPaymentCancelBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:pettyBillSummery data="#{commonReport.userPettyPaymentBills}"/>
+                        <ca:pettyBillSummery id="pet_b" data="#{commonReport.userPettyPaymentBills}"/>
 
                         <p:spacer height="30"/>
 
 
-                        <ca:pettyCancellSummery data="#{commonReport.userPettyPaymentCancelBills}" />
+                        <ca:pettyCancellSummery id="pet_c" data="#{commonReport.userPettyPaymentCancelBills}" />
 
                         <p:spacer height="30"/>
 
-                        <ca:companyBill data="#{commonReport.userCashRecieveBills}"/>
+                        <ca:companyBill id="com_b" data="#{commonReport.userCashRecieveBills}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:campanyCancell data="#{commonReport.userCashRecieveBillCancel}"/>
+                        <ca:campanyCancell id="com_c" data="#{commonReport.userCashRecieveBillCancel}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:agentBill data="#{commonReport.userAgentRecieveBills}"/>
+                        <ca:agentBill id="age_b" data="#{commonReport.userAgentRecieveBills}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:agentCancel  data="#{commonReport.userAgentRecieveBillCancel}" />
+                        <ca:agentCancel id="age_c" data="#{commonReport.userAgentRecieveBillCancel}" />
 
                         <p:spacer height="30"/>
                         
-                        <ca:collecting_centre_bill data="#{commonReport.collectingCentreRecieves}"/>
+                        <ca:collecting_centre_bill id="col_b" data="#{commonReport.collectingCentreRecieves}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:collecting_centre_cancel  data="#{commonReport.collectingCentreCancelBill}" />
+                        <ca:collecting_centre_cancel id="col_c"  data="#{commonReport.collectingCentreCancelBill}" />
 
                         <p:spacer height="30"/>
 
-                        <ca:inwrdPaymentBill data="#{commonReport.userInwardPaymentBillsOwn}"/>
+                        <ca:inwrdPaymentBill id="inpay_b" data="#{commonReport.userInwardPaymentBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:inwardPaymentCancel data="#{commonReport.userInwardPaymentCancelBillsOwn}"/>
+                        <ca:inwardPaymentCancel id="inpay_c" data="#{commonReport.userInwardPaymentCancelBillsOwn}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:inwrdRefundBill data="#{commonReport.inwardRefunds}"/>
+                        <ca:inwrdRefundBill id="inpay_r" data="#{commonReport.inwardRefunds}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelBilledBill agent="false" data="#{commonReport.channelBilled}"/>
+                        <ca:channelBilledBill id="ch_b" agent="false" data="#{commonReport.channelBilled}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelCancelBill agent="false" data="#{commonReport.channelCancells}"/>
+                        <ca:channelCancelBill id="ch_c" agent="false" data="#{commonReport.channelCancells}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelRefundBill agent="false" data="#{commonReport.channelRefunds}"/>
+                        <ca:channelRefundBill id="ch_r" agent="false" data="#{commonReport.channelRefunds}"/>
                         
                         <p:spacer height="30"/>
 
-                        <ca:channelBilledBill agent="true" data="#{commonReport.channelBilledAgent}"/>
+                        <ca:channelBilledBill id="cha_b" agent="true" data="#{commonReport.channelBilledAgent}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelCancelBill agent="true" data="#{commonReport.channelCancellsAgent}"/>
+                        <ca:channelCancelBill id="cha_c" agent="true" data="#{commonReport.channelCancellsAgent}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelRefundBill agent="true" data="#{commonReport.channelRefundsAgent}"/>
+                        <ca:channelRefundBill id="cha_r" agent="true" data="#{commonReport.channelRefundsAgent}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelBilledBillProPay data="#{commonReport.channelBilledProPayment}"/>
+                        <ca:channelBilledBillProPay id="chpay_b" data="#{commonReport.channelBilledProPayment}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelCancelBillProPay data="#{commonReport.channelCancellProPayment}"/>
+                        <ca:channelCancelBillProPay id="chpay_c" data="#{commonReport.channelCancellProPayment}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelRefundBillProPay data="#{commonReport.channelRefundsProPayment}"/>
+                        <ca:channelRefundBillProPay id="chpay_r" data="#{commonReport.channelRefundsProPayment}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelBilledBillAgentCommission data="#{commonReport.channelBilledAgnPayment}"/>
+                        <ca:channelBilledBillAgentCommission id="chagen_b" data="#{commonReport.channelBilledAgnPayment}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelCancelBillAgentCommission data="#{commonReport.channelCancellAgnPayment}"/>
+                        <ca:channelCancelBillAgentCommission id="chagen_c" data="#{commonReport.channelCancellAgnPayment}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:channelRefundBillAgentCommission data="#{commonReport.channelRefundAgnPayment}"/>
+                        <ca:channelRefundBillAgentCommission id="chagen_r" data="#{commonReport.channelRefundAgnPayment}"/>
 
                         <p:spacer height="30"/>
 
@@ -251,7 +262,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable value="#{commonReport.cashInBills.bills}" var="cIn" rendered="#{commonReport.cashInBills.bills.size()>0}">
+                        <p:dataTable id="sum3" value="#{commonReport.cashInBills.bills}" var="cIn" rendered="#{commonReport.cashInBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH IN TRANSACTION"/>
                             </f:facet>
@@ -312,7 +323,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable value="#{commonReport.cashInBillsCancel.bills}" var="cInCan" rendered="#{commonReport.cashInBillsCancel.bills.size()>0}">
+                        <p:dataTable id="sum4" value="#{commonReport.cashInBillsCancel.bills}" var="cInCan" rendered="#{commonReport.cashInBillsCancel.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH IN TRANSACTION CANCELL"/>
                             </f:facet>
@@ -373,7 +384,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable value="#{commonReport.cashOutBills.bills}" var="cOut" rendered="#{commonReport.cashOutBills.bills.size()>0}">
+                        <p:dataTable id="sum5" value="#{commonReport.cashOutBills.bills}" var="cOut" rendered="#{commonReport.cashOutBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH OUT TRANSACTION"/>
                             </f:facet>
@@ -434,7 +445,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable value="#{commonReport.cashOutBillsCancel.bills}" var="cOutCan" rendered="#{commonReport.cashOutBillsCancel.bills.size()>0}">
+                        <p:dataTable id="sum6" value="#{commonReport.cashOutBillsCancel.bills}" var="cOutCan" rendered="#{commonReport.cashOutBillsCancel.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH OUT TRANSACTION CANCELL"/>
                             </f:facet>
@@ -495,7 +506,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable value="#{commonReport.cashAdjustmentBills.bills}" var="cAdj" rendered="#{commonReport.cashAdjustmentBills.bills.size()>0}">
+                        <p:dataTable id="sum7" value="#{commonReport.cashAdjustmentBills.bills}" var="cAdj" rendered="#{commonReport.cashAdjustmentBills.bills.size()>0}">
                             <f:facet name="header">
                                 <h:outputLabel value="CASH ADJUSTMENT"/>
                             </f:facet>
@@ -557,7 +568,7 @@
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable id="sum3" value="#{commonReport.creditSlipSumAfter}"  var="i" >
+                        <p:dataTable id="sum8" value="#{commonReport.creditSlipSumAfter}"  var="i" >
                             <f:facet name="header">
                                 Credit Summary
                             </f:facet>
@@ -574,7 +585,7 @@
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable id="sum5" value="#{commonReport.creditSlipSumAfter}"  var="i" >
+                        <p:dataTable id="sum9" value="#{commonReport.creditSlipSumAfter}"  var="i" >
                             <f:facet name="header">
                                 Credit Summary
                             </f:facet>
@@ -590,7 +601,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum4" value="#{commonReport.cashChequeSumAfter}"  var="i" >
+                        <p:dataTable id="sum10" value="#{commonReport.cashChequeSumAfter}"  var="i" >
                             <f:facet name="header">
                                 <h:outputLabel value="Cash Summary"/>
                             </f:facet>
@@ -618,11 +629,11 @@
                             <br/>
                         </div>
 
-                        <ca:pettyBills data="#{commonReport.userPettyPaymentBills}"/>
+                        <ca:pettyBills id="pty_b" data="#{commonReport.userPettyPaymentBills}"/>
 
                         <p:spacer height="30"/>
 
-                        <ca:pettyCancel data="#{commonReport.userPettyPaymentCancelBills}"/>
+                        <ca:pettyCancel id="pty_c" data="#{commonReport.userPettyPaymentCancelBills}"/>
                     </p:panel>
                 </p:panel>
             </h:form>

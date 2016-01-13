@@ -260,6 +260,7 @@ public enum Privileges {
     ChannellingDoctorLeaveByDate,
     ChannellingDoctorLeaveByServiceSession,
     ChannellingChannelSheduling,
+    ChannellingChannelShedulRemove,
     ChannellingChannelAgentFee,
     ChannellingDoctorSessionView,
     ChannellingPayment,
@@ -267,6 +268,9 @@ public enum Privileges {
     ChannellingPaymentDueSearch,
     ChannellingPaymentDoneSearch,
     ChannellingApoinmentNumberCountEdit,
+    ChannellingEditSerialNo,
+    ChannellingEditPatientDetails,
+    
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,

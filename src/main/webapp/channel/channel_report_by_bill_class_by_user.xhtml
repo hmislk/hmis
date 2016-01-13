@@ -17,7 +17,7 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="All My Booking Details List">
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <h:panelGrid columns="2" styleClass="noPrintButton" id="pg1"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
 
@@ -32,6 +32,17 @@
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
                         <h:outputLabel value="With Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportController.withDates}" />
+                        <h:outputLabel value="Agency Oncall Only"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportController.agncyOnCall}" >
+                            <p:ajax event="change" process="@this" update="pg1" />
+                        </p:selectBooleanCheckbox>
+                        <p:outputLabel value="Agent Name" rendered="#{channelReportController.agncyOnCall}"/>
+                        <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput" rendered="#{channelReportController.agncyOnCall}"
+                                        forceSelection="true"
+                                        completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            <p:column>#{vt.institutionCode}</p:column>
+                            <p:column>#{vt.name}</p:column>
+                        </p:autoComplete>
                     </h:panelGrid>
 
                     <h:panelGrid columns="4">
@@ -55,6 +66,11 @@
                                 <br></br>
                                 <p:outputLabel value="Cashier : #{channelReportController.webUser.webUserPerson.name}" rendered="#{channelReportController.webUser ne null}"/>
                                 <p:outputLabel value="All Cashiers" rendered="#{channelReportController.webUser eq null}"/>
+                                <h:panelGroup rendered="#{channelReportController.agncyOnCall}">
+                                    <br></br>
+                                    <p:outputLabel value="All Agents" rendered="#{channelReportController.agncyOnCall and channelReportController.institution eq null}"/>
+                                    <p:outputLabel value="Agent : #{channelReportController.institution.name}" rendered="#{channelReportController.agncyOnCall and channelReportController.institution ne null}"/>
+                                </h:panelGroup>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{channelReportController.fromDate}" >
                                     <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a"/>
@@ -84,8 +100,8 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
-                                <p:outputLabel value=" - #{b.paidBill.insId}" rendered="#{b.paidBill ne b}" />
+                                <p:outputLabel value="#{b.deptId}" rendered="#{b.paidBill eq null}" style="color: green;"/>
+                                <p:outputLabel value="#{b.paidBill.deptId}" rendered="#{b.paidBill ne null}" />
                                 <f:facet name="footer" >
                                     <p:outputLabel value="Total" />
                                 </f:facet>
@@ -111,7 +127,15 @@
                                 <p:outputLabel value="#{b.creater.webUserPerson.name}" >
                                 </p:outputLabel>
                             </p:column>
-
+                            <p:column rendered="#{channelReportController.agncyOnCall}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Agent" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.creditCompany.name}" />
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Hos Fee" />
@@ -119,6 +143,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilled-channelReportController.totalBilledDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" /> 
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -127,6 +156,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalBilledDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" /> 
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -194,7 +228,7 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
+                                <p:outputLabel value="#{b.deptId}" />
                                 <f:facet name="footer" >
                                     <p:outputLabel value="Total" />
                                 </f:facet>
@@ -203,7 +237,7 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Ref. Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.billedBill.insId}" />
+                                <p:outputLabel value="#{b.billedBill.paidBill.deptId}" />
                             </p:column>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
@@ -226,6 +260,15 @@
                                 <p:outputLabel value="#{b.creater.webUserPerson.name}" >
                                 </p:outputLabel>
                             </p:column>
+                            <p:column rendered="#{channelReportController.agncyOnCall}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Agent" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.creditCompany.name}" />
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Hos Fee" />
@@ -233,6 +276,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalCancel-channelReportController.totalCancelDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -241,6 +289,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalCancelDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -304,14 +357,14 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />
-                                
+                                <p:outputLabel value="#{b.deptId}" />
+
                             </p:column>
                             <p:column>
                                 <f:facet name="header" >
                                     <p:outputLabel value="Ref. Bill Number" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.billedBill.insId}" />
+                                <p:outputLabel value="#{b.billedBill.paidBill.deptId}" />
                             </p:column>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
@@ -334,6 +387,15 @@
                                 <p:outputLabel value="#{b.creater.webUserPerson.name}" >
                                 </p:outputLabel>
                             </p:column>
+                            <p:column rendered="#{channelReportController.agncyOnCall}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Agent" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.creditCompany.name}" />
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Hos Fee" />
@@ -341,6 +403,11 @@
                                 <p:outputLabel value="#{b.netTotal-b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalRefund-channelReportController.totalRefundDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -349,6 +416,11 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.totalRefundDoc}" >
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
@@ -387,11 +459,22 @@
 
                         </p:dataTable>
                         <f:facet name="footer" >
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            <h:outputLabel value="Channel Hos. Total : &nbsp;" style="float: left"/>
+                            <h:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: left">
+                                <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                            <br></br>
+                            <h:outputLabel value="Channel Doc. Total : &nbsp;" style="float: left"/>
+                            <h:outputLabel value="#{channelReportController.netTotalDoc}" style="float: left">
+                                <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                            <br></br>
                             <h:outputLabel value="Channel Net Total : &nbsp;" style="float: left"/>
                             <h:outputLabel value="#{channelReportController.netTotal}" style="float: left">
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            
                         </f:facet>
                     </p:panel>
                 </p:panel>

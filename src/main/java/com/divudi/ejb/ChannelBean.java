@@ -551,6 +551,7 @@ public class ChannelBean {
         ServiceSession newSs = new ServiceSession();
         newSs.setOriginatingSession(ss);
         newSs.setName(ss.getName());
+        newSs.setStartingNo(ss.getStartingNo());
         newSs.setMaxNo(ss.getMaxNo());
         newSs.setStartingTime(ss.getStartingTime());
         newSs.setSessionWeekday(ss.getSessionWeekday());

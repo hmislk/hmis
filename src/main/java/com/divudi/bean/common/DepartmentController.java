@@ -216,7 +216,8 @@ public class DepartmentController implements Serializable {
     }
 
     private Boolean checkCodeExist() {
-        String sql = "SELECT i FROM Department i where i.retired=false ";
+        String sql = "SELECT i FROM Department i where i.retired=false "
+                + " and i.departmentCode is not null ";
         List<Department> ins = getEjbFacade().findBySQL(sql);
         if (ins != null) {
             for (Department i : ins) {

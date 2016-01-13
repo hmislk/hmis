@@ -622,7 +622,7 @@ public class InvestigationController implements Serializable {
         }
 
         for (Investigation i : selectedInvestigations) {
-            i.setActive(true);
+            i.setInactive(false);
             getFacade().edit(i);
         }
         
@@ -637,7 +637,7 @@ public class InvestigationController implements Serializable {
         }
 
         for (Investigation i : selectedInvestigations) {
-            i.setActive(false);
+            i.setInactive(true);
             getFacade().edit(i);
         }
         
