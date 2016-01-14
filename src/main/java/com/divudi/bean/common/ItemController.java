@@ -580,6 +580,22 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
+    
+    public List<Item> completeInvestigation(String query) {
+        List<Item> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "select c from Item c where c.retired=false and type(c)=:cls"
+                + " and upper(c.name) like :q order by c.name";
+
+        hm.put("cls",Investigation.class);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = getFacade().findBySQL(sql, hm, 20);
+
+        return suggestions;
+
+    }
 
     public List<Item> completeServiceWithoutProfessional(String query) {
         List<Item> suggestions;

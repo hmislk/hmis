@@ -27,6 +27,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.Staff;
+import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -690,6 +691,23 @@ public class ServiceSummery implements Serializable {
 
     }
 
+    public void createInvestigationSummery() {
+        serviceSummery = new ArrayList<>();
+        for (BillItem i : getBillItem(BillType.OpdBill, service, false)) {
+            BillItemWithFee bi = new BillItemWithFee();
+            bi.setBillItem(i);
+            bi.setProFee(calFee(i, FeeType.Staff));
+            bi.setHospitalFee(calFee(i, FeeType.OwnInstitution) + calFee(i, FeeType.CollectingCentre));
+            serviceSummery.add(bi);
+        }
+
+        calCountTotalItem(BillType.OpdBill, false);
+        proFeeTotal = calServiceTot(BillType.OpdBill, FeeType.Staff, false);
+        hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false) + calServiceTot(BillType.OpdBill, FeeType.CollectingCentre, false);
+        outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
+
+    }
+
     List<Bill> bills;
     @EJB
     BillFacade billFacade;
@@ -1138,9 +1156,35 @@ public class ServiceSummery implements Serializable {
 
     }
 
+    public void createInvestigationCategorySummery() {
+        if (getCategory() == null) {
+            return;
+        }
+        if (getToDate() == null || getFromDate() == null) {
+            return;
+        }
+
+        billItemWithFees = new ArrayList<>();
+
+        List<BillItem> list = calBillItems(BillType.OpdBill, false);
+
+        for (BillItem i : list) {
+            BillItemWithFee bi = new BillItemWithFee();
+            bi.setBillItem(i);
+            bi.setProFee(calFee(i, FeeType.Staff));
+            bi.setHospitalFee(calFee(i, FeeType.OwnInstitution) + calFee(i, FeeType.CollectingCentre));
+            bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
+            billItemWithFees.add(bi);
+        }
+
+        calCountTotalCategory(BillType.OpdBill, false);
+        calServiceTot1(BillType.OpdBill, false);
+
+    }
+
     private void calServiceTot1(BillType billType, boolean discharged) {
 
-        if (getCategory() instanceof ServiceSubCategory) {
+        if (getCategory() instanceof ServiceSubCategory || getCategory() instanceof InvestigationCategory) {
             value = getServiceValue(getCategory(), billType, discharged);
         }
 
@@ -1294,7 +1338,7 @@ public class ServiceSummery implements Serializable {
     }
 
     private List<BillItem> calBillItems(BillType billType, boolean discharged) {
-        if (getCategory() instanceof ServiceSubCategory) {
+        if (getCategory() instanceof ServiceSubCategory || getCategory() instanceof InvestigationCategory) {
             return getBillItemByCategory(category, billType, discharged);
         }
 
@@ -1366,7 +1410,7 @@ public class ServiceSummery implements Serializable {
         long cancelled = 0l;
         long refunded = 0l;
 
-        if (getCategory() instanceof ServiceSubCategory) {
+        if (getCategory() instanceof ServiceSubCategory || getCategory() instanceof InvestigationCategory) {
             billed = getCount(new BilledBill(), billType, getCategory(), discharged);
             cancelled = getCount(new CancelledBill(), billType, getCategory(), discharged);
             refunded = getCount(new RefundBill(), billType, getCategory(), discharged);

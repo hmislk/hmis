@@ -131,6 +131,22 @@ public class CategoryController implements Serializable {
         }
         return suggestions;
     }
+    
+    public List<Category> completeInvestigationCategory(String query) {
+        List<Category> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+
+            sql = "select c from Category c where c.retired=false and type(c)= :cat and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            ////System.out.println(sql);
+            tmpMap.put("cat", InvestigationCategory.class);
+            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+        }
+        return suggestions;
+    }
 
     public List<Category> completeCategoryMatrix(String qry) {
         List<Category> c;
