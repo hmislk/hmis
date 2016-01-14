@@ -521,6 +521,7 @@ public class CashierReportController implements Serializable {
 
         sql = "select sum(b.netTotal) from Bill b where type(b)=:bill and b.creater=:cret and "
                 + " b.paymentMethod= :payMethod  and b.institution=:ins"
+                + " and b.retired=false "
                 + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate ";
 
         temMap.put("toDate", getToDate());
