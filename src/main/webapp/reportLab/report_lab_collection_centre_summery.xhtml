@@ -25,38 +25,26 @@
                     <h:outputLabel value="To"/>
                     <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
-                    <h:outputLabel value="Collecting Center"/>
-                    <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                        <p:column>
-                            #{ix.name}
-                        </p:column>
-                        <p:column>
-                            #{ix.institutionCode}
-                        </p:column>
-                    </p:autoComplete>
 
                 </h:panelGrid> 
                 <h:panelGrid columns="4" styleClass="noPrintButton">
                     <p:spacer width="40"/>
-                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton " style="float: right;" action="#{commonReport.createCollectingCenterBillTable}" />
+                    <p:commandButton value="Process" ajax="false"  styleClass="noPrintButton " style="float: right;" action="#{commonReport.createCollectingCenterSummeryTable}" />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
+                    <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterSummeryTable}" >
                         <pe:exporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Detail_Report"   />
                     </p:commandButton> 
                 </h:panelGrid>
 
             </p:panel>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                <p:dataTable id="tbl" value="#{commonReport.bills}" var="d" rowIndexVar="i">
+                <p:dataTable id="tbl" value="#{commonReport.collectingCenteRows}" var="r" rowIndexVar="i">
                     <f:facet name="header">
-                        <h:outputLabel value="Collecting Centre Collection Detail Report"/> 
+                        <h:outputLabel value="Collecting Centre Collection Summery Report"/> 
                         <br></br>
-                        <h:panelGrid rendered="#{commonReport.collectingIns ne null}">
-                            <h:outputLabel value="#{commonReport.collectingIns.name}"/>
-                        </h:panelGrid>
                         <h:outputLabel value="From  "/>                     
                         <h:outputLabel value="#{commonReport.fromDate}" >
                             <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
@@ -73,43 +61,17 @@
                         </f:facet>
                         <h:outputLabel value="#{i+1}"/>
                     </p:column>
-                    <p:column headerText="Bill No">
-                        <f:facet name="header">
-                            <h:outputLabel value="Bill No"/>                        
-                        </f:facet>
-                        <h:outputLabel value="#{d.insId}"/>
-                    </p:column>
-                    <p:column headerText="Bill No">
-                        <f:facet name="header">
-                            <h:outputLabel value="Bill No"/>                        
-                        </f:facet>
-                        <h:outputLabel value="#{d.referralNumber}"/>
-                    </p:column>
-                    <p:column headerText="Patient Name">
-                        <f:facet name="header">
-                            <h:outputLabel value="Patient Name"/>                        
-                        </f:facet>
-                        <h:outputLabel value="#{d.patient.person.nameWithTitle}"/>
-                    </p:column>
-                    <p:column headerText="Col. Center Name" rendered="#{commonReport.collectingIns eq null}">
+                    <p:column headerText="Col. Center Name" >
                         <f:facet name="header">
                             <h:outputLabel value="Col. Center Name"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.collectingCentre.name}" rendered="#{d.collectingCentre ne null}"/>
-                        <h:outputLabel value="#{d.fromInstitution.name}" rendered="#{d.collectingCentre eq null}"/>
+                        <h:outputLabel value="#{r.i.name}"/>
                     </p:column>
-                    <p:column headerText="Reference Bill" >
-                        <f:facet name="header">
-                            <h:outputLabel value="Reference Bill"/>                        
-                        </f:facet>
-                        <h:outputLabel value="#{d.cancelledBill.insId}" rendered="#{d.cancelledBill ne null}"/>
-                        <h:outputLabel value="#{d.referenceBill.insId}" rendered="#{d.referenceBill ne null}"/>
-                    </p:column>                   
                     <p:column headerText="CC Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="CC Total"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.transTotalCCFee}">
+                        <h:outputLabel value="#{r.totalCC}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -118,7 +80,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Hos Total"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.transTotalWithOutCCFee}">
+                        <h:outputLabel value="#{r.totalHos}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -127,15 +89,14 @@
                         <f:facet name="header">
                             <h:outputLabel value="Net Total"/>                        
                         </f:facet>
-                        <h:outputLabel value="#{d.netTotal}">
+                        <h:outputLabel value="#{r.total}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:columnGroup type="footer">  
                         <p:row>                              
-                            <p:column footerText="Total" colspan="5" rendered="#{commonReport.collectingIns eq null}"/>
-                            <p:column footerText="Total" colspan="4" rendered="#{commonReport.collectingIns ne null}"/>
+                            <p:column footerText="Total" colspan="2" />
                             <p:column footerText="#{commonReport.totalCC}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.totalCC}" style=" text-align: right;">

@@ -352,6 +352,7 @@ public class StaffController implements Serializable {
     
     public void createActiveStaffOnylSalaryGeneratedTable(){
         staffWithCode=new ArrayList<>();
+        hrReportController.setReportKeyWord(reportKeyWord);
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         staffWithCode=hrReportController.fetchOnlySalaryGeneratedStaff();
     }

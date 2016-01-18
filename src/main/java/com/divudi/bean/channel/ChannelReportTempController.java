@@ -1363,7 +1363,7 @@ public class ChannelReportTempController implements Serializable {
             row.setCanceledCount(fetchBillsTotalSessoin(bts, null, null, null, new CancelledBill(), fd, td, null, null, false, true, null, null, webUser));
             row.setRefundCount(fetchBillsTotalSessoin(bts, null, null, null, new RefundBill(), fd, td, null, null, false, true, null, null, webUser));
             double netTotal = fetchBillsTotalSessoin(bts, null, null, null, null, fd, td, null, null, false, false, null, null, webUser);
-            double hosTotal = fetchBillsTotalSessoin(bts, null, null, null, new BilledBill(), fd, td, null, null, true, false, null, null, webUser);
+            double hosTotal = fetchBillsTotalSessoin(bts, null, null, null, null, fd, td, null, null, true, false, null, null, webUser);
             row.setTotalHosFee(hosTotal);
             row.setTotalDocFee(netTotal - hosTotal);
             row.setBold(false);
