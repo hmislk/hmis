@@ -985,7 +985,7 @@ public class ChannelReportTempController implements Serializable {
             }
 
             //
-            row.setDateRangeRows(fetchDateRangeRowsSession(fd, new Date(), webUser, bts));
+            row.setDateRangeRows(fetchDateRangeRowsSession(fd, commonFunctions.getEndOfDay(new Date()), webUser, bts));
             System.out.println("row.getDateRangeRows().size() = " + row.getDateRangeRows().size());
             if (row.getDateRangeRows().size() > 1) {
                 channelSummeryDateRangeOrUserRows.add(row);
