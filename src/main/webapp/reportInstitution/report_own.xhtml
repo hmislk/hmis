@@ -72,6 +72,12 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
                                     </h:panelGrid>
                                 </p:panel>
+                                <p:panel header="9) Summary By Investigation Opd" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                    <h:panelGrid >                               
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Investigation" action="report_investigation_service_summery" /> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Investigation Category" action="report_opd_investigation_summery_by_category" /> 
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
                         </h:panelGrid>
                     </p:panel>
