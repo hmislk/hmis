@@ -458,7 +458,9 @@ public class ChannelBean {
                     sessionDate.setTime(ss.getSessionDate());
                     Calendar nDate = Calendar.getInstance();
                     nDate.setTime(nowDate);
-
+                    System.out.println("ss.getId() = " + ss.getId());
+                    System.out.println("(ss.getSessionDate() = " + ss.getSessionDate());
+                    System.out.println("ss.getName() = " + ss.getName());
                     if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                         hasSpecificDateSession = true;
                         ServiceSession newSs = new ServiceSession();
@@ -576,6 +578,7 @@ public class ChannelBean {
     public ServiceSession fetchCreatedServiceSession(Staff s, Date d, ServiceSession ss) {
         String sql;
         Map m = new HashMap();
+        ServiceSession tmp=new ServiceSession();
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.staff=:staff "
                 + " and s.originatingSession=:os "
@@ -586,7 +589,11 @@ public class ChannelBean {
         m.put("staff", s);
         m.put("os", ss);
         m.put("class", ServiceSession.class);
-        ServiceSession tmp = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        try {
+            tmp = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return tmp;
     }
 
