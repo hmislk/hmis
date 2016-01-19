@@ -86,7 +86,7 @@ public class CommonReport1 implements Serializable {
     List<Bill> cancelBills;
     List<Bill> refundBills;
 
-    double  biledBillsTotal;
+    double biledBillsTotal;
     double cancelBillsTotal;
     double refundBillsTotal;
 
@@ -178,9 +178,9 @@ public class CommonReport1 implements Serializable {
     }
 
     public Department getDepartment() {
-        if (department == null) {
-            department = getSessionController().getDepartment();
-        }
+//        if (department == null) {
+//            department = getSessionController().getDepartment();
+//        }
         return department;
     }
 
@@ -351,33 +351,42 @@ public class CommonReport1 implements Serializable {
     }
 
     public void listBillItemsByReferringDoctor() {
-        //System.out.println("listBillItemsByReferringDoctor");
-        Map temMap = new HashMap();
-        List<Bill> tmp;
-        temMap.put("fromDate", getFromDate());
-        temMap.put("toDate", getToDate());
-        temMap.put("dept", department);
-        String sql = "SELECT bi FROM BillItem bi "
+
+        referralBillItems = new ArrayList<>();
+        Map m = new HashMap();
+        String sql;
+
+        sql = "SELECT bi FROM BillItem bi "
                 + " join bi.bill b "
                 + " join bi.item i "
-                + "WHERE "
-                + "b.retired=false "
-                + "and bi.retired=false "
-                + "and b.cancelled=false "
-                + "and bi.refunded=false "
-                + "and i.department=:dept "
-                + "and b.createdAt between :fromDate and :toDate  ";
-        if (referringDoctor != null) {
-            temMap.put("rd", referringDoctor);
-            sql = sql + "and b.referredBy=:rd ";
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and bi.retired=false "
+                + " and (bi.refunded=false or bi.refunded is null) "
+                + " and b.createdAt between :fromDate and :toDate  "
+                + " and b.billType=:bt ";
+        if (department != null) {
+            sql += " and i.department=:dept ";
+            m.put("dept", department);
         }
-        sql = sql + "order by b.referredBy.person.name ";
+        if (referringDoctor != null) {
+            m.put("rd", referringDoctor);
+            sql = sql + " and b.referredBy=:rd ";
+        }
+        sql = sql + " order by b.referredBy.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.OpdBill);
         //System.out.println("sql = " + sql);
         //System.out.println("temMap = " + temMap);
-        referralBillItems = billItemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        if (referralBillItems == null) {
-            referralBillItems = new ArrayList<>();
+        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        biledBillsTotal=0.0;
+        for (BillItem bi : referralBillItems) {
+            biledBillsTotal+=bi.getNetValue();
         }
+        
     }
 
     public List<Bill> getBillsByCollectingOwn() {
