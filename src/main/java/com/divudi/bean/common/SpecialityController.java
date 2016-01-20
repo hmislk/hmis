@@ -170,7 +170,7 @@ public class SpecialityController implements Serializable {
         return selectText;
     }
 
-    private void recreateModel() {
+    public void recreateModel() {
         items = null;
     }
 

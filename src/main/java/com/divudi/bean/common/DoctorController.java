@@ -39,6 +39,8 @@ public class DoctorController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    SpecialityController specialityController;
     @EJB
     private DoctorFacade ejbFacade;
     @EJB
@@ -59,7 +61,7 @@ public class DoctorController implements Serializable {
         } else {
             sql = " select p from Doctor p "
                     + " where p.retired=false "
-                    + " and upper(p.person.name) like :q "
+                    + " and (upper(p.person.name) like :q or upper(p.code) like :q) "
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
@@ -98,9 +100,10 @@ public class DoctorController implements Serializable {
 
         return selectedItems;
     }
-
+    
     public void prepareAdd() {
         current = new Doctor();
+        specialityController.recreateModel();
     }
 
     public void delete() {
