@@ -379,11 +379,14 @@
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
                                     </p:column>
-                                    <p:column headerText="Item Id">
+                                    <p:column headerText="BillItem Id">
                                         <h:outputLabel value="#{bip21.id}" />
                                     </p:column>
-                                    <p:column headerText="Ref Id">
+                                    <p:column headerText="Ref. Bill Id">
                                         <h:outputLabel value="#{bip21.referenceBill.id}" />
+                                    </p:column>
+                                    <p:column headerText="Item Department">
+                                        <h:outputLabel value="#{bip21.item.department.name}" />
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Item</f:facet>
