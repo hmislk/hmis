@@ -32,12 +32,14 @@
                         <h:outputLabel value="#{channelReportController.serviceSession.name}" />
                     </f:facet>
                     <p:column headerText="No">#{bs.serialNo}</p:column>               
-                    <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                    <p:column headerText="Patient Name" >
+                        <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" />
+                    </p:column>
                     <p:column headerText="Bill No">
                         <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}" />
                         <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}" />
                     </p:column>
-
+                    <p:column headerText="Agent">#{bs.bill.creditCompany.institutionCode}</p:column>  
                     <p:column headerText="Paid or Not">
                         <p:outputLabel rendered="#{bs.bill.balance ne 0.0}" value="Credit" style="color: red;"/>
                         <p:outputLabel rendered="#{bs.bill.balance eq 0.0}" value="Paid" style="color: green;"/>

@@ -399,6 +399,11 @@ public class SheduleController implements Serializable {
             UtilityController.addErrorMessage("Set Weekday or Date");
             return true;
         }
+        
+        if (current.getSessionWeekday() != null && getCurrent().getSessionDate() != null) {
+            UtilityController.addErrorMessage("Ycan Select Only Weekday or Date");
+            return true;
+        }
 
         if (speciality == null) {
             UtilityController.addErrorMessage("Plaese Select Specility");

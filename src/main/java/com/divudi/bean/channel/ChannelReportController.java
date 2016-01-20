@@ -3659,6 +3659,58 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
+    
+    public void createTotalDoctor(Date date) {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select bs.bill From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.bill.staff.person.name ";
+
+        m.put("ssDate", date);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("bills = " + bills.size());
+        Set<Staff> consultant = new HashSet();
+        for (Bill b : bills) {
+            consultant.add(b.getStaff());
+        }
+
+        for (Staff c : consultant) {
+            ChannelDoctor cd = new ChannelDoctor();
+            cd.setConsultant(c);
+            channelDoctors.add(cd);
+        }
+
+        for (ChannelDoctor cd : channelDoctors) {
+            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+            for (Bill b : bills) {
+                System.out.println("b = " + b.getStaff().getPerson().getName());
+                System.out.println("b = " + b.getBillClass());
+                if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
+                    if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid) {
+                        if (b instanceof BilledBill) {
+                            cd.setBillCount(cd.getBillCount() + 1);
+                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof CancelledBill) {
+                            cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
+                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof RefundBill) {
+                            cd.setRefundedCount(cd.getRefundedCount() + 1);
+                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        calTotal();
+
+    }
 
     public void createTodayAbsentList() {
 
