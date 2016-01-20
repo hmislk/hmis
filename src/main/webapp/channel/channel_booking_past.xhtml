@@ -650,6 +650,7 @@
                                 </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingPastController.selectedBillSession.absent}" >
+                                    <p:ajax process="@this" event="change" listener="#{bookingPastController.listnerMarkAbsent}" />
                                 </p:selectBooleanCheckbox>
 
                                 <p:commandButton ajax="false" value="Update Serial" action="#{bookingPastController.updateSerial()}"
