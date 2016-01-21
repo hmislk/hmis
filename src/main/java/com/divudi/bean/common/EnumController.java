@@ -165,6 +165,22 @@ public class EnumController implements Serializable {
         return Title.values();
     }
 
+    public Title[] getTitleDoctor() {
+        Title[] tem = {
+            Title.Dr,
+            Title.DrMrs,
+            Title.DrMs,
+            Title.DrMiss,
+            Title.Prof,
+            Title.ProfMrs,
+            Title.Mr,
+            Title.Ms,
+            Title.Miss,
+            Title.Mrs,
+            Title.Other,};
+        return tem;
+    }
+
     public Sex[] getSex() {
         return Sex.values();
     }
