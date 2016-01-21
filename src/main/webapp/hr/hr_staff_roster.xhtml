@@ -11,8 +11,8 @@
         <h:form>
             <p:panel header="Manage Staff Roster" >
                 <h:panelGrid id ="gpVeda" columns="2" >
-                    
-                    <h:panelGrid id="gpDetail" columns="2">
+
+                    <h:panelGrid id="gpDetail" columns="1">
                         <p:panel>
                             <h:panelGrid id="gpDetailText" columns="2">                               
                                 <h:outputText  value="Roster" ></h:outputText>
@@ -30,22 +30,37 @@
                                 <p:defaultCommand target="btnAddStaff"/>
                             </h:panelGrid>
                         </p:panel>
-                        <p:panel id="col">                            
+                        <p:panel id="col" styleClass="noBorder summeryBorder">
+                            <f:facet name="header">
+                                <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                                    <p:printer target="col" />
+                                </p:commandButton>
+                            </f:facet>
                             <p:dataTable  value="#{rosterStaffController.staffList}" var="s">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Staff List"/>
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/><br></br>
+                                    <h:outputLabel value="Staff List"/><br></br>
+                                    <h:outputLabel value="Roster : #{rosterStaffController.currentRoster.name}" rendered="#{rosterStaffController.currentRoster ne null}"/><br></br>
+                                    <h:outputLabel value="Department : #{rosterStaffController.currentRoster.department.name}" rendered="#{rosterStaffController.currentRoster ne null}"/>
                                 </f:facet>                               
-                                <p:column>
+                                <p:column headerText="Staff" >
                                     <h:outputLabel value="#{s.person.nameWithTitle}"/>
                                 </p:column>
-                                 <p:column>
+                                <p:column headerText="Code" >
                                     <h:outputLabel value="#{s.code}"/>
                                 </p:column>
-                                <p:column>
+                                <p:column styleClass="noPrintButton">
                                     <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >  
                                         <f:setPropertyActionListener value="#{s}" target="#{rosterStaffController.currentStaff}"/>
                                     </p:commandLink>  
                                 </p:column>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>                      
                     </h:panelGrid>
