@@ -73,6 +73,15 @@
                                     <f:convertDateTime pattern="HH:mm" />
                                 </p:outputLabel>
                             </p:column>
+                            
+                            <p:column>
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Ending Time" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.serviceSession.sessionDate}" >
+                                    <f:convertDateTime pattern="yyyy MMM dd" />
+                                </p:outputLabel>
+                            </p:column>
                             <p:column>
                                 <f:facet name="header" >
                                     <p:outputLabel value="WeekDays" />
