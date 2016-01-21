@@ -49,16 +49,25 @@
                                         <h:outputText value="Bill No (Dept Id) :" ></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.deptId}" />
 
-                                        <h:outputText value="Billed bill:" ></h:outputText>
+                                        <h:outputText value="Billed bill:" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.billedBill.id}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
-                                        <h:outputText value="Billed bill No (Ins Id) :" ></h:outputText>
+                                        <h:outputText value="Billed bill No (Ins Id) :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputText>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.insId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
 
-                                        <h:outputLabel value="Billed bill No (Dept Id) :" ></h:outputLabel>
+                                        <h:outputLabel value="Billed bill No (Dept Id) :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
+                                        
+                                        <h:outputText value="Paid bill:" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputText>
+                                        <h:outputText value="#{billSearch.billSearch.paidBill.id}" rendered="#{billSearch.billSearch.paidBill ne null}" />
 
-                                        <h:outputLabel value="Billed bill Date :" ></h:outputLabel>
+                                        <h:outputText value="Paid bill No (Ins Id) :" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputText>
+                                        <p:inputText value="#{billSearch.billSearch.paidBill.insId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
+
+                                        <h:outputLabel value="Paid bill No (Dept Id) :" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.paidBill.deptId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
+
+                                        <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
                                         <h:outputLabel value="Cancelled" ></h:outputLabel>
@@ -257,6 +266,30 @@
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
                                     </p:column>
+                                    <p:column style="width:6%">  
+                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
+                                        </p:rowEditor>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Bill</f:facet>
+                                        <h:outputLabel value="#{bip.bill.deptId} - "/>
+                                        <h:outputLabel value="#{bip.bill.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill Edit">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.bill.deptId}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.bill}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Bill paid</f:facet>
+                                        <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.deptId} - "/>
+                                        <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.id}"/>
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Fee Id</f:facet>
                                         <h:outputLabel value="#{bip.id}"/>
@@ -356,10 +389,7 @@
                                         </p:cellEditor>  
 
                                     </p:column>
-                                    <p:column style="width:6%">  
-                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
-                                        </p:rowEditor>
-                                    </p:column>
+                                    
                                     <p:column>
                                         <f:facet name="header">Retired</f:facet>
                                         <p:selectBooleanCheckbox value="#{bip.retired}" ></p:selectBooleanCheckbox>
@@ -371,13 +401,35 @@
                                 </p:dataTable>
                             </p:panel>
                             <p:panel header="Bill Item Detail">
-                                <p:dataTable value="#{billSearch.billItemList}" editable="true"  var="bip21" emptyMessage="No Items" rowIndexVar="rowIndex">
-
+                                <p:dataTable value="#{billSearch.billItemList}"
+                                             editable="true"  var="bip21" rowIndexVar="rowIndex">
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
-                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" />  
+                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" /> 
                                     <p:column>
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
+                                    </p:column>
+                                    <p:column style="width:6%">  
+                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
+                                        </p:rowEditor>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <h:outputLabel value="#{bip21.bill.deptId} - " />
+                                        <h:outputLabel value="#{bip21.bill.id}" />
+                                    </p:column>
+                                    <p:column headerText="bill edit">
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.bill.deptId}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.bill}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column headerText="Bill paid">
+                                        <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.deptId} - " />
+                                        <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.id}" />
                                     </p:column>
                                     <p:column headerText="BillItem Id">
                                         <h:outputLabel value="#{bip21.id}" />
@@ -392,10 +444,10 @@
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip21.item.name}"/>
                                     </p:column>
-                                    <p:column headerText="1">
+                                    <p:column headerText="1" rendered="#{bip21.paidForBillFee}">
                                         <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
                                     </p:column>
-                                    <p:column headerText="2">
+                                    <p:column headerText="2" rendered="#{bip21.paidForBillFee}">
                                         <p:cellEditor>
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
@@ -458,10 +510,7 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
-                                    <p:column style="width:6%">  
-                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
-                                        </p:rowEditor>
-                                    </p:column>  
+                                      
                                     <p:column>
                                         <f:facet name="header">Retired</f:facet>
                                         <p:selectBooleanCheckbox value="#{bip21.retired}" ></p:selectBooleanCheckbox>

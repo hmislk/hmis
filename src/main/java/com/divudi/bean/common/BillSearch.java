@@ -344,18 +344,20 @@ public class BillSearch implements Serializable {
     public void onEditItem(RowEditEvent event) {
 
         BillItem tmp = (BillItem) event.getObject();
-
+        System.out.println("tmp.getBill().getDeptId() = " + tmp.getBill().getDeptId());
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
-
+        getBillItemFacade().edit(tmp);
         //System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
-        getBillFeeFacade().edit(tmp.getPaidForBillFee());
+        if (tmp.getPaidForBillFee()!=null) {
+            getBillFeeFacade().edit(tmp.getPaidForBillFee());
+        }
         //System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
 //        if (tmp.getPaidValue() != 0.0) {
 //            UtilityController.addErrorMessage("Already Staff FeePaid");
 //            return;
 //        }
-        getBillItemFacade().edit(tmp);
+        System.out.println("tmp.getBill().getDeptId() = " + tmp.getBill().getDeptId());
 
     }
 
