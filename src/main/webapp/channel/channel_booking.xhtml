@@ -40,7 +40,8 @@
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/>
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} :#{p:component('tblBookingsOfSelectedSession')}" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
                             <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
@@ -67,7 +68,7 @@
                                  style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
                                  selectionMode="single" >
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
-                            <h:outputText id="lblConName" value="#{mys.person.name}" />
+                            <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
                             <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
                                           showDelay="0" hideDelay="0" 
                                           atPosition="left bottom" ></poue:tooltip>
@@ -381,7 +382,7 @@
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu id="somNewPtTitle" value="#{channelBillController.newPatient.person.title}"  >
                                     <f:selectItem itemLabel="Select Title"/>
-                                    <f:selectItems value="#{billController.title}"/>
+                                    <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
@@ -708,6 +709,8 @@
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Bill Id"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}"/>
+                                        <p:outputLabel value="Cancel Id(Booking)" rendered="#{webUserController.hasPrivilege('Developers')}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.cancelledBill.deptId}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         <p:outputLabel value="Payment Method"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>

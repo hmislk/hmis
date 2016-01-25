@@ -3865,10 +3865,10 @@ public class HrReportController implements Serializable {
         System.out.println("staffs.size() = " + staffs.size());
         for (Staff s : staffs) {
             SalaryAndDeletaedDetail sadd = new SalaryAndDeletaedDetail();
-            List<StaffSalary> sSalarys=new ArrayList<>();
+            List<StaffSalary> sSalarys = new ArrayList<>();
             String sql;
             HashMap hm = new HashMap();
-            sql = createStaffSalaryDeletedQuary(hm,s);
+            sql = createStaffSalaryDeletedQuary(hm, s);
             System.out.println("sql = " + sql);
             System.out.println("hm = " + hm);
             sSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
@@ -3921,6 +3921,10 @@ public class HrReportController implements Serializable {
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
     double totaldayOffAllowance = 0.0;
     double totaldayOffCount = 0.0;
+    double totalEpfStaffValue = 0.0;
+    double totalEpfCompanyValue = 0.0;
+    double totalEtfCompanyValue = 0.0;
+    double totalBasicValue = 0.0;
 
     public void calTableTotal(List<StaffSalary> stfSal) {
 
@@ -3940,6 +3944,10 @@ public class HrReportController implements Serializable {
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
         totaldayOffAllowance = 0.0;
         totaldayOffCount = 0.0;
+        totalEpfStaffValue = 0.0;
+        totalEpfCompanyValue = 0.0;
+        totalEtfCompanyValue = 0.0;
+        totalBasicValue = 0.0;
 
         for (StaffSalary totStaffSalary : stfSal) {
             totalOvertimeMinit += totStaffSalary.getOverTimeMinute();
@@ -3958,6 +3966,10 @@ public class HrReportController implements Serializable {
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
             totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
             totaldayOffCount += totStaffSalary.getDayOffCount();
+            totalEpfStaffValue += totStaffSalary.getEpfStaffValue();
+            totalEpfCompanyValue += totStaffSalary.getEpfCompanyValue();
+            totalEtfCompanyValue += totStaffSalary.getEtfCompanyValue();
+            totalBasicValue += totStaffSalary.getBasicValue();
 
         }
 
@@ -5007,6 +5019,38 @@ public class HrReportController implements Serializable {
 
     public void setSalaryAndDeletaedDetails(List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails) {
         this.salaryAndDeletaedDetails = salaryAndDeletaedDetails;
+    }
+
+    public double getTotalEpfStaffValue() {
+        return totalEpfStaffValue;
+    }
+
+    public void setTotalEpfStaffValue(double totalEpfStaffValue) {
+        this.totalEpfStaffValue = totalEpfStaffValue;
+    }
+
+    public double getTotalEpfCompanyValue() {
+        return totalEpfCompanyValue;
+    }
+
+    public void setTotalEpfCompanyValue(double totalEpfCompanyValue) {
+        this.totalEpfCompanyValue = totalEpfCompanyValue;
+    }
+
+    public double getTotalEtfCompanyValue() {
+        return totalEtfCompanyValue;
+    }
+
+    public void setTotalEtfCompanyValue(double totalEtfCompanyValue) {
+        this.totalEtfCompanyValue = totalEtfCompanyValue;
+    }
+
+    public double getTotalBasicValue() {
+        return totalBasicValue;
+    }
+
+    public void setTotalBasicValue(double totalBasicValue) {
+        this.totalBasicValue = totalBasicValue;
     }
 
 }

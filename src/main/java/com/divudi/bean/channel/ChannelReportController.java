@@ -3891,7 +3891,7 @@ public class ChannelReportController implements Serializable {
         sql += " and b.billType=:bt ";
         m.put("bt", BillType.ChannelAgent);
 
-        sql += " order by b.deptId ";
+        sql += " order by b.creditCompany.name ";
 //        m.put("class", BilledBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());

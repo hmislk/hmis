@@ -457,7 +457,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
+//        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
 
@@ -510,7 +510,8 @@ public class ChannelBillController implements Serializable {
             getBillFacade().edit(bill);
 
             RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
-            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
+            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rpb);
+            createReturnBillFee(billFees, rpb, rpBilItm);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
@@ -744,11 +745,12 @@ public class ChannelBillController implements Serializable {
 
         //dr. buddhika said
         if (bill.getPaidBill() == null) {
-            System.out.println("bill = " + bill);
+            System.out.println("bill.getPaidBill() = " + bill);
             return;
         }
 
         if (bill.getPaidBill().equals(bill)) {
+            System.err.println("Cash Bill");
             CancelledBill cb = createCancelBill(bill);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
@@ -767,7 +769,9 @@ public class ChannelBillController implements Serializable {
             billSessionFacade.edit(billSession);
 
         } else {
+            System.err.println("Paid Bill");
             CancelledBill cb = createCancelBill(bill);
+            System.out.println("billItem = " + billItem);
             BillItem cItem = cancelBillItems(billItem, cb);
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
@@ -777,7 +781,7 @@ public class ChannelBillController implements Serializable {
             billSessionFacade.edit(billSession);
 
             CancelledBill cpb = createCancelBill(bill.getPaidBill());
-            BillItem cpItem = cancelBillItems(bill.getPaidBill().getSingleBillItem(), cb);
+            BillItem cpItem = cancelBillItems(bill.getPaidBill().getSingleBillItem(), cpb);
             BillSession cpbs = cancelBillSession(billSession.getPaidBillSession(), cpb, cpItem);
             bill.getPaidBill().setCancelled(true);
             bill.getPaidBill().setCancelledBill(cpb);
@@ -822,6 +826,7 @@ public class ChannelBillController implements Serializable {
         getBillItemFacade().create(b);
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
         List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+        System.out.println("tmp.size() = " + tmp.size());
         cancelBillFee(can, b, tmp);
 
         return b;
