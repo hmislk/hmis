@@ -68,7 +68,7 @@
                                  style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
                                  selectionMode="single" >
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
-                            <h:outputText id="lblConName" value="#{mys.person.name}" />
+                            <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
                             <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
                                           showDelay="0" hideDelay="0" 
                                           atPosition="left bottom" ></poue:tooltip>
@@ -382,7 +382,7 @@
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu id="somNewPtTitle" value="#{channelBillController.newPatient.person.title}"  >
                                     <f:selectItem itemLabel="Select Title"/>
-                                    <f:selectItems value="#{billController.title}"/>
+                                    <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">

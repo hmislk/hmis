@@ -325,8 +325,8 @@ public class StaffSalaryController implements Serializable {
             return false;
         }
 //#311
-        if ((getSalaryCycle().getDayOffPhFromDate().getTime() < date.getTime()
-                && getSalaryCycle().getDayOffPhToDate().getTime() > date.getTime())) {
+        if ((getSalaryCycle().getSalaryFromDate().getTime() < date.getTime()
+                && getSalaryCycle().getSalaryToDate().getTime() > date.getTime())) {
 
             return true;
         }
@@ -351,7 +351,17 @@ public class StaffSalaryController implements Serializable {
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             //#311
             double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
-            System.out.println("workedDays = " + workedDays);
+            System.out.println("1.workedDays = " + workedDays);
+            if (salaryCycle.getDayOffPhToDate().getTime()<getCurrent().getStaff().getDateJoined().getTime()) {
+                long extraDays=(salaryCycle.getSalaryToDate().getTime()-getCurrent().getStaff().getDateJoined().getTime())/(1000*60*60*24);
+                System.out.println("extraDays = " + extraDays);
+                workedDays+=extraDays;
+            }
+            System.out.println("2.workedDays = " + workedDays);
+            //remove offdays 
+            workedDays-=(int)(workedDays/7);
+            System.out.println("3.workedDays = " + workedDays);
+            
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
                 return value;
             } else {

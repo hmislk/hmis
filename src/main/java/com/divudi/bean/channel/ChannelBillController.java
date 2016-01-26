@@ -457,7 +457,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
+//        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
 
@@ -510,7 +510,8 @@ public class ChannelBillController implements Serializable {
             getBillFacade().edit(bill);
 
             RefundBill rpb = (RefundBill) createRefundBill(bill.getPaidBill());
-            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
+            BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rpb);
+            createReturnBillFee(billFees, rpb, rpBilItm);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
 
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
