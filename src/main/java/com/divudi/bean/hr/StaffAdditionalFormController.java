@@ -991,8 +991,8 @@ public class StaffAdditionalFormController implements Serializable {
         Map m = new HashMap();
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
-                + " and c.salaryFromDate<:d "
-                + " and c.salaryToDate>:d ";
+                + " and c.dayOffPhFromDate<:d "
+                + " and c.dayOffPhToDate>:d ";
         m.put("d", d);
 
         return salaryCycleFacade.findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
