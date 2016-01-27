@@ -20,6 +20,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -221,6 +222,19 @@ public class StaffController implements Serializable {
                 + " s.retired=false "
                 + " and (type(s)!=:class1"
                 + " and type(s)!=:class2)"
+                + " order by s.code ";
+        HashMap hm = new HashMap();
+        hm.put("class1", Doctor.class);
+        hm.put("class2", Consultant.class);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+    }
+    
+    public void createDoctorsOnly() {
+
+        String sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and (type(s)=:class1"
+                + " or type(s)=:class2)"
                 + " order by s.code ";
         HashMap hm = new HashMap();
         hm.put("class1", Doctor.class);
