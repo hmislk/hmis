@@ -15,7 +15,7 @@
 
             <p:panel>
                 <f:facet name="header" >                
-                     <h:outputLabel value="Summary By Investigation Category"/>
+                    <h:outputLabel value="Summary By Investigation Category"/>
                     <h:panelGrid columns="2" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
@@ -98,7 +98,7 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.item.name}" />
                 </p:column>
-                
+
                 <p:column headerText="Doctor Name">
                     <f:facet name="header">
                         <h:outputLabel value="Doctor Name" />
@@ -126,7 +126,7 @@
                         </p:column>
 
 
-                        <p:column colspan="4" footerText="COUNT  (#{serviceSummery.count})">
+                        <p:column colspan="5" footerText="COUNT  (#{serviceSummery.count})">
                             <f:facet name="footer">
                                 <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
                                 </h:outputLabel>
