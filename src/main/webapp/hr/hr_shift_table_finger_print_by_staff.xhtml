@@ -267,7 +267,9 @@
                             <h:outputLabel value="No Records" rendered="#{sts.endRecord eq null}"/>
                         </h:panelGroup>
                     </p:column>
-
+                    <p:column headerText="Clear dates"  styleClass="fixedColumn200">
+                        <p:commandButton value="Clear" action="#{shiftFingerPrintAnalysisController.listenClear(sts)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}" />
+                    </p:column>
 
                 </p:dataTable>  
             </p:dataGrid>
