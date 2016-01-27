@@ -308,7 +308,7 @@
                                         <p:separator ></p:separator>
 
                                         <p:outputLabel value="Bill No"/>
-                                        <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.insId}"/>
+                                        <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.deptId}"/>
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingPastController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -384,7 +384,7 @@
                                 <p:panel header="Settling" rendered="#{(bookingPastController.selectedBillSession.bill.paidBill ne bookingPastController.selectedBillSession.bill) and bookingPastController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Bill Id"/>
-                                        <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.paidBill.insId}"/>
+                                        <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.paidBill.deptId}"/>
                                         <p:outputLabel value="Payment Method"/>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.bill.paidBill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingPastController.selectedBillSession.bill.paidBill.paymentMethod eq 'Agent'}"/>
@@ -650,6 +650,7 @@
                                 </p:inputText>
                                 <p:outputLabel value="Mark As Absent"/>
                                 <p:selectBooleanCheckbox value="#{bookingPastController.selectedBillSession.absent}" >
+                                    <p:ajax process="@this" event="change" listener="#{bookingPastController.listnerMarkAbsent}" />
                                 </p:selectBooleanCheckbox>
 
                                 <p:commandButton ajax="false" value="Update Serial" action="#{bookingPastController.updateSerial()}"
@@ -824,7 +825,7 @@
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Doctor" action="channel_doctor_view_past" actionListener="#{channelReportController.createTotalDoctor(bookingPastController.date)}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                         <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" onclick="onSubmitButton();">     
                                             <f:setPropertyActionListener value="#{bookingPastController.date}" target="#{channelReportController.date}"/>

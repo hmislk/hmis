@@ -104,7 +104,7 @@ public class ServiceSessionLeaveController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getDeactivateComment() == null) {
+        if (getCurrent().getDeactivateComment() == null || getCurrent().getDeactivateComment().isEmpty()) {
             UtilityController.addErrorMessage("Please Enter a Reson For Leave");
             return true;
         }
@@ -117,7 +117,7 @@ public class ServiceSessionLeaveController implements Serializable {
 
     private boolean errorCheckForServiceSessoinLeaveByDate() {
 
-        if (getCurrent().getDeactivateComment() == null) {
+        if (getCurrent().getDeactivateComment() == null ||getCurrent().getDeactivateComment().isEmpty()) {
             UtilityController.addErrorMessage("Please Enter a Reson For Leave");
             return true;
         }

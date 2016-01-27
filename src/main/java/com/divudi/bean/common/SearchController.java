@@ -4287,12 +4287,12 @@ public class SearchController implements Serializable {
                 + " b.id is not null ";
 
         if (!getSearchKeyword().getInsId().isEmpty()) {
-            sql += " and b.insId=:insId  ";
+            sql += " and (b.insId=:insId or b.deptId=:insId)  ";
             m.put("insId", getSearchKeyword().getInsId());
         }
 
         if (!getSearchKeyword().getDeptId().isEmpty()) {
-            sql += " and b.deptId=:deptId  ";
+            sql += " and (b.insId=:deptId or b.deptId=:deptId)  ";
             m.put("deptId", getSearchKeyword().getDeptId());
         }
 

@@ -12,6 +12,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.Title;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -89,6 +90,8 @@ public class BookingPastController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    CommonFunctions commonFunctions;
     ///////////////////
     @EJB
     private StaffFacade staffFacade;
@@ -299,6 +302,42 @@ public class BookingPastController implements Serializable {
         }
 
         return flag;
+    }
+    
+    public void listnerMarkAbsent() {
+        Date td=getCommonFunctions().getEndOfDay();
+        Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
+        System.out.println("fd = " + fd);
+        System.out.println("td = " + td);
+        long lng = getCommonFunctions().getDayCount(fd, td);
+        System.out.println("lng = " + lng);
+        if (Math.abs(lng) > 2) {
+            UtilityController.addErrorMessage("Date Range is too Long");
+            return;
+        }
+        if (getSelectedBillSession().isAbsent()) {
+            getSelectedBillSession().setAbsentMarkedAt(new Date());
+            getSelectedBillSession().setAbsentMarkedUser(getSessionController().getLoggedUser());
+        }else{
+            getSelectedBillSession().setAbsentUnmarkedAt(new Date());
+            getSelectedBillSession().setAbsentUnmarkedUser(getSessionController().getLoggedUser());
+        }
+
+        getBillSessionFacade().edit(getSelectedBillSession());
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        if (getSelectedBillSession().isAbsent()) {
+            UtilityController.addSuccessMessage("Mark As Absent");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
+        }else{
+            UtilityController.addSuccessMessage("Mark As Present");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
+        }
     }
 
     public void updateSerial() {
@@ -967,5 +1006,13 @@ public class BookingPastController implements Serializable {
 
     public void setSelectTextSession(String selectTextSession) {
         this.selectTextSession = selectTextSession;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 }

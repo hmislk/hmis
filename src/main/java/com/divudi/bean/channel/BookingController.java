@@ -991,6 +991,14 @@ public class BookingController implements Serializable {
             listnerStaffListForRowSelect();
         }
     }
+    
+    public void listnerClearSelectedServiceSession() {
+        selectedServiceSession=null;
+        billSessions=null;
+        selectedBillSession=null;
+        getChannelCancelController().makeNull();
+        getChannelBillController().setBillSession(null);
+    }
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
@@ -1079,8 +1087,8 @@ public class BookingController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().makeNull();
-        getChannelCancelController().setBillSession(selectedBillSession);
+        getChannelBillController().makeNull();
+        getChannelBillController().setBillSession(selectedBillSession);
     }
 
     public BillFeeFacade getBillFeeFacade() {

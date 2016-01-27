@@ -256,8 +256,6 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
     }
-    
-    
 
     ReportKeyWord reportKeyWord;
 
@@ -363,18 +361,76 @@ public class StaffController implements Serializable {
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
         }
     }
-    
-    public void createActiveStaffOnylSalaryGeneratedTable(){
-        staffWithCode=new ArrayList<>();
+
+    public void createResignedStaffTable() {
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 "
+                + " and ss.employeeStatus!=:sts"
+                + " and ss.dateLeft >:fd "
+                + " and ss.dateLeft < :to ";
+        hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
+        hm.put("fd", staffSalaryController.getSalaryCycle().getSalaryFromDate());
+
+        hm.put("sts", EmployeeStatus.Temporary);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.codeInterger ";
+        System.out.println(sql);
+        System.out.println("hm = " + hm);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        selectedStaffes = staffWithCode;
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
+        for (Staff s : staffWithCode) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+        }
+    }
+
+    public void createActiveStaffOnylSalaryGeneratedTable() {
+        staffWithCode = new ArrayList<>();
         hrReportController.setReportKeyWord(reportKeyWord);
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
-        staffWithCode=hrReportController.fetchOnlySalaryGeneratedStaff();
+        staffWithCode = hrReportController.fetchOnlySalaryGeneratedStaff();
     }
-    
-    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate){
-        List<Staff> salaryGeneratedStaff=new ArrayList<>();
+
+    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
+        List<Staff> salaryGeneratedStaff = new ArrayList<>();
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
-        salaryGeneratedStaff=hrReportController.fetchOnlySalaryGeneratedStaff();
+        salaryGeneratedStaff = hrReportController.fetchOnlySalaryGeneratedStaff();
         createActiveStaffTable(ssDate);
         System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
@@ -491,7 +547,7 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeConsultant(String query) {
         List<Staff> suggestions;
         String sql;
@@ -512,7 +568,7 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeStaffCodeChannel(String query) {
         List<Staff> suggestions;
         String sql;
@@ -641,7 +697,6 @@ public class StaffController implements Serializable {
         hm.put("sp", speciality);
         ss = getFacade().findBySQL(sql, hm);
 
-
         return ss;
     }
 
@@ -752,14 +807,12 @@ public class StaffController implements Serializable {
         ////System.out.println("Printing");
         if (temStaff == null) {
             return new DefaultStreamedContent();
+        } else if (temStaff.getId() != null && temStaff.getBaImage() != null) {
+            ////System.out.println(temStaff.getFileType());
+            ////System.out.println(temStaff.getFileName());
+            return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
         } else {
-            if (temStaff.getId() != null && temStaff.getBaImage() != null) {
-                ////System.out.println(temStaff.getFileType());
-                ////System.out.println(temStaff.getFileName());
-                return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
-            } else {
-                return new DefaultStreamedContent();
-            }
+            return new DefaultStreamedContent();
         }
     }
 
@@ -1145,9 +1198,6 @@ public class StaffController implements Serializable {
         staffes = getFacade().findBySQL(temSql);
     }
 
-    
-    
-    
     public List<Staff> getItemsToRemove() {
         return itemsToRemove;
     }

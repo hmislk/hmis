@@ -316,7 +316,9 @@
                                         <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
                                         <h:outputText id="lblAddressD" value="Address" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                        <h:outputText value="Speciality" ></h:outputText>                                    
+                                        <h:outputText value="Code" ></h:outputText>   
+                                        <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
+                                        <h:outputText value="Speciality" ></h:outputText>
                                         <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
                                             <f:selectItem itemLabel="Please select a speciality"/>
                                             <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
@@ -337,7 +339,15 @@
                                 <h:panelGroup id="panelBillReferrals" >
                                     <p:tabView >
                                         <p:tab title="Refering Doctor">
-                                            <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" 
+                                                            completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                            itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                                <p:column headerText="Name" >
+                                                    <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="Code" >
+                                                    <h:outputLabel value="#{ix.code}" ></h:outputLabel>
+                                                </p:column>
                                             </p:autoComplete>
                                             <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
 
@@ -564,7 +574,7 @@
 
                 <h:panelGroup rendered="#{billController.printPreview}" >
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                        
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false 
                                                   and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
                                                   and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
@@ -589,7 +599,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
-                        
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">
@@ -610,7 +620,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
-                        
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.fiveFivePaperWithHeadings eq true}">
 
                             <div class="nonPrintBlock">
@@ -631,7 +641,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
-                        
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">
 
                             <div class="nonPrintBlock">
