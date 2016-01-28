@@ -213,7 +213,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <h:panelGroup   id="gpBillPreview">
-                            <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
+                            <salary:pay_slip_2 bill="#{staffSalaryController.current}"></salary:pay_slip_2>
                         </h:panelGroup>
                     </p:tab>
 
@@ -240,7 +240,7 @@
                 <h:panelGroup id="gpBillPreviewAll">
                     <div style="page-break-after: always;">
                         <ui:repeat value="#{staffSalaryController.getSelectedStaffSalaryList}" var="b">
-                            <salary:pay_slip bill="#{b}"></salary:pay_slip>                        
+                            <salary:pay_slip_2 bill="#{b}"></salary:pay_slip_2>                        
                         </ui:repeat>
                     </div>                                
                 </h:panelGroup>
