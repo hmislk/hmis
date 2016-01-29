@@ -1691,7 +1691,36 @@ public class StaffSalaryController implements Serializable {
         sql += " order by ss.staff.codeInterger";
 
         items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        
+        List<PaysheetComponent> paysheetComponentsAddition;
+        List<PaysheetComponent> paysheetComponentsSubstraction;
+        paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getSalaryCycle());
+        paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
+        for (StaffSalary s : items) {
+            for (PaysheetComponent psc : paysheetComponentsAddition) {
+                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());                  
+                Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
+                if (c != null) {
+                    c.setComponantValue(dbl);
+                    s.getTransStaffSalaryComponantsAddition().add(c);
+                } else {
+                    s.getTransStaffSalaryComponantsAddition().add(new StaffSalaryComponant(0, psc));
 
+                }
+            }
+            for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());
+                Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
+
+                if (c != null) {
+                    c.setComponantValue(0-dbl);
+                    s.getTransStaffSalaryComponantsSubtraction().add(c);
+                } else {
+                    s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
+                }
+            }
+
+        }
     }
 
     public void saveSalary() {
