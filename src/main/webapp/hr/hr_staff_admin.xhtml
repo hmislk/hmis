@@ -101,7 +101,7 @@
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.nameWithInitials}"  styleClass="longText" />
 
                                             <p:outputLabel  value="NIC No" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  value="#{staffController.current.person.nic}"  />
+                                            <p:inputMask mask="999999999V" value="#{staffController.current.person.nic}" />
 
                                             <p:outputLabel  value="Address" ></p:outputLabel>
                                             <p:inputTextarea  value="#{staffController.current.person.address}"  styleClass="longText"  />
@@ -280,7 +280,7 @@
                                             <p:outputLabel value="Bank Branch"/>                                           
                                             <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <p:outputLabel  value="Account No" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}"  />
+                                            <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}" styleClass="mediuminput"  />
                                             <p:separator/>
                                             <p:separator/>
                                             <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     

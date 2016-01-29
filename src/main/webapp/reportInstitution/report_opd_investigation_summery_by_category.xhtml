@@ -82,6 +82,13 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.insId}" />
                 </p:column>
+                
+                <p:column headerText="Billed bill No">
+                    <f:facet name="header">
+                        <h:outputLabel value="Billed bill No" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
+                </p:column>
 
                 <p:column headerText="Date">
                     <f:facet name="header">

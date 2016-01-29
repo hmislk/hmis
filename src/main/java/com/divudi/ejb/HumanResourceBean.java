@@ -3096,7 +3096,8 @@ public class HumanResourceBean {
                 + " and ss.extraTimeFromStartRecordVarified=:d "
                 + " and ss.extraTimeFromEndRecordVarified=:d "
                 + " and ss.extraTimeCompleteRecordVarified=:d "
-                + " and ss.staff=:stf ";
+                + " and ss.staff=:stf "
+                + " order by ss.shiftDate ";
 
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
@@ -3110,12 +3111,21 @@ public class HumanResourceBean {
         Double dbl = 0.0;
 
         if (list != null) {
-
+            StaffShift lastStaffShift = new StaffShift();
             for (StaffShift s : list) {
                 System.out.println("s = " + s);
+                System.out.println("lastStaffShift = " + lastStaffShift);
+                if (lastStaffShift != null) {
+                    System.out.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
+                    System.out.println("s.getShiftDate() = " + s.getShiftDate());
+                    if (lastStaffShift.getShiftDate() == s.getShiftDate()) {
+                        System.err.println("Dates Equal");
+                        continue;
+                    }
+                }
                 System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
                 dbl += s.getShift().isHalfShift() ? 0.5 : 1;
-
+                lastStaffShift = s;
             }
 
         }
@@ -3151,6 +3161,16 @@ public class HumanResourceBean {
                 + " and ss.dayType = :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
+
+        if (dayType == DayType.Poya) {
+            sql += " and ss.lieuAllowed=false "
+                    + " and ss.lieuQtyUtilized=0"
+                    + " and ss.extraTimeFromStartRecordVarified=:d "
+                    + " and ss.extraTimeFromEndRecordVarified=:d "
+                    + " and ss.extraTimeCompleteRecordVarified=:d ";
+            hm.put("d", 0.0);
+        }
+
         if (dayType == DayType.DayOff) {
             sql += " and type(ss)=:class "; //only get add forms for day off
             hm.put("class", StaffShiftExtra.class);
@@ -3166,8 +3186,17 @@ public class HumanResourceBean {
         Double lg = 0.0;
 
         if (list != null) {
+            StaffShift lastStaffShift = new StaffShift();
             for (StaffShift s : list) {
                 System.out.println("s = " + s);
+                if (lastStaffShift != null) {
+                    System.out.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
+                    System.out.println("s.getShiftDate() = " + s.getShiftDate());
+                    if (lastStaffShift.getShiftDate() == s.getShiftDate()) {
+                        System.err.println("Dates Equal");
+                        continue;
+                    }
+                }
                 System.out.println("s.getMultiplyingFactorSalary() = " + s.getMultiplyingFactorSalary());
                 System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
                 System.out.println("salaryPerDay = " + salaryPerDay);

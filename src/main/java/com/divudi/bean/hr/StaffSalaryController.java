@@ -330,8 +330,8 @@ public class StaffSalaryController implements Serializable {
             return false;
         }
 //#311
-        if ((getSalaryCycle().getSalaryFromDate().getTime() < date.getTime()
-                && getSalaryCycle().getSalaryToDate().getTime() > date.getTime())) {
+        if ((getSalaryCycle().getSalaryFromDate().getTime() <= date.getTime()
+                && getSalaryCycle().getSalaryToDate().getTime() >= date.getTime())) {
 
             return true;
         }
@@ -355,25 +355,27 @@ public class StaffSalaryController implements Serializable {
 
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             //#311
-            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
+            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             System.out.println("1.workedDays = " + workedDays);
             if (getCurrent().getStaff().getDateJoined() != null) {
-                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateJoined().getTime()) {
-                    long extraDays = (salaryCycle.getSalaryToDate().getTime() - getCurrent().getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
+                    long extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     System.out.println("New Come extraDays = " + extraDays);
+                    extraDays -= (int) (extraDays / 7);
+                    System.out.println("New Come extraDays(After) = " + extraDays);
                     workedDays += extraDays;
                 }
             }
-            if (getCurrent().getStaff().getDateLeft() != null) {
-                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
-                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-                    System.out.println("Resigned extraDays = " + extraDays);
-                    workedDays += extraDays;
-                }
-            }
+//            if (getCurrent().getStaff().getDateLeft() != null) {
+//                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
+//                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+//                    System.out.println("Resigned extraDays = " + extraDays);
+//                    workedDays += extraDays;
+//                }
+//            } becaause this pesonn must analyse to resign date
             System.out.println("2.workedDays = " + workedDays);
             //remove offdays 
-            workedDays -= (int) (workedDays / 7);
+//            workedDays -= (int) (workedDays / 7); because we get only working days not week days
             System.out.println("3.workedDays = " + workedDays);
 
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
@@ -1531,17 +1533,18 @@ public class StaffSalaryController implements Serializable {
                 Date lastAnalyseDate = fetchLastAnalysDate(s);
                 System.out.println("****lastAnalyseDate = " + lastAnalyseDate);
                 System.out.println("****s.getDateLeft() = " + s.getDateLeft());
-                if (checkDateRange(getCurrent().getStaff().getDateLeft())) {
-                    if (lastAnalyseDate.getTime() < s.getDateLeft().getTime()) {
+                System.out.println("getCurrent().getStaff().getDateLeft() = " + getCurrent().getStaff().getDateLeft());
+                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft()))&&getCurrent().getStaff().getDateLeft()!=null) {
+                    if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
-                        String rd = df.format(s.getDateLeft());
+                        String rd = df.format(getCurrent().getStaff().getDateLeft());
                         String ad = df.format(lastAnalyseDate);
                         JsfUtil.addErrorMessage("Last Analysed Date ( " + ad + " ) is less Than Resigned Date ( " + rd + " )."
                                 + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
                         continue;
                     }
-                    resetAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), s.getDateLeft());
-                    generateAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), s.getDateLeft());
+                    resetAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getCurrent().getStaff().getDateLeft());
+                    generateAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getCurrent().getStaff().getDateLeft());
                     fetchAndSetBankData();
                     addSalaryComponent();
                 } else {
