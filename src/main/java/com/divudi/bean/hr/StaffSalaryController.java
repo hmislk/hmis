@@ -1034,8 +1034,9 @@ public class StaffSalaryController implements Serializable {
                 }
             }
 
-            List<StaffPaysheetComponent> listSub = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryToDate(), PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
-
+            List<StaffPaysheetComponent> listSub = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryFromDate(), PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
+            System.out.println("listSub = " + listSub);
+            
             if (listSub != null) {
                 for (StaffPaysheetComponent spc : listSub) {
                     System.err.println("Loop 1 " + spc.getPaysheetComponent().getName());
