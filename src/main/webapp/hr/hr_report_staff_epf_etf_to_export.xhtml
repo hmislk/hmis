@@ -93,43 +93,37 @@
                                     </h:outputLabel>
 
                                 </f:facet>
-                                <p:column headerText="Employee Name">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Employee Name"  />
+                                <p:column headerText="Nic Number" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Nic Number" />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
-                                    </p:outputLabel>
-                                </p:column>  
-                                <p:column headerText="Nic No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Nic No"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nic}" >
-                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.staff.person.nic}" />
                                 </p:column>
-                                <p:column headerText="EPF No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="EPF No"  />
+
+                                <p:column headerText="Last Name" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Last Name" />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.epfNo}" >
-                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.staff.person.lastName}"/>
                                 </p:column>
-                                <p:column headerText="Total" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total"  />
+
+                                <p:column headerText="Initials">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Initials" />
                                     </f:facet>
-                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue+ss.epfStaffValue)}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel> 
-                                    <f:facet name="footer">
-                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue+hrReportController.totalEtfCompanyValue+hrReportController.totalEpfStaffValue)}">
-                                            <f:convertNumber pattern="0.00" />
-                                        </p:outputLabel> 
+                                    <p:outputLabel value="#{ss.staff.person.nameWithInitials}" />
+                                </p:column>
+
+                                <p:column headerText="Member AC Number">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Member AC Number" />
                                     </f:facet>
-                                </p:column> 
-                                <p:column headerText="Staff" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Staff"  />
+                                    <p:outputLabel value="#{ss.staff.accountNo}" />
+                                </p:column>
+
+                                <p:column headerText="Employer’s Contribution Amount (Rs.)" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Employer’s Contribution Amount (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel value="#{-ss.epfStaffValue}">
                                         <f:convertNumber pattern="0.00" />
@@ -140,11 +134,12 @@
                                         </p:outputLabel> 
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Company" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Company"  />
+
+                                <p:column headerText="Member’s Contribution Amount (Rs.)" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Member’s Contribution Amount (Rs.)" />
                                     </f:facet>
-                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue)}">
+                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue)}" >
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -153,19 +148,92 @@
                                         </p:outputLabel> 
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Basic Salary" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Basic Salary"  />
+
+
+
+                                <p:column headerText="Total Contribution Amount (Rs.)">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Total Contribution Amount (Rs.)" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue+ss.epfStaffValue)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue+hrReportController.totalEtfCompanyValue+hrReportController.totalEpfStaffValue)}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel> 
+                                    </f:facet>
+                                </p:column>
+
+
+
+                                <p:column headerText="Total Earnings (Rs.)">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Total Earnings (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.basicValue}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel> 
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel> 
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.totalBasicValue}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel> 
                                     </f:facet>
-                                </p:column>  
+                                </p:column>
+
+                                <p:column headerText="Member Status">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Member Status" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.employeeStatus.label}" />
+                                </p:column>
+
+                                <p:column headerText="Zone code">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Zone code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.person.zoneCode}" />
+                                </p:column>
+
+                                <p:column headerText="Employer Number">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Employer Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.codeInterger}"/>
+                                </p:column>
+
+                                <p:column headerText="Contribution Year Month">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Contribution Year Month" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.dateJoined}">
+                                        <f:convertDateTime pattern="YYYY/MM"></f:convertDateTime>
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Data Submission Number">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Data Submission Number" />
+                                    </f:facet>
+                                    <p:outputLabel value="1"/>
+                                </p:column>
+
+                                <p:column headerText="No.of days worked">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="No.of days worked" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.transWorkedDays}" >
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Occupation Classification Grade(As per the classification of censes  and statistic Dept) ">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Occupation Classification Grade(As per the classification of censes  and statistic Dept) " />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.grade.name}"/>
+                                </p:column>
+                                
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
