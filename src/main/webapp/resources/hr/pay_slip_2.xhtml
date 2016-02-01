@@ -94,34 +94,20 @@
                                     <h:outputLabel value=":"/>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{cc.attrs.bill.staff.person.name}">                                 
+                                    <h:outputText value="#{cc.attrs.bill.staff.person.nameWithInitials}">                                 
                                     </h:outputText>
                                 </td>
                             </tr>
 
                             <tr>
                                 <td style="text-align: left;">
-                                    <h:outputText value="Basic Salary" style="text-align: left;"/> 
+                                    <h:outputText value="Basic Salary + BR" style="text-align: left;"/> 
                                 </td>
                                 <td>
                                     <h:outputLabel value=":"/>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{cc.attrs.bill.basicValue-cc.attrs.bill.brValue}">                                 
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td style="text-align: left;">
-                                    <h:outputText value="B R" style="text-align: left;"/> 
-                                </td>
-                                <td>
-                                    <h:outputLabel value=":"/>
-                                </td>
-                                <td style="text-align: right;">
-                                    <h:outputText value="#{cc.attrs.bill.brValue}">  
+                                    <h:outputText value="#{cc.attrs.bill.basicValue}">                                 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
@@ -568,7 +554,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div style="position: absolute!important;padding-left: 63%;">
+                    <div style="position: absolute!important;padding-left: 64%;">
                         <table style="font-size: 12px!important; letter-spacing: 0px; font-family: Times New Roman!important;">
                             <tr>
                                 <td style="width: 30px;">
@@ -687,7 +673,7 @@
                                     <h:outputLabel value=":"/>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{cc.attrs.bill.staff.person.name}">                                 
+                                    <h:outputText value="#{cc.attrs.bill.staff.person.nameWithInitials}">                                 
                                     </h:outputText>
                                 </td>
                             </tr>

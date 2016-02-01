@@ -116,6 +116,8 @@ public class Staff implements Serializable {
     double transDblValue;
     @Transient
     double transWorkedDays;
+    @Transient
+    double transWorkedDaysSalaryFromToDate;
     @ManyToOne
     private Institution bankBranch;
     @ManyToOne
@@ -668,5 +670,11 @@ public class Staff implements Serializable {
         this.epfAccountNo = epfAccountNo;
     }
 
+    public double getTransWorkedDaysSalaryFromToDate() {
+        return transWorkedDaysSalaryFromToDate;
+    }
 
+    public void setTransWorkedDaysSalaryFromToDate(double transWorkedDaysSalaryFromToDate) {
+        this.transWorkedDaysSalaryFromToDate = transWorkedDaysSalaryFromToDate;
+    }
 }

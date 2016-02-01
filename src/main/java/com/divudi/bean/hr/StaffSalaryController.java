@@ -406,7 +406,18 @@ public class StaffSalaryController implements Serializable {
                 || checkDateRange(getCurrent().getStaff().getDateRetired())) {
 
             double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-
+            
+            System.out.println("1.workedDays = " + workedDays);
+            if (getCurrent().getStaff().getDateJoined() != null) {
+                if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
+                    long extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    System.out.println("New Come extraDays = " + extraDays);
+                    extraDays -= (int) (extraDays / 7);
+                    System.out.println("New Come extraDays(After) = " + extraDays);
+                    workedDays += extraDays;
+                }
+            }
+            System.out.println("2.workedDays = " + workedDays);
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
                 return value * (percentage / 100);
             } else {
@@ -792,7 +803,8 @@ public class StaffSalaryController implements Serializable {
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
 //                    salaryValue += calValue(staffSalaryComponant.getComponantValue());mr.lahiru(Accountant) says work days not consider for PH
-                    salaryValue += staffSalaryComponant.getComponantValue();
+//                    salaryValue += staffSalaryComponant.getComponantValue(); cal Day Off PH MH NOPAY To Full Basic Mr.Lahiru 2016.01.30
+                    salaryValue += staffSalaryComponant.getStaffPaysheetComponent().getStaffPaySheetComponentValue();
                 }
             }
 
@@ -849,7 +861,8 @@ public class StaffSalaryController implements Serializable {
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().isIncludeForAllowance()) {
 //                    salaryValue += calValue(staffSalaryComponant.getComponantValue());mr.lahiru(Accountant) says work days not consider for DO
-                    salaryValue += staffSalaryComponant.getComponantValue();
+                    //                    salaryValue += staffSalaryComponant.getComponantValue(); cal Day Off PH MH NOPAY To Full Basic Mr.Lahiru 2016.01.30
+                    salaryValue += staffSalaryComponant.getStaffPaysheetComponent().getStaffPaySheetComponentValue();
                 }
             }
 
@@ -904,7 +917,8 @@ public class StaffSalaryController implements Serializable {
                 }
 
                 if (staffSalaryComponant.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
-                    salaryValue += staffSalaryComponant.getComponantValue();
+                    //                    salaryValue += staffSalaryComponant.getComponantValue(); cal Day Off PH MH NOPAY To Full Basic Mr.Lahiru 2016.01.30
+                    salaryValue += staffSalaryComponant.getStaffPaysheetComponent().getStaffPaySheetComponentValue();
                 }
             }
 
@@ -1097,20 +1111,21 @@ public class StaffSalaryController implements Serializable {
             getCurrent().setExtraDutySleepingDayMinute(extraTimeMinute);
 
             //Set Holiday Allowance
+            System.err.println("Salary OT");
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
-            System.out.println("extraTimeMinute(DayType.MurchantileHoliday) = " + count);
+            System.err.println("count(DayType.MurchantileHoliday) = " + count);
             getCurrent().setMerchantileCount(count);
 
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
-            System.out.println("count(DayType.Poya) = " + count);
+            System.err.println("count(DayType.Poya) = " + count);
             getCurrent().setPoyaCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
-            System.out.println("count(DayType.DayOff) = " + count);
+            System.err.println("count(DayType.DayOff) = " + count);
             getCurrent().setDayOffCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
-            System.out.println("count(DayType.SleepingDay) = " + count);
+            System.err.println("count(DayType.SleepingDay) = " + count);
             getCurrent().setSleepingDayCount(count);
 
 //            double noPayCount = getHumanResourceBean().fetchStaffLeave(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());

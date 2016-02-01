@@ -154,7 +154,7 @@ public class SalaryCycleController implements Serializable {
 
         for (StaffSalary stfsal : stfSalary) {
             brVal += stfsal.getBrValue();
-            basicVal += (stfsal.getBasicValue() - stfsal.getBrValue());
+            basicVal += stfsal.getBasicValue();
             mercAll += stfsal.getMerchantileAllowanceValue();
             poyaAll += stfsal.getPoyaAllowanceValue();
             dayOffAll += stfsal.getDayOffAllowance();

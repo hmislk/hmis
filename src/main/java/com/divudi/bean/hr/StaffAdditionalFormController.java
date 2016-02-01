@@ -65,7 +65,7 @@ public class StaffAdditionalFormController implements Serializable {
     SalaryCycleFacade salaryCycleFacade;
     @EJB
     HumanResourceBean humanResourceBean;
-    
+
     SystemTimeStamp fromSystemTimeStamp;
     SystemTimeStamp toSystemTimeStamp;
 
@@ -75,6 +75,10 @@ public class StaffAdditionalFormController implements Serializable {
     Staff approvedStaff;
     Date fromDate;
     Date toDate;
+
+    double totalInTime;
+    double totalOutTime;
+    double totalAllTime;
 
     public void timeSelectListener() {
         if (getCurrentAdditionalForm().getStaffShift() == null) {
@@ -274,6 +278,19 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+    }
+
+    public void calTotals(List<AdditionalForm> list) {
+        for (AdditionalForm a : list) {
+            totalInTime = 0.0;
+            totalOutTime = 0.0;
+            totalAllTime = 0.0;
+            if (!(a.getTimes() == Times.All && (a.getStaffShift().getDayType() == DayType.Poya || a.getStaffShift().getDayType() == DayType.DayOff || a.getStaffShift().getDayType() == DayType.MurchantileHoliday))) {
+//                totalInTime+=;
+//                totalOutTime+=;
+//                totalAllTime+=;
+            }
+        }
     }
     List<HrForm> hrForms;
     @EJB
@@ -799,13 +816,13 @@ public class StaffAdditionalFormController implements Serializable {
                 }
             }
         }
-        
+
         if (fetchCurrentSalaryCycle(date) != null) {
-            StaffSalary s=humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
-            if (s.getId()!=null) {
+            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
+            if (s.getId() != null) {
                 JsfUtil.addErrorMessage("You Can't Add This Addional."
-                            + "because this salary was createed");
-                    return true;
+                        + "because this salary was createed");
+                return true;
             }
         }
 
@@ -876,13 +893,13 @@ public class StaffAdditionalFormController implements Serializable {
                 }
             }
         }
-        
+
         if (fetchCurrentSalaryCycle(date) != null) {
-            StaffSalary s=humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
-            if (s.getId()!=null) {
+            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
+            if (s.getId() != null) {
                 JsfUtil.addErrorMessage("You Can't Add This Addional."
-                            + "because this salary was createed");
-                    return true;
+                        + "because this salary was createed");
+                return true;
             }
         }
 
@@ -944,7 +961,7 @@ public class StaffAdditionalFormController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Date");
             return true;
         }
-        
+
         if (fetchCurrentSalaryCycle(date) != null) {
             SalaryCycle s = fetchCurrentSalaryCycle(date);
             System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
@@ -963,13 +980,13 @@ public class StaffAdditionalFormController implements Serializable {
                 }
             }
         }
-        
+
         if (fetchCurrentSalaryCycle(date) != null) {
-            StaffSalary s=humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
-            if (s.getId()!=null) {
+            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
+            if (s.getId() != null) {
                 JsfUtil.addErrorMessage("You Can't Add This Addional."
-                            + "because this salary was createed");
-                    return true;
+                        + "because this salary was createed");
+                return true;
             }
         }
 
@@ -1487,6 +1504,30 @@ public class StaffAdditionalFormController implements Serializable {
 
     public void setAditionalWithTimes(List<AditionalWithTime> aditionalWithTimes) {
         this.aditionalWithTimes = aditionalWithTimes;
+    }
+
+    public double getTotalInTime() {
+        return totalInTime;
+    }
+
+    public void setTotalInTime(double totalInTime) {
+        this.totalInTime = totalInTime;
+    }
+
+    public double getTotalOutTime() {
+        return totalOutTime;
+    }
+
+    public void setTotalOutTime(double totalOutTime) {
+        this.totalOutTime = totalOutTime;
+    }
+
+    public double getTotalAllTime() {
+        return totalAllTime;
+    }
+
+    public void setTotalAllTime(double totalAllTime) {
+        this.totalAllTime = totalAllTime;
     }
 
 }
