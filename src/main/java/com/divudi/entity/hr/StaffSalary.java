@@ -149,6 +149,17 @@ public class StaffSalary implements Serializable {
     String chequeNumberSalary;
     String chequeNumberOverTime;
     String chequeNumberSalaryAndOverTime;
+    @Transient
+    double transLeaveAnnual;
+    @Transient
+    double transLeaveCasual;
+    @Transient
+    double transLeaveMedical;
+    @Transient
+    double transLeaveMaternity1st;
+    @Transient
+    double transLeaveMaternity2nd;
+            
 
     public String getChequeNumberSalary() {
         return chequeNumberSalary;
@@ -1069,6 +1080,46 @@ public class StaffSalary implements Serializable {
 
     public void setHoldPaidBy(WebUser holdPaidBy) {
         this.holdPaidBy = holdPaidBy;
+    }
+
+    public double getTransLeaveAnnual() {
+        return transLeaveAnnual;
+    }
+
+    public void setTransLeaveAnnual(double transLeaveAnnual) {
+        this.transLeaveAnnual = transLeaveAnnual;
+    }
+
+    public double getTransLeaveCasual() {
+        return transLeaveCasual;
+    }
+
+    public void setTransLeaveCasual(double transLeaveCasual) {
+        this.transLeaveCasual = transLeaveCasual;
+    }
+
+    public double getTransLeaveMedical() {
+        return transLeaveMedical;
+    }
+
+    public void setTransLeaveMedical(double transLeaveMedical) {
+        this.transLeaveMedical = transLeaveMedical;
+    }
+
+    public double getTransLeaveMaternity1st() {
+        return transLeaveMaternity1st;
+    }
+
+    public void setTransLeaveMaternity1st(double transLeaveMaternity1st) {
+        this.transLeaveMaternity1st = transLeaveMaternity1st;
+    }
+
+    public double getTransLeaveMaternity2nd() {
+        return transLeaveMaternity2nd;
+    }
+
+    public void setTransLeaveMaternity2nd(double transLeaveMaternity2nd) {
+        this.transLeaveMaternity2nd = transLeaveMaternity2nd;
     }
 
 }

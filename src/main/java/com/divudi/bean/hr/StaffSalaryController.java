@@ -406,7 +406,7 @@ public class StaffSalaryController implements Serializable {
                 || checkDateRange(getCurrent().getStaff().getDateRetired())) {
 
             double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-            
+
             System.out.println("1.workedDays = " + workedDays);
             if (getCurrent().getStaff().getDateJoined() != null) {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
@@ -1050,11 +1050,13 @@ public class StaffSalaryController implements Serializable {
 
             List<StaffPaysheetComponent> listSub = getHumanResourceBean().fetchStaffPaysheetComponent(getCurrent().getStaff(), getSalaryCycle().getSalaryFromDate(), PaysheetComponentType.subtraction.getUserDefinedComponentsDeductions());
             System.out.println("listSub = " + listSub);
-            
+
             if (listSub != null) {
                 for (StaffPaysheetComponent spc : listSub) {
                     System.err.println("Loop 1 " + spc.getPaysheetComponent().getName());
                     if ((spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanInstallemant
+                            && spc.isCompleted())
+                            || (spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Advance_Payment_Deduction
                             && spc.isCompleted())
                             || spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.LoanNetSalary) {
                         //|| spc.getPaysheetComponent().getComponentType() == PaysheetComponentType.Salary_Advance_Deduction) { for adjust salary advance payment
@@ -1550,7 +1552,7 @@ public class StaffSalaryController implements Serializable {
                 System.out.println("****lastAnalyseDate = " + lastAnalyseDate);
                 System.out.println("****s.getDateLeft() = " + s.getDateLeft());
                 System.out.println("getCurrent().getStaff().getDateLeft() = " + getCurrent().getStaff().getDateLeft());
-                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft()))&&getCurrent().getStaff().getDateLeft()!=null) {
+                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
                         String rd = df.format(getCurrent().getStaff().getDateLeft());
@@ -1707,14 +1709,14 @@ public class StaffSalaryController implements Serializable {
         sql += " order by ss.staff.codeInterger";
 
         items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
-        
+
         List<PaysheetComponent> paysheetComponentsAddition;
         List<PaysheetComponent> paysheetComponentsSubstraction;
         paysheetComponentsAddition = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getSalaryCycle());
         paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
         for (StaffSalary s : items) {
             for (PaysheetComponent psc : paysheetComponentsAddition) {
-                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());                  
+                StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());
                 Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
                 if (c != null) {
                     c.setComponantValue(dbl);
@@ -1729,13 +1731,21 @@ public class StaffSalaryController implements Serializable {
                 Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
 
                 if (c != null) {
-                    c.setComponantValue(0-dbl);
+                    c.setComponantValue(0 - dbl);
                     s.getTransStaffSalaryComponantsSubtraction().add(c);
                 } else {
                     s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
                 }
             }
 
+            s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
+//            System.out.println("s.getTransLeaveAnnual() = " + s.getTransLeaveAnnual());
+            s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
+//            System.out.println("s.getTransLeaveCasual() = " + s.getTransLeaveCasual());
+            s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
+//            System.out.println("s.getTransLeaveMedical() = " + s.getTransLeaveMedical());
+            s.setTransLeaveMaternity1st(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Maternity1st, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
+            s.setTransLeaveMaternity2nd(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Maternity2nd, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
         }
     }
 

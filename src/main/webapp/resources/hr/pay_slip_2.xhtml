@@ -401,11 +401,11 @@
                             <tr>
                                 <td colspan="3" style="text-align: center;">
                                     <h:outputText value="Period : "/>
-                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.workedFromDate}">
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.dayOffPhFromDate}">
                                         <f:convertDateTime pattern="yyyy MMMM dd" />
                                     </h:outputText>
                                     <h:outputText value=" - "/>
-                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.workedToDate}">
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.dayOffPhToDate}">
                                         <f:convertDateTime pattern="yyyy MMMM dd" />
                                     </h:outputText>
                                 </td>
@@ -455,7 +455,7 @@
                                 </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{cc.attrs.bill.noPayCount-cc.attrs.bill.lateNoPayCount}">
-                                        <f:convertNumber pattern="0.00"/>
+                                        <f:convertNumber pattern="0.0"/>
                                     </h:outputText>
                                 </td> 
                             </tr>
@@ -468,7 +468,7 @@
                                 </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{cc.attrs.bill.lateNoPayCount}">
-                                        <f:convertNumber pattern="0.00"/>
+                                        <f:convertNumber pattern="0.0"/>
                                     </h:outputText>
                                 </td>
                             </tr>
@@ -476,6 +476,18 @@
                                 <td><p:spacer height="10" /></td>
                                 <td><h:outputLabel value=" "/></td>
                                 <td><h:outputLabel value=" "/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: center;">
+                                    <h:outputText value="Period : "/>
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.workedFromDate}">
+                                        <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    </h:outputText>
+                                    <h:outputText value=" - "/>
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.workedToDate}">
+                                        <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    </h:outputText>
+                                </td>
                             </tr>
                             <tr>
                                 <td style="text-align: left;">
@@ -549,6 +561,88 @@
                                 </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{cc.attrs.bill.extraDutyDayOffMinute} min">                                 
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><p:spacer height="10" /></td>
+                                <td><h:outputLabel value=" "/></td>
+                                <td><h:outputLabel value=" "/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: center; text-decoration: underline;">
+                                    <h:outputText value="Leaves : "/>
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.dayOffPhFromDate}">
+                                        <f:convertDateTime pattern="yyyy MMM dd" />
+                                    </h:outputText>
+                                    <h:outputText value=" - "/>
+                                    <h:outputText value="#{cc.attrs.bill.salaryCycle.dayOffPhToDate}">
+                                        <f:convertDateTime pattern="yyyy MMM dd" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="Anual Leave" style="text-align: left;" rendered="#{cc.attrs.bill.transLeaveAnnual ne 0}"/> 
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.transLeaveAnnual ne 0}"/>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{cc.attrs.bill.transLeaveAnnual}" rendered="#{cc.attrs.bill.transLeaveAnnual ne 0}">
+                                        <f:convertNumber pattern="#,##0.0" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="Casual Leave" style="text-align: left;" rendered="#{cc.attrs.bill.transLeaveCasual ne 0}"/> 
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.transLeaveCasual ne 0}"/>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{cc.attrs.bill.transLeaveCasual}" rendered="#{cc.attrs.bill.transLeaveCasual ne 0}">
+                                        <f:convertNumber pattern="#,##0.0" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="Medical Leave" style="text-align: left;" rendered="#{cc.attrs.bill.transLeaveMedical ne 0}"/> 
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.transLeaveMedical ne 0}"/>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{cc.attrs.bill.transLeaveMedical}" rendered="#{cc.attrs.bill.transLeaveMedical ne 0}">
+                                        <f:convertNumber pattern="#,##0.0" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="Maternity 1st Leave" style="text-align: left;" rendered="#{cc.attrs.bill.transLeaveMaternity1st ne 0}"/> 
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.transLeaveMaternity1st ne 0}"/>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{cc.attrs.bill.transLeaveMaternity1st}" rendered="#{cc.attrs.bill.transLeaveMaternity1st ne 0}">
+                                        <f:convertNumber pattern="#,##0.0" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputText value="Maternity 2nd Leave" style="text-align: left;" rendered="#{cc.attrs.bill.transLeaveMaternity2nd ne 0}"/> 
+                                </td>
+                                <td>
+                                    <h:outputLabel value=":" rendered="#{cc.attrs.bill.transLeaveMaternity2nd ne 0}"/>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{cc.attrs.bill.transLeaveMaternity2nd}" rendered="#{cc.attrs.bill.transLeaveMaternity2nd ne 0}">
+                                        <f:convertNumber pattern="#,##0.0" />
                                     </h:outputText>
                                 </td>
                             </tr>
@@ -634,7 +728,7 @@
                                 </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{cc.attrs.bill.salaryCycle.salaryToDate}">
-                                        <f:convertDateTime pattern="MM" ></f:convertDateTime> 
+                                        <f:convertDateTime pattern="MMMM yyyy" ></f:convertDateTime> 
                                     </h:outputText>
                                 </td>
                             </tr>
