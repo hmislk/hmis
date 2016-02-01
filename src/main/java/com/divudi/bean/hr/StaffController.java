@@ -228,7 +228,7 @@ public class StaffController implements Serializable {
         hm.put("class2", Consultant.class);
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
-    
+
     public void createDoctorsOnly() {
 
         String sql = "select s from Staff s where "
@@ -357,9 +357,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
-        for (Staff s : staffWithCode) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-        }
+        fetchWorkDays(staffWithCode);
     }
 
     public void createResignedStaffTable() {
@@ -415,9 +413,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
-        for (Staff s : staffWithCode) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-        }
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffOnylSalaryGeneratedTable() {
@@ -425,6 +421,7 @@ public class StaffController implements Serializable {
         hrReportController.setReportKeyWord(reportKeyWord);
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         staffWithCode = hrReportController.fetchOnlySalaryGeneratedStaff();
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
@@ -435,6 +432,7 @@ public class StaffController implements Serializable {
         System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         staffWithCode.removeAll(salaryGeneratedStaff);
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffTable() {
@@ -486,6 +484,18 @@ public class StaffController implements Serializable {
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
 
+    }
+
+    public void fetchWorkDays(List<Staff> staffs) {
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            System.out.println("staffSalaryController.getSalaryCycle() = " + staffSalaryController.getSalaryCycle());
+            if (staffSalaryController.getSalaryCycle()!=null) {
+                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
+                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
+
+            }
+        }
     }
 
     public void createTable() {

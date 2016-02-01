@@ -1890,7 +1890,7 @@ public class HrReportController implements Serializable {
         return staffFacade.findLongByJpql(sql, hm, TemporalType.DATE);
     }
 
-    private long fetchWorkedDays(Staff staff, Date fd, Date td) {
+    public long fetchWorkedDays(Staff staff, Date fd, Date td) {
         String sql = "";
 
         HashMap hm = new HashMap();
@@ -2573,7 +2573,7 @@ public class HrReportController implements Serializable {
         hm.put("stf", staff);
         hm.put("dtp", dayType);
 //2246740
-        if (dayType == DayType.Poya) {
+        if (dayType == DayType.Poya || dayType == DayType.MurchantileHoliday) {
             if (leaveLeavePoya) {
                 sql += " and ss.lieuAllowed=true ";
             } else {
@@ -2768,6 +2768,7 @@ public class HrReportController implements Serializable {
             monthEnd.setPoyaDays(fetchWorkedDays(stf, DayType.Poya, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
             monthEnd.setPoyaDaysLeave(fetchWorkedDays(stf, DayType.Poya, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
             monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
+            monthEnd.setMerhchantileDaysLeave(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
             monthEndRecords.add(monthEnd);
         }
     }

@@ -107,8 +107,7 @@
                         <th>Join</th>
                         <th>Satff </th>
                         <th>Des</th>
-                        <th>Basic</th>
-                        <th>BR</th>
+                        <th>Basic+BR</th>
                         <th>Merchan</th>
                         <th>Poya</th>
                         <th>Day Off</th>
@@ -144,13 +143,9 @@
                             </td>
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.person.name}" /></td>                                
                             <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.designation.name}" /></td>  
-                            <td style="text-align: right;;" ><h:outputText value="#{scc.basicValue-scc.brValue}" >
+                            <td style="text-align: right;;" ><h:outputText value="#{scc.basicValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                   
-                            </td>
-                            <td style="text-align: right;;"><h:outputText value="#{scc.brValue}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
                             </td>
                             <td style="text-align: right;;"><h:outputText value="#{scc.merchantileAllowanceValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
@@ -239,11 +234,6 @@
                         <td colspan="5"><h:outputLabel value="Totals"/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.basicVal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </td>
-                        <td style="text-align: right;;">
-                            <h:outputText value="#{salaryCycleController.brVal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -350,6 +340,7 @@
                             <p:outputLabel value="#{commonController.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                             </p:outputLabel>
+                            <h:outputLabel value=" - This System Generated Report Does Not Carry A Signature."/>
                         </td>
                     </tr>
                 </tbody>

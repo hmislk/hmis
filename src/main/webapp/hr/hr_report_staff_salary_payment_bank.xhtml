@@ -79,8 +79,8 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true">
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
+                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true" rowStyleClass="#{ss.hold ? 'greenText': ss.blocked ? 'redText' :''}">
                                 <f:facet name="header" >
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -90,11 +90,17 @@
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
                                         <br/>
                                     </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institutionBank ne null}" >
+                                        <h:outputLabel value="Bank : #{hrReportController.reportKeyWord.institutionBank.name}" />
+                                        <br/>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
                                         <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
                                         <br/>
                                     </h:panelGroup>
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}"/>
+                                    <h:outputLabel value="Salary Range : #{hrReportController.reportKeyWord.salaryCycle.name}"/>
+                                    <br/><br/>
+                                    <h:outputLabel value="Cheque No :................................."/>
                                 </f:facet>
                                 <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />  
                                 <p:column>
@@ -102,19 +108,25 @@
                                         <h:outputLabel value="EMP No"/>
                                     </f:facet>
 
-                                    <p:outputLabel value="#{ss.staff.code}" >
+                                    <p:outputLabel value="#{ss.staff.code}" style="float: right;">
                                     </p:outputLabel>
+                                </p:column>
+                                
+                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
+                                    <p:rowEditor />  
                                 </p:column>
 
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Emp Name"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and !ss.hold}">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.hold}">
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column>
+                                <p:column rendered="#{hrReportController.reportKeyWord.institutionBank eq null}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bank"/>
                                     </f:facet>
@@ -139,7 +151,7 @@
                                             <p:outputLabel value="#{ss.accountNo}"  />
                                         </f:facet>
                                         <f:facet name="input">
-                                            <p:inputText id="txtin" value="#{ss.accountNo}" disabled="#{!ss.blocked and !ss.hold}"/>
+                                            <p:inputText id="txtin" value="#{ss.accountNo}" disabled="#{!ss.blocked and !ss.hold}" styleClass="shortinput"/>
                                         </f:facet>
                                     </p:cellEditor>
 
@@ -174,13 +186,13 @@
 
                                 <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Net Salary"/>
+                                        <h:outputLabel value="Salary"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.transNetSalry}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}" style="text-align: right;">
+                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}" style="text-align: right;" styleClass="noPrintButton">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>                                    </f:facet>
                                 </p:column>
@@ -193,7 +205,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;">
+                                        <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;" styleClass="noPrintButton">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>  
                                     </f:facet>
@@ -212,10 +224,6 @@
                                         </h:outputLabel>  
                                     </f:facet>
                                 </p:column>
-                                
-                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
-                                    <p:rowEditor />  
-                                </p:column>
 
                                 <p:column rendered="false" >
                                     <p:commandButton process="@this" 
@@ -225,7 +233,6 @@
                                                      onclick="onSubmitButton();">                              
                                     </p:commandButton>                          
                                 </p:column>
-
 
                             </p:dataTable>
                         </p:panel>

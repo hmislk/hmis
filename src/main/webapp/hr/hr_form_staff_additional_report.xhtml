@@ -281,7 +281,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Count(PH/Day Off)"/>
                                 </f:facet>
-                                <p:outputLabel value="1" rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya') and add.staffShift.shift.halfShift eq false}" >
+                                <p:outputLabel value="1" rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya' or add.staffShift.dayType eq 'Poya') and add.staffShift.shift.halfShift eq false}" >
                                 </p:outputLabel>
                                 <p:outputLabel value="0.5" rendered="#{add.times eq 'All' and (add.staffShift.dayType eq 'DayOff' or add.staffShift.dayType eq 'Poya') and add.staffShift.shift.halfShift eq true}" >
                                 </p:outputLabel>
