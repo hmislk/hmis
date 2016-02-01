@@ -310,7 +310,7 @@ public class StaffBasicController implements Serializable {
                 + " from StaffPaysheetComponent s"
                 + " where s.retired=false"
                 + " and s.staffPaySheetComponentValue!=0"
-                + " and s.fromDate<= :cu";
+                + " and s.fromDate>= :cu";
 //                + " and s.toDate>:cu";
 
         HashMap hm = new HashMap();
