@@ -159,6 +159,7 @@ public class StaffSalary implements Serializable {
     double transLeaveMaternity1st;
     @Transient
     double transLeaveMaternity2nd;
+    String comments;
             
 
     public String getChequeNumberSalary() {
@@ -1120,6 +1121,14 @@ public class StaffSalary implements Serializable {
 
     public void setTransLeaveMaternity2nd(double transLeaveMaternity2nd) {
         this.transLeaveMaternity2nd = transLeaveMaternity2nd;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
 }

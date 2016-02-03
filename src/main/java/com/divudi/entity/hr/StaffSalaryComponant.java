@@ -71,6 +71,7 @@ public class StaffSalaryComponant implements Serializable {
     private Date paidAt;
     @ManyToOne
     private WebUser paidBy;
+    String comments;
 
     public Staff getStaff() {
         return staff;
@@ -315,7 +316,13 @@ public class StaffSalaryComponant implements Serializable {
     public void setStaffPaysheetComponentPercentage(StaffPaysheetComponent staffPaysheetComponentPercentage) {
         this.staffPaysheetComponentPercentage = staffPaysheetComponentPercentage;
     }
-    
-    
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
 
 }

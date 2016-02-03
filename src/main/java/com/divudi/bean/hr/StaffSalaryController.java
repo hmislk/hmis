@@ -211,6 +211,11 @@ public class StaffSalaryController implements Serializable {
     public void onEdit(RowEditEvent event) {
         //////System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
+        
+        if (tmp.getComments()==null ||tmp.getComments().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter a Comment");
+            return;
+        }
 
         getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
         getHumanResourceBean().setEtf(tmp, getHrmVariablesController().getCurrent().getEtfRate(), getHrmVariablesController().getCurrent().getEtfCompanyRate());
@@ -226,6 +231,7 @@ public class StaffSalaryController implements Serializable {
         if (getCurrent().getId() != null) {
             getStaffSalaryFacade().edit(getCurrent());
         }
+        JsfUtil.addSuccessMessage("Updated");
 
     }
 
@@ -1716,9 +1722,16 @@ public class StaffSalaryController implements Serializable {
         paysheetComponentsSubstraction = salaryCycleController.fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getSalaryCycle());
         for (StaffSalary s : items) {
             for (PaysheetComponent psc : paysheetComponentsAddition) {
+                System.out.println("psc.getName() = " + psc.getName());
                 StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());
                 Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
                 if (c != null) {
+                    if (psc.getComponentType()==PaysheetComponentType.PerformanceAllowance) {
+                        StaffPaysheetComponent percentageComponent = getHumanResourceBean().fetchStaffPaysheetComponent(s.getStaff(), s.getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowancePercentage);
+                        System.out.println("percentageComponent = " + percentageComponent);
+                        System.out.println("percentageComponent.getDblValue() = " + percentageComponent.getStaffPaySheetComponentValue());
+                        System.out.println("c.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue() = " + c.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
+                    }
                     c.setComponantValue(dbl);
                     s.getTransStaffSalaryComponantsAddition().add(c);
                 } else {
