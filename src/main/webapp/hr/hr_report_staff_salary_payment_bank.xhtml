@@ -120,9 +120,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Emp Name"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and !ss.hold}">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
+                                                            or sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                     </p:outputLabel>
-                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.hold}">
+                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.hold) 
+                                                                                                 or(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
                                     </p:outputLabel>
                                 </p:column>
 
@@ -138,11 +140,33 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bank Branch"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.bankBranch.name}">
-                                    </p:outputLabel>
+                                    <p:cellEditor>  
+                                        <f:facet name="output">
+                                            <p:outputLabel value="#{ss.bankBranch.name}"/>
+                                        </f:facet>
+                                        <f:facet name="input">
+                                            <p:autoComplete disabled="#{!ss.blocked and !ss.hold}" id="pgbank" completeMethod="#{institutionController.completeBankBranch}" 
+                                                            var="dept"
+                                                            itemLabel="#{dept.name}"
+                                                            itemValue="#{dept}"
+                                                            forceSelection="true" 
+                                                            value="#{ss.bankBranch}" 
+                                                            converter="institutionConverter" >
+                                                <p:column headerText="Name">
+                                                    <h:outputLabel value="#{dept.name}"/>
+                                                </p:column>
+                                                <p:column headerText="Banck">
+                                                    <h:outputLabel value="#{dept.institution.name}"/>
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{dept.institutionCode}"/>
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </f:facet>
+                                    </p:cellEditor>
                                 </p:column>
-                                
-                                <p:column styleClass="noPrintButton">
+
+                                <p:column styleClass="noPrintButton" rendered="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="cheque No"/>
                                     </f:facet>
@@ -176,8 +200,8 @@
                                             </h:outputLabel>
                                         </f:facet>
                                         <f:facet name="input">
-                                            <p:selectBooleanCheckbox value="#{ss.blocked}" >
-                                                <f:ajax event="change" execute="@this" render="txtin"/>
+                                            <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}" >
+                                                <f:ajax event="change"  execute="@this" render="txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
                                             </p:selectBooleanCheckbox>  
                                         </f:facet>
                                     </p:cellEditor>
@@ -189,8 +213,8 @@
                                             </h:outputLabel>
                                         </f:facet>
                                         <f:facet name="input">
-                                            <p:selectBooleanCheckbox value="#{ss.hold}" >
-                                                <f:ajax event="change" execute="@this" render="txtin"/>
+                                            <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}" >
+                                                <f:ajax event="change" execute="@this" render="txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
                                             </p:selectBooleanCheckbox>   
                                         </f:facet>
                                     </p:cellEditor>
@@ -222,7 +246,7 @@
                                         </h:outputLabel>  
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column rendered="#{hrReportController.otPayment and hrReportController.netSalary}" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Total"/>

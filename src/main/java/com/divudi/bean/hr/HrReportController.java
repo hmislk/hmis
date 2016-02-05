@@ -171,6 +171,28 @@ public class HrReportController implements Serializable {
         StaffSalary tmp = (StaffSalary) event.getObject();
         staffSalaryFacade.edit(tmp);
     }
+    
+    public void listnerBlock(StaffSalary ss){
+        if (ss.isBlocked()) {
+            ss.setHold(false);
+            ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
+            ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
+        }else{
+            ss.setAccountNo(ss.getStaff().getAccountNo());
+            ss.setBankBranch(ss.getStaff().getBankBranch());
+        }
+    }
+    
+    public void listnerHold(StaffSalary ss){
+        if (ss.isHold()) {
+            ss.setBlocked(false);
+            ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
+            ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
+        }else{
+            ss.setAccountNo(ss.getStaff().getAccountNo());
+            ss.setBankBranch(ss.getStaff().getBankBranch());
+        }
+    }
 
     public DayType[] getDayTypesSelected() {
         return dayTypesSelected;
