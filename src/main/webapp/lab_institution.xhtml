@@ -5,7 +5,8 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -120,7 +121,12 @@
 
                                         <h:outputText id="lblWeb" value="Web" ></h:outputText>
                                         <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  ></p:inputText>
-
+                                        
+                                        <h:outputText id="lblBank" value="Bank" ></h:outputText>
+                                        <au:completeBank_Branch value="#{institutionController.current.bank}" />
+                                        
+                                        <h:outputText id="lblAcc" value="Account No" ></h:outputText>
+                                        <p:inputText autocomplete="off" id="txtAcc" value="#{institutionController.current.accountNo}"  ></p:inputText>
 
                                     </h:panelGrid>
 
