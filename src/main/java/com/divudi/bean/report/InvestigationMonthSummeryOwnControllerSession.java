@@ -31,6 +31,7 @@ import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.ReportItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -117,6 +118,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public Item getItem() {
         return item;
     }
+    
+    public void clearList(){
+        items = new ArrayList<>();
+        totalCount=0l;
+    }
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
@@ -184,11 +190,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
+        if (institution==null) {
+            JsfUtil.addErrorMessage("Select Institution");
+            return;
+        }
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        if (ixs.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills For This Date Range");
+            return;
+        }
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             if (totalCount == null) {
@@ -208,11 +222,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledDepartment() {
+        if (department==null) {
+            JsfUtil.addErrorMessage("Select Department");
+            return;
+        }
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
+        if (ixs.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills For This Date Range");
+            return;
+        }
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             if (totalCount == null) {
@@ -232,11 +254,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
+        if (reportedInstitution==null) {
+            JsfUtil.addErrorMessage("Select Institution");
+            return;
+        }
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        if (ixs.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills For This Date Range");
+            return;
+        }
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             if (totalCount == null) {
@@ -256,11 +286,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
+        if (reportedDepartment==null) {
+            JsfUtil.addErrorMessage("Select Department");
+            return;
+        }
         items = new ArrayList<>();
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        if (ixs.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bills For This Date Range");
+            return;
+        }
         double singleItem = 100 / ixs.size();
         for (Item w : ixs) {
             if (totalCount == null) {
@@ -323,10 +361,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         System.out.println("pis.size() = " + temPis.size());
         for (PatientInvestigation pi : temPis) {
 
-            if (pi.getPrintingAt() != null && pi.getBillItem().getBill().getCreatedAt() != null) {
+            if (pi.getPrintingAt() != null && pi.getSampledAt() != null) {
                 System.out.println("pi.getPrintingAt().getTime() = " + pi.getPrintingAt().getTime());
-                System.out.println("pi.getBillItem().getBill().getCreatedAt().getTime() = " + pi.getBillItem().getBill().getCreatedAt().getTime());
-                averateMins = (pi.getPrintingAt().getTime() - pi.getBillItem().getBill().getCreatedAt().getTime()) / (1000 * 60);
+                System.out.println("pi.getSampledAt().getTime() = " + pi.getSampledAt().getTime());
+                averateMins = (pi.getPrintingAt().getTime() - pi.getSampledAt().getTime()) / (1000 * 60);
                 totalMins += averateMins;
                 averageCount++;
             }
