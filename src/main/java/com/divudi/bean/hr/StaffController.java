@@ -987,6 +987,26 @@ public class StaffController implements Serializable {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }
+        
+        if (current.getPerson().getLastName() == null||current.getPerson().getLastName().isEmpty()) {
+            UtilityController.addErrorMessage("Last Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getInitials() == null||current.getPerson().getInitials().isEmpty()) {
+            UtilityController.addErrorMessage("Initials Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getFullName() == null||current.getPerson().getFullName().isEmpty()) {
+            UtilityController.addErrorMessage("Full Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getNameWithInitials() == null) {
+            UtilityController.addErrorMessage("Name With Initials Requied To Save");
+            return;
+        }
 
         //System.out.println("current.getId() = " + current.getId());
         //System.out.println("current.getPerson().getId() = " + current.getPerson().getId());

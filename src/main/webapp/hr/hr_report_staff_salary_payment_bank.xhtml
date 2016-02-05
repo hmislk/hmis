@@ -141,6 +141,18 @@
                                     <p:outputLabel value="#{ss.bankBranch.name}">
                                     </p:outputLabel>
                                 </p:column>
+                                
+                                <p:column styleClass="noPrintButton">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="cheque No"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.chequeNumberOverTime}/">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.chequeNumberSalary}/">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="#{ss.chequeNumberSalaryAndOverTime}">
+                                    </p:outputLabel>
+                                </p:column>
 
                                 <p:column>
                                     <f:facet name="header">

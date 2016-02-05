@@ -86,6 +86,7 @@ public class StaffPaysheetComponent implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateAffectFrom;
     double numberOfInstallment;
+    double startingBalance;
 //    boolean sentNetSalaryToBaBank;
     
     
@@ -411,6 +412,14 @@ public class StaffPaysheetComponent implements Serializable {
 
     public void setChequePaidBy(WebUser chequePaidBy) {
         this.chequePaidBy = chequePaidBy;
+    }
+
+    public double getStartingBalance() {
+        return startingBalance;
+    }
+
+    public void setStartingBalance(double startingBalance) {
+        this.startingBalance = startingBalance;
     }
 
    

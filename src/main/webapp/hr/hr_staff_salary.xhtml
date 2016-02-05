@@ -225,6 +225,10 @@
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Comment">
+                            <p:inputText value="#{i.comments}">
+                            </p:inputText>
+                        </p:column>
 
                         <p:column>
                             <p:commandButton process="@this" 
@@ -276,6 +280,18 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>  
                                                         </f:facet>-->
+                        </p:column>
+                        <p:column headerText="Comment">                        
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.comments}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{i.comments}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
+                                </f:facet>
+                            </p:cellEditor> 
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}">

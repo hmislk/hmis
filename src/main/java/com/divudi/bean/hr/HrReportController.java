@@ -116,6 +116,8 @@ public class HrReportController implements Serializable {
     ShiftFingerPrintAnalysisController shiftFingerPrintAnalysisController;
     @Inject
     StaffController staffController;
+    @Inject
+    HrReportController hrReportController;
     /**
      *
      * Properties
@@ -857,6 +859,69 @@ public class HrReportController implements Serializable {
                 + " and ss.salaryCycle=:scl ";
         if (blocked == true) {
             sql += " and ss.blocked=true";
+        }
+        if (hold == true) {
+            sql += " and ss.hold=true";
+        }
+        hm.put("scl", getReportKeyWord().getSalaryCycle());
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getEmployeeStatus() != null) {
+            sql += " and ss.staff.employeeStatus=:est ";
+            hm.put("est", getReportKeyWord().getEmployeeStatus());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getBank() != null) {
+            sql += " and ss.bankBranch=:bk ";
+            hm.put("bk", getReportKeyWord().getBank());
+        }
+
+        if (getReportKeyWord().getInstitutionBank() != null) {
+            sql += " and ss.bankBranch.institution=:insbk ";
+            hm.put("insbk", getReportKeyWord().getInstitutionBank());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.department=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        return sql;
+    }
+
+    public String createStaffSalaryQuaryEPF(HashMap hm) {
+        String sql = "";
+        sql = "select ss from StaffSalary ss "
+                + " where ss.retired=false "
+                + " and ss.salaryCycle=:scl ";
+        if (blocked == true) {
+            sql += " and ss.blocked=true ";
+        } else {
+            sql += " and (ss.blocked=false or ss.blocked is null) ";
         }
         if (hold == true) {
             sql += " and ss.hold=true";
@@ -3709,6 +3774,27 @@ public class HrReportController implements Serializable {
         calTableTotal(staffSalarys);
     }
 
+    public void createStaffSalaryEPF() {
+        System.out.println("Creating Staff Salary");
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = createStaffSalaryQuaryEPF(hm);
+        sql += " order by ss.staff.codeInterger ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+        calTotalNoPay();
+        calTableTotal(staffSalarys);
+        fetchWorkDays(staffSalarys);
+    }
+
+    public void fetchWorkDays(List<StaffSalary> staffSalarys) {
+        for (StaffSalary ss : staffSalarys) {
+            System.out.println("s.getPerson().getName() = " + ss.getStaff().getPerson().getName());
+            ss.getStaff().setTransWorkedDays(hrReportController.fetchWorkedDays(ss.getStaff(), ss.getSalaryCycle().getDayOffPhFromDate(), ss.getSalaryCycle().getDayOffPhToDate()));
+        }
+    }
+
     public void createStaffSalaryGenereateOrNotStaffTable() {
         salaryGeneratedStaffs = fetchOnlySalaryGeneratedStaff();
         staffController.setReportKeyWord(getReportKeyWord());
@@ -3809,6 +3895,7 @@ public class HrReportController implements Serializable {
             }
 
             staffSalaryFacade.edit(staffSalary);
+            JsfUtil.addSuccessMessage("Updated.");
         }
     }
 
