@@ -332,6 +332,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             sql += " and b.toDepartment=:dep ";
             m.put("dep", department);
         }
+        
+        if (item != null) {
+            sql += " and bi.item=:i ";
+            m.put("i", item);
+        }
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -361,10 +366,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         System.out.println("pis.size() = " + temPis.size());
         for (PatientInvestigation pi : temPis) {
 
-            if (pi.getPrintingAt() != null && pi.getSampledAt() != null) {
-                System.out.println("pi.getPrintingAt().getTime() = " + pi.getPrintingAt().getTime());
+            if (pi.getApproveAt() != null && pi.getSampledAt() != null) {
+                System.out.println("pi.getPrintingAt().getTime() = " + pi.getApproveAt().getTime());
                 System.out.println("pi.getSampledAt().getTime() = " + pi.getSampledAt().getTime());
-                averateMins = (pi.getPrintingAt().getTime() - pi.getSampledAt().getTime()) / (1000 * 60);
+                averateMins = (pi.getApproveAt().getTime() - pi.getSampledAt().getTime()) / (1000 * 60);
                 totalMins += averateMins;
                 averageCount++;
             }

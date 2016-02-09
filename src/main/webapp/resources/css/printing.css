@@ -86,7 +86,7 @@ root {
         font-size: 11px!important; 
         margin: auto!important; 
         background-size: 100% auto!important; 
-        border: 1px solid!important;
+        /*border: 1px solid!important;*/
         font-size: 130%;
         text-transform: capitalize!important;
     }

@@ -6,13 +6,12 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+            xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-
         <h:panelGroup rendered="true" >
             <h:form>
 
@@ -21,7 +20,7 @@
                          header="Turn Around Time">
 
                     <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
-                        
+
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" styleClass="dateTimePicker" navigator="true" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -31,20 +30,41 @@
                         </p:calendar>
                         <h:outputLabel value="Department"/>
                         <autocomplete:department value="#{investigationMonthSummeryOwnControllerSession.department}" ></autocomplete:department>
+                        <h:outputLabel value="Item"/>
+                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                        value="#{investigationMonthSummeryOwnControllerSession.item}" 
+                                        completeMethod="#{investigationController.completeInvest}" 
+                                        var="apt" itemLabel="#{apt.name}" 
+                                        itemValue="#{apt}" size="30"  style="width: 400px;">
+                            <p:column>
+                                #{apt.name}
+                            </p:column>
+                            <p:column>
+                                #{apt.fullName}
+                            </p:column>
+                            <p:column>
+                                #{apt.department.name}
+                            </p:column>
+
+                        </p:autoComplete>
+                        <p:watermark for="acPt" value="Item"/>
                         <p:commandButton ajax="false"  value="Process"  
                                          action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
                                          styleClass="noPrintButton" />
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
                             <pe:exporter type="xlsx" target="tbl" fileName="turn over time"/>
                         </p:commandButton>
-                        
+
 
                     </h:panelGrid>
 
-                    <p:panel style="width: 100%; margin-top: 20px;">
+                    <p:panel style="width: 100%; margin-top: 20px;" styleClass="noBorder summeryBorder">
 
 
                         <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.pis}" var="pi" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Turn Around Time" />
+                            </f:facet>
                             <p:column headerText="Ins Id" >
                                 <p:outputLabel value="#{pi.billItem.bill.insId}" ></p:outputLabel>
                             </p:column>
@@ -63,7 +83,7 @@
                             <p:column headerText="fromDepartment" >
                                 <p:outputLabel value="#{pi.billItem.bill.fromDepartment.name}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Investigation" >
+                            <p:column headerText="Investigation" sortBy="#{pi.billItem.item.name}" >
                                 <p:outputLabel value="#{pi.billItem.item.name}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Sample Colleted At" >
@@ -71,24 +91,29 @@
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column headerText="Printed At" >
-                                <p:outputLabel value="#{pi.printingAt}" >
+                            <p:column headerText="Approved At" >
+                                <p:outputLabel value="#{pi.approveAt}" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
+                            <!--                            <p:column headerText="Printed At" >
+                                                            <p:outputLabel value="#{pi.printingAt}" >
+                                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                                            </p:outputLabel>
+                                                        </p:column>-->
                             <p:column headerText="Turn Around time" >
                                 <h:panelGroup rendered="#{pi.printingAt ne null}" >
-                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt)}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt) lt 60}" >
+                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
                                         <f:convertNumber pattern="0" ></f:convertNumber>
                                     </p:outputLabel>
-                                    <p:outputLabel value=" minutes" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt) lt 60}" >
+                                    <p:outputLabel value=" minutes" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
                                     </p:outputLabel>
-                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt)/60}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt) gt 60}" >
+                                    <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)/60}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
                                         <f:convertNumber pattern="0.0" ></f:convertNumber>
                                     </p:outputLabel>
-                                    <p:outputLabel value=" hours" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt) gt 60}" >
+                                    <p:outputLabel value=" hours" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) gt 60}" >
                                     </p:outputLabel>
-                                    <p:outputLabel value="One Hour" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.printingAt) eq 60}" >
+                                    <p:outputLabel value="One Hour" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) eq 60}" >
                                     </p:outputLabel>
                                 </h:panelGroup>
                             </p:column>
