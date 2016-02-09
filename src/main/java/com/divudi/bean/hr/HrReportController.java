@@ -146,6 +146,8 @@ public class HrReportController implements Serializable {
     List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails;
 
     String backButtonPage;
+    
+    double total;
 
     public String fromStaffFingerprintAnalysisToStaffLeave(Date date, Staff staff) {
         fromDate = CommonFunctions.getStartOfDay(date);
@@ -3931,6 +3933,10 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryComponentQuary(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
+        total=0.0;
+        for (StaffSalaryComponant ssc : staffSalaryComponants) {
+            total+=ssc.getComponantValue();
+        }
 
     }
 
@@ -5161,6 +5167,14 @@ public class HrReportController implements Serializable {
 
     public void setTotalBasicValue(double totalBasicValue) {
         this.totalBasicValue = totalBasicValue;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
     }
 
 }

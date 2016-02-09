@@ -143,6 +143,9 @@ public class Institution implements Serializable {
     
 
     public String getTransAddress1() {
+        if (transAddress1==null) {
+            split();
+        }
         return transAddress1;
     }
 
