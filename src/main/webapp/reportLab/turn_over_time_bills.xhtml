@@ -63,7 +63,7 @@
                             <p:column headerText="fromDepartment" >
                                 <p:outputLabel value="#{pi.billItem.bill.fromDepartment.name}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Investigation" >
+                            <p:column headerText="Investigation" sortBy="#{pi.billItem.item.name}" >
                                 <p:outputLabel value="#{pi.billItem.item.name}" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Sample Colleted At" >
