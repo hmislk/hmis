@@ -89,7 +89,9 @@
                     </tr>
                     <tr>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bank.transAddress2},"/>
+                            <h:outputLabel value="#{cc.attrs.bank.transAddress2}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bank.transAddress3 eq null or cc.attrs.bank.transAddress3 eq ''}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bank.transAddress3 ne null and cc.attrs.bank.transAddress3 ne ''}"/>
                         </td>
                         <td></td>
                         <td></td>
@@ -97,7 +99,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bank.transAddress3}"/>
-                            <h:outputLabel value="." rendered="#{cc.attrs.bank.transAddress4 eq null or cc.attrs.bank.transAddress4 eq ''}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bank.transAddress4 eq null or cc.attrs.bank.transAddress4 eq '') and (cc.attrs.bank.transAddress3 ne null and cc.attrs.bank.transAddress3 ne '')}"/>
                             <h:outputLabel value="," rendered="#{cc.attrs.bank.transAddress4 ne null and cc.attrs.bank.transAddress4 ne ''}"/>
                         </td>
                         <td></td>
