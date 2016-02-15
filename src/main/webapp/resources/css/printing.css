@@ -422,6 +422,7 @@ root {
     position: absolute;
     left: 75%;
     top: 25%;
+    border: 0px;
 }
 
 .phonePrinting{

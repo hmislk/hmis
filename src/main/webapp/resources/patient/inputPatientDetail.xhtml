@@ -15,22 +15,24 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="3" >
-<!--            <p:outputLabel value="Title"/>-->
+            <!--            <p:outputLabel value="Title"/>-->
             <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{enumController.title}"/>
             </p:selectOneMenu>
-<!--            <p:outputLabel value="Name"/>-->
-            <p:inputText rendered="true" 
-                         required="true"
-                         requiredMessage="Please enter the name"
+            <!--            <p:outputLabel value="Name"/>-->
+            <p:inputText rendered="true"
                          autocomplete="off" 
                          id="txtNewPtName"
                          value="#{cc.attrs.patient.person.name}" 
                          style="width:300px;text-transform:uppercase;">
             </p:inputText>
-<!--            <p:outputLabel value="NIC"/>-->
-            <p:inputText autocomplete="off" id="nic" value="#{cc.attrs.patient.person.nic}"/>
+            <!--            <p:outputLabel value="NIC"/>-->
+            <p:inputMask mask="999999999V" id="nic" 
+                         autocomplete="off" maxlength="11" 
+                         value="#{cc.attrs.patient.person.nic}"
+                         style="width: 100px;">
+            </p:inputMask>
             <!--<p:outputLabel value="Sex"/>-->
             <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>
@@ -64,24 +66,24 @@
             <h:panelGroup>
                 <!--<p:outputLabel value="Mobile Phone"/>-->
                 <p:inputMask id="mno" mask="999-9999999" autocomplete="off" maxlength="11" 
-                             value="#{cc.attrs.patient.person.mobile}" required="true" requiredMessage="Please Enter A Mobile Number">
+                             value="#{cc.attrs.patient.person.mobile}" >
                 </p:inputMask>
                 <!--<p:outputLabel value="Home Phone"/>-->
                 <p:inputMask id="hno" mask="999-9999999" autocomplete="off" maxlength="11" style="margin-top: 8px;"
-                             value="#{cc.attrs.patient.person.phone}" required="true" requiredMessage="Please enter a home phone number">
+                             value="#{cc.attrs.patient.person.phone}" >
                 </p:inputMask>
             </h:panelGroup>
-         </p:panelGrid>    
-                <poue:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="nic" value="NIC No"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="calNewPtDob" value="Date Of Birth"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="address" value="Address"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="mno" value="Mobile Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="hno" value="Home Phone Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="txtNewSex" value="Sex"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                <poue:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
-                
-       
+        </p:panelGrid>    
+        <poue:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="nic" value="NIC No"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="calNewPtDob" value="Date Of Birth"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="address" value="Address"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="mno" value="Mobile Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="hno" value="Home Phone Number"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="txtNewSex" value="Sex"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+        <poue:tooltip for="cmbTitle" value="Title"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+
+
 
         <p:watermark value="Patient Name" for="txtNewPtName" />
         <p:watermark value="Date of Birth" for="calNewPtDob" />

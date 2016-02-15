@@ -307,9 +307,9 @@ public class CashRecieveBillController implements Serializable {
         }
     }
 
-    private void calTotal() {
+    public void calTotal() {
         double n = 0.0;
-        for (BillItem b : billItems) {
+        for (BillItem b : selectedBillItems) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -336,7 +336,7 @@ public class CashRecieveBillController implements Serializable {
     private PaymentSchemeController paymentSchemeController;
 
     private boolean errorCheck() {
-        if (getBillItems().isEmpty()) {
+        if (getSelectedBillItems().isEmpty()) {
             UtilityController.addErrorMessage("No Bill Item ");
             return true;
         }
@@ -441,6 +441,8 @@ public class CashRecieveBillController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        
+        calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
@@ -503,7 +505,6 @@ public class CashRecieveBillController implements Serializable {
 
 //        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        getBillNumberBean().institutionBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.INWPAY);
-
         getBillFacade().create(tmp);
 
         return tmp;
@@ -528,11 +529,14 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItem() {
-        for (BillItem tmp : getBillItems()) {
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+        for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());
+            getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
             updateReferenceBill(tmp);
@@ -607,6 +611,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
+        institution = null;
         comment = null;
     }
 
