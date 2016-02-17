@@ -74,7 +74,7 @@
                                                     <h:outputLabel id="lblBillNo" 
                                                                    value="#{pi.billItem.bill.deptId}" 
                                                                    styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
-                                                    <p:tooltip for="lblBillNo"  >
+<!--                                                    <p:tooltip for="lblBillNo"  >
                                                         <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                                         <br/>
                                                         <h:outputLabel value="(Department Bill No : #{pi.billItem.bill.deptId})" ></h:outputLabel>
@@ -103,7 +103,7 @@
                                                                 <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                             </h:outputLabel>
                                                         </h:panelGroup>
-                                                    </p:tooltip>
+                                                    </p:tooltip>-->
                                                 </td>
                                                 <td >
                                                     <h:outputLabel value="#{pi.billItem.item.name}" >
@@ -123,7 +123,7 @@
                                                                                     style="margin-left: 20px; height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.4;'}" ></p:graphicImage>
 
 
-                                                                    <p:tooltip for="imgEntered" >
+<!--                                                                    <p:tooltip for="imgEntered" >
                                                                         <h:outputLabel rendered="#{!dpr.dataEntered}" value="Awaiting Dataentry to the system." styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
                                                                         </h:outputLabel>
                                                                         <h:outputLabel  rendered="#{dpr.dataEntered}"  value="Data entered at "  styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" ></h:outputLabel>
@@ -152,7 +152,7 @@
                                                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
                                                                         </h:outputLabel>
                                                                         <h:outputLabel value="." ></h:outputLabel>
-                                                                    </p:tooltip>
+                                                                    </p:tooltip>-->
 
                                                                     <!--<button type="button" class="btn btn-success">View</button>-->
 
@@ -162,12 +162,12 @@
                                                                         <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                                     </h:commandButton>
 
-                                                                    <p:tooltip for="cmdViewReport" >
+<!--                                                                    <p:tooltip for="cmdViewReport" >
                                                                         <h:outputLabel  value="Reported as #{dpr.item.name}" styleClass="#{!dpr.dataEntered ? 'greentext':'yellowtext'}" >
                                                                         </h:outputLabel>
                                                                         <br/>
                                                                         Click hereto view the report.
-                                                                    </p:tooltip>
+                                                                    </p:tooltip>-->
                                                                 </td>
                                                             </tr>
                                                         </ui:repeat>
