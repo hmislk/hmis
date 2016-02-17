@@ -287,6 +287,32 @@ public class BookingController implements Serializable {
         //System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
+    
+    public void listnerMarkAbsent() {
+        if (getSelectedBillSession().isAbsent()) {
+            getSelectedBillSession().setAbsentMarkedAt(new Date());
+            getSelectedBillSession().setAbsentMarkedUser(getSessionController().getLoggedUser());
+        }else{
+            getSelectedBillSession().setAbsentUnmarkedAt(new Date());
+            getSelectedBillSession().setAbsentUnmarkedUser(getSessionController().getLoggedUser());
+        }
+
+        getBillSessionFacade().edit(getSelectedBillSession());
+        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        if (getSelectedBillSession().isAbsent()) {
+            UtilityController.addSuccessMessage("Mark As Absent");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
+        }else{
+            UtilityController.addSuccessMessage("Mark As Present");
+            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+                getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
+                getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
+            }
+        }
+    }
 
     public void makeNull() {
         speciality = null;
@@ -921,6 +947,7 @@ public class BookingController implements Serializable {
         }
         channelStaffPaymentBillController.setSpeciality(getSpeciality());
         channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.fillSessions();
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
@@ -963,6 +990,14 @@ public class BookingController implements Serializable {
             setSpeciality(doctorSpecialityController.getSelectedItems().get(0));
             listnerStaffListForRowSelect();
         }
+    }
+    
+    public void listnerClearSelectedServiceSession() {
+        selectedServiceSession=null;
+        billSessions=null;
+        selectedBillSession=null;
+        getChannelCancelController().makeNull();
+        getChannelBillController().setBillSession(null);
     }
 
     public void setBillSessions(List<BillSession> billSessions) {
@@ -1052,8 +1087,8 @@ public class BookingController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().makeNull();
-        getChannelCancelController().setBillSession(selectedBillSession);
+        getChannelBillController().makeNull();
+        getChannelBillController().setBillSession(selectedBillSession);
     }
 
     public BillFeeFacade getBillFeeFacade() {

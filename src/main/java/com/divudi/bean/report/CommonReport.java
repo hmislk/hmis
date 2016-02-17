@@ -14,7 +14,6 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
-import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -27,10 +26,10 @@ import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PriceMatrixFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
@@ -69,6 +68,8 @@ public class CommonReport implements Serializable {
     BillItemFacade billItemFac;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     /**
      * Controllers
      */
@@ -199,6 +200,7 @@ public class CommonReport implements Serializable {
     BillsTotals channelBilledAgent;
     BillsTotals channelRefundsAgent;
     List<Bill> bills;
+    List<CollectingCenteRow>collectingCenteRows;
 
     public List<Bill> getBills() {
         return bills;
@@ -4004,7 +4006,7 @@ public class CommonReport implements Serializable {
 
         BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
 
-        bills = getBillList(billTypes);
+        bills = getBillList(billTypes, collectingIns);
         total = 0.0;
         totalCC = 0.0;
         totalHos = 0.0;
@@ -4016,15 +4018,47 @@ public class CommonReport implements Serializable {
         }
     }
 
-    public List<Bill> getBillList(BillType[] bts) {
+    public void createCollectingCenterSummeryTable() {
+        collectingCenteRows=new ArrayList<>();
+        total = 0.0;
+        totalCC = 0.0;
+        totalHos = 0.0;
+        BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
+        for (Institution i : fetchCollectingCenters(billTypes)) {
+            CollectingCenteRow row=new CollectingCenteRow();
+            row.setI(i);
+            System.out.println("i = " + i.getName());
+            List<Bill> bs = new ArrayList<>();
+            bs = getBillList(billTypes, i);
+            double tot = 0.0;
+            double tothos = 0.0;
+            double totcc = 0.0;
+            for (Bill b : bs) {
+                createCollectingCenterfees(b);
+                tothos += b.getTransTotalWithOutCCFee();
+                totcc += b.getTransTotalCCFee();
+                tot += b.getNetTotal();
+            }
+            row.setTotalCC(totcc);
+            row.setTotalHos(tothos);
+            row.setTotal(tot);
+            collectingCenteRows.add(row);
+            totalHos += tothos;
+            totalCC += totcc;
+            total += tot;
+        }
+
+    }
+
+    public List<Bill> getBillList(BillType[] bts, Institution ins) {
         Map m = new HashMap();
         String sql = "select b from Bill b "
                 + " where b.billType in :bTypes "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if (collectingIns != null) {
+        if (ins != null) {
             sql += " and (b.collectingCentre=:col or b.fromInstitution=:col) ";
-            m.put("col", collectingIns);
+            m.put("col", ins);
         } else {
             sql += " and (b.collectingCentre is not null or b.fromInstitution is not null) ";
         }
@@ -4036,8 +4070,22 @@ public class CommonReport implements Serializable {
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public List<Institution> fetchCollectingCenters(BillType[] bts) {
+        Map m = new HashMap();
+        String sql = "select distinct(b.fromInstitution) from Bill b "
+                + " where b.billType in :bTypes "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.fromInstitution is not null "
+                + " order by b.fromInstitution.name ";
+
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        m.put("bTypes", Arrays.asList(bts));
+
+        return getInstitutionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+    }
+
     public void createCollectingCenterfees(Bill b) {
-        AgentHistory ah = new AgentHistory();
         b.setTransTotalCCFee(0.0);
         b.setTransTotalWithOutCCFee(0.0);
         System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
@@ -4053,6 +4101,45 @@ public class CommonReport implements Serializable {
             }
             b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
             b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
+        }
+    }
+    
+    public class CollectingCenteRow{
+        Institution i;
+        double total;
+        double totalHos;
+        double totalCC;
+
+        public Institution getI() {
+            return i;
+        }
+
+        public void setI(Institution i) {
+            this.i = i;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public double getTotalHos() {
+            return totalHos;
+        }
+
+        public void setTotalHos(double totalHos) {
+            this.totalHos = totalHos;
+        }
+
+        public double getTotalCC() {
+            return totalCC;
+        }
+
+        public void setTotalCC(double totalCC) {
+            this.totalCC = totalCC;
         }
     }
 
@@ -4514,6 +4601,22 @@ public class CommonReport implements Serializable {
 
     public void setTotalCC(double totalCC) {
         this.totalCC = totalCC;
+    }
+
+    public InstitutionFacade getInstitutionFacade() {
+        return institutionFacade;
+    }
+
+    public void setInstitutionFacade(InstitutionFacade institutionFacade) {
+        this.institutionFacade = institutionFacade;
+    }
+
+    public List<CollectingCenteRow> getCollectingCenteRows() {
+        return collectingCenteRows;
+    }
+
+    public void setCollectingCenteRows(List<CollectingCenteRow> collectingCenteRows) {
+        this.collectingCenteRows = collectingCenteRows;
     }
 
 }

@@ -31,7 +31,7 @@
                     </p:commandButton>
 
                 </div>
-                <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" >
+                <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
 
 
                     <div >
@@ -39,12 +39,12 @@
 
 
 
-                            <h:panelGroup   id="gpBillPreview"  class="fiveinchbill" style="padding: 15px!important;"  >
+                            <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;"  >
 
                                 <div >
                                     <div>
 
-                                        <h:panelGrid columns="4"  style="min-width: 100%; padding: 10px!important;margin: 10px;">
+                                        <h:panelGrid columns="4"  style="min-width: 100%; padding: 5px!important;margin: 5px;">
                                             <h:outputLabel value="Name : " style="font-size: 11px!important;" />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.patient.person.nameWithTitle}" ></h:outputLabel>
 
@@ -58,59 +58,66 @@
 
                                             <h:outputLabel style="font-size: 11px!important;" value="Doc : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
-                                            <h:outputLabel style="font-size: 11px!important;" value="Investigation : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="Test : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.investigation.name}" ></h:outputLabel>
 
                                             <h:outputLabel style="font-size: 11px!important;" value="Id : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.insId}" ></h:outputLabel>
 
-                                            <h:outputLabel style="font-size: 11px!important;" value="Billed At : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="Bill At : " />
                                             <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.billItem.bill.createdAt}" >
                                                 <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
                                             </h:outputLabel>
+                                            <h:outputLabel style="font-size: 11px!important;" value="Sample At : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.sampledAt}" >
+                                                <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
+                                            </h:outputLabel>
+                                            <h:outputLabel style="font-size: 11px!important;" value="Col. At : " />
+                                            <h:outputLabel style="font-size: 11px!important;" value="#{patientInvestigationController.current.receivedAt}" >
+                                                <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
+                                            </h:outputLabel>
                                         </h:panelGrid>
-                                        
-                                        
-sfsdfsdfsd
-                                            <h:panelGroup rendered="#{patientInvestigationController.current.investigation.reportType eq 'Microbiology'}"  style="width: 100%;" >
-                                                <p:panelGrid columns="2"  >
 
-                                                    <h:outputLabel value="Macroscopy"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="................................................................................................"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
 
-                                                    <h:outputLabel value="Microscopy"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
+                                        <h:panelGroup rendered="#{patientInvestigationController.current.investigation.reportType eq 'Microbiology'}"  style="width: 100%;" >
+                                            <p:panelGrid columns="2"  >
 
-                                                    <h:outputLabel value="Colony Count"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
+                                                <h:outputLabel value="Macroscopy"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
+                                                <h:outputLabel value="................................................................................................"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
 
-                                                    <h:outputLabel value="Comments"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
-                                                    </h:outputLabel>
-                                                </p:panelGrid>
+                                                <h:outputLabel value="Microscopy"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
+                                                <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
 
-                                                <p:dataGrid style="padding: 1px!important;margin: 1px!important;" columns="1" value="#{antibioticController.items}" var="ab" >
-                                                    <h:outputLabel value="#{ab.name}"   style="font-size: 11px!important;"></h:outputLabel>
-                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
-                                                    <h:outputLabel value="....."   style="font-size: 11px!important;"></h:outputLabel>
-                                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
-                                                </p:dataGrid>
+                                                <h:outputLabel value="Colony Count"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
+                                                <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
 
-                                            </h:panelGroup>
+                                                <h:outputLabel value="Comments"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
+                                                <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                                </h:outputLabel>
+                                            </p:panelGrid>
 
-                                        
+                                            <p:dataGrid style="padding: 1px!important;margin: 1px!important;" columns="1" value="#{antibioticController.items}" var="ab" >
+                                                <h:outputLabel value="#{ab.name}"   style="font-size: 11px!important;"></h:outputLabel>
+                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                                <h:outputLabel value="....."   style="font-size: 11px!important;"></h:outputLabel>
+                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                            </p:dataGrid>
+
+                                        </h:panelGroup>
+
+
                                         <table>
                                             <ui:repeat value="#{patientInvestigationController.current.investigation.reportItems}" var="myix" >
-                                                
-                                              
-                                                                                                
+
+
+
                                                 <h:panelGroup rendered="#{myix.retired==false and myix.ixItemType eq 'Value' and myix.item.reportType ne 'Microbiology'}" style="padding-left: 10px!important;margin-left:  10px!important;">
                                                     <tr>
                                                         <td>

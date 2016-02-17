@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable   value="#{cc.attrs.data.bills}" var="b4"   sortBy="#{b4.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
+        <p:dataTable  id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b4"   sortBy="#{b4.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
                 <h:outputLabel  value="Petty Cash Payment Cancel"/>
             </f:facet> 

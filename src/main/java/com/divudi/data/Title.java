@@ -25,6 +25,7 @@ public enum Title {
     DrMs,
     DrMiss,
     Prof,
+    ProfMrs,
     Other,
     Baby_Of;
 
@@ -35,9 +36,9 @@ public enum Title {
             case DrMiss:
                 return "Dr. (Miss) ";
             case DrMrs:
-                return "Dr. (Mrs.) ";
+                return "Dr. (Mrs) ";
             case DrMs:
-                return "Dr. (Ms.) ";
+                return "Dr. (Ms) ";
             case Hon:
                 return "Hon. ";
             case Dr:
@@ -52,6 +53,8 @@ public enum Title {
                 return "Ms. ";
             case Prof:
                 return "Prof. ";
+            case ProfMrs:
+                return "Prof. (Mrs) ";
             case Rev:
                 return "Rev. ";
             case RtHon:

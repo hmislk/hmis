@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel id="pan1" styleClass="noBorder summeryBorder">
+                <f:facet name="header" >
+                    <p:commandButton value="Print" action="#" styleClass="noPrintButton">
+                        <p:printer target="pan1" />
+                    </p:commandButton>
+                    <p:commandButton value="Back" action="/channel/channel_booking" styleClass="noPrintButton">
+                    </p:commandButton>
+                </f:facet>
+                <p:dataTable value="#{channelReportController.billSessions}" var="bs" rowIndexVar="i" >
+                    <f:facet name="header">
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
+                        <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
+                        <p:outputLabel value="Full Paid Cancel Patient List"/><br></br>
+                        <p:outputLabel value="Date: "/>
+                        <p:outputLabel value="#{channelReportController.date}" >
+                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                        </p:outputLabel>     
+                    </f:facet>
+                    <p:column headerText="No" style="width: 10px!important;">
+                        <f:facet name="header">
+                            <p:outputLabel value="No" style="float: left;"/>
+                        </f:facet>
+                        <p:outputLabel value="#{i+1}" />
+                    </p:column>
+                    <p:column headerText="Consultant" style="width: 1000px!important;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Consultant" style="float: left;"/>
+                        </f:facet>
+                        <p:outputLabel value="#{bs.bill.staff.person.nameWithTitle}" />
+                    </p:column>   
+                    <p:column headerText="Patient" style="width: 1000px!important;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Patient" style="float: left;"/>
+                        </f:facet>
+                        <p:outputLabel value="#{bs.bill.patient.person.name}" />
+                    </p:column> 
+                    <p:column headerText="Bill No" styleClass="numberCol">
+                        <p:outputLabel value="#{bs.bill.deptId}" />
+                    </p:column>
+                    <p:column headerText="Appo. No" style="width: 10px!important;" styleClass="numberCol">
+                        <p:outputLabel value="#{bs.serialNo}" />
+                    </p:column>
+                    <p:column headerText="Staff Fee" styleClass="numberCol">
+                        <p:outputLabel value="#{bs.bill.staffFee}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <p:outputLabel value="#{channelReportController.netTotalDoc}" style="float: right;">
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Hos Fee" styleClass="numberCol" style="width: 150px!important;">
+                        <p:outputLabel value="#{bs.bill.netTotal-bs.bill.staffFee}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <p:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: right;">
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Total" styleClass="numberCol">
+                        <p:outputLabel value="#{bs.bill.netTotal}" >
+                            <f:convertNumber pattern="##,###,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <p:outputLabel value="#{channelReportController.netTotal}" style="float: right;">
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

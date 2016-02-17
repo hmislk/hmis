@@ -41,7 +41,7 @@
 
                     </h:panelGrid>
                 </p:panel>
-                
+
                 <h:panelGrid columns="1" id="gpDetail" styleClass="alignTop">
                     <h:panelGrid columns="2"  styleClass="alignTop">
 
@@ -62,7 +62,7 @@
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>
-                            
+
                             <p:panel header="Hospital Use">
                                 <p:tabView style="width: 780px;height: 250px;">
                                     <p:tab title="Special Details">
@@ -151,7 +151,7 @@
                                 </p:tabView>
                             </p:panel>
                         </p:panel>
-                        
+
                         <p:panel style="height: 488px;">
                             <p:panel header="Other" style="width: 465px;height: 260px;">                           
                                 <p:tabView style="height: 210px;">
@@ -160,14 +160,18 @@
                                             <!--<p:outputLabel  value="Name" />-->
                                             <p:inputText id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
                                             <!--<p:outputLabel value="NIC"/>-->
-                                            <p:inputText id="gnic" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
+                                            <p:inputMask mask="999999999V" id="gnic" 
+                                                         autocomplete="off" maxlength="11" 
+                                                         value="#{admissionController.current.guardian.nic}"
+                                                         >
+                                            </p:inputMask>
                                             <!--<p:outputLabel value="Address" />-->
                                             <p:inputText id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                             <!--<p:outputLabel value="Mobile No" />-->
                                             <p:inputMask id="gmno" mask="999-9999999"   value="#{admissionController.current.guardian.mobile}"  />
                                             <!--<p:outputLabel value="Home Phone No" />-->
                                             <p:inputMask id="ghno" mask="999-9999999"  value="#{admissionController.current.guardian.phone}"  />
-                                            
+
                                             <p:watermark value="Guardian Name" for="gname" />
                                             <p:watermark value="Guardian NIC" for="gnic" />
                                             <p:watermark value="Guardian Address" for="gadd" />
@@ -206,7 +210,7 @@
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>
-                            
+
                             <p:panel header="Payment Detail" style="margin-top: 10px;height: 185px;">
 
                                 <h:panelGrid columns="2">
@@ -224,12 +228,12 @@
                             </p:panel>
                         </p:panel>
 
-                        
 
 
-                        
 
-                        
+
+
+
                     </h:panelGrid>
                 </h:panelGrid>
             </h:panelGroup>

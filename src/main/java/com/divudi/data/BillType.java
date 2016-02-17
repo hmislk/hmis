@@ -113,7 +113,13 @@ public enum BillType {
     StoreGrnReturn,
     StorePre,
     StoreOrder,
-    StorePurchaseReturn,;
+    StorePurchaseReturn,
+    //Old Bills
+    ChannelCashOld,
+    ChannelPaidOld,
+    ChannelAgentOld,
+    ChannelOnCallOld,
+    ChannelStaffOld,;
 
     public String getLabel() {
         switch (this) {

@@ -11,6 +11,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
@@ -102,6 +103,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     String billNo;
     String phoneNo;
     UserPreference currentPreference;
+    Bill bill;
 
     public UserPreference getCurrentPreference() {
         return currentPreference;
@@ -1198,6 +1200,14 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 
 }

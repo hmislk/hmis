@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions"
-      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:salary="http://java.sun.com/jsf/composite/hr">
 
     <h:body>
 
@@ -103,6 +104,11 @@
 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{hrReportController.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>  
                                 <p:column headerText="EPF Staff Value " style="text-align: right;">
                                     <f:facet name="header">
@@ -140,7 +146,17 @@
 
                             </p:dataTable>
                         </p:panel>
-
+                        <p:panel rendered="#{hrReportController.reportKeyWord.institutionBank ne null and hrReportController.reportKeyWord.paysheetComponent ne null}" >
+                            <p:commandButton value="Print" ajax="false" action="#">
+                                <p:printer target="gpBillPreviewPaysheet" ></p:printer>
+                            </p:commandButton>
+                            <h:panelGroup   id="gpBillPreviewPaysheet">
+                                <salary:bank_letter salary="#{hrReportController.staffSalaryComponants}" 
+                                                    bank="#{hrReportController.reportKeyWord.institutionBank}" 
+                                                    component="#{hrReportController.reportKeyWord.paysheetComponent}"
+                                                    total="#{hrReportController.total}"/>
+                            </h:panelGroup>
+                        </p:panel>
 
                     </p:panel>
 

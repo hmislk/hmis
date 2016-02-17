@@ -21,6 +21,7 @@ public class MonthEndRecord {
     double poyaDays;
     double poyaDaysLeave;
     double merhchantileDays;
+    double merhchantileDaysLeave;
     double leave_annual;
     double leave_casual;
     double leave_medical;
@@ -196,6 +197,14 @@ public class MonthEndRecord {
 
     public void setPoyaDaysLeave(double poyaDaysLeave) {
         this.poyaDaysLeave = poyaDaysLeave;
+    }
+
+    public double getMerhchantileDaysLeave() {
+        return merhchantileDaysLeave;
+    }
+
+    public void setMerhchantileDaysLeave(double merhchantileDaysLeave) {
+        this.merhchantileDaysLeave = merhchantileDaysLeave;
     }
 
 }

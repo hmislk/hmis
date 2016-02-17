@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
 
@@ -16,7 +17,7 @@
 
                     <h:form>
 
-                        <h:panelGrid columns="3" styleClass="alignTop" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:panelGrid columns="2" >
                                 <p:outputLabel value="From Date" ></p:outputLabel>
                                 <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
@@ -38,17 +39,17 @@
                                 </p:autoComplete>
 
                                 <p:commandButton ajax="false" 
-                                                action="#{stockHistoryController.fillHistoryAvailableDays()}" 
+                                                 action="#{stockHistoryController.fillHistoryAvailableDays()}" 
                                                  value="Display Available Days"  ></p:commandButton>
                                 <p:commandButton ajax="false" 
-                                                action="#{stockHistoryController.recordHistory()}" 
+                                                 action="#{stockHistoryController.recordHistory()}" 
                                                  value="Record History Now"  ></p:commandButton>
 
                             </h:panelGrid>
 
-                            <h:panelGrid columns="2" >
+                            <h:panelGrid columns="3" >
 
-                                <p:dataTable id="tblDates" 
+                                <p:dataTable id="tblDates" rowIndexVar="i"
                                              value="#{stockHistoryController.pharmacyStockHistoryDays}" 
                                              var="d" selection="#{stockHistoryController.historyDate}" 
                                              rowKey="#{d}" selectionMode="single" 
@@ -67,6 +68,9 @@
 
                                 <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistories()}" 
                                                  value="Display History" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                                 
+                                <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" 
+                                                 value="Display History(Stock With Out Zero)" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
 
 
 
@@ -76,67 +80,88 @@
                             </h:panelGrid>
 
 
-                          
+
 
                         </h:panelGrid>
+                        <h:panelGrid columns="2" >
+                            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" action="#" >
+                                <pe:exporter type="xlsx" target="tblHistories" fileName="Pharmacy_Stock_Report"   />
+                            </p:commandButton>
+                        </h:panelGrid>
 
-                        <p:dataTable id="tblHistories" value="#{stockHistoryController.pharmacyStockHistories}"
-                                     rowKey="#{item.id}"
-                                     rowIndexVar="ii"
-                                     var="item"
-                                     paginator="true"
-                                     rows="20"
-                                     rowsPerPageTemplate="20,50,100"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     >
-                            
-                            <p:column style="width: 40px;" >
+                        <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tblHistories" value="#{stockHistoryController.pharmacyStockHistories}"
+                                         rowKey="#{item.id}"
+                                         rowIndexVar="ii"
+                                         var="item">
                                 <f:facet name="header" >
-                                    No
+                                    <p:outputLabel value="#{stockHistoryController.department.name}" rendered="#{stockHistoryController.department ne null}" />
+                                    <p:outputLabel value="All Departents Stock" rendered="#{stockHistoryController.department eq null}" /><br></br>
+                                    <p:outputLabel value="#{stockHistoryController.historyDate}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd" ></f:convertDateTime>
+                                    </p:outputLabel>
                                 </f:facet>
-                                <p:outputLabel value="#{ii + 1}" ></p:outputLabel>
-                            </p:column>
-                            <p:column rendered="#{stockHistoryController.department eq null}" 
-                                      sortBy="department.name"
-                                      filterBy="department.name"
-                                      filterMatchMode="contains"
-                                      >
-                                <f:facet name="header">
-                                    <p:outputLabel value="Department"/>
-                                </f:facet>
+                                <p:column style="width: 40px;" >
+                                    <f:facet name="header" >
+                                        No
+                                    </f:facet>
+                                    <p:outputLabel value="#{ii + 1}" ></p:outputLabel>
+                                </p:column>
+                                <p:column rendered="#{stockHistoryController.department eq null}" 
+                                          sortBy="department.name"
+                                          >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Department"/>
+                                    </f:facet>
 
-                                <p:outputLabel value="#{item.department.name}"/>
+                                    <p:outputLabel value="#{item.department.name}"/>
 
-                            </p:column>
-                            <p:column sortBy="item.name"
-                                      filterBy="item.name"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Item"/>
-                                </f:facet>
-                                <p:outputLabel value="#{item.item.name}"/>
-                            </p:column>
-                            <p:column style="text-align: right;" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Stock"/>
-                                </f:facet>
-                                <p:outputLabel value="#{item.stockQty}"/>
-                            </p:column>
-                            <p:column style="text-align: right;" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Purchase Value"/>
-                                </f:facet>
-                                <p:outputLabel value="#{item.stockPurchaseValue}" rendered="#{item.stockPurchaseValue ne 0.0}"/>
-                                <p:outputLabel value="Not Recorded." rendered="#{item.stockPurchaseValue eq 0.0}"/>
-                            </p:column>
-                            <p:column style="text-align: right;" styleClass="averageNumericColumn">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Retail Sale Value"/>
-                                </f:facet>
-                                <p:outputLabel value="#{item.stockSaleValue}" rendered="#{item.stockSaleValue ne 0.0}"/>
-                                <p:outputLabel value="Not Recorded." rendered="#{item.stockSaleValue eq 0.0}"/>
-                            </p:column>
-                        </p:dataTable>
+                                </p:column>
+                                <p:column sortBy="item.name">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{item.item.name}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Stock"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{item.stockQty}"/>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Purchase Value"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{item.stockPurchaseValue}" rendered="#{item.stockPurchaseValue ne 0.0}">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Not Recorded." rendered="#{item.stockPurchaseValue eq 0.0}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{stockHistoryController.totalStockPurchaseValue}">
+                                            <f:convertNumber pattern="#,###,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column style="text-align: right;" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Retail Sale Value"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{item.stockSaleValue}" rendered="#{item.stockSaleValue ne 0.0}">
+                                        <f:convertNumber pattern="#,###,##0.00" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Not Recorded." rendered="#{item.stockSaleValue eq 0.0}"/>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{stockHistoryController.totalStockSaleValue}">
+                                            <f:convertNumber pattern="#,###,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
                     </h:form>
 
 

@@ -99,7 +99,7 @@
                             </f:facet>
                             <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
                         </p:column>
-
+                        
                         <p:column headerText="Grade" >
                             <f:facet name="header">
                                 <h:outputLabel value="Grade"  />
@@ -142,30 +142,49 @@
                         </p:column>
 
                         <p:column >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Bank Branch Name"  />
+                            </f:facet>
                             <h:outputLabel value="#{i.bankBranch.name}"/>
                         </p:column>
                         
                         <p:column >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Bank Name"  />
+                            </f:facet>
                             <h:outputLabel value="#{i.bankBranch.institution.name}"/>
                         </p:column>
                         
                         <p:column >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Working Department"  />
+                            </f:facet>
                             <h:outputLabel value="#{i.staff.workingDepartment.name}"/>
                         </p:column>
 
                         <p:column >
-
+                            <f:facet name="header">
+                                <h:outputLabel value="Component Name"  />
+                            </f:facet>
                             <h:outputLabel value="#{i.paysheetComponent.name}"/>
                         </p:column>
 
-                        <p:column >
-
+                        <p:column rendered="false">
+                            <f:facet name="header">
+                                <h:outputLabel value="Included For Ot"  />
+                            </f:facet>
                             <h:outputLabel value="#{i.paysheetComponent.includedForOt}"/>
                         </p:column>
+                        
+                        <p:column headerText="Starting Value" styleClass="averageNumericColumn">
+                            <f:facet name="header">
+                                <h:outputLabel value="Starting Value"  />
+                            </f:facet>
 
+                            <h:outputLabel value="#{i.startingBalance}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
 
                         <p:column headerText="Value" styleClass="averageNumericColumn">
                             <f:facet name="header">
