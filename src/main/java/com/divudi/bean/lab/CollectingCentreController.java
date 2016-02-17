@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -35,6 +36,8 @@ public class CollectingCentreController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    InstitutionController institutionController;
     @EJB
     private InstitutionFacade ejbFacade;
     List<Institution> selectedItems;
@@ -57,7 +60,15 @@ public class CollectingCentreController implements Serializable {
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        if (selectText.trim().equals("")) {
+            selectedItems=institutionController.completeInstitution(null, InstitutionType.CollectingCentre);
+        } else {
+            selectedItems=institutionController.completeInstitution(selectText, InstitutionType.CollectingCentre);
+        }
+        
+//        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false "
+//                + "and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  "
+//                + "and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -153,4 +164,13 @@ public class CollectingCentreController implements Serializable {
         }
         return items;
     }
+
+    public InstitutionController getInstitutionController() {
+        return institutionController;
+    }
+
+    public void setInstitutionController(InstitutionController institutionController) {
+        this.institutionController = institutionController;
+    }
+    
 }

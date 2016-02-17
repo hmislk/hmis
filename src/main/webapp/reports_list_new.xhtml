@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core" >
+    <h:head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta charset="utf-8" />
+        <title>Ruhunu Hospital Form</title>
+        <meta name="generator" content="Bootply" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link href="resources/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <!--[if lt IE 9]>
+                                <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+                        <![endif]-->
+        <link href="resources/css/styles.css" rel="stylesheet" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script> 
+        <script src="resources/js/bootstrap.min.js"></script>
+    </h:head>
+    <h:body>
+        <!--login modal-->
+        <div id="loginModal" class="modal show" tabindex="-1" role="dialog" aria-hidden="true" style="overflow: auto;">
+            <div class="container">
+                <div class="inner_wrap">
+                    <div class="form-horizontal">
+                        <h:form >
+                            <div class="section_top">
+                                <h3>Details</h3>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Name</label>
+                                    <div class="col-sm-10">
+                                        <!--<p class="form-control-static">H J ANUSHA</p>-->
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.name}" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Age</label>
+                                    <div class="col-sm-10">
+                                        <!--<p class="form-control-static">37 years.</p>-->
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.age}" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Gender</label>
+                                    <div class="col-sm-10">
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.sex}" />
+                                        <!--<p class="form-control-static">Female</p>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="section_bottom">
+                                <h3>Reports</h3>
+                                <div class="form-group">
+                                    <table class="table"  >
+                                        <tr>
+                                            <td>
+                                                <p>Bill No</p>
+                                            </td>
+                                            <td>
+                                                <p>Investigation</p>
+                                            </td>
+                                            <td>
+                                                <p>Reports</p>
+                                            </td>
+                                        </tr>
+
+                                        <ui:repeat id="tblBills" value="#{searchController.userPatientInvestigations}" var="pi"  >
+
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel id="lblBillNo" 
+                                                                   value="#{pi.billItem.bill.deptId}" 
+                                                                   styleClass="#{pi.billItem.bill.cancelled or pi.billItem.bill.refunded ? 'redtext':''}"></h:outputLabel>
+                                                    <p:tooltip for="lblBillNo"  >
+                                                        <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="(Department Bill No : #{pi.billItem.bill.deptId})" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Billed From : #{pi.billItem.bill.institution.name}" ></h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Sampled : " />
+                                                        <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        </h:outputLabel>
+                                                        <br/>
+                                                        <h:outputLabel value="Received : " />
+                                                        <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
+                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                        </h:outputLabel>
+                                                        <br/>
+                                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
+                                                            <h:outputLabel style="color: red;" value="Cancelled : " />
+                                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{pi.billItem.refunded}" >
+                                                            <h:outputLabel style="color: red;" value="Refunded : " />
+                                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
+                                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                            </h:outputLabel>
+                                                        </h:panelGroup>
+                                                    </p:tooltip>
+                                                </td>
+                                                <td >
+                                                    <h:outputLabel value="#{pi.billItem.item.name}" >
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td>
+                                                    <table class="table" style="border: 0px!important;">
+                                                        <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
+                                                            <tr>
+                                                                <td>
+
+                                                                    <p:graphicImage id="imgEntered" library="image/icon" name="data_entry.png" 
+                                                                                    style="margin-left: 20px; height: 30px; width: 30px; #{dpr.dataEntered ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                                    <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
+                                                                                    style="margin-left: 20px; height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                                    <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
+                                                                                    style="margin-left: 20px; height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.4;'}" ></p:graphicImage>
+
+
+                                                                    <p:tooltip for="imgEntered" >
+                                                                        <h:outputLabel rendered="#{!dpr.dataEntered}" value="Awaiting Dataentry to the system." styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.dataEntered}"  value="Data entered at "  styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" ></h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.dataEntered}" value="#{dpr.dataEntryAt}"  styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel value="." ></h:outputLabel>
+                                                                    </p:tooltip>
+                                                                    <p:tooltip for="imgApproved" >
+                                                                        <h:outputLabel rendered="#{!dpr.approved}" value="Awaiting Approval" styleClass="#{dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.approved}" value="Approved at " styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.approved}"   value="#{dpr.approveAt}"  styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
+                                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel value="." ></h:outputLabel>
+                                                                    </p:tooltip>
+
+                                                                    <p:tooltip for="imgPrinted" >
+                                                                        <h:outputLabel rendered="#{!dpr.printed}" value="Not Printed" styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.printed}" value="Printed at " styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel  rendered="#{dpr.printed}"  value="#{dpr.printingAt}" styleClass="#{dpr.printed ? 'greentext':'yellowtext'}" >
+                                                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                                                        </h:outputLabel>
+                                                                        <h:outputLabel value="." ></h:outputLabel>
+                                                                    </p:tooltip>
+
+                                                                    <!--<button type="button" class="btn btn-success">View</button>-->
+
+                                                                    <h:commandButton  styleClass="btn btn-success" style="margin-left: 20px; height: 30px; }"  id="cmdViewReport" 
+                                                                                      value="View" 
+                                                                                      action="reports_customer_view_new">
+                                                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    </h:commandButton>
+
+                                                                    <p:tooltip for="cmdViewReport" >
+                                                                        <h:outputLabel  value="Reported as #{dpr.item.name}" styleClass="#{!dpr.dataEntered ? 'greentext':'yellowtext'}" >
+                                                                        </h:outputLabel>
+                                                                        <br/>
+                                                                        Click hereto view the report.
+                                                                    </p:tooltip>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                        </ui:repeat>
+                                    </table>
+                                </div>
+                                <!--                            <div class="form-group">
+                                                                <label class="col-sm-2 control-label">CTRHDRHD/534 	HCG (Pregnancy) 	</label>
+                                                                <div class="col-sm-10">
+                                                                    <p class="form-control-static"><button type="button" class="btn btn-success">View</button></p>
+                                                                </div>
+                                                            </div>-->
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- script references --> 
+
+    </h:body>
+</html>
