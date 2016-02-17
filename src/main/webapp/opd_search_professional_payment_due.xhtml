@@ -87,10 +87,19 @@
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
                             </p:column>
+                            
+                            <p:column headerText="Payment Methord">
+                                <h:commandLink action="payment_staff_bill" >
+                                    <h:outputLabel value="#{bf.bill.paymentMethod}">
+                                    </h:outputLabel>
+                                    <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
+                                </h:commandLink>
+                            </p:column>
 
                             <p:column headerText="BilledAt" >
                                 <h:commandLink action="payment_staff_bill" >
                                     <h:outputLabel value="#{bf.bill.createdAt}">
+                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{staffPaymentBillController.currentStaff}"/>
                                 </h:commandLink>
