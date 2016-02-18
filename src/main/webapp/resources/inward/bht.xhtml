@@ -204,9 +204,59 @@
                                 <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
                         </div>
-
                         
+                        <div style="position: absolute;
+                             text-align: center;
+                             text-decoration: underline;
+                             font-weight: bold;
+                             font-size: 100%;
+                             margin-top: 54%;
+                             margin-left: 25%;" >
+                            <p:outputLabel   value="CREDIT COMPANY DETAIL" />
+                        </div>
 
+                        <div class="cel1R1L" style="margin-top: 58%;">
+                            <h:outputLabel value="Credit Company : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" >
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 58%;">
+                            <h:outputLabel value="Policy Number : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.policyNo}" >
+                            </h:outputLabel>
+                            
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 62%;">
+                            <h:outputLabel value="Reference Number : ">
+                            </h:outputLabel>
+
+                            <h:outputLabel value="#{cc.attrs.admission.referanceNo}" >
+                            </h:outputLabel>
+                        </div>
+                        
+                        <div class="cel1R1L" style="margin-top: 80%; font-weight: bold; font-size: 14px!important;">
+                            <p>
+                                I agree to Abide by the terms and conditions of admission prevailing 
+                                at this hospital and hold myself responsible for payment of all bills of 
+                                this patient before discharge from this hospital.
+                            </p>
+                        </div>
+                        
+                        <div class="cel2R1L" style="margin-top: 100%;">
+                            <h:outputLabel value="Guardian" style="text-decoration: overline;">
+                            </h:outputLabel>
+                        </div>
+
+                        <div class="cel1R1L" style="margin-top: 100%;">
+                            <h:outputLabel value="Cashier : #{cc.attrs.admission.creater.code}" style="text-decoration: overline;">
+                            </h:outputLabel>
+                        </div>
                         <!--                        <div class="BillDate">
                                                     <h:outputLabel value="Payment Methord : ">
                                                     </h:outputLabel>
