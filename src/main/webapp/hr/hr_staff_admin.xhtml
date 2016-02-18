@@ -76,6 +76,8 @@
                                 <p:tabView >
                                     <p:tab title="General" >
                                         <h:panelGrid id="tabDetails" columns="2">
+                                            <p:outputLabel  value="Staff Id" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.id}"  />
                                             <p:outputLabel value="Title"/>
                                             <p:selectOneMenu value="#{staffController.current.person.title}"  >
                                                 <f:selectItem itemLabel="Select Title" />

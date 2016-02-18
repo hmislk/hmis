@@ -114,15 +114,42 @@
                                     <p:outputLabel value="#{ss.staff.epfNo}" >
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Company (3%)" style="text-align: right;">
+                                <p:column headerText="Total" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Company (3%)"  />
+                                        <h:outputLabel value="Total"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{-(ss.etfCompanyValue)}">
+                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.epfStaffValue)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel> 
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue+hrReportController.totalEpfStaffValue)}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel> 
+                                    </f:facet>
+                                </p:column> 
+                                <p:column headerText="Staff (8%)" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Staff (8%)"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{-ss.epfStaffValue}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{-(hrReportController.totalEtfCompanyValue)}">
+                                        <p:outputLabel value="#{-(hrReportController.totalEpfStaffValue)}">
+                                            <f:convertNumber pattern="0.00" />
+                                        </p:outputLabel> 
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Company (12%)" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Company (12%)"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{-(ss.epfCompanyValue)}">
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue
+                                                                )}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel> 
                                     </f:facet>
