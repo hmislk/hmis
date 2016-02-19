@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="EPF ETF" />
+                            <h:outputLabel value="EPF" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -93,13 +93,27 @@
                                     </h:outputLabel>
 
                                 </f:facet>
+                                <p:column headerText="Employee Name 2" styleClass="noPrintButton">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Employee Name"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.id}" style="color: red;">
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Employee Name 2" styleClass="noPrintButton">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Employee Name"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.person.name}" style="color: red;">
+                                    </p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Employee Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Employee Name"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.name}">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithInitials}">
                                     </p:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:column headerText="Nic No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Nic No"  />
