@@ -168,7 +168,7 @@ public class ChannelReportController implements Serializable {
         staff = null;
         sessoinDate = false;
         institution = null;
-        date=null;
+        date = null;
     }
 
     public Institution getInstitution() {
@@ -3659,7 +3659,7 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
-    
+
     public void createTotalDoctor(Date date) {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -3923,6 +3923,41 @@ public class ChannelReportController implements Serializable {
             return;
         }
         HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        List<HistoryType> historyTypes = Arrays.asList(ht);
+
+        agentHistoryWithDate = new ArrayList<>();
+        Date nowDate = getFromDate();
+
+        while (nowDate.before(getToDate())) {
+            Date fd = commonFunctions.getStartOfDay(nowDate);
+            Date td = commonFunctions.getEndOfDay(nowDate);
+            System.out.println("td = " + td);
+            System.out.println("fd = " + fd);
+            System.out.println("nowDate = " + nowDate);
+            AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
+            if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
+                ahwd.setDate(nowDate);
+                ahwd.setAhs(createAgentHistory(fd, td, institution, historyTypes));
+                agentHistoryWithDate.add(ahwd);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            cal.add(Calendar.DATE, 1);
+            nowDate = cal.getTime();
+        }
+
+    }
+
+    public void createCollectingCenterHistorySubTable() {
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select Agency.");
+            return;
+        }
+        HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill, 
+            HistoryType.CollectingCentreDeposit,
+            HistoryType.CollectingCentreDepositCancel,
+            HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -4352,8 +4387,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getDate() {
-        if (date==null) {
-            date=new Date();
+        if (date == null) {
+            date = new Date();
         }
         return date;
     }
