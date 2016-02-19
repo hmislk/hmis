@@ -30,14 +30,14 @@ public class ReportKeyWord {
 
     DayType[] dayTypes;
     Staff staff;
-    Times times;    
+    Times times;
     Staff replacingStaff;
     Department department;
     StaffCategory staffCategory;
     Designation designation;
     Roster roster;
     PaysheetComponent paysheetComponent;
-    SalaryCycle salaryCycle;    
+    SalaryCycle salaryCycle;
     Shift shift;
     Speciality speciality;
     Patient patient;
@@ -54,6 +54,7 @@ public class ReportKeyWord {
     EmployeeStatus employeeStatus;
     boolean additionalDetails;
     WebUser webUser;
+    private String string;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -62,7 +63,7 @@ public class ReportKeyWord {
     public void setPaysheetComponent(PaysheetComponent paysheetComponent) {
         this.paysheetComponent = paysheetComponent;
     }
-    
+
     public Institution getBank() {
         return bank;
     }
@@ -71,7 +72,6 @@ public class ReportKeyWord {
         this.bank = bank;
     }
 
-    
     public SalaryCycle getSalaryCycle() {
         return salaryCycle;
     }
@@ -270,7 +270,15 @@ public class ReportKeyWord {
         this.webUser = webUser;
     }
 
-    public void resetKeyWord(){
+    public String getString() {
+        return string;
+    }
+
+    public void setString(String string) {
+        this.string = string;
+    }
+
+    public void resetKeyWord() {
         dayTypes = null;
         staff = null;
         times = null;
@@ -286,7 +294,7 @@ public class ReportKeyWord {
         patient = null;
         institution = null;
         bank = null;
-        institutionBank=null;
+        institutionBank = null;
         paymentMethod = null;
         item = null;
         staffShift = null;
@@ -295,8 +303,9 @@ public class ReportKeyWord {
         to = null;
         sex = null;
         employeeStatus = null;
-        additionalDetails=false;
-        webUser=null;
+        additionalDetails = false;
+        webUser = null;
+        string="";
     }
-    
+
 }
