@@ -83,14 +83,14 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                         <f:facet name="header">
                             <h:outputLabel value="P.Rate"/>
                         </f:facet>

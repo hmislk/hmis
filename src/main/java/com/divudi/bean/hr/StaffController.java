@@ -20,6 +20,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -228,6 +229,19 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
 
+    public void createDoctorsOnly() {
+
+        String sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and (type(s)=:class1"
+                + " or type(s)=:class2)"
+                + " order by s.code ";
+        HashMap hm = new HashMap();
+        hm.put("class1", Doctor.class);
+        hm.put("class2", Consultant.class);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+    }
+
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
@@ -242,8 +256,6 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
 
     }
-    
-    
 
     ReportKeyWord reportKeyWord;
 
@@ -345,26 +357,82 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
-        for (Staff s : staffWithCode) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-        }
+        fetchWorkDays(staffWithCode);
     }
-    
-    public void createActiveStaffOnylSalaryGeneratedTable(){
-        staffWithCode=new ArrayList<>();
+
+    public void createResignedStaffTable() {
+        HashMap hm = new HashMap();
+        hm.put("class", Consultant.class);
+        String sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:class "
+                + " and LENGTH(ss.code) > 0 "
+                + " and LENGTH(ss.person.name) > 0 "
+                + " and ss.employeeStatus!=:sts"
+                + " and ss.dateLeft >:fd "
+                + " and ss.dateLeft < :to ";
+        hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
+        hm.put("fd", staffSalaryController.getSalaryCycle().getSalaryFromDate());
+
+        hm.put("sts", EmployeeStatus.Temporary);
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.workingDepartment.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staffCategory=:stfCat";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.designation=:des";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by ss.codeInterger ";
+        System.out.println(sql);
+        System.out.println("hm = " + hm);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        selectedStaffes = staffWithCode;
+        System.out.println("staffWithCode.size() = " + staffWithCode.size());
+        System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
+        fetchWorkDays(staffWithCode);
+    }
+
+    public void createActiveStaffOnylSalaryGeneratedTable() {
+        staffWithCode = new ArrayList<>();
         hrReportController.setReportKeyWord(reportKeyWord);
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
-        staffWithCode=hrReportController.fetchOnlySalaryGeneratedStaff();
+        staffWithCode = hrReportController.fetchOnlySalaryGeneratedStaff();
+        fetchWorkDays(staffWithCode);
     }
-    
-    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate){
-        List<Staff> salaryGeneratedStaff=new ArrayList<>();
+
+    public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
+        List<Staff> salaryGeneratedStaff = new ArrayList<>();
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
-        salaryGeneratedStaff=hrReportController.fetchOnlySalaryGeneratedStaff();
+        salaryGeneratedStaff = hrReportController.fetchOnlySalaryGeneratedStaff();
         createActiveStaffTable(ssDate);
         System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         staffWithCode.removeAll(salaryGeneratedStaff);
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffTable() {
@@ -416,6 +484,18 @@ public class StaffController implements Serializable {
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
 
+    }
+
+    public void fetchWorkDays(List<Staff> staffs) {
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            System.out.println("staffSalaryController.getSalaryCycle() = " + staffSalaryController.getSalaryCycle());
+            if (staffSalaryController.getSalaryCycle()!=null) {
+                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
+                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
+
+            }
+        }
     }
 
     public void createTable() {
@@ -477,7 +557,7 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeConsultant(String query) {
         List<Staff> suggestions;
         String sql;
@@ -498,7 +578,7 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeStaffCodeChannel(String query) {
         List<Staff> suggestions;
         String sql;
@@ -627,7 +707,6 @@ public class StaffController implements Serializable {
         hm.put("sp", speciality);
         ss = getFacade().findBySQL(sql, hm);
 
-
         return ss;
     }
 
@@ -738,14 +817,12 @@ public class StaffController implements Serializable {
         ////System.out.println("Printing");
         if (temStaff == null) {
             return new DefaultStreamedContent();
+        } else if (temStaff.getId() != null && temStaff.getBaImage() != null) {
+            ////System.out.println(temStaff.getFileType());
+            ////System.out.println(temStaff.getFileName());
+            return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
         } else {
-            if (temStaff.getId() != null && temStaff.getBaImage() != null) {
-                ////System.out.println(temStaff.getFileType());
-                ////System.out.println(temStaff.getFileName());
-                return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
-            } else {
-                return new DefaultStreamedContent();
-            }
+            return new DefaultStreamedContent();
         }
     }
 
@@ -908,6 +985,26 @@ public class StaffController implements Serializable {
         }
         if (current.getSpeciality() == null) {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
+            return;
+        }
+        
+        if (current.getPerson().getLastName() == null||current.getPerson().getLastName().isEmpty()) {
+            UtilityController.addErrorMessage("Last Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getInitials() == null||current.getPerson().getInitials().isEmpty()) {
+            UtilityController.addErrorMessage("Initials Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getFullName() == null||current.getPerson().getFullName().isEmpty()) {
+            UtilityController.addErrorMessage("Full Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getNameWithInitials() == null) {
+            UtilityController.addErrorMessage("Name With Initials Requied To Save");
             return;
         }
 
@@ -1131,9 +1228,6 @@ public class StaffController implements Serializable {
         staffes = getFacade().findBySQL(temSql);
     }
 
-    
-    
-    
     public List<Staff> getItemsToRemove() {
         return itemsToRemove;
     }

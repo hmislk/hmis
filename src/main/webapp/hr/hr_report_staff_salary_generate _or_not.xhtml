@@ -65,7 +65,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >    
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">    
                             <p:dataTable id="tb2" value="#{hrReportController.salaryNotGeneratedStaffs}" var="s" rowIndexVar="i">
                                 <f:facet name="header">
                                     <h:outputLabel style="font-size: 20px  " value="Salary Not Generated Staffs"/>
@@ -110,7 +110,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Grade"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{s.grade}"/>
+                                    <h:outputLabel value="#{s.grade.name}"/>
                                 </p:column>
                                 <p:column headerText="Category">
                                     <f:facet name="header">
@@ -176,7 +176,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Grade"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{s.grade}"/>
+                                    <h:outputLabel value="#{s.grade.name}"/>
                                 </p:column>
                                 <p:column headerText="Category">
                                     <f:facet name="header">

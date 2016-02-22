@@ -55,12 +55,12 @@
                         </h:panelGrid>
                     </h:panelGrid>
 
-                    <p:commandButton action="#{channelReportTempController.createAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
 
-                    <p:commandButton actionListener="#{channelReportTempController.createAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                    <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
                         <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
                     </p:commandButton> 
 
@@ -145,7 +145,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton disabled="#{a.retired}" value="Update" actionListener="#{channelReportTempController.createAgentReferenceBooks}" action="#{channelReportTempController.updateDecactivateAgentBook(a)}" ajax="false"></p:commandButton>
+                            <p:commandButton disabled="#{a.retired}" value="Update" action="#{channelReportTempController.updateDecactivateAgentBook(a)}" ajax="false"></p:commandButton>
                         </p:column>
 
                     </p:dataTable>

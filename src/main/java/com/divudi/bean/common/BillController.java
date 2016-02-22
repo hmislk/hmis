@@ -612,6 +612,35 @@ public class BillController implements Serializable {
         return bill;
     }
 
+    public List<Bill> getCreditBills(Institution institution, Date fd, Date td) {
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select c from BilledBill c  where"
+                + " abs(c.netTotal)-abs(c.paidAmount)>:val "
+                + " and c.billType= :btp"
+                + " and c.createdAt between :fd and :td "
+                + " and c.deptId is not null "
+                + " and c.cancelled=false"
+                + " and c.retired=false"
+                + " and c.paymentMethod=:pm  "
+                + " and c.creditCompany=:ins "
+                + " order by c.id ";
+        m.put("btp", BillType.OpdBill);
+        m.put("pm", PaymentMethod.Credit);
+        m.put("val", 0.1);
+        m.put("ins", institution);
+        m.put("fd", fd);
+        m.put("td", td);
+        List<Bill> bill = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        if (bill == null) {
+            bill = new ArrayList<>();
+        }
+        System.out.println("bill.size() = " + bill.size());
+        return bill;
+    }
+
     public List<Bill> getBills(Date fromDate, Date toDate, BillType billType1, BillType billType2, Institution institution) {
         String sql;
         HashMap hm = new HashMap();
@@ -1348,12 +1377,10 @@ public class BillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-        {
-            if (billSessions == null || !billSessions.isEmpty()) {
+         if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
-        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {

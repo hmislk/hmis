@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -50,10 +52,13 @@ public class CreditSummeryController implements Serializable {
     private Date fromDate;
     private Date toDate;
     Item item;
+    boolean withFooter;
+    double total;
     ///////////////
     private List<DailyCash> dailyCash;
     List<DailyCredit> dailyCredit;
     List<DailyCash> dailyCashSummery;
+    List<Bill> creditBills;
     /////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -71,6 +76,9 @@ public class CreditSummeryController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillFacade billFacade;
+    
+    @Inject
+    BillController billController;
 
     /**
      * Creates a new instance of CreditSummery
@@ -92,13 +100,13 @@ public class CreditSummeryController implements Serializable {
     }
 
     private List<Department> findDepartment() {
-        System.out.println("department = " );
+        System.out.println("department = ");
 
         String sql;
         Map temMap = new HashMap();
         sql = "select distinct(bi.item.department) "
                 + " FROM BillItem bi "
-                + " where  bi.bill.billType= :bTp "                
+                + " where  bi.bill.billType= :bTp "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod = :pm ";
 
@@ -106,13 +114,13 @@ public class CreditSummeryController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //  temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);        
+        temMap.put("pm", PaymentMethod.Credit);
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
         }
-        
+
         if (getInstitution() != null) {
             sql += " and bi.bill.creditCompany=:credit";
             temMap.put("credit", getInstitution());
@@ -170,7 +178,6 @@ public class CreditSummeryController implements Serializable {
         temMap.put("cat", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        
 
         if (item != null) {
             sql += " and bi.item=:it ";
@@ -204,13 +211,13 @@ public class CreditSummeryController implements Serializable {
         temMap.put("itm", i);
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("billClass", bill.getClass());
-        temMap.put("btp", BillType.OpdBill);        
+        temMap.put("btp", BillType.OpdBill);
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
         }
-        
+
         if (getInstitution() != null) {
             sql += " and bi.bill.creditCompany=:credit ";
             temMap.put("credit", getInstitution());
@@ -235,13 +242,12 @@ public class CreditSummeryController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ftp", feeType);
         temMap.put("pm", PaymentMethod.Credit);
-        
 
         if (item != null) {
             sql += " and bi.item=:it ";
             temMap.put("it", item);
         }
-        
+
         if (getInstitution() != null) {
             sql += " and bf.bill.creditCompany=:credit ";
             temMap.put("credit", getInstitution());
@@ -289,13 +295,13 @@ public class CreditSummeryController implements Serializable {
     public void setDailyCashSummery(List<DailyCash> dailyCashSummery) {
         this.dailyCashSummery = dailyCashSummery;
     }
-    
-    public void createDailyCashTable(){
-        dailyCashSummery=new ArrayList<>();
-        if(!getDailyCredit().isEmpty()){
-           dailyCashSummery.addAll(getDailyCredit()); 
+
+    public void createDailyCashTable() {
+        dailyCashSummery = new ArrayList<>();
+        if (!getDailyCredit().isEmpty()) {
+            dailyCashSummery.addAll(getDailyCredit());
         }
-        
+
     }
 
     public List<DailyCash> getDailyCredit() {
@@ -441,6 +447,16 @@ public class CreditSummeryController implements Serializable {
         return dailyCredit;
     }
 
+    public void createCreditDueTable() {
+        creditBills = new ArrayList<>();
+        creditBills=billController.getCreditBills(institution, fromDate, toDate);
+        total=0.0;
+        for (Bill b : creditBills) {
+            total+=b.getNetTotal();
+        }
+        
+    }
+
     public CreditSummeryController() {
     }
 
@@ -537,6 +553,30 @@ public class CreditSummeryController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
+    }
+
+    public List<Bill> getCreditBills() {
+        return creditBills;
+    }
+
+    public void setCreditBills(List<Bill> creditBills) {
+        this.creditBills = creditBills;
+    }
+
+    public boolean isWithFooter() {
+        return withFooter;
+    }
+
+    public void setWithFooter(boolean withFooter) {
+        this.withFooter = withFooter;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
     }
 
 }

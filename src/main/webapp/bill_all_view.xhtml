@@ -237,7 +237,7 @@
                                         <h:inputText value="#{billSearch.billSearch.performInstitutionFee}" />
 
                                         <h:outputLabel value="Staff Fee" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.staffFee}" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.staffFee}" ></h:inputText>
 
                                         <h:outputLabel value="Billed By :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.creater.webUserPerson.name}" ></h:outputLabel> 
@@ -378,7 +378,7 @@
                                     <p:column headerText="Payee">
                                         <p:cellEditor>  
                                             <f:facet name="output"> 
-                                                <h:outputLabel value="#{bip.staff.person.name}"></h:outputLabel>
+                                                <h:inputText value="#{bip.staff.person.name}"></h:inputText>
                                             </f:facet>  
                                             <f:facet name="input">  
                                                 <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >

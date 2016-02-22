@@ -70,7 +70,15 @@
                                 <f:facet name="header">
                                     <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
                                     <br/>
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                                    <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}" />
+                                    <br/>
+                                    <h:outputLabel value="OT Cycle : " />
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedFromDate}" >
+                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedToDate}"  >
+                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                    </h:outputLabel>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <br/>
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />

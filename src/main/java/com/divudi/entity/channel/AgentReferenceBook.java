@@ -33,7 +33,7 @@ public class AgentReferenceBook implements Serializable {
     private double startingReferenceNumber=0.0;
     private double endingReferenceNumber=0.0;
     private double bookNumber=0.0;
-    private boolean deactivate;
+    private boolean deactivate=false;
 
     @ManyToOne
     private Institution institution;

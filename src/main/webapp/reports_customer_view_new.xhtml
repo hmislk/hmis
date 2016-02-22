@@ -1,0 +1,281 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:f="http://java.sun.com/jsf/core" >
+    <h:head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta charset="utf-8" />
+        <title>Ruhunu Hospital Form</title>
+        <meta name="generator" content="Bootply" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link href="resources/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <!--[if lt IE 9]>
+                                <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+                        <![endif]-->
+        <link href="resources/css/styles.css" rel="stylesheet" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script> 
+        <script src="resources/js/bootstrap.min.js"></script>
+    </h:head>
+    <h:body >
+        <!--login modal-->
+        <div id="loginModal" class="modal show" tabindex="-1" role="dialog" aria-hidden="true" style="overflow: auto;">
+            <div class="container-fluid" >
+                <div class="inner_wrap">
+                    <div class="form-group-lg">
+                        <h:form >
+                            <h:outputStylesheet library="css" name="maincss.css" />
+                            <div id="background" class="row">
+                                <div id="page">
+<!--                                    <div id="header" class="nonPrintBlock">
+
+                                        <span id="infos">
+                                            <h:commandLink value="Staff Login" action="index" ></h:commandLink>
+                                            |
+                                            <h:commandLink value="Administrator" action="index" ></h:commandLink>
+                                        </span>
+                                        <h:commandLink action="index" ></h:commandLink>
+                                        <a href="#" id="logo"></a>
+
+                                         /#logo 
+
+                                    </div>-->
+                                    <!-- /#header -->
+                                    <div id="contents">
+                                        <div id="main" >
+
+                                            <div >
+
+                                                <div class="nonPrintBlock" >
+                                                    <p:commandButton  styleClass="btn btn-success "   ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
+                                                                      rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
+                                                </div>
+
+
+                                                <h:panelGroup  id="divPrint" >
+
+                                                    <div class="labBillPrintPanel" style="background:whitesmoke;color: black; width: 21cm;height: 28cm;margin: auto; margin-top: 1cm;margin-bottom: 1cm;" >
+
+                                                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
+                                                            <div id="divReport"  style="width:21cm;height: 28cm; position: relative;">
+
+
+
+                                                                <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                                                                  patientReport="#{patientReportController.currentPatientReport}"/>
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
+                                                                    </div>
+                                                                </ui:repeat>
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
+                                                                    </div>
+                                                                </ui:repeat>
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.doubleValue}"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
+                                                                    </div>
+                                                                </ui:repeat>
+
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel'}" escape="false" />
+                                                                    </div>
+                                                                </ui:repeat>
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Flag'}" escape="false" />
+                                                                    </div>
+                                                                </ui:repeat>
+
+                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                    <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                                        <h:outputLabel value="#{prv.doubleValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
+                                                                            <f:convertNumber pattern="0.0" />
+                                                                        </h:outputLabel>
+                                                                    </div>
+                                                                </ui:repeat>
+
+                                                                <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
+                                                                    <div style="#{myIi.cssStyle}; position:absolute;">
+                                                                        <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
+                                                                    </div>
+                                                                </ui:repeat>
+
+
+                                                            </div>
+                                                        </h:panelGroup>
+
+
+                                                        <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
+
+                                                            <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; ">
+
+
+                                                                <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                                                                  patientReport="#{patientReportController.currentPatientReport}"/>
+
+
+
+
+
+                                                                <table id="micro" style="position: absolute; top: 35%; left:10%; font-size: 14px!important;" >
+
+                                                                    <tr>
+                                                                        <td>
+                                                                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                           #{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+                                                                                           style="font-weight: bold;font-size: 20px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr><td>
+                                                                            <p:spacer height="50px" ></p:spacer>
+                                                                        </td></tr>
+                                                                    <tr><td><h:outputLabel/></td></tr>
+                                                                    <tr><td><h:outputLabel/></td></tr>
+                                                                    <tr><td><h:outputLabel/></td></tr>
+                                                                    <tr>
+
+                                                                        <td id="micromemos">
+                                                                            <table>
+                                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                                    <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
+                                                                                        <tr style="vertical-align: top;">
+                                                                                            <td style="min-width: 250px;padding-left: 1px; padding-right: 1px;">
+                                                                                                <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"  />
+                                                                                            </td>
+                                                                                            <td style="min-width: 1150px;padding-left: 1px; padding-right: 1px;">
+                                                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false"   />
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </h:panelGroup>
+                                                                                </ui:repeat>
+                                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                                    <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel' and prv.investigationItem.retired eq false and prv.investigationItem.riTop  lt 50 }" >
+                                                                                        <tr >
+                                                                                            <td >
+                                                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false"  />
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </h:panelGroup>
+                                                                                </ui:repeat>
+                                                                            </table>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <br/><br/>
+                                                                    <tr>
+                                                                        <td id="micLabelsBeforeAbst">
+
+                                                                            <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myMicIi" >
+                                                                                <div style="#{myMicIi.cssStyle}; left: #{prvl.cssLeft};">
+                                                                                    <h:outputText rendered="#{myMicIi.retired ne true and myMicIi.ixItemType eq 'List' }" 
+                                                                                                  value="#{myMicIi.name}" style="color: #{myMicIi.cssColor}" escape="false" ></h:outputText>
+                                                                                </div>
+                                                                            </ui:repeat>
+
+
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    <tr>
+                                                                        <td id="ablist">
+                                                                            <table>
+                                                                                <tr>
+                                                                                    <td colspan="2"  >
+                                                                                        <h:outputLabel value="Antibiotic Sensitivity Test" 
+                                                                                                       rendered="#{patientReportController.currentPatientReport.transHasAbst}"
+                                                                                                       style="font-size: 120%; font-weight: bold; padding-left: 20px;"></h:outputLabel>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                                                                            var="prv" >
+                                                                                    <h:panelGroup 
+                                                                                        rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar' and prv.investigationItem.retired eq false and prv.strValue ne '' and prv.strValue ne null  }" >
+                                                                                        <tr>
+                                                                                            <td style="min-width: 250px;">
+                                                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
+                                                                                            </td>
+                                                                                            <td  style="min-width: 850px;">
+
+                                                                                                <h:outputLabel value="#{prv.strValue}" escape="false"  />
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </h:panelGroup>
+                                                                                </ui:repeat>
+                                                                            </table>
+
+                                                                        </td>
+                                                                    </tr>
+                                                                    <br/><br/>
+                                                                    <tr>
+                                                                        <td id="miccomments">
+                                                                            <table>
+                                                                                <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                                                                    <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop gt 50 }" >
+                                                                                        <tr>
+                                                                                            <td style="min-width: 250px;padding-left: 1px; padding-right: 1px; vertical-align: top;">
+                                                                                                <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"    escape="false" />
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </h:panelGroup>
+                                                                                </ui:repeat>
+                                                                            </table>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                </table>
+
+
+                                                            </div>
+                                                        </h:panelGroup>
+
+
+                                                    </div>
+
+                                                </h:panelGroup>
+
+
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                    <!-- /#contents -->
+                                    <div id="footer" class="nonPrintBlock">
+                                        <div id="description">
+                                            <div> 
+                                                <span><a href="http://www.lakmedi.com">Copyright &copy; 2012 Lakmedipro Pvt Ltd. All rights reserved</a> 
+                                                </span></div>
+                                        </div>
+                                    </div>
+                                    <!-- /#footer -->
+                                </div>
+                                <!-- /#page -->
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>  
+        <!-- script references --> 
+
+    </h:body>
+</html>

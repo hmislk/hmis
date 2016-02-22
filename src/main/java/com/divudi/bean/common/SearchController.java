@@ -3416,17 +3416,38 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
         m.put("pn", getSessionController().getPhoneNo());
         m.put("bn", getSessionController().getBillNo());
-        //System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
-        //System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
+        if (getSessionController().getPhoneNo()==null ||getSessionController().getPhoneNo().equals("")) {
+            JsfUtil.addErrorMessage("Please Enter Phone Number");
+            return "";
+        }
+        if (getSessionController().getBillNo()==null ||getSessionController().getBillNo().equals("")) {
+            JsfUtil.addErrorMessage("Please Enter Bill Number");
+            return "";
+        }
+        
+        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
+        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
+//        String s1=getSessionController().getPhoneNo().substring(0, 3);
+//        System.out.println("s1 = " + s1);
+//        String s2=getSessionController().getPhoneNo().substring(3, 10);
+//        System.out.println("s2 = " + s2);
+//        String no=s1+"-"+s2;
+//        System.out.println("no = " + no);
         jpql = " select pr from PatientInvestigation pr where pr.retired=false and "
                 + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
                 + " (upper(pr.billItem.bill.insId)=:bn or upper(pr.billItem.bill.deptId)=:bn) "
                 + " order by pr.id desc ";
+        
+        m.put("pn", getSessionController().getPhoneNo());
+        m.put("bn", getSessionController().getBillNo());
+        
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
-        //System.out.println("m = " + m);
-        //System.out.println("userPatientInvestigations = " + userPatientInvestigations);
+        System.out.println("m = " + m);
+        System.out.println("userPatientInvestigations = " + userPatientInvestigations.size());
+        System.out.println("jpql = " + jpql);
 
-        return "/reports_list";
+//        return "/reports_list";
+        return "/reports_list_new";
     }
 
     public void createPatientInvestigationsTableSingle() {

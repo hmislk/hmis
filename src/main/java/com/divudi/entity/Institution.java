@@ -101,6 +101,8 @@ public class Institution implements Serializable {
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
+    String accountNo;
+    Institution bankBranch;
 
     public Institution() {
         split();
@@ -141,6 +143,9 @@ public class Institution implements Serializable {
     
 
     public String getTransAddress1() {
+        if (transAddress1==null) {
+            split();
+        }
         return transAddress1;
     }
 
@@ -476,6 +481,22 @@ public class Institution implements Serializable {
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public void setAccountNo(String accountNo) {
+        this.accountNo = accountNo;
+    }
+
+    public Institution getBankBranch() {
+        return bankBranch;
+    }
+
+    public void setBankBranch(Institution bankBranch) {
+        this.bankBranch = bankBranch;
     }
 
 }

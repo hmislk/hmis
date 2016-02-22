@@ -21,6 +21,10 @@
                                 <p:commandButton ajax="false" value="Fill Staff Only" 
                                                  action="#{staffController.createStaffOnly}"
                                                   onclick="onSubmitButton();"/>
+                                
+                                <p:commandButton ajax="false" value="Fill Doctors,Consultant" 
+                                                 action="#{staffController.createDoctorsOnly}"
+                                                  onclick="onSubmitButton();"/>
 
                                 <p:commandButton ajax="false" value="Fill All(Staff who has no speciality)"
                                                  action="#{staffController.createStaffListWithOutSpecility}" 

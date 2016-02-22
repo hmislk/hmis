@@ -62,7 +62,12 @@
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
                                     <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" ></p:selectBooleanCheckbox>
-
+                                    <h:outputText value="Creater" ></h:outputText>
+                                    <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
+                                    <h:outputText value="Created At" ></h:outputText>
+                                    <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
+                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                    </p:outputLabel>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
 

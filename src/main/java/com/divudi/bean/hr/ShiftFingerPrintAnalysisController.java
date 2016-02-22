@@ -275,6 +275,19 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        fingerPrintRecordFacade.edit(staffShift.getEndRecord());
 //        staffShiftFacade.edit(staffShift);
     }
+    
+    public void listenClear(StaffShift staffShift) {
+        
+        staffShift.getEndRecord().setRetired(true);
+        getFingerPrintRecordFacade().edit(staffShift.getEndRecord());
+        staffShift.setEndRecord(null);
+        
+        staffShift.getStartRecord().setRetired(true);
+        getFingerPrintRecordFacade().edit(staffShift.getStartRecord());
+        staffShift.setStartRecord(null);
+        
+        getStaffShiftFacade().edit(staffShift);
+    }
 
     public void selectRosterLstener() {
         makeTableNull();
