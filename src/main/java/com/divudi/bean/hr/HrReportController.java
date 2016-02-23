@@ -4033,6 +4033,7 @@ public class HrReportController implements Serializable {
     double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalTransNetSalary = 0.0; //total of the transNetSalary;
+    double totalTransEpfEtfDiductableSalary=0.0;
     double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
     double totaldayOffAllowance = 0.0;
@@ -4056,6 +4057,7 @@ public class HrReportController implements Serializable {
         totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalTransNetSalary = 0.0;//total of transNetSalary
+        totalTransEpfEtfDiductableSalary=0.0;//total of epf etf deductuble salary
         totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
         totaldayOffAllowance = 0.0;
@@ -4078,6 +4080,7 @@ public class HrReportController implements Serializable {
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
+            totalTransEpfEtfDiductableSalary+=totStaffSalary.getTransEpfEtfDiductableSalary();
             totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
             totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
@@ -5175,6 +5178,14 @@ public class HrReportController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public double getTotalTransEpfEtfDiductableSalary() {
+        return totalTransEpfEtfDiductableSalary;
+    }
+
+    public void setTotalTransEpfEtfDiductableSalary(double totalTransEpfEtfDiductableSalary) {
+        this.totalTransEpfEtfDiductableSalary = totalTransEpfEtfDiductableSalary;
     }
 
 }
