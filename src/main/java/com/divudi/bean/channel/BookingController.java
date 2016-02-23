@@ -999,7 +999,12 @@ public class BookingController implements Serializable {
         getChannelCancelController().makeNull();
         getChannelBillController().setBillSession(null);
     }
-
+    
+    public void listnerClearSelectedBillSession() {
+        selectedBillSession=null;
+        getChannelBillController().setBillSession(null);
+    }
+    
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
     }
