@@ -48,7 +48,7 @@
                     </f:facet>
                     <p:panelGrid columns="2" style="min-width: 100%;">
                         <h:panelGroup>
-                            <p:autoComplete widgetVar="aIx" id="acIx" 
+                            <p:autoComplete widgetVar="aIx" id="acIx"  
                                             forceSelection="true" 
                                             value="#{cashRecieveBillController.institution}" 
                                             completeMethod="#{institutionController.completeCreditCompany}" 
@@ -64,7 +64,7 @@
                                         listener="#{cashRecieveBillController.selectInstitutionListener()}"/>
                             </p:autoComplete>                           
                         </h:panelGroup>
-                        <p:dataTable value="#{cashRecieveBillController.billItems}"
+                        <p:dataTable value="#{cashRecieveBillController.billItems}" 
                                      rowIndexVar="rowIndex"   var="b" id="items"
                                      rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}"
                                      >
@@ -73,8 +73,16 @@
                                 <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
                                 <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" onclick="onSubmitButton();"/>
                             </f:facet>       
-
-                            <p:column selectionMode="multiple"  />                                       
+                            <p:ajax  event="rowSelect" process="@this" 
+                                     update=":#{p:component('tot')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
+                            <p:ajax  event="rowSelectCheckboxAll" process="@this" 
+                                     update=":#{p:component('tot')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
+                            <p:ajax  event="rowUnselectCheckbox" process="@this" 
+                                     update=":#{p:component('tot')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
+                            <p:column selectionMode="multiple" />                                       
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="No"/>.                                  
