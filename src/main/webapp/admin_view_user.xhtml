@@ -65,6 +65,10 @@
                     <p:column headerText="Staff Code">
                         <h:inputText value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
                     </p:column>
+                    
+                    <p:column headerText="Staff Specility">
+                        <h:outputLabel value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
+                    </p:column>
 
                     <p:column headerText="Staff Name">
                         <h:outputLabel value="#{u.staff.person.name}"/>

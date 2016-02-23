@@ -1163,6 +1163,31 @@ public class ServiceSummery implements Serializable {
         if (getToDate() == null || getFromDate() == null) {
             return;
         }
+        Map temMap = new HashMap();
+        String jpql = "select bf "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c where "
+                + " type(c)=:cat "
+                + " and bi.bill.billType= :bTp  "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " order by bf.department.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("cat", InvestigationCategory.class);
+
+        List<BillFee> bfs = getBillFeeFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("bfs = " + bfs.size());
+        for (BillFee bf : bfs) {
+            System.err.println("*****");
+            System.out.println("bf.getDepartment() = " + bf.getDepartment().getName());
+            System.out.println("Bill.getDepartment() = " + bf.getBill().getToDepartment().getName());
+            if (!bf.getDepartment().equals(bf.getBill().getToDepartment())) {
+                System.out.println("bf.getBill().getDeptId() = " + bf.getBill().getDeptId());
+                System.out.println("bf.getBillItem().getItem().getName() = " + bf.getBillItem().getItem().getName());
+            }
+            System.err.println("*****");
+        }
 
         billItemWithFees = new ArrayList<>();
 
@@ -1524,7 +1549,7 @@ public class ServiceSummery implements Serializable {
     private double getServiceValue(Category cat, BillType billType, boolean discharged) {
         double value = getServiceValue(cat, billType, FeeType.OwnInstitution, discharged);
         value += getServiceValue(cat, billType, FeeType.OtherInstitution, discharged);
-
+        value += getServiceValue(cat, billType, FeeType.CollectingCentre, discharged);
         return value;
     }
 

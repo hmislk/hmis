@@ -65,6 +65,10 @@
                                                action="#{dataAdministrationController.makeAllAmpsWithNullDepartmentTypeToPharmacyType()}" rendered="true"
                                                value="15. Make All Amps with null department type to Pharmacy Type"  onclick="if (!confirm('Really want to do that?'))
                                                            return false"/>
+                                <p:commandLink ajax="false" 
+                                               action="/dataAdmin/update_staff_zonecode" rendered="true"
+                                               value="16. Update Staff Zone Code"  
+                                                         />
 
                             </p:panelGrid>
 

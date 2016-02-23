@@ -168,7 +168,7 @@ public class ChannelReportController implements Serializable {
         staff = null;
         sessoinDate = false;
         institution = null;
-        date=null;
+        date = null;
     }
 
     public Institution getInstitution() {
@@ -3659,7 +3659,7 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
-    
+
     public void createTotalDoctor(Date date) {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -3692,6 +3692,59 @@ public class ChannelReportController implements Serializable {
                 System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
                     if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid) {
+                        if (b instanceof BilledBill) {
+                            cd.setBillCount(cd.getBillCount() + 1);
+                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof CancelledBill) {
+                            cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
+                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof RefundBill) {
+                            cd.setRefundedCount(cd.getRefundedCount() + 1);
+                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        calTotal();
+
+    }
+
+    public void createTotalDoctorAll() {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select bs.bill From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " order by bs.bill.staff.person.name ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("bills = " + bills.size());
+        Set<Staff> consultant = new HashSet();
+        for (Bill b : bills) {
+            consultant.add(b.getStaff());
+        }
+
+        for (Staff c : consultant) {
+            ChannelDoctor cd = new ChannelDoctor();
+            cd.setConsultant(c);
+            channelDoctors.add(cd);
+        }
+
+        for (ChannelDoctor cd : channelDoctors) {
+            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+            for (Bill b : bills) {
+                System.out.println("b = " + b.getStaff().getPerson().getName());
+                System.out.println("b = " + b.getBillClass());
+                if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
+                    if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid || b.getBillType() == BillType.ChannelAgent) {
                         if (b instanceof BilledBill) {
                             cd.setBillCount(cd.getBillCount() + 1);
                             cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
@@ -3923,6 +3976,41 @@ public class ChannelReportController implements Serializable {
             return;
         }
         HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        List<HistoryType> historyTypes = Arrays.asList(ht);
+
+        agentHistoryWithDate = new ArrayList<>();
+        Date nowDate = getFromDate();
+
+        while (nowDate.before(getToDate())) {
+            Date fd = commonFunctions.getStartOfDay(nowDate);
+            Date td = commonFunctions.getEndOfDay(nowDate);
+            System.out.println("td = " + td);
+            System.out.println("fd = " + fd);
+            System.out.println("nowDate = " + nowDate);
+            AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
+            if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
+                ahwd.setDate(nowDate);
+                ahwd.setAhs(createAgentHistory(fd, td, institution, historyTypes));
+                agentHistoryWithDate.add(ahwd);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            cal.add(Calendar.DATE, 1);
+            nowDate = cal.getTime();
+        }
+
+    }
+
+    public void createCollectingCenterHistorySubTable() {
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select Agency.");
+            return;
+        }
+        HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
+            HistoryType.CollectingCentreDeposit,
+            HistoryType.CollectingCentreDepositCancel,
+            HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -4352,8 +4440,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getDate() {
-        if (date==null) {
-            date=new Date();
+        if (date == null) {
+            date = new Date();
         }
         return date;
     }

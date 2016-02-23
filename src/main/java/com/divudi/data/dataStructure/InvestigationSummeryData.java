@@ -13,11 +13,11 @@ import java.util.List;
  * @author Buddhika
  */
 public class InvestigationSummeryData {
-    private Item investigation;
-    private List<BillItem> billItems;
-    private long count;
-    private double total;
-    private double turnOverValue;
+    Item investigation;
+    List<BillItem> billItems;
+    long count;
+    double total;
+    double turnOverValue;
     boolean b;
 
     public Item getInvestigation() {

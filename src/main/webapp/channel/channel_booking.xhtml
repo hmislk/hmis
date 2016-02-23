@@ -44,7 +44,7 @@
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} :#{p:component('tblBookingsOfSelectedSession')}" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                            <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" ></poue:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
@@ -69,7 +69,7 @@
                                  selectionMode="single" >
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
-                            <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
+                            <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" 
                                           showDelay="0" hideDelay="0" 
                                           atPosition="left bottom" ></poue:tooltip>
                         </p:column>
@@ -77,6 +77,9 @@
                                  process="@this" 
                                  update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
                                  listener="#{bookingController.generateSessions}"/>
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} 
+                                 :#{p:component('tblBookingsOfSelectedSession')}" 
+                                 listener="#{bookingController.listnerClearSelectedServiceSession}"/>
                     </p:dataTable>
 
 
@@ -102,19 +105,27 @@
                                  selectionMode="single" 
                                  selection="#{bookingController.selectedServiceSession}"
                                  scrollable="true" 
-                                 scrollHeight="300" rowStyleClass="#{ses.deactivated ? 'redText':''}"
+                                 scrollHeight="300" rowStyleClass="#{ses.deactivated ? 'redText':''}" styleClass="noBorder" 
                                  style="min-height: 300px;">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
                                 listener="#{bookingController.fillBillSessions}" />
-
-                        <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} 
+                                 :#{p:component('tblBookingsOfSelectedSession')}" 
+                                 listener="#{bookingController.listnerClearSelectedBillSession()}"/>
+                        <p:column style="text-wrap: none;width: 20px!important;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                             <h:outputText value="* " rendered="#{ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="E"/>
                             </h:outputText>
-                            <h:outputText value=" &nbsp;&nbsp;" />
+                        </p:column>
+                        <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+<!--                            <h:outputText value="* " rendered="#{ses.deactivated}" />
+                            <h:outputText value="#{ses.sessionDate}" >
+                                <f:convertDateTime pattern="E"/>
+                            </h:outputText>
+                            <h:outputText value=" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />-->
                             <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="MMM/dd/yyyy"/>
                             </h:outputText>
@@ -132,7 +143,7 @@
                             </h:outputText>
                             <h:outputText value="(" />
                             <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}" >
-                                <f:convertNumber pattern="00" ></f:convertNumber>
+                                <f:convertNumber pattern="000" ></f:convertNumber>
                             </h:outputText>
                             <h:outputText value=") &nbsp;&nbsp;#" />
                             <h:outputText value="#{ses.displayCount+1}" style="color: red" >
@@ -297,7 +308,7 @@
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
                                             value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
+                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} :#{p:component('tblAgentBooks2')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
                                 <!--<p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />-->
                                 <p:column>#{ix.institutionCode}</p:column>
                                 <p:column>#{ix.name}</p:column>                                
@@ -305,27 +316,47 @@
 
                             <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
                             <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <p:tooltip for="agRefLbl agent" >
-                                <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                    <p:column>
-                                        <f:facet name="header">
-                                            <p:outputLabel value="S.R.N." />
-                                        </f:facet>
-                                        <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                            <f:convertNumber pattern="00000" />
-                                        </p:outputLabel>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">
-                                            <p:outputLabel value="E.R.N." />
-                                        </f:facet>
-                                        <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                            <f:convertNumber pattern="00000" />
-                                        </p:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:tooltip>
-                            <p:outputLabel />
+                            <!--                            <p:tooltip for="agRefLbl agent" >
+                                                            <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                                                <p:column>
+                                                                    <f:facet name="header">
+                                                                        <p:outputLabel value="S.R.N." />
+                                                                    </f:facet>
+                                                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                                        <f:convertNumber pattern="00000" />
+                                                                    </p:outputLabel>
+                                                                </p:column>
+                                                                <p:column>
+                                                                    <f:facet name="header">
+                                                                        <p:outputLabel value="E.R.N." />
+                                                                    </f:facet>
+                                                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                                        <f:convertNumber pattern="00000" />
+                                                                    </p:outputLabel>
+                                                                </p:column>
+                                                            </p:dataTable>
+                                                        </p:tooltip>-->
+                            <!--<p:outputLabel />-->
+                            <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; " id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="S.R.N." />
+                                    </f:facet>
+                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                        <f:convertNumber pattern="00000" />
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                            <p:dataTable style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                <p:column>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="E.R.N." />
+                                    </f:facet>
+                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                        <f:convertNumber pattern="00000" />
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
 
                             <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
@@ -454,7 +485,9 @@
 
 
                         <p:commandButton   id="btnAdd" 
-                                           value="Add" process=":#{p:component('tabNewPt')} :#{p:component('tabSearchPt')} btnAdd :#{p:component('pgNewBookingDetail')}" 
+                                           value="Add" process=":#{p:component('tabNewPt')} 
+                                           :#{p:component('tabSearchPt')} btnAdd 
+                                           :#{p:component('pgNewBookingDetail')}" 
                                            update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">   
@@ -545,7 +578,8 @@
 
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithInitials}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -605,7 +639,8 @@
                                 <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq bookingController.selectedBillSession.bill and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithInitials}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -662,7 +697,8 @@
                                 <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithInitials}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -884,7 +920,7 @@
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
                                              onclick="onSubmitButton();"/>
- 
+
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
@@ -952,6 +988,11 @@
                                             <p:printer target="panelAddedBillPrintSettle" ></p:printer>
                                         </p:commandButton>
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
+                                            <div>
+                                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">
+                                                    <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.printingBill}" dup="false"/>
+                                                </h:panelGroup>
+                                            </div>
                                             <div >
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
                                                     <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 

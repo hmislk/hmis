@@ -21,7 +21,7 @@
             <div  >
                 <h:panelGroup id="gpBillPreview" >
 
-                    <div class="fiveinchbill" >
+                    <div class="fiveinchbillBreakRuhunu" >
 
                         <div class="headingPrinting" style="margin-top: 60px!important;">
                             <h:outputLabel value="INWARD RECIEPT:"  style="font-size: 15px!important;" />
@@ -31,23 +31,23 @@
                         </div>
 
 
-                        <div class="receiptnoPrinting" style="margin-top: 60px!important;">
+                        <div class="receiptnoPrinting" style="margin-top: 25px!important;">
                             <!--                        <h:outputLabel value="Bill No"/><h:outputLabel value=":"/>-->
                             <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelled eq false}"/>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}" rendered="#{cc.attrs.bill.cancelled eq true}"/>
                         </div>
 
-                        <div Class="paymentPrinting" style="margin-top: 60px!important;">
+                        <div Class="paymentPrinting" style="margin-top: 25px!important;">
                             <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
                             </h:outputLabel>
                         </div>
 
-                        <div class="bhtNoPrinting" style="margin-top: 60px!important;">
+                        <div class="bhtNoPrinting" style="margin-top: 25px!important;">
                             <h:outputLabel value="BHT No" style="font-size: 15px!important;"/><h:outputLabel value=":"/>
                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" style="font-size: 15px!important;"/>
                         </div>
 
-                        <div class="billdatePrinting" style="margin-top: 60px!important;">
+                        <div class="billdatePrinting" style="margin-top: 25px!important;">
                             <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelled eq false}">
                                 <f:convertDateTime pattern="dd/MM/yy"/>
                             </h:outputLabel>
@@ -60,7 +60,7 @@
 
                         </div>
 
-                        <div class="billtimePrinting" style="margin-top: 60px!important;">
+                        <div class="billtimePrinting" style="margin-top: 25px!important;">
                             <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelled eq false}">
                                 <f:convertDateTime pattern="h:mm a"/>
                             </h:outputLabel>
@@ -93,8 +93,10 @@
                             <br/>
 
                         </div>
-<!--                        <div>
-                            <table><tr><td>
+                        <div>
+                            <table>
+                                <tr>
+                                    <td>
                                         <div class="cashierPrinting" style="text-decoration: overline;font-size: 12px;">
                                             <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
                                         </div>
@@ -105,8 +107,9 @@
                                             <h:outputLabel  value="Patient/Guardian"   />
                                         </div>
                                     </td>
-                                </tr></table>
-                        </div>-->
+                                </tr>
+                            </table>
+                        </div>
                     </div>
 
                 </h:panelGroup>

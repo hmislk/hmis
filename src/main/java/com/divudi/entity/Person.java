@@ -62,6 +62,7 @@ public class Person implements Serializable {
     String phone;
     String initials;
     String surName;
+    String lastName;
     String zoneCode;
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -442,6 +443,14 @@ public class Person implements Serializable {
 
     public void setNic(String nic) {
         this.nic = nic;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     @XmlTransient

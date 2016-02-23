@@ -65,8 +65,8 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.dayOffPhFromDate)}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.dayOffPhFromDate)}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
                     <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" onclick="onSubmitButton();"/>
                     <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" onclick="onSubmitButton();"/>
                     <h:panelGrid columns="2"> 
@@ -89,7 +89,7 @@
                                   rowKey="#{s.id}" 
                                   selection="#{staffController.selectedList}"
                                   rowIndexVar="i"
-                                  scrollable="true"
+                                  scrollable="true" rowStyleClass="#{((s.dateJoined eq staffSalaryController.salaryCycle.salaryFromDate)or(s.dateJoined gt staffSalaryController.salaryCycle.salaryFromDate)) and ((s.dateJoined eq staffSalaryController.salaryCycle.salaryToDate)or (s.dateJoined lt staffSalaryController.salaryCycle.salaryToDate)) ? 'greenText':''}"
                                   scrollHeight="250">
                         <p:column  selectionMode="multiple" >                            
                         </p:column>
@@ -100,11 +100,20 @@
                         <p:column headerText="Roster"  filterBy="#{s.roster.name}"  filterMatchMode="contains" >
                             <h:outputLabel value="#{s.roster.name}"/>
                         </p:column>
-                        <p:column headerText="Grade"  filterBy="#{s.grade}"  filterMatchMode="contains" >
-                            <h:outputLabel value="#{s.grade}"/>
+                        <p:column headerText="Resigned Date"  >
+                            <h:outputLabel value="#{s.dateLeft}">
+                                <f:convertDateTime pattern="yyyy MMM dd" />
+                            </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Category" filterBy="#{s.staffCategory.name}"  filterMatchMode="contains">
-                            <h:outputLabel value="#{s.staffCategory.name}"/>
+                        <p:column headerText="Working Days(PH)">
+                            <h:outputLabel value="#{s.transWorkedDays}">
+                                <f:convertNumber pattern="##0" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Working Days(Work)">
+                            <h:outputLabel value="#{s.transWorkedDaysSalaryFromToDate}">
+                                <f:convertNumber pattern="##0" />
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.designation.name}"/>
@@ -216,11 +225,15 @@
                                 <f:convertNumber pattern="0.00"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Comment">
+                            <p:inputText value="#{i.comments}">
+                            </p:inputText>
+                        </p:column>
 
                         <p:column>
                             <p:commandButton process="@this" 
                                              update=":#{p:component('lst')}" 
-                                             value="Edit"  
+                                             value="Edit" 
                                             actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          
                         </p:column>
@@ -267,6 +280,18 @@
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputLabel>  
                                                         </f:facet>-->
+                        </p:column>
+                        <p:column headerText="Comment">                        
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.comments}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{i.comments}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
+                                </f:facet>
+                            </p:cellEditor> 
                         </p:column>
                         <p:column headerText="EPF">
                             <h:outputLabel  value="#{i.epfValue}">

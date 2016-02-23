@@ -1,0 +1,253 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="salary" />
+        <cc:attribute name="bank" />
+        <cc:attribute name="total" />
+        <cc:attribute name="component" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="paySheet.css" ></h:outputStylesheet>
+        <div style="position: relative!important;
+             /*padding-left: 0.5%!important;*/
+             height:95%!important;
+             width:95%!important; 
+             /*             overflow:hidden!important; */
+             font-family: Times New Roman!important; 
+             font-size: 10px!important; 
+             margin:2px!important; 
+             padding: 5px!important;
+             /*             background-size: 100% auto!important;*/
+             letter-spacing: 0px;
+             /*             border: 1px solid!important;*/">
+
+            <div class="institutionName" style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
+
+            </div>
+            <div style="font-size: 9px!important; font-family: Times New Roman!important;
+                 letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 5%;">
+                <table>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Date : " />
+                            <h:outputLabel value="#{commonController.currentDateTime}">
+                                <f:convertDateTime pattern="dd-MMM-yy" />
+                            </h:outputLabel>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="You Ref."/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="The Manager,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bank.transAddress1},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bank.transAddress2}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bank.transAddress3 eq null or cc.attrs.bank.transAddress3 eq ''}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bank.transAddress3 ne null and cc.attrs.bank.transAddress3 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bank.transAddress3}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bank.transAddress4 eq null or cc.attrs.bank.transAddress4 eq '') and (cc.attrs.bank.transAddress3 ne null and cc.attrs.bank.transAddress3 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bank.transAddress4 ne null and cc.attrs.bank.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr><tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bank.transAddress4}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bank.transAddress4 ne null and cc.attrs.bank.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Dear Sir/Madam,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3" width="100%">
+                            <table>
+                                <tr>
+                                    <th>
+                                        <p:outputLabel value="Name" style="font-size: 11px!important;"/>
+                                    </th>
+                                    <td><p:spacer width="20" /></td>
+                                    <th>
+                                        <p:outputLabel value="Account No/Facility No" style="font-size: 11px!important;"  />
+                                    </th>
+                                    <td><p:spacer width="20" /></td>
+                                    <th>
+                                        <p:outputLabel value="Value" style="font-size: 11px!important;">
+                                        </p:outputLabel>
+                                    </th>
+                                </tr>
+                                <ui:repeat value="#{cc.attrs.salary}" var="s">
+                                    <tr>
+                                        <td>
+                                            <p:outputLabel value="#{s.staffSalary.staff.person.nameWithTitle}" style="font-size: 11px!important;" />
+                                        </td>
+                                        <td><p:spacer width="20" /></td>
+                                        <td>
+                                            <p:outputLabel value="#{s.staffPaysheetComponent.accountNo}" style="font-size: 11px!important;" />
+                                            <p:outputLabel value=" / "  rendered="#{s.staffPaysheetComponent.accountNo ne null and s.staffPaysheetComponent.loanNo ne null and s.staffPaysheetComponent.accountNo ne '' and s.staffPaysheetComponent.loanNo ne ''}" style="font-size: 11px!important;"/>
+                                            <p:outputLabel value="#{s.staffPaysheetComponent.loanNo}" style="font-size: 11px!important;" />
+                                        </td>
+                                        <td><p:spacer width="20" /></td>
+                                        <td>
+                                            <p:outputLabel value="#{-s.componantValue}" style="float: right;font-size: 11px!important;">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+
+                            </table>
+                        </td>
+
+                    </tr>
+
+
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">
+                            <p>
+                                We are enclosing herewith a #{cc.attrs.bank.name} Cheque bearing No. ............................ For 
+                                Rs. 
+                                <p:outputLabel value="#{-cc.attrs.total}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
+                                being payment of #{cc.attrs.component.name}. Kindly acknowledge the receipt. 
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Thanking You,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Yours' Fathfully,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="40" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{sessionController.loggedUser.staff.person.name},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{sessionController.loggedUser.staff.speciality.name},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{sessionController.loggedUser.staff.workingDepartment.institution.name}."/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+
+                </table>
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>

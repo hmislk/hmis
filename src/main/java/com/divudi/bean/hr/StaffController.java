@@ -20,6 +20,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -228,6 +229,19 @@ public class StaffController implements Serializable {
         staffWithCode = getEjbFacade().findBySQL(sql, hm);
     }
 
+    public void createDoctorsOnly() {
+
+        String sql = "select s from Staff s where "
+                + " s.retired=false "
+                + " and (type(s)=:class1"
+                + " or type(s)=:class2)"
+                + " order by s.code ";
+        HashMap hm = new HashMap();
+        hm.put("class1", Doctor.class);
+        hm.put("class2", Consultant.class);
+        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+    }
+
     public void createStaffWithCode() {
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
@@ -343,9 +357,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
-        for (Staff s : staffWithCode) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-        }
+        fetchWorkDays(staffWithCode);
     }
 
     public void createResignedStaffTable() {
@@ -401,9 +413,7 @@ public class StaffController implements Serializable {
         selectedStaffes = staffWithCode;
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
-        for (Staff s : staffWithCode) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-        }
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffOnylSalaryGeneratedTable() {
@@ -411,6 +421,7 @@ public class StaffController implements Serializable {
         hrReportController.setReportKeyWord(reportKeyWord);
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         staffWithCode = hrReportController.fetchOnlySalaryGeneratedStaff();
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffOnylSalaryNotGeneratedTable(Date ssDate) {
@@ -421,6 +432,7 @@ public class StaffController implements Serializable {
         System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         staffWithCode.removeAll(salaryGeneratedStaff);
+        fetchWorkDays(staffWithCode);
     }
 
     public void createActiveStaffTable() {
@@ -472,6 +484,18 @@ public class StaffController implements Serializable {
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
 
+    }
+
+    public void fetchWorkDays(List<Staff> staffs) {
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            System.out.println("staffSalaryController.getSalaryCycle() = " + staffSalaryController.getSalaryCycle());
+            if (staffSalaryController.getSalaryCycle()!=null) {
+                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
+                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
+
+            }
+        }
     }
 
     public void createTable() {
@@ -961,6 +985,26 @@ public class StaffController implements Serializable {
         }
         if (current.getSpeciality() == null) {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
+            return;
+        }
+        
+        if (current.getPerson().getLastName() == null||current.getPerson().getLastName().isEmpty()) {
+            UtilityController.addErrorMessage("Last Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getInitials() == null||current.getPerson().getInitials().isEmpty()) {
+            UtilityController.addErrorMessage("Initials Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getFullName() == null||current.getPerson().getFullName().isEmpty()) {
+            UtilityController.addErrorMessage("Full Name Requied To Save");
+            return;
+        }
+        
+        if (current.getPerson().getNameWithInitials() == null) {
+            UtilityController.addErrorMessage("Name With Initials Requied To Save");
             return;
         }
 
