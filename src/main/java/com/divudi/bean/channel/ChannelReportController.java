@@ -3717,7 +3717,7 @@ public class ChannelReportController implements Serializable {
         channelDoctors = new ArrayList<ChannelDoctor>();
         HashMap m = new HashMap();
         String sql;
-        sql = "Select bs.bill From BillSession bs "
+        sql = "Select distinct(bs.bill.staff) From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and bs.sessionDate between :fd and :td "
@@ -3725,40 +3725,23 @@ public class ChannelReportController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("bills = " + bills.size());
-        Set<Staff> consultant = new HashSet();
-        for (Bill b : bills) {
-            consultant.add(b.getStaff());
-        }
-
-        for (Staff c : consultant) {
-            ChannelDoctor cd = new ChannelDoctor();
-            cd.setConsultant(c);
+        
+        List<Staff> staffs=staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("staffs.size() = " + staffs.size());
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            ChannelDoctor cd=new ChannelDoctor();
+            cd.setConsultant(s);
+            cd.setBillCount(fetchBillCount(s, fromDate, toDate, new BilledBill()));
+            cd.setBillCanncelCount(fetchBillCount(s, fromDate, toDate, new CancelledBill()));
+            cd.setRefundedCount(fetchBillCount(s, fromDate, toDate, new RefundBill()));
+            
+            cd.setBillFee(fetchBillFees(new BilledBill(), FeeType.Staff, s, fromDate, toDate));
+            cd.setBillCanncelFee(fetchBillFees(new CancelledBill(), FeeType.Staff, s, fromDate, toDate));
+            cd.setRefundFee(fetchBillFees(new RefundBill(), FeeType.Staff, s, fromDate, toDate));
+            
             channelDoctors.add(cd);
-        }
-
-        for (ChannelDoctor cd : channelDoctors) {
-            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
-            for (Bill b : bills) {
-                System.out.println("b = " + b.getStaff().getPerson().getName());
-                System.out.println("b = " + b.getBillClass());
-                if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
-                    if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid || b.getBillType() == BillType.ChannelAgent) {
-                        if (b instanceof BilledBill) {
-                            cd.setBillCount(cd.getBillCount() + 1);
-                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
-                        } else if (b instanceof CancelledBill) {
-                            cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
-                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
-                        } else if (b instanceof RefundBill) {
-                            cd.setRefundedCount(cd.getRefundedCount() + 1);
-                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
-                        }
-                    }
-                }
-            }
-
+            
         }
 
         calTotal();
@@ -3841,6 +3824,53 @@ public class ChannelReportController implements Serializable {
         m.put("ft", ft);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m);
+    }
+    
+    double fetchBillCount(Staff s,Date fd,Date td,Bill b){
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select count(bs.bill) From BillSession bs "
+                + " where bs.bill.staff=:s "
+                + " and type(bs.bill)=:class "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td ";
+
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("class", b.getClass());
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("d = " + d);
+        
+        return d;
+        
+    }
+    
+    double fetchBillFees(Bill b, FeeType ft,Staff s,Date fd,Date td) {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "Select sum(bf.feeValue) From BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.fee.feeType=:ft "
+                + " and type(bf.bill)=:class "
+                + " and bf.bill.staff=:s "
+                + " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+
+        m.put("ft", ft);
+        m.put("class", b.getClass());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFeeFacade().findDoubleByJpql(sql, m);
+        System.out.println("d = " + d);
+
+        return d;
     }
 
     public List<BillSession> getBillSessionsUser() {
