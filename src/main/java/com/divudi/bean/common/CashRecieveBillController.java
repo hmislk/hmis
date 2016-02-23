@@ -201,6 +201,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void remove(BillItem billItem) {
         getBillItems().remove(billItem.getSearialNo());
+        getSelectedBillItems().remove(billItem.getSearialNo());
         calTotalWithResetingIndex();
     }
 
@@ -273,6 +274,7 @@ public class CashRecieveBillController implements Serializable {
         //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
+        getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
 
         currentBillItem = null;
