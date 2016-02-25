@@ -202,6 +202,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
         settleSucessFully = true;
+        printingBill = getBillFacade().find(b.getId());
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        System.out.println("bs = " + bs);
 //        System.out.println("getBillSession() = " + getBillSession().getName());
@@ -1203,6 +1204,7 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
+        area=null;
         doctorSpecialityController.setSelectText("");
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");

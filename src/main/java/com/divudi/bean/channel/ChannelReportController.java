@@ -3712,6 +3712,45 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void createTotalDoctorAll() {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select distinct(bs.bill.staff) From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " order by bs.bill.staff.person.name ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        List<Staff> staffs=staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("staffs.size() = " + staffs.size());
+        
+        BillType [] types={BillType.ChannelCash,BillType.ChannelPaid,BillType.ChannelAgent};
+        
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            ChannelDoctor cd=new ChannelDoctor();
+            cd.setConsultant(s);
+            cd.setBillCount(fetchBillCount(s, fromDate, toDate, new BilledBill(),Arrays.asList(types)));
+            cd.setBillCanncelCount(fetchBillCount(s, fromDate, toDate, new CancelledBill(),Arrays.asList(types)));
+            cd.setRefundedCount(fetchBillCount(s, fromDate, toDate, new RefundBill(),Arrays.asList(types)));
+            
+            cd.setBillFee(fetchBillFees(new BilledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            cd.setBillCanncelFee(fetchBillFees(new CancelledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            cd.setRefundFee(fetchBillFees(new RefundBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            
+            channelDoctors.add(cd);
+            
+        }
+
+        calTotal();
+
+    }
+
     public void createTodayAbsentList() {
 
         createTodayList(true, false);
@@ -3788,6 +3827,56 @@ public class ChannelReportController implements Serializable {
         m.put("ft", ft);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m);
+    }
+    
+    double fetchBillCount(Staff s,Date fd,Date td,Bill b,List<BillType> billTypes){
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select count(bs.bill) From BillSession bs "
+                + " where bs.bill.staff=:s "
+                + " and type(bs.bill)=:class "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " and bs.bill.billType in :bts ";
+
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("class", b.getClass());
+        m.put("bts", billTypes);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("d = " + d);
+        
+        return d;
+        
+    }
+    
+    double fetchBillFees(Bill b, FeeType ft,Staff s,Date fd,Date td,List<BillType> billTypes) {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "Select sum(bf.feeValue) From BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.fee.feeType=:ft "
+                + " and type(bf.bill)=:class "
+                + " and bf.bill.staff=:s "
+                + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
+                + " and bf.bill.billType in :bts ";
+
+        m.put("ft", ft);
+        m.put("class", b.getClass());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("bts", billTypes);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFeeFacade().findDoubleByJpql(sql, m);
+        System.out.println("d = " + d);
+
+        return d;
     }
 
     public List<BillSession> getBillSessionsUser() {
@@ -3954,7 +4043,7 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
         }
-        HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill, 
+        HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
             HistoryType.CollectingCentreDeposit,
             HistoryType.CollectingCentreDepositCancel,
             HistoryType.CollectingCentreBilling};
