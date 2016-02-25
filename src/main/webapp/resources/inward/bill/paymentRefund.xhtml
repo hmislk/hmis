@@ -86,10 +86,21 @@
 
                         </div>
                         <div>
-                            <div class="cashierPrintingRuhunu" >
-                                
-                                <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
-                            </div>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div class="cashierPrinting" style="text-decoration: overline;font-size: 12px;">
+                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
+                                        </div>
+
+                                    </td>
+                                    <td>
+                                        <div class="pgsignPrinting" style="text-decoration: overline; margin-left: 70%; font-size: 12px;">
+                                            <h:outputLabel  value="Patient/Guardian"   />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
 

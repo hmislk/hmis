@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="EPF ETF" />
+                            <h:outputLabel value="ETF" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -135,7 +135,7 @@
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel> 
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.totalBasicValue}">
+                                        <p:outputLabel value="#{hrReportController.totalTransEpfEtfDiductableSalary}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel> 
                                     </f:facet>

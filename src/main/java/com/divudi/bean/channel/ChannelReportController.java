@@ -168,7 +168,7 @@ public class ChannelReportController implements Serializable {
         staff = null;
         sessoinDate = false;
         institution = null;
-        date=null;
+        date = null;
     }
 
     public Institution getInstitution() {
@@ -3659,7 +3659,7 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
-    
+
     public void createTotalDoctor(Date date) {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -3706,6 +3706,45 @@ public class ChannelReportController implements Serializable {
                 }
             }
 
+        }
+
+        calTotal();
+
+    }
+
+    public void createTotalDoctorAll() {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select distinct(bs.bill.staff) From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " order by bs.bill.staff.person.name ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        List<Staff> staffs=staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("staffs.size() = " + staffs.size());
+        
+        BillType [] types={BillType.ChannelCash,BillType.ChannelPaid,BillType.ChannelAgent};
+        
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            ChannelDoctor cd=new ChannelDoctor();
+            cd.setConsultant(s);
+            cd.setBillCount(fetchBillCount(s, fromDate, toDate, new BilledBill(),Arrays.asList(types)));
+            cd.setBillCanncelCount(fetchBillCount(s, fromDate, toDate, new CancelledBill(),Arrays.asList(types)));
+            cd.setRefundedCount(fetchBillCount(s, fromDate, toDate, new RefundBill(),Arrays.asList(types)));
+            
+            cd.setBillFee(fetchBillFees(new BilledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            cd.setBillCanncelFee(fetchBillFees(new CancelledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            cd.setRefundFee(fetchBillFees(new RefundBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
+            
+            channelDoctors.add(cd);
+            
         }
 
         calTotal();
@@ -3788,6 +3827,56 @@ public class ChannelReportController implements Serializable {
         m.put("ft", ft);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m);
+    }
+    
+    double fetchBillCount(Staff s,Date fd,Date td,Bill b,List<BillType> billTypes){
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select count(bs.bill) From BillSession bs "
+                + " where bs.bill.staff=:s "
+                + " and type(bs.bill)=:class "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " and bs.bill.billType in :bts ";
+
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("class", b.getClass());
+        m.put("bts", billTypes);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("d = " + d);
+        
+        return d;
+        
+    }
+    
+    double fetchBillFees(Bill b, FeeType ft,Staff s,Date fd,Date td,List<BillType> billTypes) {
+        Map m = new HashMap();
+        String sql;
+
+        sql = "Select sum(bf.feeValue) From BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.fee.feeType=:ft "
+                + " and type(bf.bill)=:class "
+                + " and bf.bill.staff=:s "
+                + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
+                + " and bf.bill.billType in :bts ";
+
+        m.put("ft", ft);
+        m.put("class", b.getClass());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("bts", billTypes);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        double d=getBillFeeFacade().findDoubleByJpql(sql, m);
+        System.out.println("d = " + d);
+
+        return d;
     }
 
     public List<BillSession> getBillSessionsUser() {
@@ -3923,6 +4012,41 @@ public class ChannelReportController implements Serializable {
             return;
         }
         HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        List<HistoryType> historyTypes = Arrays.asList(ht);
+
+        agentHistoryWithDate = new ArrayList<>();
+        Date nowDate = getFromDate();
+
+        while (nowDate.before(getToDate())) {
+            Date fd = commonFunctions.getStartOfDay(nowDate);
+            Date td = commonFunctions.getEndOfDay(nowDate);
+            System.out.println("td = " + td);
+            System.out.println("fd = " + fd);
+            System.out.println("nowDate = " + nowDate);
+            AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
+            if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
+                ahwd.setDate(nowDate);
+                ahwd.setAhs(createAgentHistory(fd, td, institution, historyTypes));
+                agentHistoryWithDate.add(ahwd);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            cal.add(Calendar.DATE, 1);
+            nowDate = cal.getTime();
+        }
+
+    }
+
+    public void createCollectingCenterHistorySubTable() {
+        if (institution == null) {
+            JsfUtil.addErrorMessage("Please Select Agency.");
+            return;
+        }
+        HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
+            HistoryType.CollectingCentreDeposit,
+            HistoryType.CollectingCentreDepositCancel,
+            HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -4352,8 +4476,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public Date getDate() {
-        if (date==null) {
-            date=new Date();
+        if (date == null) {
+            date = new Date();
         }
         return date;
     }

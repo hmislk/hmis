@@ -12,13 +12,13 @@
 
         <h:form>
 
-            <p:panel header="Cannel Agent Reperence Book">
+            <p:panel header="Collecting Center Reference Book">
                 <f:facet name="header">
-                    <p:outputLabel value="Cannel Agent Reperence Book" />
-                    <p:commandButton id="btnBack" value="Back" 
+                    <p:outputLabel value="Collecting Center Reference Book" />
+<!--                    <p:commandButton id="btnBack" value="Back" 
                                      action="/channel/channel_reports" style="float: right;"
                                      ajax="false">
-                    </p:commandButton>
+                    </p:commandButton>-->
                 </f:facet>
                 <p:panel>
                     <h:panelGrid columns="6">
@@ -29,11 +29,10 @@
                         <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
-                        <p:autoComplete converter="deal" value="#{channelReportTempController.searchKeyword.ins}" 
-                                        forceSelection="true"
-                                        completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <p:column>#{vt.institutionCode}</p:column>
-                            <p:column>#{vt.name}</p:column>
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{channelReportTempController.searchKeyword.ins}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                            <p:column>#{ix.institutionCode}</p:column>
+                            <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="2">
@@ -55,12 +54,12 @@
                         </h:panelGrid>
                     </h:panelGrid>
 
-                    <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{channelReportTempController.createCollectingCenterReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
 
-                    <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                    <p:commandButton actionListener="#{channelReportTempController.createCollectingCenterReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
                         <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
                     </p:commandButton> 
 
@@ -145,7 +144,11 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton disabled="#{a.retired}" value="Update" action="#{channelReportTempController.updateDecactivateAgentBook(a)}" ajax="false"></p:commandButton>
+                            <p:commandButton disabled="#{a.retired}" 
+                                             value="Update" 
+                                             actionListener="#{channelReportTempController.createAgentReferenceBooks}" 
+                                             action="#{channelReportTempController.updateDecactivateCCBook(a)}" 
+                                             ajax="false"></p:commandButton>
                         </p:column>
 
                     </p:dataTable>
