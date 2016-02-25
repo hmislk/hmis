@@ -46,7 +46,8 @@
                                             itemValue="#{ix}" size="30" >  
                                 <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
                             </p:autoComplete>
-
+                            <h:outputLabel value="With Footer"/>
+                            <p:selectBooleanCheckbox value="#{inwardReportController.withFooter}" />
 
                         </h:panelGrid>
 
