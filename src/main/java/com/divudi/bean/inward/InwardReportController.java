@@ -63,6 +63,8 @@ public class InwardReportController implements Serializable {
     double grossTotals;
     double discounts;
     double netTotals;
+    boolean withFooter;
+    
     List<IncomeByCategoryRecord> incomeByCategoryRecords;
     List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord;
 
@@ -264,7 +266,7 @@ public class InwardReportController implements Serializable {
         if (patientEncounters == null) {
             return;
         }
-        total = 0;
+        setTotal(0);
         paid = 0;
         calTotal = 0;
         creditPaid = 0;
@@ -275,7 +277,7 @@ public class InwardReportController implements Serializable {
             p.setTransTotal(inwardReportControllerBht.getNetTotal());
 
             if (p.getFinalBill() != null) {
-                total += p.getFinalBill().getNetTotal();
+                setTotal(getTotal() + p.getFinalBill().getNetTotal());
                 paid += p.getFinalBill().getPaidAmount();
             }
 
@@ -290,7 +292,7 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        total = 0;
+        total=0.0;
         paid = 0;
         calTotal = 0;
         creditPaid = 0;
@@ -299,7 +301,7 @@ public class InwardReportController implements Serializable {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
 
-            total += p.getFinalBill().getNetTotal();
+            total+= p.getFinalBill().getNetTotal();
             paid += p.getTransPaidByPatient();
             creditPaid += p.getTransPaidByCompany();
         }
@@ -462,7 +464,7 @@ public class InwardReportController implements Serializable {
         List<PatientEncounter> list = patientEncounters;
         patientEncounters = null;
         patientEncounters = new ArrayList<>();
-        total = 0;
+        setTotal(0);
         paid = 0;
         calTotal = 0;
         creditPaid = 0;
@@ -475,7 +477,7 @@ public class InwardReportController implements Serializable {
             double dueValue = p.getFinalBill().getNetTotal() - paidValue;
 
             if (Math.round(dueValue) != 0) {
-                total += p.getFinalBill().getNetTotal();
+                setTotal(getTotal() + p.getFinalBill().getNetTotal());
                 paid += p.getTransPaidByPatient();
                 creditPaid += p.getTransPaidByCompany();
 
@@ -527,9 +529,9 @@ public class InwardReportController implements Serializable {
 
         }
 
-        total = 0.0;
+        setTotal(0.0);
         for (BillItem b : billItems) {
-            total += b.getBill().getNetTotal();
+            setTotal(getTotal() + b.getBill().getNetTotal());
         }
 
     }
@@ -560,9 +562,9 @@ public class InwardReportController implements Serializable {
 
         }
 
-        total = 0.0;
+        setTotal(0.0);
         for (BillItem b : billItems) {
-            total += b.getBill().getNetTotal();
+            setTotal(getTotal() + b.getBill().getNetTotal());
         }
 
     }
@@ -832,7 +834,7 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
-        
+
         System.out.println("sql = " + sql);
         System.out.println("temMap = " + temMap);
 
@@ -871,7 +873,7 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
-        
+
         System.out.println("sql = " + sql);
         System.out.println("temMap = " + temMap);
 
@@ -1174,6 +1176,14 @@ public class InwardReportController implements Serializable {
 
     public void setIndividualBhtIncomeByCategoryRecord(List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord) {
         this.individualBhtIncomeByCategoryRecord = individualBhtIncomeByCategoryRecord;
+    }
+
+    public boolean isWithFooter() {
+        return withFooter;
+    }
+
+    public void setWithFooter(boolean withFooter) {
+        this.withFooter = withFooter;
     }
 
     public class IncomeByCategoryRecord {
