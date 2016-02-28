@@ -33,15 +33,18 @@
                     <h:outputText value="#{t.salaryMonth}" />
                 </p:column>
             </p:selectOneMenu>
+            <br></br>
+            <h:panelGrid columns="3">
+                <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffSalary()}" ></p:commandButton>
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                    <pe:exporter type="xlsx" target="tbl" fileName="all_staff_salary_summery"  />
+                </p:commandButton>
+            </h:panelGrid>
 
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffSalary()}" ></p:commandButton>
-            <p:commandButton value="Print" ajax="false" action="#" >
-                <p:printer target="tbl" ></p:printer>
-            </p:commandButton>
-            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                <pe:exporter type="xlsx" target="tbl" fileName="all_staff_salary_summery"  />
-            </p:commandButton>
-
+            <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
             <p:dataTable id="tbl" value="#{salaryCycleController.staffSalary}" var="scc" >
                 <f:facet name="header">
                     <h:outputLabel value="All Staff Salary Summary"></h:outputLabel><br></br>
@@ -285,7 +288,7 @@
 
             </p:dataTable>
 
-
+</p:panel>
         </h:form>        
     </ui:define>
 

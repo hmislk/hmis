@@ -52,15 +52,14 @@
                                            styleClass="tinyText" style="float: right;"/>
 
                         </h:panelGrid>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
-
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
                                         <br />
                                     </h:panelGroup>
-
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
                                         <h:outputLabel value="Employee #{hrReportController.reportKeyWord.staff.person.name}" rendered="#{hrReportController.reportKeyWord.staff ne null}"/>
                                         <br />
@@ -269,7 +268,13 @@
                                     </h:outputLabel>
                                 </p:column>
 
-
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
 
                             </p:dataTable>
                         </p:panel>

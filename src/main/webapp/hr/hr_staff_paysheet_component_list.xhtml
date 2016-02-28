@@ -26,12 +26,12 @@
                         <f:selectItem itemLabel="Please select component Type "/>
                         <f:selectItems  value="#{paysheetComponentSystemController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>                    
                     </p:selectOneMenu> 
-                    <h:outputLabel value="Employee : "/>
-                    <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
+                    <h:outputLabel value="Institution : "/>
+                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>                   
                     <h:outputLabel value="Department : "/>
                     <hr:department value="#{staffBasicController.reportKeyWord.department}"/>
-                    <h:outputLabel value="Institution : "/>
-                    <hr:institution value="#{staffBasicController.reportKeyWord.institution}"/>
+                    <h:outputLabel value="Employee : "/>
+                    <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
                     <h:outputLabel value="Staff Category : "/>
                     <hr:completeStaffCategory value="#{staffBasicController.reportKeyWord.staffCategory}"/>
                     <h:outputLabel value="Staff Designation : "/>
@@ -54,14 +54,25 @@
 
 
 
-                <p:panel id="gpBillPreview">
+                <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                     <p:dataTable  id="tb1" value="#{staffBasicController.items}" 
                                   filteredValue="#{staffBasicController.filteredStaffPaysheet}"
                                   var="i"   rowKey="#{i.id}"  >
 
                         <f:facet name="header">
+                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                             <h:outputLabel value="Staff Paysheet Component List"/>
-
+                            <h:panelGroup rendered="#{staffBasicController.reportKeyWord.institution ne null}" >
+                                <br/>
+                                <h:outputLabel value="#{staffBasicController.reportKeyWord.institution.name}" />
+                                <br/>
+                             </h:panelGroup>
+                            <h:panelGroup rendered="#{staffBasicController.reportKeyWord.department ne null}" >  
+                                <h:outputLabel value="#{staffBasicController.reportKeyWord.department.name}" />    
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{staffBasicController.reportKeyWord.staff ne null}" >
+                                <h:outputLabel value="#{staffBasicController.reportKeyWord.staff.person.name}" />
+                            </h:panelGroup> 
                             <h:outputLabel value="#{staffBasicController.paysheetComponent.name} #{staffBasicController.paysheetComponent2.name}">                                        
                             </h:outputLabel>
                         </f:facet>
@@ -99,7 +110,7 @@
                             </f:facet>
                             <h:outputLabel value="#{i.paysheetComponent.name}"/>                           
                         </p:column>
-                        
+
                         <p:column headerText="Grade" >
                             <f:facet name="header">
                                 <h:outputLabel value="Grade"  />
@@ -147,14 +158,14 @@
                             </f:facet>
                             <h:outputLabel value="#{i.bankBranch.name}"/>
                         </p:column>
-                        
+
                         <p:column >
                             <f:facet name="header">
                                 <h:outputLabel value="Bank Name"  />
                             </f:facet>
                             <h:outputLabel value="#{i.bankBranch.institution.name}"/>
                         </p:column>
-                        
+
                         <p:column >
                             <f:facet name="header">
                                 <h:outputLabel value="Working Department"  />
@@ -175,7 +186,7 @@
                             </f:facet>
                             <h:outputLabel value="#{i.paysheetComponent.includedForOt}"/>
                         </p:column>
-                        
+
                         <p:column headerText="Starting Value" styleClass="averageNumericColumn">
                             <f:facet name="header">
                                 <h:outputLabel value="Starting Value"  />
@@ -200,7 +211,13 @@
                                 </p:outputLabel>
                             </f:facet>
                         </p:column>
-
+                        <f:facet name="footer">
+                            <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                            <p:outputLabel value="Print At : " />
+                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                            </p:outputLabel>
+                        </f:facet>
 
                     </p:dataTable>
                 </p:panel>

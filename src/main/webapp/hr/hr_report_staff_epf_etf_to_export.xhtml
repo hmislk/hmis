@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -69,6 +69,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                                     <h:outputLabel value="Employee EPF/ETF Report"/>
                                     <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
@@ -77,6 +78,10 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
@@ -172,8 +177,8 @@
                                         <p:outputLabel value="Total Earnings (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.basicValue}">
-                                            <f:convertNumber pattern="0.00" />
-                                        </p:outputLabel> 
+                                        <f:convertNumber pattern="0.00" />
+                                    </p:outputLabel> 
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.totalBasicValue}">
                                             <f:convertNumber pattern="0.00" />
@@ -233,7 +238,7 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.grade.name}"/>
                                 </p:column>
-                                
+
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />

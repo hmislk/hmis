@@ -38,10 +38,10 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>                           
                             <h:outputLabel value="Staff Roster : "/>
                             <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
                             <h:outputLabel value="Show Blocked"/>
@@ -60,11 +60,12 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.bankViseSalaryAndOts}" var="ss"  editable="true" rowIndexVar="i">
                                 <f:facet name="header" >
-                                     <h:outputLabel value="Employee Salary Bank Vise" />
-                                        <br/>
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Employee Salary Bank Vise" />
+                                    <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
@@ -134,6 +135,13 @@
                                         </h:outputLabel>  
                                     </f:facet>
                                 </p:column>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>
 
