@@ -15,7 +15,7 @@
             <ui:define name="content">
                 <h:form >
                     <p:panel >
-                        <f:facet name="header" >
+                        <f:facet name="header" >                            
                             <h:outputLabel value="Staff Over Time" />
                         </f:facet>
                         <h:panelGrid columns="2" >
@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -65,10 +65,11 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Staff Over Time"/>
                                     <br/>
                                     <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}" />
                                     <br/>
@@ -80,7 +81,6 @@
                                         <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
                                     </h:outputLabel>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <br/>
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
                                     </h:panelGroup>
@@ -90,6 +90,10 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
                                         <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                 </f:facet>

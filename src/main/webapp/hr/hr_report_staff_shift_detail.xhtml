@@ -25,12 +25,12 @@
                                 <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                                 <h:outputLabel value="To : " />
                                 <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                                <h:outputLabel value="Employee : "/>
-                                <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                                <h:outputLabel value="Department : "/>
-                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                                 <h:outputLabel value="Institution : "/>
                                 <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                                <h:outputLabel value="Department : "/>
+                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                                <h:outputLabel value="Employee : "/>
+                                <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                                 <h:outputLabel value="Staff Category : "/>
                                 <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                                 <h:outputLabel value="Staff Designation : "/>
@@ -56,10 +56,33 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Worked Time"/>
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Worked Time"/><br/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{hrReportController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
                                 </f:facet>
 
                                 <p:column headerText="ID">
@@ -76,11 +99,11 @@
                                     <p:outputLabel value=" #{ss.staff.code}" ></p:outputLabel>
 
                                 </p:column>
-                                 <p:column headerText="Day Of Week ">
+                                <p:column headerText="Day Of Week ">
                                     <f:facet name="header">
                                         <h:outputLabel value="Day Of Week"/>
                                     </f:facet>
-                                     <p:outputLabel value=" #{ss.dayOfWeek}" ></p:outputLabel>
+                                    <p:outputLabel value=" #{ss.dayOfWeek}" ></p:outputLabel>
 
                                 </p:column>
                                 <p:column headerText="Emp Name">
@@ -215,7 +238,13 @@
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">                                        
                                     </h:outputLabel>
                                 </p:column> 
-
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>
 

@@ -26,28 +26,50 @@
                                 <h:outputLabel value="Staff : "/>
                                 <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
 
-                                <h:outputLabel value="Department : "/>
-                                <au:department value="#{fingerPrintRecordController.department}"/>
-                                
                                 <h:outputLabel value="Institution : "/>
                                 <au:department value="#{fingerPrintRecordController.institution}"/> 
-                                
+
+                                <h:outputLabel value="Department : "/>
+                                <au:department value="#{fingerPrintRecordController.department}"/>
+
+
                             </p:panelGrid>
                             <p:commandButton value="Search Created Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableCreatedAt()}" />
                             <p:commandButton value="Search Sift Date" ajax="false" action="#{fingerPrintRecordController.createFingerPrintRecordTableSiftDate()}" />
                             <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="tb1" ></p:printer>
+                                <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tb1" fileName="hr_report_holiday"  />
                             </p:commandButton>
                         </p:panel>
-                        <p:panel>
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable value="#{fingerPrintRecordController.fingerPrintRecords}" var="l" 
                                          rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
-
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Staff Shift"/><br/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{fingerPrintRecordController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{fingerPrintRecordController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{fingerPrintRecordController.institution ne null}" >
+                                        <h:outputLabel value="#{fingerPrintRecordController.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{fingerPrintRecordController.department ne null}" >
+                                        <h:outputLabel value="Department : #{fingerPrintRecordController.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
                                 <p:column headerText="View" >                                    
                                     <p:commandButton ajax="false" value="View" action="hr_staff_finger_edit" actionListener="#{fingerPrintRecordController.viewStaffFinger(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
@@ -83,7 +105,13 @@
                                     </f:facet>
                                     <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
                                 </p:column>
-
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
