@@ -80,7 +80,8 @@
                         </td>
                         <td></td>
                         <td></td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.con.institution.transAddress4}"/>
                             <h:outputLabel value="." rendered="#{cc.attrs.con.institution.transAddress4 ne null and cc.attrs.con.institution.transAddress4 ne ''}"/>
@@ -88,7 +89,11 @@
                         <td></td>
                         <td></td>
                     </tr>
-
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
 
 
                     <tr>
@@ -106,9 +111,12 @@
                     </tr>
 
                     <tr>
-                        <td></td>
-                        <td>
-                            <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+
+                        <td colspan="2">
+                            <center>
+                                <h:outputLabel value="SETTLEMENT OF MEDICAL BILL" style="text-decoration: underline; font-size: 15px!important;"/>
+                            </center>
+
                         </td>
                         <td></td>
                     </tr>
@@ -253,7 +261,31 @@
                             </p>
                         </td>
                     </tr>
-
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    <tr >
+                        <td width="20%"><p:outputLabel value="Bank A/C Number  "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td align="left"> <h:outputLabel value=" - 013-1001-71924550 "  rendered="#{cc.attrs.con.withFooter}" style="white-space:normal;" /></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="Bank"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td  valign="left"><h:outputLabel value=" - People's bank, Galle Fort, Sri Lanka. "  rendered="#{cc.attrs.con.withFooter}"  style="float: next;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="BIC Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td  valign="left">  <h:outputLabel value=" - 7135 "  rendered="#{cc.attrs.con.withFooter}"  style="float: outside;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="SWIFT Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td valign="left"><h:outputLabel value="  - PSBKLKLX "  rendered="#{cc.attrs.con.withFooter}"  style="float: left;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
@@ -291,120 +323,33 @@
                     </tr>
 
                     <tr>
+                        <td colspan="2">
+                            <h:outputLabel value="(B.A Lahiru Priyabandu)" style="text-decoration: overline;"  rendered="#{cc.attrs.con.withFooter}"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
                         <td>
-                            <!--<h:outputLabel value="#{sessionController.loggedUser.staff.speciality.name},"/>-->
-                            <h:outputLabel value="Accountanat,"/>
+                            <h:outputLabel value="Accountant,"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
 
                     <tr>
-                        <td>
+                        <td colspan="2">
                             <h:outputLabel value="#{sessionController.loggedUser.staff.workingDepartment.institution.name}."/>
                         </td>
                         <td></td>
-                        <td></td>
                     </tr>
+                    
                     <tr>
                         <td><p:spacer height="40" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
 
-                    <tr>
-                        <td><p:spacer height="40" /></td>
-                        <td colspan="2" >
-                            <table>
-                                <tr>
-                                    <td colspan="3">
-
-                                        <p:outputLabel value="Above all Requisition for CT Scan 
-                                                       Diagnostic Examination (2 F 6 S. &amp; E.)" rendered="#{cc.attrs.con.withFooter}"/>
-                                        <br></br>
-                                        <p:outputLabel value="8/64 with serial ( Serial No : 1 To " rendered="#{cc.attrs.con.withFooter}"/>
-                                        <p:outputLabel value="#{cc.attrs.bills.size()}" rendered="#{cc.attrs.con.withFooter}"/>
-                                        <p:outputLabel value=" )Received." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Name" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Signature" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Designation" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Date" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Stamp" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+                    
 
                 </table>
 
