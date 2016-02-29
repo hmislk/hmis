@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                            
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -71,12 +71,17 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Employee EPF Report"/>
                                     <br/>
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
@@ -181,15 +186,15 @@
                                         </p:outputLabel> 
                                     </f:facet>
                                 </p:column>  
-
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
-                            <f:facet name="footer">
-                                <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                <p:outputLabel value="Print At : " />
-                                <p:outputLabel value="#{commonController.currentDateTime}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                </p:outputLabel>
-                            </f:facet>
+
                         </p:panel>
 
 

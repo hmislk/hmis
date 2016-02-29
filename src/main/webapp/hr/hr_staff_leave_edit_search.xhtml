@@ -30,7 +30,7 @@
                                     <f:selectItem itemLabel="Select Day Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu>
-                                
+
                                 <h:outputLabel value="Institution : "/>
                                 <au:department value="#{staffLeaveApplicationFormController.reportKeyWord.institution}"/>
 
@@ -50,17 +50,39 @@
                             <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createStaffleaveTable()}" />
                             <p:commandButton value="Search Leave Date" ajax="false" action="#{staffLeaveApplicationFormController.createStaffleaveTablebyLeaveDate()}" />
                             <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="tb1" ></p:printer>
+                                <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_leave_edit"  />
                             </p:commandButton>
                         </p:panel>
-                        <p:panel>
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:dataTable value="#{staffLeaveApplicationFormController.staffLeaves}" var="l" 
                                          rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Leave Application Form"/><br/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{staffLeaveApplicationFormController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{staffLeaveApplicationFormController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{staffLeaveApplicationFormController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{staffLeaveApplicationFormController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{staffLeaveApplicationFormController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{staffLeaveApplicationFormController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
 
                                 <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="hr_staff_leave_edit" actionListener="#{staffLeaveApplicationFormController.viewStaffLeave(l)}" disabled="#{l.retired}"></p:commandButton>
@@ -97,7 +119,13 @@
                                     <br></br>
                                     <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
                                 </p:column>
-                                
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
