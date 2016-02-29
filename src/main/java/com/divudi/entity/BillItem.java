@@ -134,11 +134,11 @@ public class BillItem implements Serializable {
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
-    
+
     @Transient
-    double  transCCFee;
+    double transCCFee;
     @Transient
-    double  transWithOutCCFee;
+    double transWithOutCCFee;
     @Transient
     boolean transRefund;
 
@@ -268,15 +268,15 @@ public class BillItem implements Serializable {
         //System.out.println("other = " + other);
         //System.out.println("this id = " + this.id);
         //System.out.println("other id = " + other.id);
-        if((this.id == null || this.id == 0) && (other.id==null || other.id == 0) ){            
-          if(this.searialNo==other.searialNo){
-              //System.out.println("this = other");
-              return true;
-          }   else{
-              //System.out.println("this not eq other");
-              return false;
-          }
-          
+        if ((this.id == null || this.id == 0) && (other.id == null || other.id == 0)) {
+            if (this.searialNo == other.searialNo) {
+                //System.out.println("this = other");
+                return true;
+            } else {
+                //System.out.println("this not eq other");
+                return false;
+            }
+
         }
         //System.out.println("not Null");
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {

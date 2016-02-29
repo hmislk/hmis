@@ -76,6 +76,8 @@
                                 <p:tabView >
                                     <p:tab title="General" >
                                         <h:panelGrid id="tabDetails" columns="2">
+                                            <p:outputLabel  value="Staff Id" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.id}"  />
                                             <p:outputLabel value="Title"/>
                                             <p:selectOneMenu value="#{staffController.current.person.title}"  >
                                                 <f:selectItem itemLabel="Select Title" />
@@ -104,7 +106,7 @@
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.lastName}"   styleClass="longText"/>
 
                                             <p:outputLabel  value="NIC No" ></p:outputLabel>
-                                            <p:inputMask mask="999999999V" value="#{staffController.current.person.nic}" />
+                                            <p:inputText autocomplete="off" value="#{staffController.current.person.nic}" />
 
                                             <p:outputLabel  value="Address" ></p:outputLabel>
                                             <p:inputTextarea  value="#{staffController.current.person.address}"  styleClass="longText"  />

@@ -60,7 +60,7 @@
                                 <p:column>
                                     <h:outputLabel value="#{ix.institutionCode}"/>
                                 </p:column>
-                                <f:ajax execute="@this" event="itemSelect" render="#{p:component('items')} tot" 
+                                <f:ajax execute="@this" event="itemSelect" render=":#{p:component('items')} tot" 
                                         listener="#{cashRecieveBillController.selectInstitutionListenerBht()}"/>
                             </p:autoComplete>                           
                         </h:panelGroup>
@@ -72,11 +72,16 @@
                                 <h:outputLabel value="#{cashRecieveBillController.institution.name}"/>
                                 <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" onclick="onSubmitButton();"/>
                             </f:facet>       
-
+                            <p:ajax  event="rowSelect" process="@this" 
+                                     update=":#{p:component('tot')} :#{p:component('items')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
+                            <p:ajax  event="rowSelectCheckbox" process="@this" 
+                                     update=":#{p:component('tot')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
+                            <p:ajax  event="rowUnselectCheckbox" process="@this" 
+                                     update=":#{p:component('tot')}" 
+                                     listener="#{cashRecieveBillController.calTotal}"/>
                             <p:column selectionMode="multiple" />                                        
-                            <f:facet name="header">
-                                <h:outputLabel value="Index No"/>                                  
-                            </f:facet>                              
 
                             <p:column >  
                                 <f:facet name="header">

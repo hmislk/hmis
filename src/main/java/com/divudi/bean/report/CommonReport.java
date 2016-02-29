@@ -25,6 +25,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Service;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -200,7 +201,10 @@ public class CommonReport implements Serializable {
     BillsTotals channelBilledAgent;
     BillsTotals channelRefundsAgent;
     List<Bill> bills;
-    List<CollectingCenteRow>collectingCenteRows;
+    List<CollectingCenteRow> collectingCenteRows;
+    List<ItemCountRow> itemCountRows;
+    List<ItemCountRow> itemCountRowsCancel;
+    List<ItemCountRow> itemCountRowsRefund;
 
     public List<Bill> getBills() {
         return bills;
@@ -238,6 +242,8 @@ public class CommonReport implements Serializable {
 
     double totalFee;
     double billTotal;
+    double billTotalCancel;
+    double billTotalRefund;
 
     public double getBillTotal() {
         return billTotal;
@@ -245,6 +251,22 @@ public class CommonReport implements Serializable {
 
     public void setBillTotal(double billTotal) {
         this.billTotal = billTotal;
+    }
+
+    public double getBillTotalCancel() {
+        return billTotalCancel;
+    }
+
+    public void setBillTotalCancel(double billTotalCancel) {
+        this.billTotalCancel = billTotalCancel;
+    }
+
+    public double getBillTotalRefund() {
+        return billTotalRefund;
+    }
+
+    public void setBillTotalRefund(double billTotalRefund) {
+        this.billTotalRefund = billTotalRefund;
     }
 
     public double getTotalFee() {
@@ -3286,6 +3308,113 @@ public class CommonReport implements Serializable {
 
     }
 
+    public void createUserOPDSeviceCount() {
+        if (webUser==null) {
+            JsfUtil.addErrorMessage("Select User");
+            return;
+        }
+        List<Object[]> objects = new ArrayList<>();
+        billTotal=0.0;
+        billTotalCancel=0.0;
+        billTotalRefund=0.0;
+        itemCountRows = new ArrayList<>();
+        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        if (objects != null) {
+            for (Object[] obj : objects) {
+                ItemCountRow row = new ItemCountRow();
+                row.setItem((Item) obj[0]);
+                row.setCount((long) obj[1]);
+                row.setValue((double) obj[2]);
+                billTotal+=row.getValue();
+                itemCountRows.add(row);
+            }
+        }
+        itemCountRowsCancel = new ArrayList<>();
+        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        if (objects != null) {
+            for (Object[] obj : objects) {
+                ItemCountRow row = new ItemCountRow();
+                row.setItem((Item) obj[0]);
+                row.setCount((long) obj[1]);
+                row.setValue((double) obj[2]);
+                billTotalCancel+=row.getValue();
+                itemCountRowsCancel.add(row);
+            }
+        }
+        itemCountRowsRefund = new ArrayList<>();
+        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        if (objects != null) {
+            for (Object[] obj : objects) {
+                ItemCountRow row = new ItemCountRow();
+                row.setItem((Item) obj[0]);
+                row.setCount((long) obj[1]);
+                row.setValue((double) obj[2]);
+                billTotalRefund+=row.getValue();
+                itemCountRowsRefund.add(row);
+            }
+        }
+
+    }
+
+    public List<Object[]> fetchItems(Class[] billClasses,
+            Class[] itemClasses,
+            BillType[] billTypes,
+            Institution ins,
+            WebUser webUser,
+            Date fd, Date td) {
+
+        List<Object[]> items = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select i, "
+                + " count(bi.bill), "
+                + " sum(bf.feeValue) "
+                + " from BillFee bf join bf.billItem bi join bi.item i "
+                + " where bi.bill.retired=false "
+                + " and bi.bill.createdAt between :fd and :td ";
+
+        if (ins != null) {
+            sql += " and bi.bill.institution=:ins ";
+            m.put("ins", ins);
+        }
+
+        if (webUser != null) {
+            sql += " and bi.bill.creater=:wu ";
+            m.put("wu", webUser);
+        }
+
+        if (billTypes != null) {
+            sql += " and bi.bill.billType in :bts ";
+            m.put("bts", Arrays.asList(billTypes));
+        }
+
+        if (billClasses != null) {
+            sql += " and type(bi.bill) in :bcs ";
+            m.put("bcs", Arrays.asList(billClasses));
+        }
+
+        if (itemClasses != null) {
+            sql += " and type(i) in :ics ";
+            m.put("ics", Arrays.asList(itemClasses));
+        }
+
+        m.put("fd", fd);
+        m.put("td", td);
+
+        sql += " group by i.name "
+                + " order by i.name ";
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+
+        items = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("items = " + items);
+
+        return items;
+    }
+
     public void recreteModal() {
         collectingIns = null;
         dataTableData = null;
@@ -4019,13 +4148,13 @@ public class CommonReport implements Serializable {
     }
 
     public void createCollectingCenterSummeryTable() {
-        collectingCenteRows=new ArrayList<>();
+        collectingCenteRows = new ArrayList<>();
         total = 0.0;
         totalCC = 0.0;
         totalHos = 0.0;
         BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
         for (Institution i : fetchCollectingCenters(billTypes)) {
-            CollectingCenteRow row=new CollectingCenteRow();
+            CollectingCenteRow row = new CollectingCenteRow();
             row.setI(i);
             System.out.println("i = " + i.getName());
             List<Bill> bs = new ArrayList<>();
@@ -4103,8 +4232,9 @@ public class CommonReport implements Serializable {
             b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
         }
     }
-    
-    public class CollectingCenteRow{
+
+    public class CollectingCenteRow {
+
         Institution i;
         double total;
         double totalHos;
@@ -4141,6 +4271,38 @@ public class CommonReport implements Serializable {
         public void setTotalCC(double totalCC) {
             this.totalCC = totalCC;
         }
+    }
+
+    public class ItemCountRow {
+
+        Item item;
+        long count;
+        double value;
+
+        public Item getItem() {
+            return item;
+        }
+
+        public void setItem(Item item) {
+            this.item = item;
+        }
+
+        public double getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
+        }
+
     }
 
     public void setDataTableData(List<String1Value1> dataTableData) {
@@ -4617,6 +4779,30 @@ public class CommonReport implements Serializable {
 
     public void setCollectingCenteRows(List<CollectingCenteRow> collectingCenteRows) {
         this.collectingCenteRows = collectingCenteRows;
+    }
+
+    public List<ItemCountRow> getItemCountRows() {
+        return itemCountRows;
+    }
+
+    public void setItemCountRows(List<ItemCountRow> itemCountRows) {
+        this.itemCountRows = itemCountRows;
+    }
+
+    public List<ItemCountRow> getItemCountRowsCancel() {
+        return itemCountRowsCancel;
+    }
+
+    public void setItemCountRowsCancel(List<ItemCountRow> itemCountRowsCancel) {
+        this.itemCountRowsCancel = itemCountRowsCancel;
+    }
+
+    public List<ItemCountRow> getItemCountRowsRefund() {
+        return itemCountRowsRefund;
+    }
+
+    public void setItemCountRowsRefund(List<ItemCountRow> itemCountRowsRefund) {
+        this.itemCountRowsRefund = itemCountRowsRefund;
     }
 
 }
