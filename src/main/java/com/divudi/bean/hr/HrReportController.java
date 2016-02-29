@@ -1423,6 +1423,21 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
+    
+    public List<StaffLeave> createStaffLeaveSystem(Staff s,Date fd,Date td) {
+        String sql = "";
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffLeaveSystem ss "
+                + " where ss.retired=false "
+                + " and ss.leaveDate between :frm  and :to "
+                + " and ss.staff=:stf ";
+        
+        hm.put("stf", s);
+        hm.put("frm", fd);
+        hm.put("to", td);
+
+        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+    }
 
     private List<StaffLeave> staffLeavesAnnual;
     private List<StaffLeave> staffLeavesCashual;
