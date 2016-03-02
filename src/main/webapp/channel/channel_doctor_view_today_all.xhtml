@@ -64,17 +64,17 @@
                             </f:facet>
                             <p:outputLabel value="#{bs.consultant.person.nameWithTitle}" />
                         </p:column>   
-                        <p:column headerText="Bill" styleClass="numberCol" rendered="false">
+                        <p:column headerText="Bill" styleClass="numberCol" rendered="true">
                             <p:outputLabel value="#{bs.billCount}" >
                                 <f:convertNumber pattern="#,##0"/>
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Cancel" styleClass="numberCol" rendered="false">
+                        <p:column headerText="Cancel" styleClass="numberCol" rendered="true">
                             <p:outputLabel value="#{bs.billCanncelCount}" >
                                 <f:convertNumber pattern="#,##0"/>
                             </p:outputLabel>
                         </p:column>
-                        <p:column headerText="Refund" styleClass="numberCol" rendered="false">
+                        <p:column headerText="Refund" styleClass="numberCol" rendered="true">
                             <p:outputLabel value="#{bs.refundedCount}" >
                                 <f:convertNumber pattern="#,##0"/>
                             </p:outputLabel>

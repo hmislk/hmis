@@ -3725,26 +3725,26 @@ public class ChannelReportController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        
-        List<Staff> staffs=staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        List<Staff> staffs = staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("staffs.size() = " + staffs.size());
-        
-        BillType [] types={BillType.ChannelCash,BillType.ChannelPaid,BillType.ChannelAgent};
-        
+
+        BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
+
         for (Staff s : staffs) {
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-            ChannelDoctor cd=new ChannelDoctor();
+            ChannelDoctor cd = new ChannelDoctor();
             cd.setConsultant(s);
-            cd.setBillCount(fetchBillCount(s, fromDate, toDate, new BilledBill(),Arrays.asList(types)));
-            cd.setBillCanncelCount(fetchBillCount(s, fromDate, toDate, new CancelledBill(),Arrays.asList(types)));
-            cd.setRefundedCount(fetchBillCount(s, fromDate, toDate, new RefundBill(),Arrays.asList(types)));
-            
-            cd.setBillFee(fetchBillFees(new BilledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
-            cd.setBillCanncelFee(fetchBillFees(new CancelledBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
-            cd.setRefundFee(fetchBillFees(new RefundBill(), FeeType.Staff, s, fromDate, toDate,Arrays.asList(types)));
-            
+            cd.setBillCount(fetchBillCount(s, fromDate, toDate, new BilledBill(), Arrays.asList(types)));
+            cd.setBillCanncelCount(fetchBillCount(s, fromDate, toDate, new CancelledBill(), Arrays.asList(types)));
+            cd.setRefundedCount(fetchBillCount(s, fromDate, toDate, new RefundBill(), Arrays.asList(types)));
+
+            cd.setBillFee(fetchBillFees(new BilledBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types)));
+            cd.setBillCanncelFee(fetchBillFees(new CancelledBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types)));
+            cd.setRefundFee(fetchBillFees(new RefundBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types)));
+
             channelDoctors.add(cd);
-            
+
         }
 
         calTotal();
@@ -3828,8 +3828,8 @@ public class ChannelReportController implements Serializable {
 
         return getBillFeeFacade().findDoubleByJpql(sql, m);
     }
-    
-    double fetchBillCount(Staff s,Date fd,Date td,Bill b,List<BillType> billTypes){
+
+    double fetchBillCount(Staff s, Date fd, Date td, Bill b, List<BillType> billTypes) {
         HashMap m = new HashMap();
         String sql;
         sql = "Select count(bs.bill) From BillSession bs "
@@ -3846,14 +3846,14 @@ public class ChannelReportController implements Serializable {
         m.put("bts", billTypes);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        double d=getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+        double d = getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         System.out.println("d = " + d);
-        
+
         return d;
-        
+
     }
-    
-    double fetchBillFees(Bill b, FeeType ft,Staff s,Date fd,Date td,List<BillType> billTypes) {
+
+    double fetchBillFees(Bill b, FeeType ft, Staff s, Date fd, Date td, List<BillType> billTypes) {
         Map m = new HashMap();
         String sql;
 
@@ -3873,7 +3873,7 @@ public class ChannelReportController implements Serializable {
         m.put("bts", billTypes);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        double d=getBillFeeFacade().findDoubleByJpql(sql, m);
+        double d = getBillFeeFacade().findDoubleByJpql(sql, m);
         System.out.println("d = " + d);
 
         return d;

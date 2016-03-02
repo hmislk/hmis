@@ -24,10 +24,10 @@
                             <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
                             <h:outputLabel value="To : " />
                             <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -48,9 +48,31 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeaves}" var="ss">
-                                
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Leave Report" /><br/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{hrReportController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
+
                                 <p:column headerText="Form No">
                                     #{ss.form.code}
                                 </p:column>
@@ -88,7 +110,13 @@
                                 <p:column headerText="Comments" >
                                     #{ss.form.comments}
                                 </p:column> 
-
+                                 <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                 </f:facet>
                             </p:dataTable>
                         </p:panel>
 

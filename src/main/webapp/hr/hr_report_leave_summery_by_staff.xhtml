@@ -35,14 +35,32 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        
+
                         <p:commandButton ajax="false" rendered="#{hrReportController.backButtonPage ne null}" value="Back" action="#{hrReportController.back()}"/>
 
-                        
+
                         HHHH****#{hrReportController.backButtonPage}****HHHHH
-                        
-                        <p:panel id="gpBillPreview">                     
+
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffLeavesAnnual}" var="ss" emptyMessage="Not taken">
+                                <f:facet name="header">
+                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Leave Report Detail By Staff "/><br/>
+                                    <h:outputLabel value="  From : "  />
+                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel>
+                                    <h:outputLabel/>
+                                    <h:outputLabel/>
+                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel  value="#{hrReportController.toDate}">
+                                        <f:convertDateTime pattern="dd MM yy "/>
+                                    </h:outputLabel><br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
                                 <f:facet name="header" >
                                     <h:panelGrid columns="4" style="border-style: hidden!important" columnClasses="firstOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns, othersOfTitleAndThreeColumns">
                                         <h:outputLabel value="Annual "/>
@@ -434,6 +452,13 @@
                                     <p:outputLabel value="#{ss.form.comments}"></p:outputLabel>
                                 </p:column>  
 
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:dataTable>
                             <p:spacer width="30px"></p:spacer>
 

@@ -18,47 +18,49 @@
                             <h:outputLabel value="BHT Income by Categories" ></h:outputLabel>
                         </f:facet>
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " ></h:outputLabel>
+                            <h:outputLabel value="From  " ></h:outputLabel>
                             <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
-                            <h:outputLabel value="To : " ></h:outputLabel>
+                            <h:outputLabel value="To  " ></h:outputLabel>
                             <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
-                            <h:outputLabel value="Admission Type : " ></h:outputLabel>
+                            <h:outputLabel value="Admission Type  " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
-                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <h:outputLabel value="BHT Type  " ></h:outputLabel>
                             <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController1.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Credit Company : " ></h:outputLabel>
+                            <h:outputLabel value="Credit Company  " ></h:outputLabel>
                             <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
                                                 itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
                             </p:selectOneMenu>
 
-                           
-                                
+
+
                         </h:panelGrid>
-                        <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        
-                        <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
-                        </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        
-                        </p:panelGrid>
+                        <h:panelGrid columns="4">
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.process()}" onclick="onSubmitButton();"  ></p:commandButton>
+
+                            <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}" onclick="onSubmitButton();"  ></p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
+                            </p:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview"></p:printer>
+                            </p:commandButton>
+
+                        </h:panelGrid>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
 
                             <p:dataTable id="tb1" value="#{inwardReportController1.opdServices}" var="rec" >
                                 <f:facet name="header">
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Income by Categories Report"/><br></br>
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
@@ -66,10 +68,16 @@
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                    </h:outputLabel>
-
-                                    <h:outputLabel value=" - #{inwardReportController1.admissionType.name} Income by Categories Report."/>
-                                   
+                                    </h:outputLabel><br></br>
+                                    <h:panelGrid rendered="#{inwardReportController1.admissionType ne null}">
+                                        <h:outputLabel value="#{inwardReportController1.admissionType.name}"/>
+                                    </h:panelGrid>
+                                    <h:panelGrid rendered="#{inwardReportController1.paymentMethod ne null}">
+                                        <h:outputLabel value="#{inwardReportController1.paymentMethod}"/>
+                                    </h:panelGrid>
+                                    <h:panelGrid rendered="#{inwardReportController1.institution.name ne null}">
+                                        <h:outputLabel value="#{inwardReportController1.institution.name}"/>
+                                    </h:panelGrid>
                                     <h:outputLabel value="Inward Service"/>
                                 </f:facet>
                                 <p:column headerText="Category" >
@@ -77,7 +85,7 @@
                                         <p:outputLabel value="Category" />
                                     </f:facet>
                                     <h:commandLink value="#{rec.category.name}"
-                                                  action="#{inwardReportController1.processCategoryBillItems}" >
+                                                   action="#{inwardReportController1.processCategoryBillItems}" >
                                         <f:setPropertyActionListener value="#{rec.category}" target="#{inwardReportController1.category}" />
                                     </h:commandLink>
                                 </p:column>
@@ -151,8 +159,8 @@
                                     <h:outputLabel value="Room Charges"/>
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
-                                                    action="report_income_room" 
-                                                    actionListener="#{inwardReportController1.processPatientRooms()}"/>
+                                                     action="report_income_room" 
+                                                     actionListener="#{inwardReportController1.processPatientRooms()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
                                     <f:facet name="header" >
@@ -270,7 +278,7 @@
                                         <p:outputLabel value="Speciality" />
                                     </f:facet>                                
                                     <h:commandLink value="#{pro.speciality.name}"
-                                                  action="#{inwardReportController1.processProfessionalFees}" >
+                                                   action="#{inwardReportController1.processProfessionalFees}" >
                                         <f:setPropertyActionListener value="#{pro.speciality}" 
                                                                      target="#{inwardReportController1.speciality}" />
                                     </h:commandLink>
@@ -318,8 +326,8 @@
                                     <h:outputLabel value="Inward Charges"/>
                                     <p:commandButton ajax="false" value="View Detail"
                                                      style="float: right;"
-                                                    action="inward_charge" 
-                                                    actionListener="#{inwardReportController1.processInwardCharges()}"/>
+                                                     action="inward_charge" 
+                                                     actionListener="#{inwardReportController1.processInwardCharges()}"/>
                                 </f:facet>
                                 <p:column headerText="Charge Name">
                                     <f:facet name="header" >
@@ -382,26 +390,26 @@
 
                                 </p:column>
                             </p:dataTable>
-                            
+
                             <p:dataTable value="#{inwardReportController1.paidbyPatient}" id="tbl7" var="pa" rendered="false">
                                 <f:facet name="header">
                                     <h:outputLabel value="Paid by Patient"/>
                                 </f:facet>
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Bill No"/> 
+                                        <h:outputLabel value="Bill No"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{pa.insId}"></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Created Date">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Created Date"/> 
+                                        <h:outputLabel value="Created Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{pa.createdAt}"></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Net Total" style="text-align: right;">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Net Total"/> 
+                                        <h:outputLabel value="Net Total"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{pa.netTotal}"></h:outputLabel>
                                     <f:facet name="footer">
@@ -409,35 +417,35 @@
                                     </f:facet>
                                 </p:column>                                                               
                             </p:dataTable>
-                            
+
                             <p:dataTable value="#{inwardReportController1.billItems}" id="tbl8" var="bi" rendered="false">
                                 <f:facet name="header">
                                     <h:outputLabel value="Credit Company Payment"/>
                                 </f:facet>
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Bill No"/> 
+                                        <h:outputLabel value="Bill No"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{bi.bill.insId}"></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Created Date">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Created Date"/> 
+                                        <h:outputLabel value="Created Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{bi.createdAt}"></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Net Total" style="text-align: right;">
                                     <f:facet name="header">
-                                       <h:outputLabel value="Net Total"/> 
+                                        <h:outputLabel value="Net Total"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{bi.netValue}"></h:outputLabel>
                                     <f:facet name="footer">
-                                    <h:outputLabel value="#{inwardReportController1.creditPaymentTotalValue}"></h:outputLabel>
-                                </f:facet>
+                                        <h:outputLabel value="#{inwardReportController1.creditPaymentTotalValue}"></h:outputLabel>
+                                    </f:facet>
                                 </p:column>
-                                
+
                             </p:dataTable>
-                            
+
                             <p:panel  header="Summary" style="text-align: center;">
 
                                 <p:dataTable id="tb6" value="#{inwardReportController1.finalValues}" var="s">
