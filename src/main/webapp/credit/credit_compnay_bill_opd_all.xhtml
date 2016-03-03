@@ -76,7 +76,7 @@
                             <p:ajax  event="rowSelect" process="@this" 
                                      update=":#{p:component('tot')}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
-                            <p:ajax  event="rowSelectCheckboxAll" process="@this" 
+                            <p:ajax  event="rowSelectCheckbox" process="@this" 
                                      update=":#{p:component('tot')}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
                             <p:ajax  event="rowUnselectCheckbox" process="@this" 

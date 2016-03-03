@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel header="Holiday Report" >
-                <p:panel>
+                <p:panelGrid columns="2" >
                     <h:outputLabel value="From Time"/>
                     <p:calendar id="requestedDate" 
                                 value="#{phDateController.frDate}"
@@ -20,16 +20,32 @@
                     <p:calendar id="forDate" value="#{phDateController.toDate}"
                                 pattern="yyyy MM dd HH:mm:ss" >
                     </p:calendar> 
-                    <p:commandButton value="Fill" action="#{phDateController.createHollydays}" ajax="false" />
-                    <p:commandButton value="Print" ajax="false" action="#" >
-                        <p:printer target="tb1" ></p:printer>
-                    </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                        <pe:exporter type="xlsx" target="tb1" fileName="hr_report_holiday"  />
-                    </p:commandButton>
-                </p:panel>
-                <p:panel>
+                </p:panelGrid>
+
+                <p:commandButton value="Fill" action="#{phDateController.createHollydays}" ajax="false" />
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                    <pe:exporter type="xlsx" target="tb1" fileName="hr_report_holiday"  />
+                </p:commandButton>
+
+                <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                     <p:dataTable id="tb1" value="#{phDateController.phDates}" var="ph">
+                        <f:facet name="header">
+                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                            <h:outputLabel value="Staff Shift"/><br/>
+                            <h:outputLabel value="  From : "  />
+                            <h:outputLabel  value="#{phDateController.frDate}" >
+                                <f:convertDateTime pattern="dd MM yy "/>
+                            </h:outputLabel>
+                            <h:outputLabel/>
+                            <h:outputLabel/>
+                            <h:outputLabel value="  To : "/> 
+                            <h:outputLabel  value="#{phDateController.toDate}">
+                                <f:convertDateTime pattern="dd MM yy "/>
+                            </h:outputLabel><br/>
+                        </f:facet>
                         <p:column headerText="Date">
                             <f:facet name="header">
                                 <h:outputLabel value="Date"/>
@@ -38,7 +54,7 @@
                                 <f:convertDateTime pattern="yyyy MM dd" />
                             </p:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Hollyday Name">
                             <f:facet name="header">
                                 <h:outputLabel value="Hollyday Name"/>
@@ -46,7 +62,7 @@
                             <p:outputLabel value="#{ph.name}" >
                             </p:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Hollyday Type">
                             <f:facet name="header">
                                 <h:outputLabel value="Hollyday Type"/>
@@ -54,7 +70,7 @@
                             <p:outputLabel value="#{ph.phType}" >
                             </p:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Creater">
                             <f:facet name="header">
                                 <h:outputLabel value="Creater"/>
@@ -62,7 +78,7 @@
                             <p:outputLabel value="#{ph.creater.webUserPerson.nameWithTitle}" >
                             </p:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Created At">
                             <f:facet name="header">
                                 <h:outputLabel value="Created At"/>
@@ -71,6 +87,13 @@
                                 <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
                             </p:outputLabel>
                         </p:column>
+                        <f:facet name="footer">
+                            <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                            <p:outputLabel value="Print At : " />
+                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                            </p:outputLabel>
+                        </f:facet>
                     </p:dataTable>
                 </p:panel>
             </p:panel>

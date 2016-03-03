@@ -197,6 +197,8 @@
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.billSearch.paymentMethod}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
                                         <p:selectOneMenu   id="pay" value="#{billSearch.billSearch.paymentMethod}" >   
                                             <f:selectItem itemLabel="Payment Method"/>
                                             <f:selectItems value="#{enumController.paymentMethods}"  />

@@ -18,6 +18,7 @@ import com.divudi.entity.hr.HrForm;
 import com.divudi.entity.hr.LeaveFormSystem;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.SalaryCycle;
+import com.divudi.entity.hr.StaffLeave;
 import com.divudi.entity.hr.StaffLeaveSystem;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.entity.hr.StaffSalary;
@@ -89,6 +90,8 @@ public class StaffSalaryController implements Serializable {
     private HrmVariablesController hrmVariablesController;
     @Inject
     private StaffController staffController;
+    @Inject
+    HrReportController hrReportController;
     SalaryCycle salaryCycle;
     boolean printPreview = false;
 
@@ -211,8 +214,8 @@ public class StaffSalaryController implements Serializable {
     public void onEdit(RowEditEvent event) {
         //////System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
-        
-        if (tmp.getComments()==null ||tmp.getComments().isEmpty()) {
+
+        if (tmp.getComments() == null || tmp.getComments().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter a Comment");
             return;
         }
@@ -1726,7 +1729,7 @@ public class StaffSalaryController implements Serializable {
                 StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(s, psc, false, getSalaryCycle());
                 Double dbl = salaryCycleController.fetchSalaryComponentsValue(s, psc, false, getSalaryCycle());
                 if (c != null) {
-                    if (psc.getComponentType()==PaysheetComponentType.PerformanceAllowance) {
+                    if (psc.getComponentType() == PaysheetComponentType.PerformanceAllowance) {
                         StaffPaysheetComponent percentageComponent = getHumanResourceBean().fetchStaffPaysheetComponent(s.getStaff(), s.getSalaryCycle().getSalaryToDate(), PaysheetComponentType.PerformanceAllowancePercentage);
                         System.out.println("percentageComponent = " + percentageComponent);
                         System.out.println("percentageComponent.getDblValue() = " + percentageComponent.getStaffPaySheetComponentValue());
@@ -1759,6 +1762,45 @@ public class StaffSalaryController implements Serializable {
 //            System.out.println("s.getTransLeaveMedical() = " + s.getTransLeaveMedical());
             s.setTransLeaveMaternity1st(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Maternity1st, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
             s.setTransLeaveMaternity2nd(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Maternity2nd, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate()));
+
+            List<StaffLeave> list = hrReportController.createStaffLeaveSystem(s.getStaff(), getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+            if (list != null && !list.isEmpty()) {
+                s.setSystemLatedays10min("");
+                s.setSystemLatedays90min("");
+                for (StaffLeave l : list) {
+                    if (l.getStaffShift().getReferenceStaffShiftLateIns() != null && !l.getStaffShift().getReferenceStaffShiftLateIns().isEmpty()) {
+                        if (l.getStaffShift().getReferenceStaffShiftLateIns().size() == 1) {
+                            for (StaffShift ld : l.getStaffShift().getReferenceStaffShiftLateIns()) {
+                                DateFormat df = new SimpleDateFormat("yy/MM/dd");
+                                s.setSystemLatedays90min(s.getSystemLatedays90min() + df.format(ld.getStartRecord().getRecordTimeStamp()) + " ,");
+                                System.out.println("s.getSystemLatedays(90in) = " + s.getSystemLatedays90min());
+                            }
+                        } else {
+                            for (StaffShift ld : l.getStaffShift().getReferenceStaffShiftLateIns()) {
+                                DateFormat df = new SimpleDateFormat("yy/MM/dd");
+                                s.setSystemLatedays10min(s.getSystemLatedays10min() + df.format(ld.getStartRecord().getRecordTimeStamp()) + " ,");
+                                System.out.println("s.getSystemLatedays(10in) = " + s.getSystemLatedays10min());
+                            }
+                        }
+                    }
+                    if (l.getStaffShift().getReferenceStaffShiftEarlyOuts() != null && !l.getStaffShift().getReferenceStaffShiftEarlyOuts().isEmpty()) {
+                        if (l.getStaffShift().getReferenceStaffShiftEarlyOuts().size() == 1) {
+                            for (StaffShift ld : l.getStaffShift().getReferenceStaffShiftEarlyOuts()) {
+                                DateFormat df = new SimpleDateFormat("yy/MM/dd");
+                                s.setSystemLatedays90min(s.getSystemLatedays90min() + df.format(ld.getEndRecord().getRecordTimeStamp()) + " ,");
+                                System.out.println("s.getSystemLatedays(90out) = " + s.getSystemLatedays90min());
+                            }
+                        } else {
+                            for (StaffShift ld : l.getStaffShift().getReferenceStaffShiftEarlyOuts()) {
+                                DateFormat df = new SimpleDateFormat("yy/MM/dd");
+                                s.setSystemLatedays10min(s.getSystemLatedays10min() + df.format(ld.getEndRecord().getRecordTimeStamp()) + " ,");
+                                System.out.println("s.getSystemLatedays(10out) = " + s.getSystemLatedays10min());
+                            }
+                        }
+
+                    }
+                }
+            }
         }
     }
 
@@ -1779,6 +1821,7 @@ public class StaffSalaryController implements Serializable {
 
         for (StaffSalary stf : items) {
             if (stf.getId() != null) {
+                getStaffSalaryFacade().edit(stf);
                 continue;
             }
             current = stf;

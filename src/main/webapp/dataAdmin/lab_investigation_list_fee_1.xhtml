@@ -50,6 +50,9 @@
                                     <h:outputLabel  value="Institution: #{i.item.institution.name}" />
                                     &nbsp;&nbsp;&nbsp;&nbsp;
                                     <h:outputLabel  value="Department: #{i.item.department.name}" />
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <h:outputLabel  value="Active" style="color: green;" rendered="#{!i.item.inactive}"/>
+                                    <h:outputLabel  value="Inactive" style="color: red;" rendered="#{i.item.inactive}"/>
                                     <h:outputLabel value="#{i.item.total}" style="float: right;">
                                         <f:convertNumber pattern="#,###.##" />
                                     </h:outputLabel>

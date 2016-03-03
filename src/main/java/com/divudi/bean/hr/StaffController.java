@@ -91,7 +91,7 @@ public class StaffController implements Serializable {
     @EJB
     private DepartmentFacade departmentFacade;
     List<Staff> selectedItems;
-    private List<Staff> selectedList;
+    List<Staff> selectedList;
     private List<Staff> filteredStaff;
     private Staff selectedStaff;
     private Staff current;

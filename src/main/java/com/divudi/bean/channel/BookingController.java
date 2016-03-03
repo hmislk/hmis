@@ -287,12 +287,12 @@ public class BookingController implements Serializable {
         //System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
-    
+
     public void listnerMarkAbsent() {
         if (getSelectedBillSession().isAbsent()) {
             getSelectedBillSession().setAbsentMarkedAt(new Date());
             getSelectedBillSession().setAbsentMarkedUser(getSessionController().getLoggedUser());
-        }else{
+        } else {
             getSelectedBillSession().setAbsentUnmarkedAt(new Date());
             getSelectedBillSession().setAbsentUnmarkedUser(getSessionController().getLoggedUser());
         }
@@ -301,13 +301,13 @@ public class BookingController implements Serializable {
         //System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+            if (getSelectedBillSession().getBill().getPaidBill() != null) {
                 getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
                 getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
             }
-        }else{
+        } else {
             UtilityController.addSuccessMessage("Mark As Present");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+            if (getSelectedBillSession().getBill().getPaidBill() != null) {
                 getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
                 getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
             }
@@ -580,9 +580,9 @@ public class BookingController implements Serializable {
             }
         }
         m.put("ses", item);
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("feeTypes = " + feeTypes);
-        System.out.println("m = " + m);
+//        System.out.println("paymentMethod = " + paymentMethod);
+//        System.out.println("feeTypes = " + feeTypes);
+//        System.out.println("m = " + m);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -621,9 +621,9 @@ public class BookingController implements Serializable {
             }
         }
         m.put("ses", item);
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("feeTypes = " + feeTypes);
-        System.out.println("m = " + m);
+//        System.out.println("paymentMethod = " + paymentMethod);
+//        System.out.println("feeTypes = " + feeTypes);
+//        System.out.println("m = " + m);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -705,7 +705,9 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
+        System.err.println("Time in = " + new Date());
 
+        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
@@ -713,12 +715,17 @@ public class BookingController implements Serializable {
                     + " and s.originatingSession is null"
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
-            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            System.out.println("m = " + m);
+            List<ServiceSession> tmp = new ArrayList<>();
+            tmp = getServiceSessionFacade().findBySQL(sql, m);
+            System.err.println("Time stage 2 = " + new Date());
             System.err.println("Fetch Sessions " + tmp.size());
             calculateFee(tmp, channelBillController.getPaymentMethod());
-            System.err.println("Calling Start");
+            System.err.println("Time stage 3 Calculate = " + new Date());
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
+            System.err.println("Time stage 4 = " + new Date());
             generateSessionEvents(serviceSessions);
+            checkDoctorArival(serviceSessions);
         }
     }
 
@@ -731,6 +738,12 @@ public class BookingController implements Serializable {
             e.setStartDate(s.getTransStartTime());
             e.setEndDate(s.getTransEndTime());
             eventModel.addEvent(e);
+        }
+    }
+
+    public void checkDoctorArival(List<ServiceSession> sss) {
+        for (ServiceSession s : sss) {
+            s.setArival(findArrivals(s));
         }
     }
 
@@ -842,6 +855,27 @@ public class BookingController implements Serializable {
         arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
     }
 
+    public Boolean findArrivals(ServiceSession ss) {
+
+        String sql = "Select bs From ArrivalRecord bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.sessionDate= :ssDate ";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", ss.getSessionDate());
+        hh.put("ss", ss);
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+
+        if (arrivalRecord != null) {
+            if (arrivalRecord.isApproved()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return null;
+    }
+
     public void markAsArrived() {
         if (selectedServiceSession == null) {
             System.out.println("selectedServiceSession is null");
@@ -881,7 +915,7 @@ public class BookingController implements Serializable {
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
         }
-        
+
         arrivalRecord.setApproved(true);
         arrivalRecord.setApprovedAt(new Date());
         arrivalRecord.setApprover(sessionController.getLoggedUser());
@@ -967,7 +1001,6 @@ public class BookingController implements Serializable {
 
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
-        setStaff(null);
     }
 
     public void listnerStaffRowSelect() {
@@ -991,20 +1024,20 @@ public class BookingController implements Serializable {
             listnerStaffListForRowSelect();
         }
     }
-    
+
     public void listnerClearSelectedServiceSession() {
-        selectedServiceSession=null;
-        billSessions=null;
-        selectedBillSession=null;
+        selectedServiceSession = null;
+        billSessions = null;
+        selectedBillSession = null;
         getChannelCancelController().makeNull();
         getChannelBillController().setBillSession(null);
     }
-    
+
     public void listnerClearSelectedBillSession() {
-        selectedBillSession=null;
+        selectedBillSession = null;
         getChannelBillController().setBillSession(null);
     }
-    
+
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
     }
@@ -1255,6 +1288,4 @@ public class BookingController implements Serializable {
         return channelStaffPaymentBillController;
     }
 
-    
-    
 }

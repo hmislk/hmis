@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="Staff Over Time" />
+                            <h:outputLabel value="Staff Salary Deleted Report" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                            
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -65,19 +65,24 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >                     
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.salaryAndDeletaedDetails}" var="ssad">
                                 <f:facet name="header">
-                                    <h:outputLabel style="font-size: 20px  " value="Staff Over Time"/>
-                                    <br/>
-                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    <h:outputLabel value="Staff Salary Deleted Report"/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <br/>
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
                                     </h:panelGroup>
+                                    <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                                    <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
