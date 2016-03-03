@@ -4,8 +4,10 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.hr;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
@@ -54,6 +56,10 @@ public class SalaryCycleController implements Serializable {
     private SalaryCycleFacade facade;
     @Inject
     private SessionController sessionController;
+    @Inject
+    StaffController staffController;
+    @Inject
+    StaffSalaryController staffSalaryController;
     List<SalaryCycle> salaryCycles;
     List<String> headersAdd;
     List<Double> footerAdd;
@@ -241,7 +247,6 @@ public class SalaryCycleController implements Serializable {
 //            UtilityController.addErrorMessage("Salary Over Time Date Already Exist");
 //            return true;
 //        }
-
         return false;
     }
 
@@ -776,8 +781,16 @@ public class SalaryCycleController implements Serializable {
         fillStaffPayRoll(false);
     }
 
+    public void fillStaffPayRollSelectedStaff() {
+        fillStaffPayRoll(false, staffController.getSelectedList());
+    }
+
     public void fillStaffPayRollBlocked() {
         fillStaffPayRoll(true);
+    }
+
+    public void fillStaffPayRollBlockedSelectedStaff() {
+        fillStaffPayRoll(true, staffController.getSelectedList());
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -849,7 +862,7 @@ public class SalaryCycleController implements Serializable {
 
         for (StaffSalary s : staffSalarys) {
             for (PaysheetComponent psc : paysheetComponentsAddition) {
-                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, getCurrent());                  
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, getCurrent());
                 Double dbl = fetchSalaryComponentsValue(s, psc, blocked, getCurrent());
                 if (c != null) {
                     c.setComponantValue(dbl);
@@ -864,7 +877,7 @@ public class SalaryCycleController implements Serializable {
                 Double dbl = fetchSalaryComponentsValue(s, psc, blocked, getCurrent());
 
                 if (c != null) {
-                    c.setComponantValue(0-dbl);
+                    c.setComponantValue(0 - dbl);
                     s.getTransStaffSalaryComponantsSubtraction().add(c);
                 } else {
                     s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
@@ -881,6 +894,100 @@ public class SalaryCycleController implements Serializable {
 
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
             double val = fetchSalaryComponents(psc, current, blocked);
+            footerSub.add(val);
+            psc.setTransValue(val);
+        }
+
+        SalaryTotalCalculation(staffSalarys);
+
+    }
+
+    public void fillStaffPayRoll(boolean blocked, List<Staff> ses) {
+        System.out.println("staffs.size() = " + ses.size());
+        if (ses.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select Staff");
+            return;
+        }
+        List<PaysheetComponent> paysheetComponentsAddition;
+        List<PaysheetComponent> paysheetComponentsSubstraction;
+        String jpql;
+        Map m;
+
+        headersAdd = new ArrayList<>();
+        paysheetComponentsAddition = fetchPaysheetComponents(PaysheetComponentType.addition.getUserDefinedComponentsAddidtionsWithPerformance(), getCurrent());
+
+        for (PaysheetComponent paysheetComponent : paysheetComponentsAddition) {
+            headersAdd.add(paysheetComponent.getName());
+        }
+
+        headersSub = new ArrayList<>();
+        paysheetComponentsSubstraction = fetchPaysheetComponents(PaysheetComponentType.subtraction.getUserDefinedComponentsDeductionsWithSalaryAdvance(), getCurrent());
+        for (PaysheetComponent paysheetComponent : paysheetComponentsSubstraction) {
+            headersSub.add(paysheetComponent.getName());
+        }
+        footerAdd = new ArrayList<>();
+        footerSub = new ArrayList<>();
+
+        List<Long> ssids = new ArrayList<>();
+        for (Staff temS:ses){
+            Long i = temS.getId();
+            ssids.add(i);
+        }
+        
+        
+        m = new HashMap();
+        jpql = "select spc"
+                + " from StaffSalary spc "
+                + " where spc.salaryCycle=:sc "
+                + " and spc.retired=false "
+                + " and spc.staff.id in :ssids "
+                + " and spc.blocked=" + blocked;
+
+        jpql += " order by spc.staff.codeInterger ";
+        m.put("sc", staffSalaryController.getSalaryCycle());
+        m.put("ssids", ssids); // Can you please check ok sir
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
+
+        if (staffSalarys == null) {
+            return;
+        }
+
+        for (StaffSalary s : staffSalarys) {
+            for (PaysheetComponent psc : paysheetComponentsAddition) {
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, staffSalaryController.getSalaryCycle());
+                Double dbl = fetchSalaryComponentsValue(s, psc, blocked, staffSalaryController.getSalaryCycle());
+                if (c != null) {
+                    c.setComponantValue(dbl);
+                    s.getTransStaffSalaryComponantsAddition().add(c);
+                } else {
+                    s.getTransStaffSalaryComponantsAddition().add(new StaffSalaryComponant(0, psc));
+
+                }
+            }
+            for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+                StaffSalaryComponant c = fetchSalaryComponents(s, psc, blocked, staffSalaryController.getSalaryCycle());
+                Double dbl = fetchSalaryComponentsValue(s, psc, blocked, staffSalaryController.getSalaryCycle());
+
+                if (c != null) {
+                    c.setComponantValue(0 - dbl);
+                    s.getTransStaffSalaryComponantsSubtraction().add(c);
+                } else {
+                    s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
+                }
+            }
+
+        }
+
+        for (PaysheetComponent psc : paysheetComponentsAddition) {
+            double val = fetchSalaryComponents(psc, staffSalaryController.getSalaryCycle(), blocked);
+            footerAdd.add(val);
+            psc.setTransValue(val);
+        }
+
+        for (PaysheetComponent psc : paysheetComponentsSubstraction) {
+            double val = fetchSalaryComponents(psc, staffSalaryController.getSalaryCycle(), blocked);
             footerSub.add(val);
             psc.setTransValue(val);
         }
@@ -1010,6 +1117,21 @@ public class SalaryCycleController implements Serializable {
         m.put("sc", current);
         staffSalary = staffSalaryFacade.findBySQL(jpql, m);
         allStaffSalaryTotal(staffSalary);
+    }
+    
+    public List<Department> fetchSalaryDepartment(){
+        List<Department> deps=new ArrayList<>();
+        Map m = new HashMap();
+        String sql;
+        sql = "select spc"
+                + " from StaffSalary spc.staff.workingDepartment "
+                + " where spc.salaryCycle=:sc "
+                + " and spc.retired=false "
+                + " and spc.staff.workingDepartment is not null "
+                + " order by spc.staff.workingDepartment.name ";
+        m.put("sc", current);
+        deps=departmentFacade.findBySQL(sql, m);
+        return deps;
     }
 
     double basicValueTotal;
@@ -1246,7 +1368,7 @@ public class SalaryCycleController implements Serializable {
                 + " and spc.blocked=false "
                 + " and spc.department=:dep "
                 + " order by spc.staff.codeInterger ";
-        
+
         m.put("sc", current);
         m.put("dep", d);
 
@@ -1618,6 +1740,14 @@ public class SalaryCycleController implements Serializable {
 
     public void setAdjustmentToAllowancesTotal(double adjustmentToAllowancesTotal) {
         this.adjustmentToAllowancesTotal = adjustmentToAllowancesTotal;
+    }
+
+    public StaffController getStaffController() {
+        return staffController;
+    }
+
+    public void setStaffController(StaffController staffController) {
+        this.staffController = staffController;
     }
 
     @FacesConverter(forClass = SalaryCycle.class)

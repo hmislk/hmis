@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"           
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -57,7 +58,9 @@
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
-
+                                            
+                            <au:department value="#{commonReport.department}" />
+ 
                         </h:panelGrid>
                         <p:panel id="reportPrint">
                             <p:dataTable value="#{commonReport.itemCountRows}" var="ir" id="tb1" rowIndexVar="i">
