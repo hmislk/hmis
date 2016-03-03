@@ -3309,47 +3309,47 @@ public class CommonReport implements Serializable {
     }
 
     public void createUserOPDSeviceCount() {
-        if (webUser==null) {
-            JsfUtil.addErrorMessage("Select User");
-            return;
-        }
+//        if (webUser == null) {
+//            JsfUtil.addErrorMessage("Select User");
+//            return;
+//        }
         List<Object[]> objects = new ArrayList<>();
-        billTotal=0.0;
-        billTotalCancel=0.0;
-        billTotalRefund=0.0;
+        billTotal = 0.0;
+        billTotalCancel = 0.0;
+        billTotalRefund = 0.0;
         itemCountRows = new ArrayList<>();
-        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
                 row.setValue((double) obj[2]);
-                billTotal+=row.getValue();
+                billTotal += row.getValue();
                 itemCountRows.add(row);
             }
         }
         itemCountRowsCancel = new ArrayList<>();
-        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
                 row.setValue((double) obj[2]);
-                billTotalCancel+=row.getValue();
+                billTotalCancel += row.getValue();
                 itemCountRowsCancel.add(row);
             }
         }
         itemCountRowsRefund = new ArrayList<>();
-        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
                 row.setValue((double) obj[2]);
-                billTotalRefund+=row.getValue();
+                billTotalRefund += row.getValue();
                 itemCountRowsRefund.add(row);
             }
         }
@@ -3360,6 +3360,7 @@ public class CommonReport implements Serializable {
             Class[] itemClasses,
             BillType[] billTypes,
             Institution ins,
+            Department dep,
             WebUser webUser,
             Date fd, Date td) {
 
@@ -3377,6 +3378,11 @@ public class CommonReport implements Serializable {
         if (ins != null) {
             sql += " and bi.bill.institution=:ins ";
             m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += "and bi.bill.department=:dep";
+            m.put("dep", dep);
         }
 
         if (webUser != null) {
