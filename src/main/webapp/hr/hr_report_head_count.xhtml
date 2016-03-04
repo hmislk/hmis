@@ -45,7 +45,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffAttendanceAggregate()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_head_count"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -53,7 +53,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder"  >                     
                             <p:dataTable id="tb1" value="#{hrReportController.departmentAttendances}" var="ss">
                                 <f:facet name="header" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                   
                                     <p:outputLabel value="Head Count Report" />
                                     <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >

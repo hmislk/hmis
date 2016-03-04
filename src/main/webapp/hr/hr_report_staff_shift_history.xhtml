@@ -41,7 +41,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftHistory()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_staff_shift_history"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -55,7 +55,7 @@
                                          rowsPerPageTemplate="10,20,50"
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Shift Amendments" /><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >

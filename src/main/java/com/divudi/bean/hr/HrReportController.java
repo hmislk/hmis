@@ -146,7 +146,7 @@ public class HrReportController implements Serializable {
     List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails;
 
     String backButtonPage;
-    
+
     double total;
 
     public String fromStaffFingerprintAnalysisToStaffLeave(Date date, Staff staff) {
@@ -173,24 +173,24 @@ public class HrReportController implements Serializable {
         StaffSalary tmp = (StaffSalary) event.getObject();
         staffSalaryFacade.edit(tmp);
     }
-    
-    public void listnerBlock(StaffSalary ss){
+
+    public void listnerBlock(StaffSalary ss) {
         if (ss.isBlocked()) {
             ss.setHold(false);
             ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
             ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
-        }else{
+        } else {
             ss.setAccountNo(ss.getStaff().getAccountNo());
             ss.setBankBranch(ss.getStaff().getBankBranch());
         }
     }
-    
-    public void listnerHold(StaffSalary ss){
+
+    public void listnerHold(StaffSalary ss) {
         if (ss.isHold()) {
             ss.setBlocked(false);
             ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
             ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
-        }else{
+        } else {
             ss.setAccountNo(ss.getStaff().getAccountNo());
             ss.setBankBranch(ss.getStaff().getBankBranch());
         }
@@ -258,6 +258,7 @@ public class HrReportController implements Serializable {
         String department;
         String designation;
         String acNo;
+        
 
         int zoneCodeCol = 0;
         int employerNumberCol = 1;
@@ -305,7 +306,7 @@ public class HrReportController implements Serializable {
             w = Workbook.getWorkbook(inputWorkbook);
             Sheet sheet = w.getSheet(0);
 
-            for (int i = startRow; i < sheet.getRows(); i++) {
+            for(int i = startRow; i < sheet.getRows(); i++) {
 
                 Map m = new HashMap();
 
@@ -3933,9 +3934,9 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryComponentQuary(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
-        total=0.0;
+        total = 0.0;
         for (StaffSalaryComponant ssc : staffSalaryComponants) {
-            total+=ssc.getComponantValue();
+            total += ssc.getComponantValue();
         }
 
     }
@@ -4033,7 +4034,7 @@ public class HrReportController implements Serializable {
     double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalTransNetSalary = 0.0; //total of the transNetSalary;
-    double totalTransEpfEtfDiductableSalary=0.0;
+    double totalTransEpfEtfDiductableSalary = 0.0;
     double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
     double totaldayOffAllowance = 0.0;
@@ -4057,7 +4058,7 @@ public class HrReportController implements Serializable {
         totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalTransNetSalary = 0.0;//total of transNetSalary
-        totalTransEpfEtfDiductableSalary=0.0;//total of epf etf deductuble salary
+        totalTransEpfEtfDiductableSalary = 0.0;//total of epf etf deductuble salary
         totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
         totaldayOffAllowance = 0.0;
@@ -4080,7 +4081,7 @@ public class HrReportController implements Serializable {
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
-            totalTransEpfEtfDiductableSalary+=totStaffSalary.getTransEpfEtfDiductableSalary();
+            totalTransEpfEtfDiductableSalary += totStaffSalary.getTransEpfEtfDiductableSalary();
             totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
             totaldayOffAllowance += totStaffSalary.getDayOffAllowance();

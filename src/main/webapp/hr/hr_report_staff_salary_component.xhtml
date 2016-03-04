@@ -61,18 +61,18 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponent()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="staff_salary_component"/>
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                        <p:commandButton value="Print" ajax="false" action="#">
+                            <p:printer target="gpBillPreview"></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalaryComponants}" var="ss">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Staff Salary Component"/>
                                     <br/>
-                                    <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}" />
+                                    <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}"/>
                                     <br/>
                                     <h:outputLabel value="SC Cycle : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedFromDate}" >
@@ -94,7 +94,7 @@
                                         <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
-                            </f:facet>
+                                </f:facet>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header">         
                                         <h:outputLabel value="Emp No"  />
@@ -104,7 +104,7 @@
                                 </p:column>
                                 <p:column headerText="Emp Name">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Emp Name"  />
+                                        <h:outputLabel value="Emp Name"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staffSalary.staff.person.nameWithTitle}">
                                     </p:outputLabel>

@@ -41,7 +41,7 @@
                         <h:panelGrid columns="4" >
                             <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -55,7 +55,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                   
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
                                         <br />

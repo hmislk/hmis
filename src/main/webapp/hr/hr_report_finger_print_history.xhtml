@@ -41,7 +41,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createFingerPrintHistory()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_finger_print_history"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -50,7 +50,7 @@
                             <p:dataTable id="tb1" value="#{hrReportController.fingerPrintRecordHistorys}" var="ss">
 
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Finger Print Histoy" /><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >
