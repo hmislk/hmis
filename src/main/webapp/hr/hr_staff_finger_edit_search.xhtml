@@ -27,7 +27,7 @@
                                 <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
 
                                 <h:outputLabel value="Institution : "/>
-                                <au:department value="#{fingerPrintRecordController.institution}"/> 
+                                <au:institution value="#{fingerPrintRecordController.institution}"/> 
 
                                 <h:outputLabel value="Department : "/>
                                 <au:department value="#{fingerPrintRecordController.department}"/>
@@ -40,7 +40,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_holiday"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_finger_edit_search"  />
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
@@ -49,7 +49,7 @@
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Staff Shift"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{fingerPrintRecordController.fromDate}" >

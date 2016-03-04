@@ -30,6 +30,7 @@ import javax.inject.Named;
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
  * Informatics)
  */
+
 @Named
 @SessionScoped
 public class StaffCategoryController implements Serializable {
@@ -51,12 +52,15 @@ public class StaffCategoryController implements Serializable {
 
     public List<StaffCategory> completeStaffCategory(String qry) {
         List<StaffCategory> a = null;
+        System.out.println("qry = " + qry);
         if (qry != null) {
             a = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            System.out.println("a = " + a.size());
         }
         if (a == null) {
             a = new ArrayList<StaffCategory>();
         }
+        System.out.println("a = " + a.size());
         return a;
     }
 
@@ -162,7 +166,7 @@ public class StaffCategoryController implements Serializable {
      *
      */
     @FacesConverter(forClass = StaffCategory.class)
-    public static class StaffCategoryConverter implements Converter {
+    public static class StaffCategoryControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -202,7 +206,7 @@ public class StaffCategoryController implements Serializable {
     }
 
     @FacesConverter("staffCategoryCon")
-    public static class StaffCategoryControllerConverter implements Converter {
+    public static class StaffCategoryConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
