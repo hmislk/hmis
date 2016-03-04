@@ -144,6 +144,8 @@
                             <h:outputText value="#{ses.sessionDate}" rendered="#{ses.deactivated}" style="color: red;">
                                 <f:convertDateTime pattern="MMM/dd/yyyy"/>
                             </h:outputText>
+                            <h:outputText value=" In" rendered="#{ses.arival eq false}" style="color: green;"/>
+                            <h:outputText value=" Out" rendered="#{ses.arival eq true}" style="color: red;"/>
                             <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                         </p:column>
 
@@ -186,7 +188,8 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord eq null}" >
                         <h:outputText value="NOT YET ARRIVED." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival" update="panelArrivals" action="#{bookingController.markAsArrived()}" ></p:commandButton>
+                        <p:commandButton value="Mark Arrival" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" >
+                        </p:commandButton>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved eq false}" >
@@ -197,7 +200,7 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Departure" update="panelArrivals" action="#{bookingController.markAsLeft()}" ></p:commandButton>
+                        <p:commandButton value="Mark Departure" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsLeft()}" ></p:commandButton>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved ne false}" >
@@ -215,7 +218,7 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival Again" update="panelArrivals" action="#{bookingController.markAsArrived()}" ></p:commandButton>
+                        <p:commandButton value="Mark Arrival Again" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" ></p:commandButton>
                     </h:panelGroup>
 
                 </p:panel>
