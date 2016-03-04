@@ -743,7 +743,9 @@ public class BookingController implements Serializable {
 
     public void checkDoctorArival(List<ServiceSession> sss) {
         for (ServiceSession s : sss) {
+            System.out.println("s.getName() = " + s.getName());
             s.setArival(findArrivals(s));
+            System.out.println("s.getArival() = " + s.getArival());
         }
     }
 
