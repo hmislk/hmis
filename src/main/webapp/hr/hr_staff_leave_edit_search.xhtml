@@ -32,7 +32,7 @@
                                 </p:selectOneMenu>
 
                                 <h:outputLabel value="Institution : "/>
-                                <au:department value="#{staffLeaveApplicationFormController.reportKeyWord.institution}"/>
+                                <au:institution value="#{staffLeaveApplicationFormController.reportKeyWord.institution}"/>
 
                                 <h:outputLabel value="Department : "/>
                                 <au:department value="#{staffLeaveApplicationFormController.reportKeyWord.department}"/>
@@ -62,7 +62,7 @@
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Leave Application Form"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{staffLeaveApplicationFormController.fromDate}" >

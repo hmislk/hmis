@@ -68,7 +68,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                   
                                     <h:outputLabel value="Staff Over Time"/>
                                     <br/>
                                     <h:outputLabel value="Salary Cycle : #{hrReportController.reportKeyWord.salaryCycle.name}" />
@@ -79,7 +79,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedToDate}"  >
                                         <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
-                                    </h:outputLabel>
+                                    </h:outputLabel><br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>

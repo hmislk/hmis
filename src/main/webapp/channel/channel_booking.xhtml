@@ -40,7 +40,6 @@
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                        <!--<p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/>-->
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} :#{p:component('tblBookingsOfSelectedSession')}" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
@@ -154,6 +153,8 @@
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
                             <h:outputText value="**" />
+                            <h:outputText value=" In" rendered="#{ses.arival eq false}" style="color: green;"/>
+                            <h:outputText value=" Out" rendered="#{ses.arival eq true}" style="color: red;"/>
                             <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
                         </p:column>
 

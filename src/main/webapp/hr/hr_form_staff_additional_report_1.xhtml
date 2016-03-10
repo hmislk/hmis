@@ -34,7 +34,7 @@
                             </h:panelGroup>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_form_staff_additional_report_1"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -43,7 +43,8 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
                             <p:dataTable  value="#{staffAdditionalFormController.aditionalWithTimes}" 
                                           var="add" 
-                                          rowStyleClass="#{add.af.retired eq true ? 'redText':''}" >
+                                          rowStyleClass="#{add.af.retired eq true ? 'redText':''}" 
+                                          id="tb1">
 
                                 <f:facet name="header">
                                     <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>

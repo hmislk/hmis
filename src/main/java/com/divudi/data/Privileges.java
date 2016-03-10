@@ -270,6 +270,7 @@ public enum Privileges {
     ChannellingApoinmentNumberCountEdit,
     ChannellingEditSerialNo,
     ChannellingEditPatientDetails,
+    ChannellingPrintInPastBooking,
     
     MemberShip,
     MembershipSchemes,

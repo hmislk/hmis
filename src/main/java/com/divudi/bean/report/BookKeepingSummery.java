@@ -117,6 +117,7 @@ public class BookKeepingSummery implements Serializable {
     double grantTotal;
     double channelTotal;
     long countTotals;
+    String header="";
     @Inject
     SessionController sessionController;
 
@@ -3702,6 +3703,7 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void processCreditItems() {
+        header=" Invoice.";
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         createOPdListWithProDayEndTableWithOutCheckDepIns(Arrays.asList(paymentMethods));
@@ -3718,6 +3720,7 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void processCreditPaidItems() {
+        header=" Payment.";
         makeNull();
         createOPdListWithCreditPaid();
         opdHospitalTotal = 0.0;
@@ -4196,6 +4199,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setOpdRegentTotalByPayMethod(double opdRegentTotalByPayMethod) {
         this.opdRegentTotalByPayMethod = opdRegentTotalByPayMethod;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
     }
 
 }

@@ -40,7 +40,7 @@
                             <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
                             <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="gpBillPreview" fileName="hr_report_attendance"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_form_staff_leave_report"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -49,7 +49,7 @@
                     </p:panel>
                     <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" > 
                         <p:dataTable  value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
-                                      rowStyleClass="#{l.retired eq true ? 'redText':''}">
+                                      rowStyleClass="#{l.retired eq true ? 'redText':''}" id="tb1">
 
                             <f:facet name="header">
                                 <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>

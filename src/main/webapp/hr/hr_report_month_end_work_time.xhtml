@@ -50,7 +50,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.weekDayWorks}" var="ss"  editable="true">
                                 <f:facet name="header" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                   
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.roster.name} Roster" rendered="#{hrReportController.reportKeyWord.roster ne null}"/>
                                         <br />

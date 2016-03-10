@@ -46,7 +46,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateInEarlyOut()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance_late_in_early_out"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -54,7 +54,7 @@
                         <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                    
                             <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss" rowStyleClass="#{ss.considerForLateIn eq true ? 'greenText':''}">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Attendance Report (Late In and Early Out)"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{hrReportController.fromDate}" >

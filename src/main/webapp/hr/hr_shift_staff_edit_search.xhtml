@@ -27,7 +27,7 @@
                             <au:completeStaff value="#{staffShiftController.reportKeyWord.staff}"/>
 
                             <h:outputLabel value="Institution : "/>
-                            <au:department value="#{staffShiftController.reportKeyWord.institution}"/>
+                            <au:institution value="#{staffShiftController.reportKeyWord.institution}"/>
 
                             <h:outputLabel value="Department : "/>
                             <au:department value="#{staffShiftController.reportKeyWord.department}"/>
@@ -55,7 +55,7 @@
                                      scrollable="true"
                                      scrollHeight="300" id="tb1">
                             <f:facet name="header">
-                                <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                
                                 <h:outputLabel value="Staff Shift"/><br/>
                                 <h:outputLabel value="  From : "  />
                                 <h:outputLabel  value="#{staffShiftController.fromDate}" >

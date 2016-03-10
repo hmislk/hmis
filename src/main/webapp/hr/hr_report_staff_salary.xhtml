@@ -47,6 +47,7 @@
             <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
             <p:dataTable id="tbl" value="#{salaryCycleController.staffSalary}" var="scc" >
                 <f:facet name="header">
+                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                     <h:outputLabel value="All Staff Salary Summary"></h:outputLabel><br></br>
                     <h:outputLabel value="#{salaryCycleController.current.name}"></h:outputLabel>
                 </f:facet>
