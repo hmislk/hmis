@@ -697,8 +697,24 @@
                             </tr>
                             <tr>
                                 <td colspan="3" style="width: 50px;">
-                                    <h:outputLabel value="Note : #{cc.attrs.bill.comments}" rendered="#{cc.attrs.bill.comments ne null}"/>
+                                    <h:outputLabel value="Note : #{cc.attrs.bill.comments}" rendered="#{cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne ''}"/>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td><p:spacer height="10" /></td>
+                                <td><h:outputLabel value=" "/></td>
+                                <td><h:outputLabel value=" "/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="width: 150px;"><h:outputLabel value="Late(10 Min) : #{cc.attrs.bill.systemLatedays10min}" rendered="#{cc.attrs.bill.systemLatedays10min ne null and cc.attrs.bill.systemLatedays10min ne ''}"/></td>
+                            </tr>
+                            <tr>
+                                <td><p:spacer height="10" /></td>
+                                <td><h:outputLabel value=" "/></td>
+                                <td><h:outputLabel value=" "/></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"><h:outputLabel value="Late(90 Min) : #{cc.attrs.bill.systemLatedays90min}" rendered="#{cc.attrs.bill.systemLatedays90min ne null and cc.attrs.bill.systemLatedays90min ne ''}"/></td>
                             </tr>
                         </table>
                     </div>
@@ -764,6 +780,7 @@
                                     <h:outputLabel value=":"/>
                                 </td> 
                             </tr>
+                            
                         </table>
                     </div>
                     <div style="position: absolute!important;padding-left: 63%;">
@@ -923,7 +940,7 @@
                                 <td><h:outputLabel value=" "/></td>
                             </tr>
                             <tr>
-                                <td colspan="3" style="width: 150px;"><h:outputLabel value="Late(10 Min) : #{cc.attrs.bill.systemLatedays10min}" /></td>
+                                <td colspan="3" style="width: 150px;"><h:outputLabel value="Late(10 Min) : #{cc.attrs.bill.systemLatedays10min}" rendered="#{cc.attrs.bill.systemLatedays10min ne null and cc.attrs.bill.systemLatedays10min ne ''}"/></td>
                             </tr>
                             <tr>
                                 <td><p:spacer height="10" /></td>
@@ -931,7 +948,7 @@
                                 <td><h:outputLabel value=" "/></td>
                             </tr>
                             <tr>
-                                <td colspan="3"><h:outputLabel value="Late(90 Min) : #{cc.attrs.bill.systemLatedays90min}" /></td>
+                                <td colspan="3"><h:outputLabel value="Late(90 Min) : #{cc.attrs.bill.systemLatedays90min}" rendered="#{cc.attrs.bill.systemLatedays90min ne null and cc.attrs.bill.systemLatedays90min ne ''}"/></td>
                             </tr>
                         </table>
                     </div>

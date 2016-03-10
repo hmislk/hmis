@@ -146,7 +146,7 @@ public class HrReportController implements Serializable {
     List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails;
 
     String backButtonPage;
-    
+
     double total;
 
     public String fromStaffFingerprintAnalysisToStaffLeave(Date date, Staff staff) {
@@ -173,24 +173,24 @@ public class HrReportController implements Serializable {
         StaffSalary tmp = (StaffSalary) event.getObject();
         staffSalaryFacade.edit(tmp);
     }
-    
-    public void listnerBlock(StaffSalary ss){
+
+    public void listnerBlock(StaffSalary ss) {
         if (ss.isBlocked()) {
             ss.setHold(false);
             ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
             ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
-        }else{
+        } else {
             ss.setAccountNo(ss.getStaff().getAccountNo());
             ss.setBankBranch(ss.getStaff().getBankBranch());
         }
     }
-    
-    public void listnerHold(StaffSalary ss){
+
+    public void listnerHold(StaffSalary ss) {
         if (ss.isHold()) {
             ss.setBlocked(false);
             ss.setAccountNo(getSessionController().getInstitution().getAccountNo());
             ss.setBankBranch(getSessionController().getInstitution().getBankBranch());
-        }else{
+        } else {
             ss.setAccountNo(ss.getStaff().getAccountNo());
             ss.setBankBranch(ss.getStaff().getBankBranch());
         }
@@ -1082,6 +1082,7 @@ public class HrReportController implements Serializable {
         for (Institution b : getBanks()) {
             BankViseSalaryAndOt bvsao = new BankViseSalaryAndOt();
             bvsao.setBank(b);
+            bvsao.setStringBank(b.getName());
             if (b == null) {
                 continue;
             }
@@ -1117,6 +1118,31 @@ public class HrReportController implements Serializable {
             totalTransNetSalary += bvsao.getNetSalary();
             totalOverTime += bvsao.getNetOt();
         }
+        BankViseSalaryAndOt bvsaonull = new BankViseSalaryAndOt();
+        bvsaonull.setStringBank("No Bank");
+        bvsaonull.setBank(new Institution());
+        double nettotal = 0.0;
+        double netot = 0.0;
+        for (StaffSalary ss : staffSalarys) {
+            if (ss.getBankBranch() == null) {
+                if (otPayment && netSalary) {
+                    nettotal += ss.getTransNetSalry();
+                    netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                } else if (!otPayment && netSalary) {
+                    nettotal += ss.getTransNetSalry();
+                } else if (otPayment && !netSalary) {
+                    netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                }
+
+            }
+        }
+        bvsaonull.setNetSalary(nettotal);
+        bvsaonull.setNetOt(netot);
+        if (bvsaonull.getBank() != null || (bvsaonull.getNetSalary() == 0.0 && bvsaonull.getNetOt() == 0.0)) {
+            bankViseSalaryAndOts.add(bvsaonull);
+        }
+        totalTransNetSalary += bvsaonull.getNetSalary();
+        totalOverTime += bvsaonull.getNetOt();
         System.out.println("bankViseSalaryAndOts.size() = " + bankViseSalaryAndOts.size());
     }
 
@@ -1423,15 +1449,15 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-    public List<StaffLeave> createStaffLeaveSystem(Staff s,Date fd,Date td) {
+
+    public List<StaffLeave> createStaffLeaveSystem(Staff s, Date fd, Date td) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeaveSystem ss "
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to "
                 + " and ss.staff=:stf ";
-        
+
         hm.put("stf", s);
         hm.put("frm", fd);
         hm.put("to", td);
@@ -3948,9 +3974,9 @@ public class HrReportController implements Serializable {
         sql = createStaffSalaryComponentQuary(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
         staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
-        total=0.0;
+        total = 0.0;
         for (StaffSalaryComponant ssc : staffSalaryComponants) {
-            total+=ssc.getComponantValue();
+            total += ssc.getComponantValue();
         }
 
     }
@@ -4048,7 +4074,7 @@ public class HrReportController implements Serializable {
     double totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
     double totalTransNetSalary = 0.0; //total of the transNetSalary;
-    double totalTransEpfEtfDiductableSalary=0.0;
+    double totalTransEpfEtfDiductableSalary = 0.0;
     double totalOverTime = 0.0; //ss.transExtraDutyValue+ss.overTimeValue
     double totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
     double totaldayOffAllowance = 0.0;
@@ -4072,7 +4098,7 @@ public class HrReportController implements Serializable {
         totalOffdyOtValue = 0.0;  //extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalValue = 0.0; //ss.overTimeValue+ss.extraDutyNormalValue+ss.extraDutyMerchantileValue+ss.extraDutyPoyaValue+ss.extraDutyDayOffValue+ss.extraDutySleepingDayValue
         totalTransNetSalary = 0.0;//total of transNetSalary
-        totalTransEpfEtfDiductableSalary=0.0;//total of epf etf deductuble salary
+        totalTransEpfEtfDiductableSalary = 0.0;//total of epf etf deductuble salary
         totalOverTime = 0.0;//ss.transExtraDutyValue+ss.overTimeValue
         totalofTotals = 0.0;//ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry
         totaldayOffAllowance = 0.0;
@@ -4095,7 +4121,7 @@ public class HrReportController implements Serializable {
             totalOffdyOtValue += totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalValue += totStaffSalary.getOverTimeValue() + totStaffSalary.getExtraDutyNormalValue() + totStaffSalary.getExtraDutyMerchantileValue() + totStaffSalary.getExtraDutyPoyaValue() + totStaffSalary.getExtraDutyDayOffValue() + totStaffSalary.getExtraDutySleepingDayValue();
             totalTransNetSalary += totStaffSalary.getTransNetSalry();
-            totalTransEpfEtfDiductableSalary+=totStaffSalary.getTransEpfEtfDiductableSalary();
+            totalTransEpfEtfDiductableSalary += totStaffSalary.getTransEpfEtfDiductableSalary();
             totalOverTime += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue();
             totalofTotals += totStaffSalary.getTransExtraDutyValue() + totStaffSalary.getOverTimeValue() + totStaffSalary.getTransNetSalry();
             totaldayOffAllowance += totStaffSalary.getDayOffAllowance();
@@ -4619,6 +4645,7 @@ public class HrReportController implements Serializable {
     public class BankViseSalaryAndOt {
 
         Institution bank;
+        String stringBank;
         double netSalary;
         double netOt;
 
@@ -4644,6 +4671,14 @@ public class HrReportController implements Serializable {
 
         public void setNetOt(double netOt) {
             this.netOt = netOt;
+        }
+
+        public String getStringBank() {
+            return stringBank;
+        }
+
+        public void setStringBank(String stringBank) {
+            this.stringBank = stringBank;
         }
     }
 
