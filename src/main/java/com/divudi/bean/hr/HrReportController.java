@@ -1083,6 +1083,7 @@ public class HrReportController implements Serializable {
         for (Institution b : getBanks()) {
             BankViseSalaryAndOt bvsao = new BankViseSalaryAndOt();
             bvsao.setBank(b);
+            bvsao.setStringBank(b.getName());
             if (b == null) {
                 continue;
             }
@@ -1118,6 +1119,31 @@ public class HrReportController implements Serializable {
             totalTransNetSalary += bvsao.getNetSalary();
             totalOverTime += bvsao.getNetOt();
         }
+        BankViseSalaryAndOt bvsaonull = new BankViseSalaryAndOt();
+        bvsaonull.setStringBank("No Bank");
+        bvsaonull.setBank(new Institution());
+        double nettotal = 0.0;
+        double netot = 0.0;
+        for (StaffSalary ss : staffSalarys) {
+            if (ss.getBankBranch() == null) {
+                if (otPayment && netSalary) {
+                    nettotal += ss.getTransNetSalry();
+                    netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                } else if (!otPayment && netSalary) {
+                    nettotal += ss.getTransNetSalry();
+                } else if (otPayment && !netSalary) {
+                    netot += (ss.getTransExtraDutyValue() + ss.getOverTimeValue());
+                }
+
+            }
+        }
+        bvsaonull.setNetSalary(nettotal);
+        bvsaonull.setNetOt(netot);
+        if (bvsaonull.getBank() != null || (bvsaonull.getNetSalary() == 0.0 && bvsaonull.getNetOt() == 0.0)) {
+            bankViseSalaryAndOts.add(bvsaonull);
+        }
+        totalTransNetSalary += bvsaonull.getNetSalary();
+        totalOverTime += bvsaonull.getNetOt();
         System.out.println("bankViseSalaryAndOts.size() = " + bankViseSalaryAndOts.size());
     }
 
@@ -1424,15 +1450,15 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger";
         staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
     }
-    
-    public List<StaffLeave> createStaffLeaveSystem(Staff s,Date fd,Date td) {
+
+    public List<StaffLeave> createStaffLeaveSystem(Staff s, Date fd, Date td) {
         String sql = "";
         HashMap hm = new HashMap();
         sql = "select ss from StaffLeaveSystem ss "
                 + " where ss.retired=false "
                 + " and ss.leaveDate between :frm  and :to "
                 + " and ss.staff=:stf ";
-        
+
         hm.put("stf", s);
         hm.put("frm", fd);
         hm.put("to", td);
@@ -4620,6 +4646,7 @@ public class HrReportController implements Serializable {
     public class BankViseSalaryAndOt {
 
         Institution bank;
+        String stringBank;
         double netSalary;
         double netOt;
 
@@ -4645,6 +4672,14 @@ public class HrReportController implements Serializable {
 
         public void setNetOt(double netOt) {
             this.netOt = netOt;
+        }
+
+        public String getStringBank() {
+            return stringBank;
+        }
+
+        public void setStringBank(String stringBank) {
+            this.stringBank = stringBank;
         }
     }
 

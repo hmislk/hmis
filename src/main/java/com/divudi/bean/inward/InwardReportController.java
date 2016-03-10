@@ -894,18 +894,13 @@ public class InwardReportController implements Serializable {
                 + " and b.paidForBillFee.bill.patientEncounter is null "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if (admissionType != null) {
-            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
-            temMap.put("at", admissionType);
-        }
-
         if (paymentMethod != null) {
-            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
-            temMap.put("bt", paymentMethod);
+            sql = sql + " and b.paidForBillFee.bill.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
         }
 
         if (institution != null) {
-            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            sql = sql + " and b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
         if (billTypes != null) {
@@ -930,20 +925,16 @@ public class InwardReportController implements Serializable {
                 + " and b.paidForBillFee.bill.patientEncounter is null "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if (admissionType != null) {
-            sql = sql + " and b.bill.patientEncounter.admissionType=:at ";
-            temMap.put("at", admissionType);
-        }
-
         if (paymentMethod != null) {
-            sql = sql + " and b.bill.patientEncounter.paymentMethod=:bt ";
-            temMap.put("bt", paymentMethod);
+            sql = sql + " and b.paidForBillFee.bill.paymentMethod=:pm ";
+            temMap.put("pm", paymentMethod);
         }
 
         if (institution != null) {
-            sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
+            sql = sql + " and b.paidForBillFee.bill.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
+        
         if (billTypes != null) {
             sql += " and b.referenceBill.billType in :bts ";
             temMap.put("bts", billTypes);
