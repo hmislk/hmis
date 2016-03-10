@@ -80,7 +80,7 @@ public class ServiceSession extends Item implements Serializable {
     @Transient
     int transRowNumber;
     @Transient
-    boolean arival;
+    Boolean arival;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -410,11 +410,11 @@ public class ServiceSession extends Item implements Serializable {
         this.sessionText = sessionText;
     }
 
-    public boolean isArival() {
+    public Boolean getArival() {
         return arival;
     }
 
-    public void setArival(boolean arival) {
+    public void setArival(Boolean arival) {
         this.arival = arival;
     }
 

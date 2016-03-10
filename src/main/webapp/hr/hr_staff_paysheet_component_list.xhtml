@@ -45,7 +45,7 @@
                 </h:panelGrid>
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                    <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                    <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
                 </p:commandButton>
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
@@ -60,7 +60,7 @@
                                   var="i"   rowKey="#{i.id}"  >
 
                         <f:facet name="header">
-                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                           
                             <h:outputLabel value="Staff Paysheet Component List"/>
                             <h:panelGroup rendered="#{staffBasicController.reportKeyWord.institution ne null}" >
                                 <br/>

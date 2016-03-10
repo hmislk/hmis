@@ -38,7 +38,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_employee_detail"  />
                             </p:commandButton> 
                         </h:panelGrid>
 
@@ -53,7 +53,7 @@
 
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Employee List"/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <br/>
