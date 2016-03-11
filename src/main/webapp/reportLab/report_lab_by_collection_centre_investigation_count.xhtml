@@ -50,14 +50,7 @@
 
             </p:panel>
             <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
-                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" 
-                             rows="20"
-                             paginator="true"
-                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20, 50, 100,500" 
-                             rowIndexVar="i"
-                             >
-
+                <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnController.itemsLab}" var="c" rowIndexVar="i" >
                     <f:facet name="header">
                         <h:outputLabel value="Collecting Centre Collection Count Report"/>
                         <br></br>
@@ -80,9 +73,7 @@
                         <h:outputLabel value="#{i+1}" />
                     </p:column>
                     <p:column headerText="Test Name"
-                              sortBy="#{c.investigation.name}" 
-                              filterBy="#{c.investigation.name}"
-                              filterMatchMode="contains">
+                              sortBy="#{c.investigation.name}">
                         <f:facet name="header">
                             <h:outputLabel value="Test Name"/>
                         </f:facet>

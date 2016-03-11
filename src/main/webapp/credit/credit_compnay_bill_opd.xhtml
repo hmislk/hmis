@@ -21,7 +21,7 @@
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                 <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
                             </p:selectOneMenu>
-                            
+
                             <p:inputText value="#{cashRecieveBillController.comment}" id="comment"/>
                             <p:watermark value="Comment" for="comment"/>
 
@@ -38,7 +38,7 @@
                             </h:panelGroup>
 
                             <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBill}"
-                                           ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
                             <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
@@ -55,22 +55,45 @@
                                             var="ix" itemLabel="#{ix.patient.person.name}"
                                             itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ix.patient.person.name}"/>
                                 </p:column>                                  
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ix.creditCompany.name}"/>
                                 </p:column>
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ix.createdAt}">
                                         <f:convertDateTime pattern="dd MM YYYY"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Due Amount"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ix.netTotal+ix.paidAmount}" style="color: red;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Paid Amount"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ix.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Full Amount"/>
+                                    </f:facet>
                                     <h:outputLabel value="#{ix.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>

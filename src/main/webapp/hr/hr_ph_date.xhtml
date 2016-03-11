@@ -14,7 +14,7 @@
                     <h:panelGrid id="gpSelect" columns="1"  >
                         <p:panel >
                             <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox converter="phDateCon"  id="lstSelect"   value="#{phDateController.current}" style="min-width: 223px;min-height: 300px;">
+                                <p:selectOneListbox converter="phDateCon"  id="lstSelect"   value="#{phDateController.current}" style="min-width: 223px;height: 300px;">
                                     <f:selectItems  value="#{phDateController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>

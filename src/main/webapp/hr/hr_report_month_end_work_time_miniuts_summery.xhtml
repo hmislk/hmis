@@ -45,12 +45,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -62,7 +62,7 @@
                         <h:panelGrid columns="4" >
                             <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportForMonth}"/>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
+                                <pe:exporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts_summery"  />
                             </p:commandButton>
                             <p:commandButton value="Print All" ajax="false" action="#" >
                                 <p:printer target="gpBillPreviewPrint" ></p:printer>
@@ -72,11 +72,24 @@
                             </p:commandButton>
 
                         </h:panelGrid>
-                        <p:panel id="gpBillPreviewPrint" styleClass="summeryBorder"  >
+                        <p:panel id="gpBillPreviewPrint" styleClass=" noBorder summeryBorder"  >
                             <p:panel id="gpBillPreview1" >
                                 <p:dataTable value="#{hrReportController.summeryForMonths}" var="ss">
                                     <f:facet name="header" >
+                                        
                                         <h:outputLabel value="Summery" />
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                            <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                            <br/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                            <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                            <br/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                            <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
+                                            <br/>
+                                        </h:panelGroup>
                                     </f:facet>
 
                                     <p:column  styleClass="shortNumericColumn">
@@ -457,6 +470,13 @@
                                             </h:outputLabel>
                                         </p:column>
                                     </p:subTable>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                        <p:outputLabel value="Print At : " />
+                                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:dataTable>
                             </p:panel>
                         </p:panel>

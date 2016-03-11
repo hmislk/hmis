@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"           
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  styleClass="noBorder summeryBorder">
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
+                            <br/>
+                            <h:outputLabel value="Casheir Summary :"/>
+                            <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
+                            <h:outputLabel value="#{commonReport.fromDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel value="#{commonReport.toDate}">
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                                             styleClass="noPrintButton" style="float: right;"
+                                             action="#{commonReport.createUserOPDSeviceCount}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                        </f:facet>
+                        <f:facet name="footer">
+                            <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                        </f:facet>
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            </p:calendar>
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                            forceSelection="true"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{commonReport.webUser}" ></p:autoComplete>
+                                            <h:outputLabel styleClass="noPrintButton" value="Departmnet"/>
+                            <au:department value="#{commonReport.department}" />
+                            <h:outputLabel styleClass="noPrintButton" value="Only Hos Fee"/>
+                            <p:selectBooleanCheckbox id="cbHos" value="#{commonReport.onlyHosFee}" >
+                                <p:ajax event="change" process="@this" update="cbStaff @this" listener="#{commonReport.listnerHosFee}" />
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel styleClass="noPrintButton" value="Only Staff Fee"/>
+                            <p:selectBooleanCheckbox id="cbStaff" value="#{commonReport.onlyStaffFee}" >
+                                <p:ajax event="change" process="@this" update="cbHos @this" listener="#{commonReport.listnerStaffFee}" />
+                            </p:selectBooleanCheckbox>
+                        </h:panelGrid>
+                        <p:panel id="reportPrint">
+                            <p:dataTable value="#{commonReport.itemCountRows}" var="ir" id="tb1" rowIndexVar="i">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Billed Bill"></h:outputLabel>
+                                </f:facet>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i+1}" ></h:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Service" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Count" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.count}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.value}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:spacer height="20px"/>
+
+                            <p:dataTable value="#{commonReport.itemCountRowsCancel}" var="ir" id="tb12" rowIndexVar="i">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Cancel Bill"></h:outputLabel>
+                                </f:facet>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i+1}" ></h:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Service" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Count" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.count}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.value}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalCancel}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:spacer height="20px"/>
+
+                            <p:dataTable value="#{commonReport.itemCountRowsRefund}" var="ir" id="tb13" rowIndexVar="i">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Refund Bill"></h:outputLabel>
+                                </f:facet>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i+1}" ></h:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Service" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.item.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Count" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.count}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.value}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalRefund}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+
+                            <f:facet name="footer">
+                                <p:outputLabel value="Net Total : " />
+                                <p:outputLabel value="#{commonReport.billTotal+commonReport.billTotalCancel+commonReport.billTotalRefund}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:panel>
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

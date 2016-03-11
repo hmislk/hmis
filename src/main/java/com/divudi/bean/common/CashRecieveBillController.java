@@ -66,6 +66,7 @@ public class CashRecieveBillController implements Serializable {
         currentBillItem = null;
         removingItem = null;
         billItems = null;
+        selectedBillItems = null;
         paymentMethodData = null;
         institution = null;
     }
@@ -81,6 +82,10 @@ public class CashRecieveBillController implements Serializable {
             selectBillListener();
             addToBill();
         }
+        if (billItems != null) {
+            selectedBillItems.addAll(billItems);
+        }
+        calTotal();
     }
 
     public String getComment() {
@@ -105,6 +110,10 @@ public class CashRecieveBillController implements Serializable {
             selectBhtListener();
             addToBht();
         }
+        if (billItems != null) {
+            selectedBillItems.addAll(billItems);
+        }
+        calTotal();
     }
 
     public void changeNetValueListener(BillItem billItem) {
@@ -201,6 +210,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void remove(BillItem billItem) {
         getBillItems().remove(billItem.getSearialNo());
+        getSelectedBillItems().remove(billItem.getSearialNo());
         calTotalWithResetingIndex();
     }
 
@@ -255,10 +265,23 @@ public class CashRecieveBillController implements Serializable {
     public void calTotalWithResetingIndex() {
         double n = 0.0;
         int index = 0;
+        System.out.println("billItems.size() = " + billItems.size());
+        System.out.println("selectedBillItems.size() = " + selectedBillItems.size());
         for (BillItem b : billItems) {
+            System.out.println("b.getSearialNo() = " + b.getSearialNo());
             b.setSearialNo(index++);
             n += b.getNetValue();
         }
+        n = 0.0;
+        index = 0;
+        for (BillItem b : selectedBillItems) {
+            System.err.println("b.getSearialNo() = " + b.getSearialNo());
+            b.setSearialNo(index++);
+            System.err.println("b.getSearialNo() = " + b.getSearialNo());
+            n += b.getNetValue();
+        }
+        System.out.println("billItems.size() = " + billItems.size());
+        System.out.println("selectedBillItems.size() = " + selectedBillItems.size());
         getCurrent().setNetTotal(n);
         // ////System.out.println("AAA : " + n);
     }
@@ -273,6 +296,7 @@ public class CashRecieveBillController implements Serializable {
         //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
+        getSelectedBillItems().add(getCurrentBillItem());
         getBillItems().add(getCurrentBillItem());
 
         currentBillItem = null;
@@ -291,6 +315,7 @@ public class CashRecieveBillController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(getCurrentBillItem());
+        getSelectedBillItems().add(getCurrentBillItem());
 
         currentBillItem = null;
         calTotal();
@@ -307,9 +332,13 @@ public class CashRecieveBillController implements Serializable {
         }
     }
 
-    private void calTotal() {
+    public void calTotal() {
         double n = 0.0;
-        for (BillItem b : billItems) {
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+        for (BillItem b : selectedBillItems) {
+            System.out.println("b.getNetValue() = " + b.getNetValue());
+            System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -336,7 +365,7 @@ public class CashRecieveBillController implements Serializable {
     private PaymentSchemeController paymentSchemeController;
 
     private boolean errorCheck() {
-        if (getBillItems().isEmpty()) {
+        if (getSelectedBillItems().isEmpty()) {
             UtilityController.addErrorMessage("No Bill Item ");
             return true;
         }
@@ -368,6 +397,11 @@ public class CashRecieveBillController implements Serializable {
     private boolean errorCheckBht() {
         if (getBillItems().isEmpty()) {
             UtilityController.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getSelectedBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("No Selected Bill Item ");
             return true;
         }
 
@@ -442,6 +476,8 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
 
+        calTotal();
+
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
@@ -503,19 +539,34 @@ public class CashRecieveBillController implements Serializable {
 
 //        getBillNumberBean().departmentBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        getBillNumberBean().institutionBillNumberGenerator(tmp, BillClassType.BilledBill, BillNumberSuffix.INWPAY);
-
         getBillFacade().create(tmp);
 
         return tmp;
     }
 
     public void removeAll() {
+        List<BillItem>tmp=new ArrayList<>();
         for (BillItem b : selectedBillItems) {
-            remove(b);
+            System.out.println("getBillItems().size() = " + getBillItems().size());
+            System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+            System.out.println("R.A - b.getSearialNo() = " + b.getSearialNo());
+            System.out.println("b.getNetValue() = " + b.getNetValue());
+            tmp.add(getBillItems().get(b.getSearialNo()));
         }
+        billItems.removeAll(tmp);
+        for (BillItem b : billItems) {
+            System.out.println("b.getSearialNo() = " + b.getSearialNo());
+            System.out.println("b.getNetValue() = " + b.getNetValue());
+//            getBillItems().remove(b.getSearialNo());
+        }
+        calTotalWithResetingIndex();
 
-        //  calTotalWithResetingIndex();
-        selectedBillItems = null;
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+        selectedBillItems = new ArrayList<>();
+        selectedBillItems.addAll(billItems);
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
     }
 
     private void saveBhtBillItem(Bill b) {
@@ -528,11 +579,14 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItem() {
-        for (BillItem tmp : getBillItems()) {
+        System.out.println("getBillItems().size() = " + getBillItems().size());
+        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+        for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());
+            getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
             updateReferenceBill(tmp);
@@ -541,11 +595,12 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItemBht() {
-        for (BillItem tmp : getBillItems()) {
+        for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
             tmp.setBill(getCurrent());
             tmp.setNetValue(tmp.getNetValue());
+            getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
             updateReferenceBht(tmp);
@@ -607,6 +662,7 @@ public class CashRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         selectedBillItems = null;
+        institution = null;
         comment = null;
     }
 

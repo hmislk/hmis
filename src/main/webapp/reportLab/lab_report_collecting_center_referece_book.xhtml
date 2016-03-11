@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Collecting Center Reference Book">
+                <f:facet name="header">
+                    <p:outputLabel value="Collecting Center Reference Book" />
+<!--                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>-->
+                </f:facet>
+                <p:panel>
+                    <h:panelGrid columns="6">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+                        <p:outputLabel value="Agent Name" />
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{channelReportTempController.searchKeyword.ins}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                            <p:column>#{ix.institutionCode}</p:column>
+                            <p:column>#{ix.name}</p:column>
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="With Deleted Books"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.withRetiered}" />
+                        <p:outputLabel value="Activate Advance Search"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.activeAdvanceOption}"  >
+                            <p:ajax event="change" process="@this" update="val1 val2 val3 pgAdvan" />
+                        </p:selectBooleanCheckbox>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgAdvan" columns="3"  >
+                        <h:panelGrid columns="3" rendered="#{channelReportTempController.searchKeyword.activeAdvanceOption}">
+                            <p:outputLabel value="Book No"/>
+                            <p:outputLabel value="Starting Ref. No"/>
+                            <p:outputLabel value="Ending Ref. No"/>
+                            <p:inputText id="val1" value="#{channelReportTempController.searchKeyword.val1}" />
+                            <p:inputText id="val2" value="#{channelReportTempController.searchKeyword.val2}" />
+                            <p:inputText id="val3" value="#{channelReportTempController.searchKeyword.val3}" />
+                        </h:panelGrid>
+                    </h:panelGrid>
+
+                    <p:commandButton action="#{channelReportTempController.createCollectingCenterReferenceBooks}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="reportPrint"  />
+                    </p:commandButton>
+
+                    <p:commandButton actionListener="#{channelReportTempController.createCollectingCenterReferenceBooks}" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                        <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
+                    </p:commandButton> 
+
+                </p:panel>
+                <p:panel id="reportPrint">
+                    <p:dataTable value="#{channelReportTempController.agentReferenceBooks}"
+                                 rowStyleClass="#{a.deactivate ? 'redText':''}" var="a" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="Channel Book Details" />
+                        </f:facet>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Agent" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Book Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.bookNumber}" >
+                                <f:convertNumber pattern="0000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Starting Reference Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                <f:convertNumber pattern="00000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Ending Reference Number" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                <f:convertNumber pattern="00000" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Creater" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.createdAt}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Editor" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.editor.webUserPerson.nameWithTitle}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Edited Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.editedAt}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column exportable="false">
+                            <f:facet name="header">
+                                <p:outputLabel value="Deactivate" />
+                            </f:facet>
+                            <p:selectBooleanCheckbox value="#{a.deactivate}"></p:selectBooleanCheckbox>
+                        </p:column>
+                        <p:column exportable="false">
+                            <f:facet name="header">
+                                <p:outputLabel value="Update" />
+                            </f:facet>
+                            <p:commandButton disabled="#{a.retired}" 
+                                             value="Update" 
+                                             actionListener="#{channelReportTempController.createAgentReferenceBooks}" 
+                                             action="#{channelReportTempController.updateDecactivateCCBook(a)}" 
+                                             ajax="false"></p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

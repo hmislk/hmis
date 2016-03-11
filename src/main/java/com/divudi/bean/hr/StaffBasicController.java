@@ -310,8 +310,8 @@ public class StaffBasicController implements Serializable {
                 + " from StaffPaysheetComponent s"
                 + " where s.retired=false"
                 + " and s.staffPaySheetComponentValue!=0"
-                + " and s.fromDate<= :cu"
-                + " and s.toDate>:cu";
+                + " and s.fromDate>= :cu";
+//                + " and s.toDate>:cu";
 
         HashMap hm = new HashMap();
 
@@ -347,22 +347,22 @@ public class StaffBasicController implements Serializable {
         }
 
         if (getReportKeyWord().getDepartment() != null) {
-            sql += " and ss.staff.workingDepartment=:dep ";
+            sql += " and s.staff.workingDepartment=:dep ";
             hm.put("dep", getReportKeyWord().getDepartment());
         }
 
         if (getReportKeyWord().getStaffCategory() != null) {
-            sql += " and ss.staff.staffCategory=:stfCat";
+            sql += " and s.staff.staffCategory=:stfCat";
             hm.put("stfCat", getReportKeyWord().getStaffCategory());
         }
 
         if (getReportKeyWord().getDesignation() != null) {
-            sql += " and ss.staff.designation=:des";
+            sql += " and s.staff.designation=:des";
             hm.put("des", getReportKeyWord().getDesignation());
         }
 
         if (getReportKeyWord().getRoster() != null) {
-            sql += " and ss.staff.roster=:rs ";
+            sql += " and s.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
 

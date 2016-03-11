@@ -71,6 +71,7 @@ public class StaffSalaryComponant implements Serializable {
     private Date paidAt;
     @ManyToOne
     private WebUser paidBy;
+    String comments;
 
     public Staff getStaff() {
         return staff;
@@ -126,6 +127,8 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setComponantValue(double componantValue) {
+        System.out.println("getStaffPaysheetComponent().getPaysheetComponent().getName() = " + getStaffPaysheetComponent().getPaysheetComponent().getName());
+        System.out.println("getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
         if (getStaffPaysheetComponent() != null
                 && getStaffPaysheetComponent().getPaysheetComponent() != null
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != null
@@ -313,7 +316,13 @@ public class StaffSalaryComponant implements Serializable {
     public void setStaffPaysheetComponentPercentage(StaffPaysheetComponent staffPaysheetComponentPercentage) {
         this.staffPaysheetComponentPercentage = staffPaysheetComponentPercentage;
     }
-    
-    
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
 
 }

@@ -8,14 +8,17 @@ package com.divudi.bean.common;
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
@@ -35,7 +38,9 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -98,6 +103,10 @@ public class DataAdministrationController {
     CategoryFacade categoryFacade;
     @EJB
     ItemBatchFacade itemBatchFacade;
+    @EJB
+    StaffFacade staffFacade;
+    @EJB
+    PersonFacade personFacade;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -113,6 +122,8 @@ public class DataAdministrationController {
     boolean bool2;
     boolean bool3;
     boolean bool4;
+
+    private ReportKeyWord reportKeyWord;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -539,6 +550,47 @@ public class DataAdministrationController {
         JsfUtil.addErrorMessage("Removed all bill fees");
     }
 
+    public void updateStaffSelectedIntitutionZoneCode() {
+        if (reportKeyWord.getInstitution() != null) {
+            JsfUtil.addErrorMessage("Please Select Institution..");
+        }
+        if (reportKeyWord.getString() != null || reportKeyWord.getString().equals("")) {
+            JsfUtil.addErrorMessage("Please Enter Zone ... ");
+        }
+
+        String sql;
+        Map m = new HashMap();
+
+        List<Staff> staffs = new ArrayList<>();
+
+        sql = " select s from Staff s where s.retired=false "
+                + " and s.person.retired =false "
+                + " and s.workingDepartment.institution=:ins ";
+
+        m.put("ins", reportKeyWord.getInstitution());
+
+        staffs = getStaffFacade().findBySQL(sql, m);
+        System.out.println("staffs.size() = " + staffs.size());
+        for (Staff s : staffs) {
+            s.getPerson().setZoneCode(reportKeyWord.getString());
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            System.out.println("1.s.getPerson().getNic() = " + s.getPerson().getNic());
+            if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
+                System.out.println("s.getPerson().getNic().length() = " + s.getPerson().getNic().length());
+                if (s.getPerson().getNic().length() >= 9) {
+                    String s1 = s.getPerson().getNic().substring(0, 9);
+                    System.out.println("s1 = " + s1);
+                    s.getPerson().setNic(s1 + "V");
+                }
+
+            }
+            System.out.println("2.s.getPerson().getNic() = " + s.getPerson().getNic());
+            getPersonFacade().edit(s.getPerson());
+        }
+        JsfUtil.addSuccessMessage("Successfully Updated...");
+
+    }
+
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -712,6 +764,33 @@ public class DataAdministrationController {
 
     public void setBool4(boolean bool4) {
         this.bool4 = bool4;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public StaffFacade getStaffFacade() {
+        return staffFacade;
+    }
+
+    public void setStaffFacade(StaffFacade staffFacade) {
+        this.staffFacade = staffFacade;
+    }
+
+    public PersonFacade getPersonFacade() {
+        return personFacade;
+    }
+
+    public void setPersonFacade(PersonFacade personFacade) {
+        this.personFacade = personFacade;
     }
 
 }

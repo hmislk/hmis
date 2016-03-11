@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>                         
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -60,14 +60,15 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryGenereateOrNotStaffTable()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1 tb2" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1 tb2" fileName="hr_report_staff_salary_generate_or_not"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview" >    
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">    
                             <p:dataTable id="tb2" value="#{hrReportController.salaryNotGeneratedStaffs}" var="s" rowIndexVar="i">
                                 <f:facet name="header">
+                                    
                                     <h:outputLabel style="font-size: 20px  " value="Salary Not Generated Staffs"/>
                                     <br/>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
@@ -78,6 +79,10 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
@@ -110,7 +115,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Grade"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{s.grade}"/>
+                                    <h:outputLabel value="#{s.grade.name}"/>
                                 </p:column>
                                 <p:column headerText="Category">
                                     <f:facet name="header">
@@ -124,13 +129,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{s.designation.name}"/>
                                 </p:column>
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
+                               
                             </p:dataTable>
                             <p:dataTable id="tb1" value="#{hrReportController.salaryGeneratedStaffs}" var="s" rowIndexVar="i">
                                 <f:facet name="header">
@@ -176,7 +175,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Grade"  />
                                     </f:facet>
-                                    <h:outputLabel value="#{s.grade}"/>
+                                    <h:outputLabel value="#{s.grade.name}"/>
                                 </p:column>
                                 <p:column headerText="Category">
                                     <f:facet name="header">

@@ -116,6 +116,8 @@ public class Staff implements Serializable {
     double transDblValue;
     @Transient
     double transWorkedDays;
+    @Transient
+    double transWorkedDaysSalaryFromToDate;
     @ManyToOne
     private Institution bankBranch;
     @ManyToOne
@@ -136,6 +138,9 @@ public class Staff implements Serializable {
     Integer codeInterger;
     boolean allowedLateInLeave = true;
     boolean allowedEarlyOutLeave = true;
+    boolean withOutNotice;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date dateWithOutNotice;
     
     
     public double getTransDblValue() {
@@ -668,5 +673,27 @@ public class Staff implements Serializable {
         this.epfAccountNo = epfAccountNo;
     }
 
+    public double getTransWorkedDaysSalaryFromToDate() {
+        return transWorkedDaysSalaryFromToDate;
+    }
 
+    public void setTransWorkedDaysSalaryFromToDate(double transWorkedDaysSalaryFromToDate) {
+        this.transWorkedDaysSalaryFromToDate = transWorkedDaysSalaryFromToDate;
+    }
+
+    public boolean isWithOutNotice() {
+        return withOutNotice;
+    }
+
+    public void setWithOutNotice(boolean withOutNotice) {
+        this.withOutNotice = withOutNotice;
+    }
+
+    public Date getDateWithOutNotice() {
+        return dateWithOutNotice;
+    }
+
+    public void setDateWithOutNotice(Date dateWithOutNotice) {
+        this.dateWithOutNotice = dateWithOutNotice;
+    }
 }

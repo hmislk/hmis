@@ -3066,8 +3066,8 @@ public class HumanResourceBean {
                 + " from StaffShift ss "
                 + " where ss.retired=false "
                 + " and (( ss.startRecord.recordTimeStamp is not null "
-                + " and ss.endRecord.recordTimeStamp is not null )"
-                + " or ss.leaveType is not null) "
+                + " and ss.endRecord.recordTimeStamp is not null ))"
+                //                + " or ss.leaveType is not null) "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
         HashMap hm = new HashMap();
@@ -3096,7 +3096,8 @@ public class HumanResourceBean {
                 + " and ss.extraTimeFromStartRecordVarified=:d "
                 + " and ss.extraTimeFromEndRecordVarified=:d "
                 + " and ss.extraTimeCompleteRecordVarified=:d "
-                + " and ss.staff=:stf ";
+                + " and ss.staff=:stf "
+                + " order by ss.shiftDate ";
 
         HashMap hm = new HashMap();
         hm.put("fd", fromDate);
@@ -3110,12 +3111,23 @@ public class HumanResourceBean {
         Double dbl = 0.0;
 
         if (list != null) {
-
+            StaffShift lastStaffShift = new StaffShift();
             for (StaffShift s : list) {
-                System.out.println("s = " + s);
-                System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
+                System.out.println("lastStaffShift = " + lastStaffShift);
+                System.out.println("s.getShiftDate() = " + s.getShiftDate());
+                if (lastStaffShift != null) {
+                    System.err.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
+                    System.err.println("s.getShiftDate() = " + s.getShiftDate());
+                    if (lastStaffShift.getShiftDate() != null) {
+                        if (lastStaffShift.getShiftDate().getTime() == s.getShiftDate().getTime()) {
+                            System.err.println("Dates Equal");
+                            continue;
+                        }
+                    }
+                }
                 dbl += s.getShift().isHalfShift() ? 0.5 : 1;
-
+                lastStaffShift = s;
+                System.err.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
             }
 
         }
@@ -3151,10 +3163,18 @@ public class HumanResourceBean {
                 + " and ss.dayType = :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
+
+        if (dayType == DayType.Poya || dayType == DayType.MurchantileHoliday) {
+            sql += " and ss.lieuAllowed=false "
+                    + " and ss.lieuQtyUtilized=0";
+        }
+
         if (dayType == DayType.DayOff) {
             sql += " and type(ss)=:class "; //only get add forms for day off
             hm.put("class", StaffShiftExtra.class);
         }
+
+        sql += " order by ss.shiftDate ";
 
         hm.put("fd", fromDate);
         hm.put("td", toDate);
@@ -3163,15 +3183,28 @@ public class HumanResourceBean {
 
         List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
+        List<StaffShift> listtemp = list;
+
         Double lg = 0.0;
 
         if (list != null) {
+            StaffShift lastStaffShift = new StaffShift();
             for (StaffShift s : list) {
-                System.out.println("s = " + s);
-                System.out.println("s.getMultiplyingFactorSalary() = " + s.getMultiplyingFactorSalary());
-                System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
+                System.out.println("s.getShiftDate() = " + s.getShiftDate());
+                if (lastStaffShift != null) {
+                    System.err.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
+                    System.err.println("s.getShiftDate() = " + s.getShiftDate());
+                    if (lastStaffShift.getShiftDate() != null) {
+                        if (lastStaffShift.getShiftDate().getTime() == s.getShiftDate().getTime()) {
+                            System.err.println("Dates Equal");
+                            continue;
+                        }
+                    }
+                }
                 System.out.println("salaryPerDay = " + salaryPerDay);
                 lg += (s.getShift().isHalfShift() ? 0.5 : 1) * s.getMultiplyingFactorSalary() * salaryPerDay;
+                lastStaffShift = s;
+                System.err.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
                 System.out.println("lg = " + lg);
             }
 

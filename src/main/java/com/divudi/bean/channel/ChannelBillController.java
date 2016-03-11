@@ -56,6 +56,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -202,6 +203,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
         settleSucessFully = true;
+        printingBill = getBillFacade().find(b.getId());
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        System.out.println("bs = " + bs);
 //        System.out.println("getBillSession() = " + getBillSession().getName());
@@ -1203,6 +1205,7 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
+        area = null;
         doctorSpecialityController.setSelectText("");
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
@@ -1369,6 +1372,13 @@ public class ChannelBillController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckAfterSaveBill(Bill b) {
+        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+            return true;
+        }
+        return false;
+    }
+
     private void savePatient() {
         switch (getPatientTabId()) {
             case "tabNewPt":
@@ -1424,8 +1434,70 @@ public class ChannelBillController implements Serializable {
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessions();
+        //********************retier bill,billitem,billsession***********************************************
+        if (errorCheckAfterSaveBill(printingBill)) {
+            
+            printingBill.setRetired(true);
+            printingBill.setRetireComments("Skip System Error");
+            printingBill.setRetiredAt(new Date());
+            getBillFacade().edit(printingBill);
+
+            BillItem bi;
+            BillSession bs;
+            List<BillFee> BillFees;
+            String sql;
+            Map m = new HashMap();
+            m.put("b", printingBill);
+            if (printingBill.getSingleBillItem() != null) {
+                bi = getBillItemFacade().find(printingBill.getSingleBillItem().getId());
+            } else {
+                sql = " select bi from billItem bi where "
+                        + " bi.bill=:b ";
+                bi = getBillItemFacade().findFirstBySQL(sql, m);
+            }
+            if (bi != null) {
+                bi.setRetired(true);
+                bi.setRetireComments("Skip System Error");
+                bi.setRetirer(getSessionController().getLoggedUser());
+                bi.setRetiredAt(new Date());
+                getBillItemFacade().edit(bi);
+            }
+
+            if (printingBill.getSingleBillSession() != null) {
+                bs = getBillSessionFacade().find(printingBill.getSingleBillSession().getId());
+            } else {
+                sql = " select bs from BillSession bs where "
+                        + " bs.bill=:b ";
+                bs = getBillSessionFacade().findFirstBySQL(sql, m);
+            }
+            if (bs != null) {
+                bs.setRetired(true);
+                bs.setRetireComments("Skip System Error");
+                bs.setRetirer(getSessionController().getLoggedUser());
+                bs.setRetiredAt(new Date());
+                getBillSessionFacade().edit(bs);
+            }
+
+            sql = " select bf from BillFee bf where "
+                    + " bf.bill=:b ";
+
+            BillFees = getBillFeeFacade().findBySQL(sql, m);
+            if (!BillFees.isEmpty()) {
+                for (BillFee bf : BillFees) {
+                    bf.setRetired(true);
+                    bf.setRetireComments("Skip System Error");
+                    bf.setRetirer(getSessionController().getLoggedUser());
+                    bf.setRetiredAt(new Date());
+                    getBillFeeFacade().edit(bf);
+                }
+            }
+            System.err.println("Skiped System Error");
+            return;
+        }
+        //********************retier bill,billitem,billsession***********************************************
         settleSucessFully = true;
         sessionController.setBill(printingBill);
+
         UtilityController.addSuccessMessage("Channel Booking Added.");
     }
 

@@ -16,34 +16,33 @@
 
                 <h:form>
                     <p:panel header="Employe List" >
-                        <p:panel>
-                            <h:panelGrid columns="2" >  
-                                <h:outputLabel value="Institution"/>
-                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                                <h:outputLabel value="Department : "/>
-                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                                <h:outputLabel value="Staff Category : "/>
-                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                                <h:outputLabel value="Staff Specility : "/>
-                                <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
-                                <h:outputLabel value="Staff Designation : "/>
-                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                                <h:outputLabel value="Staff Roster : "/>
-                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            </h:panelGrid>
-                            <h:panelGrid columns="3">
-                                <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
-                                <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                    <p:printer target="reportPrint"  />
-                                </p:commandButton>
 
-                                <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                    <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
-                                </p:commandButton> 
-                            </h:panelGrid>
+                        <h:panelGrid columns="2">  
+                            <h:outputLabel value="Institution"/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Staff Specility : "/>
+                            <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
+                            <h:outputLabel value="Staff Designation : "/>
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
 
-                        </p:panel>
-                        <p:panel header="Employee List" id="reportPrint">
+                            <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_employee_detail"  />
+                            </p:commandButton> 
+                        </h:panelGrid>
+
+                        <p:panel  id="reportPrint" styleClass="noBorder summeryBorder">
 
 
                             <p:dataTable value="#{hrReportController.staffs}" 
@@ -53,6 +52,23 @@
                                          rowKey="#{s.id}"
 
                                          >
+                                <f:facet name="header">
+                                    
+                                    <h:outputLabel value="Employee List"/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <br/>
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
+                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
                                 <p:column headerText="Id" filterBy="#{s.id}" exportable="false">
                                     #{s.id}
                                 </p:column>
@@ -92,33 +108,33 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.speciality.name}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Roster" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Roster" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.roster.name}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Working Time For Over Time Per Week" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Working Time For Over Time Per Week" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.workingTimeForOverTimePerWeek}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Working Time For NoPay Per Week" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Working Time For Over Time Per Week" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.workingTimeForNoPayPerWeek}" />
                                 </p:column>
-                                
-                                   <p:column headerText="Employee Status">
+
+                                <p:column headerText="Employee Status">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Employee Status" />
                                     </f:facet>
-                                       <p:outputLabel value="#{s.employeeStatus.label}" />
+                                    <p:outputLabel value="#{s.employeeStatus.label}" />
                                 </p:column>
                                 <p:column headerText="ADDRESS" >
                                     <f:facet name="header" >
@@ -138,7 +154,7 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.nic}" />
                                 </p:column>
-                                <p:column headerText="DOB" >
+                                <p:column headerText="DOB" sortBy="#{s.person.dob.month}" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="DOB" />
                                     </f:facet>
@@ -172,6 +188,13 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.bankBranch.institution.name}" />
                                 </p:column>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
 
                             </p:dataTable>
 

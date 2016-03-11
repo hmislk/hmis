@@ -16,7 +16,7 @@
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
-                            <h:outputLabel value="EPF ETF" />
+                            <h:outputLabel value="ETF" />
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
@@ -38,12 +38,12 @@
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
+                            <h:outputLabel value="Institution : "/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>  
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Employee : "/>
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Staff Category : "/>
                             <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
                             <h:outputLabel value="Staff Designation : "/>
@@ -57,11 +57,11 @@
 
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalary()}"/>
+                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryEPF()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
 
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_staff_epf_etf"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -69,7 +69,8 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Employee EPF/ETF Report"/>
+                                    
+                                    <h:outputLabel value="Employee EPF Report"/>
                                     <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -77,6 +78,10 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff.person.name ne null}" >
+                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
@@ -97,7 +102,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Employee Name"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
+                                    <p:outputLabel value="#{ss.staff.person.name}">
                                     </p:outputLabel>
                                 </p:column>  
                                 <p:column headerText="Nic No">
@@ -114,54 +119,28 @@
                                     <p:outputLabel value="#{ss.staff.epfNo}" >
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Total" style="text-align: right;">
+                                <p:column headerText="Company (3%)" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Total"  />
+                                        <h:outputLabel value="Company (3%)"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue+ss.epfStaffValue)}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel> 
-                                    <f:facet name="footer">
-                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue+hrReportController.totalEtfCompanyValue+hrReportController.totalEpfStaffValue)}">
-                                            <f:convertNumber pattern="0.00" />
-                                        </p:outputLabel> 
-                                    </f:facet>
-                                </p:column> 
-                                <p:column headerText="Staff" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Staff"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{-ss.epfStaffValue}">
+                                    <p:outputLabel value="#{-(ss.etfCompanyValue)}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{-(hrReportController.totalEpfStaffValue)}">
+                                        <p:outputLabel value="#{-(hrReportController.totalEtfCompanyValue)}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel> 
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Company" style="text-align: right;">
+                                <p:column headerText="EPF/ETF Diductable Salary" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Company"  />
+                                        <h:outputLabel value="EPF/ETF Diductable Salary"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{-(ss.epfCompanyValue+ss.etfCompanyValue)}">
-                                        <f:convertNumber pattern="0.00" />
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <p:outputLabel value="#{-(hrReportController.totalEpfCompanyValue+hrReportController.totalEtfCompanyValue)}">
-                                            <f:convertNumber pattern="0.00" />
-                                        </p:outputLabel> 
-                                    </f:facet>
-                                </p:column>
-                                <p:column headerText="Basic Salary" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Basic Salary"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.basicValue}">
+                                    <p:outputLabel value="#{ss.transEpfEtfDiductableSalary}">
                                         <f:convertNumber pattern="0.00" />
                                     </p:outputLabel> 
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.totalBasicValue}">
+                                        <p:outputLabel value="#{hrReportController.totalTransEpfEtfDiductableSalary}">
                                             <f:convertNumber pattern="0.00" />
                                         </p:outputLabel> 
                                     </f:facet>
@@ -174,6 +153,7 @@
                                     </p:outputLabel>
                                 </f:facet>
                             </p:dataTable>
+
                         </p:panel>
 
 

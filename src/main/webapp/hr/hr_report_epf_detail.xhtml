@@ -16,34 +16,34 @@
 
                 <h:form>
                     <p:panel header="Employe List" >
-                        <p:panel>
-                            <h:panelGrid columns="2" >  
-                                <h:outputLabel value="Institution"/>
-                                <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                                <h:outputLabel value="Department : "/>
-                                <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                                <h:outputLabel value="Staff Category : "/>
-                                <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                                <h:outputLabel value="Staff Specility : "/>
-                                <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
-                                <h:outputLabel value="Staff Designation : "/>
-                                <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                                <h:outputLabel value="Staff Roster : "/>
-                                <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            </h:panelGrid>
-                            <h:panelGrid columns="3">
-                                <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
-                                <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                                    <p:printer target="reportPrint"  />
-                                </p:commandButton>
 
-                                <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                    <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
-                                </p:commandButton> 
-                            </h:panelGrid>
+                        <h:panelGrid columns="2" >  
+                            <h:outputLabel value="Institution"/>
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
+                            <h:outputLabel value="Department : "/>
+                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
+                            <h:outputLabel value="Staff Category : "/>
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
+                            <h:outputLabel value="Staff Specility : "/>
+                            <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
+                            <h:outputLabel value="Staff Designation : "/>
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
+                            <h:outputLabel value="Staff Roster : "/>
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
 
-                        </p:panel>
-                        <p:panel header="Employee List" id="reportPrint">
+                            <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_epf_detail"  />
+                            </p:commandButton> 
+                        </h:panelGrid>
+
+
+                        <p:panel  id="reportPrint" styleClass="noBorder summeryBorder">
 
 
                             <p:dataTable value="#{hrReportController.staffs}" 
@@ -53,89 +53,102 @@
                                          rowKey="#{s.id}"
 
                                          >
+                                <f:facet name="header">
+                                   
+                                    <h:outputLabel value="Employee List"/>
+                                    <br/>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
+                                        <br/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
+                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
+                                        <br/>
+                                    </h:panelGroup>
+                                </f:facet>
 
-                                
+
                                 <p:column headerText="Nic Number" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Nic Number" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.nic}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Last Name" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Last Name" />
                                     </f:facet>
                                     <p:outputLabel />
                                 </p:column>
-                                
+
                                 <p:column filterBy="#{s.person.nameWithTitle}" headerText="Initials">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Initials" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.nameWithTitle}" />
                                 </p:column>
-                                
+
                                 <p:column filterBy="#{s.accountNo}" headerText="Member AC Number">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Member AC Number" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.accountNo}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Employer’s Contribution Amount (Rs.)" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Employer’s Contribution Amount (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel/>
                                 </p:column>
-                                
+
                                 <p:column headerText="Member’s Contribution Amount (Rs.)" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Member’s Contribution Amount (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel/>
                                 </p:column>
-                                
-                                
-                                
+
+
+
                                 <p:column headerText="Total Contribution Amount (Rs.)">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Total Contribution Amount (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel />
                                 </p:column>
-                                
-                                
-                                
+
+
+
                                 <p:column headerText="Total Earnings (Rs.)">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Total Earnings (Rs.)" />
                                     </f:facet>
                                     <p:outputLabel />
                                 </p:column>
-                                
+
                                 <p:column headerText="Member Status">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Member Status" />
                                     </f:facet>
-                                       <p:outputLabel value="#{s.employeeStatus.label}" />
+                                    <p:outputLabel value="#{s.employeeStatus.label}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Zone code">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Zone code" />
                                     </f:facet>
-                                       <p:outputLabel />
+                                    <p:outputLabel />
                                 </p:column>
-                                
+
                                 <p:column headerText="Employer Number">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Employer Number" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.codeInterger}"/>
                                 </p:column>
-                                
+
                                 <p:column headerText="Contribution Year Month">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Contribution Year Month" />
@@ -144,21 +157,21 @@
                                         <f:convertDateTime pattern="YYYY/MM"></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Data Submission Number">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Data Submission Number" />
                                     </f:facet>
                                     <p:outputLabel/>
                                 </p:column>
-                                
+
                                 <p:column headerText="No.of days worked">
                                     <f:facet name="header" >
                                         <p:outputLabel value="No.of days worked" />
                                     </f:facet>
                                     <p:outputLabel/>
                                 </p:column>
-                                
+
                                 <p:column headerText="Occupation Classification Grade(As per the classification of censes  and statistic Dept) ">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Occupation Classification Grade(As per the classification of censes  and statistic Dept) " />
@@ -166,6 +179,14 @@
                                     <p:outputLabel/>
                                 </p:column>
 
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
+                                    <p:outputLabel value="Print At : " />
+                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                                    </p:outputLabel>
+                                </f:facet>
+                           
                             </p:dataTable>
 
 

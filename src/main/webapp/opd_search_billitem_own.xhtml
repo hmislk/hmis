@@ -55,12 +55,12 @@
                             </p:column>
                             <p:column headerText="Bill No" styleClass="alignTop" >
                                 <h:commandLink action="bill_reprint" value="#{pi.bill.insId}">
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>   
                             </p:column>
                             <p:column headerText="Institution Name" styleClass="alignTop"  >
                                 <h:commandLink action="bill_reprint" value="#{pi.bill.toInstitution.name}">
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
                             
@@ -106,16 +106,31 @@
                                 </h:panelGroup>
                                 <br/>
                             </p:column>
+                            <p:column headerText="Billed by" >
+                                <h:outputLabel value="#{pi.bill.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
+                                <br/>
+                                <h:panelGroup rendered="#{pi.bill.cancelled}" >
+                                    <h:outputLabel style="color: red;" value="Cancelled By " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.bill.cancelled}" value="#{pi.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pi.bill.refunded}" >
+                                    <h:outputLabel style="color: red;" value="Refunded By " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.bill.refunded}" value="#{pi.bill.refundedBill.creater.webUserPerson.name}" >
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
                             <p:column headerText="Payment Method"   >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Discount Scheme" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentScheme.name}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Gross Value"   >
@@ -123,7 +138,7 @@
                                     <h:outputLabel value="#{pi.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Discount"   >
@@ -131,7 +146,7 @@
                                     <h:outputLabel value="#{pi.bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Net Value"  >
@@ -139,7 +154,7 @@
                                     <h:outputLabel value="#{pi.bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
 

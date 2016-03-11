@@ -192,7 +192,7 @@ public class PhDateController implements Serializable {
             j="select j "
                     + " from PhDate j "
                     + " where j.retired=false "
-                    + " order by j.name";
+                    + " order by j.phDate desc";
             items = getFacade().findBySQL(j);
         }
         return items;

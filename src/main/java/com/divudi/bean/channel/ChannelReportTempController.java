@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.channel.ReferenceBookEnum;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
@@ -541,8 +542,16 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("bills.size() = " + bills.size());
 
     }
+    
+    public void createChannelAgentReferenceBooks() {
+        createAgentReferenceBooks(ReferenceBookEnum.ChannelBook);
+    }
+    
+    public void createCollectingCenterReferenceBooks() {
+        createAgentReferenceBooks(ReferenceBookEnum.LabBook);
+    }
 
-    public void createAgentReferenceBooks() {
+    public void createAgentReferenceBooks(ReferenceBookEnum bookEnum) {
         String sql;
         HashMap m = new HashMap();
 
@@ -594,8 +603,10 @@ public class ChannelReportTempController implements Serializable {
             }
         }
 
-        sql += " order by a.bookNumber ";
+        sql += " and a.referenceBookEnum=:rb "
+                + " order by a.bookNumber ";
 
+        m.put("rb", bookEnum);
         m.put("fd", fromDate);
         m.put("td", toDate);
 
@@ -865,7 +876,17 @@ public class ChannelReportTempController implements Serializable {
         getAgentReferenceBookFacade().edit(a);
 
         UtilityController.addSuccessMessage("Updated");
-        createAgentReferenceBooks();
+        createAgentReferenceBooks(ReferenceBookEnum.ChannelBook);
+    }
+    
+    public void updateDecactivateCCBook(AgentReferenceBook a) {
+
+        a.setEditor(getSessionController().getLoggedUser());
+        a.setEditedAt(new Date());
+        getAgentReferenceBookFacade().edit(a);
+
+        UtilityController.addSuccessMessage("Updated");
+        createAgentReferenceBooks(ReferenceBookEnum.LabBook);
     }
 
     public void createConsultantLeaves() {

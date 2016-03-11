@@ -27,7 +27,10 @@
                                                          styleClass="linkButton" ajax="false" /> 
                                         <p:commandButton value="(3) Staff Payroll" 
                                                          action="/hr/hr_report_staff_payroll" 
-                                                         styleClass="linkButton" ajax="false" />                                 
+                                                         styleClass="linkButton" ajax="false" />
+                                        <p:commandButton value="(3.1) Staff Payroll(Selected Staff)" 
+                                                         action="/hr/hr_staff_salary_1" 
+                                                         styleClass="linkButton" ajax="false" />
                                         <p:commandButton value="(4) Staff Over Time " 
                                                          action="/hr/hr_report_staff_over_time" 
                                                          styleClass="linkButton" ajax="false" />  
@@ -55,8 +58,16 @@
                                                          value="(8.1) Staff Salary Component(Bank Vise)" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_1"
+                                                         value="(9) EPF" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{staffBasicController.makeItemNul()}"  />
                                         <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf"
-                                                         value="(9) EPF ETF" 
+                                                         value="(9.1) ETF" 
+                                                         styleClass="linkButton"
+                                                         actionListener="#{staffBasicController.makeItemNul()}"  />
+                                        <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_to_export"
+                                                         value="(9.2) EPF ETF(Export)" 
                                                          styleClass="linkButton"
                                                          actionListener="#{staffBasicController.makeItemNul()}"  />
                                         <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate _or_not"

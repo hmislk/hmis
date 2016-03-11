@@ -17,12 +17,12 @@
 
                     <h:outputLabel value="From Date"/>
 
-                    <p:calendar value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true" pattern="dd MMMM yyyy "  >
+                    <p:calendar styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
 
-                    <p:calendar value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="dd MMMM yyyy " >
+                    <p:calendar styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
 
                     <h:outputLabel value="Reported Departmant"/>
@@ -39,15 +39,9 @@
                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment()}"
                                      styleClass="noPrintButton" style="float: right;" >
                     </p:commandButton>
-                    <p:commandButton value="Print" actionListener="#{investigationMonthSummeryOwnControllerSession.prepareForPrint()}" 
-                                     oncomplete="$('#frm\\:print').click()"
-                                     update=":frm:tbl"/>
-                    <p:commandButton id="print" value="Actual print" style="display: none">
-                        <p:ajax event="click" listener="#{investigationMonthSummeryOwnControllerSession.prepareForView()}" update=":frm:tbl"/>
-                        <p:printer target=":frm:tbl" />
+                    <p:commandButton id="print" value="Print" style="display: none">
+                        <p:printer target="panPrint" />
                     </p:commandButton>
-
-
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
                                      facetBackground="#008000" facetFontSize="15" 
@@ -56,48 +50,43 @@
                     </p:commandButton> 
                 </h:panelGrid>
 
-                <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
-                             rows="20"
-                             paginator="true"
-                             rowIndexVar="i"
-                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20, 50, 100"
-                             >
-                    <f:facet name="header" >
-                        <h:outputLabel value="Investigation Counts by Reported Department"/>
-                    </f:facet>
-
-
-
-                    <p:column >
-                        <h:outputLabel value="#{i+1}"  />
-
-                    </p:column>
-
-                    <p:column headerText="Test Name" 
-                              sortBy="#{c.investigation.name}" 
-                              filterBy="#{c.investigation.name}"
-                              filterMatchMode="contains">
-                        <f:facet name="header">
-                            <h:outputLabel value="Test Name"/>
+                <p:panel styleClass="noBorder summeryBorder" id="panPrint">
+                    <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c" 
+                                 rowIndexVar="i"
+                                 >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Investigation Counts by Reported Department - #{investigationMonthSummeryOwnControllerSession.reportedDepartment.name}"/>
                         </f:facet>
-                        <h:outputLabel value="#{c.investigation.name}"  />
-                        <f:facet name="footer">
-                            <h:outputLabel value="Total">
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-                    <p:column headerText="Count" style="text-align:right" 
-                              sortBy="#{c.count}">
-                        <h:outputLabel value="#{c.count}" />
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
 
 
-                </p:dataTable>
+                        <p:column >
+                            <h:outputLabel value="#{i+1}"  />
+
+                        </p:column>
+
+                        <p:column headerText="Test Name" 
+                                  sortBy="#{c.investigation.name}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Test Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.investigation.name}"  />
+                            <f:facet name="footer">
+                                <h:outputLabel value="Total">
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Count" style="text-align:right" 
+                                  sortBy="#{c.count}">
+                            <h:outputLabel value="#{c.count}" />
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+
+                    </p:dataTable>
+                </p:panel>
             </p:panel>
 
 
