@@ -206,6 +206,9 @@ public class CommonReport implements Serializable {
     List<ItemCountRow> itemCountRowsCancel;
     List<ItemCountRow> itemCountRowsRefund;
 
+    boolean onlyStaffFee=false;
+    boolean onlyHosFee=false;
+
     public List<Bill> getBills() {
         return bills;
     }
@@ -3318,7 +3321,7 @@ public class CommonReport implements Serializable {
         billTotalCancel = 0.0;
         billTotalRefund = 0.0;
         itemCountRows = new ArrayList<>();
-        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
@@ -3330,7 +3333,7 @@ public class CommonReport implements Serializable {
             }
         }
         itemCountRowsCancel = new ArrayList<>();
-        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
@@ -3342,7 +3345,7 @@ public class CommonReport implements Serializable {
             }
         }
         itemCountRowsRefund = new ArrayList<>();
-        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 ItemCountRow row = new ItemCountRow();
@@ -3362,7 +3365,7 @@ public class CommonReport implements Serializable {
             Institution ins,
             Department dep,
             WebUser webUser,
-            Date fd, Date td) {
+            Date fd, Date td, boolean hf, boolean sf) {
 
         List<Object[]> items = new ArrayList<>();
         String sql;
@@ -3405,6 +3408,16 @@ public class CommonReport implements Serializable {
             m.put("ics", Arrays.asList(itemClasses));
         }
 
+        if (hf) {
+            sql += " and bf.fee.feeType!=:ft ";
+            m.put("ft", FeeType.Staff);
+        }
+
+        if (sf) {
+            sql += " and bf.fee.feeType=:ft ";
+            m.put("ft", FeeType.Staff);
+        }
+
         m.put("fd", fd);
         m.put("td", td);
 
@@ -3419,6 +3432,18 @@ public class CommonReport implements Serializable {
         System.out.println("items = " + items);
 
         return items;
+    }
+    
+    public void listnerHosFee(){
+        if (onlyHosFee) {
+            onlyStaffFee=false;
+        }
+    }
+    
+    public void listnerStaffFee(){
+        if (onlyStaffFee) {
+            onlyHosFee=false;
+        }
     }
 
     public void recreteModal() {
@@ -4809,6 +4834,22 @@ public class CommonReport implements Serializable {
 
     public void setItemCountRowsRefund(List<ItemCountRow> itemCountRowsRefund) {
         this.itemCountRowsRefund = itemCountRowsRefund;
+    }
+
+    public boolean isOnlyStaffFee() {
+        return onlyStaffFee;
+    }
+
+    public void setOnlyStaffFee(boolean onlyStaffFee) {
+        this.onlyStaffFee = onlyStaffFee;
+    }
+
+    public boolean isOnlyHosFee() {
+        return onlyHosFee;
+    }
+
+    public void setOnlyHosFee(boolean onlyHosFee) {
+        this.onlyHosFee = onlyHosFee;
     }
 
 }
