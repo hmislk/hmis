@@ -41,7 +41,10 @@
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-
+                                <p:selectOneMenu  value="#{searchController.searchKeyword.paymentMethod}">
+                                    <f:selectItem itemLabel="select Payment Methord" />
+                                    <f:selectItems value="#{enumController.paymentMethods}" />
+                                </p:selectOneMenu>
                             </h:panelGrid>
                         </f:facet>
 
@@ -58,6 +61,9 @@
                             </p:column>
                             <p:column headerText="Payment Bill No" >
                                 <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Payment Methord" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.paymentMethod}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Specility" >
                                 <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>

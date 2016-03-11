@@ -207,7 +207,7 @@
                                         </f:facet>
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}" >
-                                                <f:ajax event="change"  execute="@this" render="txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
+                                                <f:ajax event="change"  execute="@this" render="@this txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
                                             </p:selectBooleanCheckbox>  
                                         </f:facet>
                                     </p:cellEditor>
@@ -220,7 +220,7 @@
                                         </f:facet>
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}" >
-                                                <f:ajax event="change" execute="@this" render="txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
+                                                <f:ajax event="change" execute="@this" render="@this txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
                                             </p:selectBooleanCheckbox>   
                                         </f:facet>
                                     </p:cellEditor>
