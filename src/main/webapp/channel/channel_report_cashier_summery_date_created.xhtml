@@ -27,9 +27,9 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
                         </p:calendar>
-                        <h:outputLabel value="To Date"/>
+<!--                        <h:outputLabel value="To Date"/>
                         <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
-                        </p:calendar>
+                        </p:calendar>-->
                         <h:outputLabel value="Doc Fee Only"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.withDocPayment}" >
                             <p:ajax event="change" process="@this" update="pan1" listener="#{channelReportTempController.listnerDoc()}" />
