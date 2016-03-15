@@ -35,25 +35,25 @@
                         </f:facet>
                         <p:outputLabel value="#{i+1}" />
                     </p:column>
-                    <p:column headerText="Consultant" style="width: 1000px!important;">
+                    <p:column headerText="Consultant" style="width: 1000px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
                         <f:facet name="header">
                             <p:outputLabel value="Consultant" style="float: left;"/>
                         </f:facet>
                         <p:outputLabel value="#{bs.bill.staff.person.nameWithTitle}" />
                     </p:column>   
-                    <p:column headerText="Patient" style="width: 1000px!important;">
+                    <p:column headerText="Patient" style="width: 1000px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
                         <f:facet name="header">
                             <p:outputLabel value="Patient" style="float: left;"/>
                         </f:facet>
                         <p:outputLabel value="#{bs.bill.patient.person.name}" />
                     </p:column> 
-                    <p:column headerText="Bill No" styleClass="numberCol">
+                    <p:column headerText="Bill No" style="min-width: 3px!important;text-align: right;">
                         <p:outputLabel value="#{bs.bill.deptId}" />
                     </p:column>
-                    <p:column headerText="Appo. No" style="width: 10px!important;" styleClass="numberCol">
+                    <p:column headerText="App No" style="min-width: 3px!important;text-align: right;">
                         <p:outputLabel value="#{bs.serialNo}" />
                     </p:column>
-                    <p:column headerText="Staff Fee" styleClass="numberCol">
+                    <p:column headerText="Staff Fee" style="min-width: 3px!important;text-align: right;">
                         <p:outputLabel value="#{bs.bill.staffFee}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
@@ -63,7 +63,7 @@
                             </p:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Hos Fee" styleClass="numberCol" style="width: 150px!important;">
+                    <p:column headerText="Hos Fee" style="min-width: 3px!important;text-align: right;">
                         <p:outputLabel value="#{bs.bill.netTotal-bs.bill.staffFee}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </p:outputLabel>
@@ -73,7 +73,7 @@
                             </p:outputLabel>
                         </f:facet>
                     </p:column>
-                    <p:column headerText="Total" styleClass="numberCol">
+                    <p:column headerText="Total"  style="min-width: 3px!important;text-align: right;">
                         <p:outputLabel value="#{bs.bill.netTotal}" >
                             <f:convertNumber pattern="##,###,##0.00" />
                         </p:outputLabel>
