@@ -559,12 +559,12 @@ public class PharmacySaleReport implements Serializable {
         m.put("btp", billType);
         sql = "select i "
                 + " from BillItem i "
-                + "where i.bill.referenceBill.department=:d "
+                + " where i.bill.referenceBill.department=:d "
                 //                + " and i.retired=false "
                 + " and i.bill.retired=false "
                 + " and i.bill.billType=:btp "
-                + "and type(i.bill)!=:cl "
-                + "and i.bill.createdAt between :fd and :td ";
+                + " and type(i.bill)!=:cl "
+                + " and i.bill.createdAt between :fd and :td ";
 
         if (category != null) {
             sql += " and i.item.category=:cat";
@@ -2660,32 +2660,26 @@ public class PharmacySaleReport implements Serializable {
         String jpql;
         Map m = new HashMap();
 
-        m
-                .put("bc", PreBill.class
-                );
-        m.put(
-                "fd", fromDate);
-        m.put(
-                "td", toDate);
+        m.put("bc", PreBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
 
-        jpql = "select pbi.billItem.bill.billType,"
+        jpql = "select pbi.billItem.bill.billType, "
                 + " pbi.itemBatch, "
-                + " sum(pbi.billItem.netValue), "
-                + " sum(pbi.qty),"
+                + " sum(distinct(pbi.billItem.netValue)), "
+                + " sum(distinct(pbi.qty)),"
                 + " stk"
                 + " from PharmaceuticalBillItem pbi,Stock stk "
                 + " where type(pbi.billItem.bill)=:bc "
                 + " and stk.itemBatch=pbi.itemBatch "
                 + " and pbi.billItem.bill.createdAt between :fd and :td ";
-
-        if (category
-                != null) {
+        
+        if (category!= null) {
             jpql = jpql + " and pbi.billItem.item.category=:cat";
             m.put("cat", category);
         }
 
-        if (department
-                != null) {
+        if (department!= null) {
             jpql = jpql + " and pbi.billItem.bill.department=:dept ";
             m.put("dept", department);
         }
@@ -2717,6 +2711,10 @@ public class PharmacySaleReport implements Serializable {
                 netValue = (double) o[2];
                 qty = (double) o[3];
                 stock = (Stock) o[4];
+                
+                System.out.println("billType = " + billType);
+                System.out.println("itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
+                System.out.println("qty = " + qty);
 
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
