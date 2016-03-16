@@ -59,7 +59,8 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT Issue From"/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
+                                    <br/>
+                                    <!--<h:panelGrid columns="4">-->
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -68,7 +69,7 @@
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                    <!--</h:panelGrid>-->
                                 </f:facet>
                                 <p:column>
                                     #{n+1}

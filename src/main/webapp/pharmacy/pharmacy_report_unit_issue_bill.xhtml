@@ -55,7 +55,8 @@
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
                                     <h:outputLabel value=" To "/>
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
-                                    <h:panelGrid columns="4">
+                                    <br/>
+                                    <!--<h:panelGrid columns="4">-->
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -64,7 +65,7 @@
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                    <!--</h:panelGrid>-->
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
