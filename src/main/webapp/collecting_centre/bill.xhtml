@@ -278,77 +278,82 @@
 
                                 <h:panelGrid columns="1" >
                                     <p:panel >
-                                        <p:panelGrid  >
-                                            <p:row>
-                                                <p:column >
-                                                    <p:outputLabel value="Collecting Centre"></p:outputLabel>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:autoComplete converter="deal" value="#{collectingCentreBillController.collectingCentre}" 
-                                                                    forceSelection="true" id="acColl"
-                                                                    completeMethod="#{institutionController.completeCollectingCenter}" 
-                                                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                                        <p:column>#{vt.institutionCode}</p:column>
-                                                        <p:column>#{vt.name}</p:column>
-                                                    </p:autoComplete>
-                                                </p:column>
-                                            </p:row>
-                                            <p:row >
-                                                <p:column >
-                                                    <p:outputLabel value="Referance No"></p:outputLabel>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:inputText value="#{collectingCentreBillController.referralId}" style="width: 80px"></p:inputText>
-                                                </p:column>
+                                        <h:panelGrid columns="2">
 
-                                            </p:row>
-                                            <p:row >
-                                                <p:column  >
-                                                    <p:outputLabel value="Comments"></p:outputLabel>
-                                                </p:column>
 
-                                                <p:column  >
-                                                    <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment"/>
-                                                </p:column>
-                                            </p:row>
+                                            <p:outputLabel value="Collecting Centre"></p:outputLabel>
 
-                                            <p:row >
-                                                <p:column  >
-                                                    <p:outputLabel value="Referring Doctor"></p:outputLabel>
-                                                </p:column>
-                                                <p:column >
-                                                    <p:autoComplete styleClass="mediuminput" forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
-                                                    </p:autoComplete>
-                                                    <p:spacer width="20" height="1" ></p:spacer>
-                                                    <p:commandButton id="btnAddNewDoc" type="button" value="Add" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" style="float: right;"/>  
-                                                </p:column>
-                                            </p:row>
 
-                                            <p:row >
-                                                <p:column >
-                                                    <p:outputLabel value="Refferal Institution"></p:outputLabel>
+                                            <p:autoComplete converter="deal" value="#{collectingCentreBillController.collectingCentre}" 
+                                                            forceSelection="true" id="acColl"
+                                                            completeMethod="#{institutionController.completeCollectingCenter}" 
+                                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+
+                                                <f:ajax event="itemSelect" execute="@this" render="tblAgentBooks tblAgentBooks2 ballance2 ballance4 ballance6" listener="#{collectingCentreBillController.listnerSelectLabBooks()}" />
+                                                <p:column>#{vt.institutionCode}</p:column>
+                                                <p:column>#{vt.name}</p:column>
+                                            </p:autoComplete>
+                                            <p:dataTable emptyMessage="No Book"  id="tblAgentBooks" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <p:outputLabel value="S.R.N." />
+                                                    </f:facet>
+                                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                        <f:convertNumber pattern="00000" />
+                                                    </p:outputLabel>
+                                                </p:column>.
+                                            </p:dataTable>
+                                            <p:dataTable  id="tblAgentBooks2" value="#{collectingCentreBillController.collectingCentre.agentReferenceBooks}" var="a" styleClass="noBorder summeryBorder">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <p:outputLabel value="E.R.N." />
+                                                    </f:facet>
+                                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                        <f:convertNumber pattern="00000" />
+                                                    </p:outputLabel>
                                                 </p:column>
+                                            </p:dataTable>
 
-                                                <p:column >
-                                                    <p:autoComplete forceSelection="true" id="cmdIns" 
-                                                                    value="#{collectingCentreBillController.referredByInstitution}" 
-                                                                    completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                                    itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
-                                                        <p:column headerText="Name">
-                                                            #{refi.name}
-                                                        </p:column>
-                                                        <p:column headerText="Code">
-                                                            #{refi.institutionCode}
-                                                        </p:column>
-                                                        <p:column headerText="Institution Type">
-                                                            #{refi.institutionType}
-                                                        </p:column>
-                                                    </p:autoComplete>
+
+
+                                            <p:outputLabel value="Referance No"></p:outputLabel>
+                                            <p:inputText value="#{collectingCentreBillController.referralId}" style="width: 80px"></p:inputText>
+                                            <p:outputLabel value="Comments"></p:outputLabel>
+                                            <p:inputTextarea value="#{collectingCentreBillController.comment}" id="comment"/>
+                                            <p:outputLabel value="Referring Doctor"></p:outputLabel>
+                                            <h:panelGrid columns="1">
+                                                <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
+                                                </p:autoComplete>
+                                                <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            </h:panelGrid>
+                                            <p:outputLabel value="Refferal Institution"></p:outputLabel>
+                                            <p:autoComplete forceSelection="true" id="cmdIns" 
+                                                            value="#{collectingCentreBillController.referredByInstitution}" 
+                                                            completeMethod="#{institutionController.completeIns}" var="refi" 
+                                                            itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
+                                                <p:column headerText="Name">
+                                                    #{refi.name}
                                                 </p:column>
-
-                                            </p:row>
-
-                                        </p:panelGrid>
+                                                <p:column headerText="Code">
+                                                    #{refi.institutionCode}
+                                                </p:column>
+                                                <p:column headerText="Institution Type">
+                                                    #{refi.institutionType}
+                                                </p:column>
+                                            </p:autoComplete>
+                                            <h:outputLabel id="ballance" value="Ballance"   />
+                                            <h:outputLabel id="ballance2" value="#{collectingCentreBillController.collectingCentre.ballance}">
+                                                <f:convertNumber  pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel id="ballance3" value="Max Credit Limit"/>                                          
+                                                <h:outputLabel id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
+                                                    <f:convertNumber  pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel id="ballance5" value="Credit Limit"   />
+                                                <h:outputLabel id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
+                                                    <f:convertNumber  pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                        </h:panelGrid>
 
                                     </p:panel>
 
@@ -670,9 +675,9 @@
             </h:form>
 
         </h:panelGroup>
-   
-    
-    
-    
+
+
+
+
     </ui:define>
 </ui:composition>
