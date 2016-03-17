@@ -629,6 +629,9 @@
                         <p:column headerText="Qty">
                             #{dd2.qty}
                         </p:column>
+                        <p:column headerText="Fr. Qty">
+                            #{dd2.pharmaceuticalBillItem.freeQty}
+                        </p:column>
                         <p:column headerText="Purchase Rate">
                             <h:outputLabel value="#{dd2.pharmaceuticalBillItem.purchaseRateInUnit}" ></h:outputLabel>
                         </p:column>
