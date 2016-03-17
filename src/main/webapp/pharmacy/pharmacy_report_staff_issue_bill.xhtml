@@ -39,16 +39,18 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{searchController.bills}" var="i"  >
                                 <f:facet name="header">
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{searchController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{searchController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                    <!--<h:panelGrid columns="4">-->
+                                    <h:outputLabel value="Detailed Transfer Listing"/>
+                                    <br/>
+                                    <h:outputLabel value="From  "/>
+                                    <h:outputLabel value="#{searchController.fromDate}">
+                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To  "/>
+                                    <h:outputLabel value="#{searchController.toDate}">
+                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <!--</h:panelGrid>-->
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
@@ -73,7 +75,7 @@
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Staff Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Staff Name"/>
