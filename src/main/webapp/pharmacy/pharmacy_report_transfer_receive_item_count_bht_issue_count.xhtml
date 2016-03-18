@@ -51,10 +51,8 @@
                                          >
 
                                 <f:facet name="header">
-                                    <h:panelGrid >
                                         <h:outputLabel value="Issue From  #{reportsTransfer.fromDepartment.name} Recive To #{reportsTransfer.toDepartment.name} &amp; BHT Issue From #{reportsTransfer.toDepartment.name}"/>
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="4">
+                                       <br/>
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
@@ -62,8 +60,7 @@
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                        </h:outputLabel>                                 
                                 </f:facet>
 
                                 <p:column headerText="Item Descreption">
