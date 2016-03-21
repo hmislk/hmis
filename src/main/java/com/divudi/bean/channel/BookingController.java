@@ -322,6 +322,7 @@ public class BookingController implements Serializable {
         serviceSessions = null;
         billSessions = null;
         sessionStartingDate = null;
+        consultants=null;
     }
 
     public List<Staff> completeStaff(String query) {
@@ -456,7 +457,8 @@ public class BookingController implements Serializable {
             System.out.println("consultants.size() = " + consultants.size());
             setStaff(consultants.get(0));
             setSpeciality(getStaff().getSpeciality());
-            generateSessions();
+//            generateSessions();
+            generateSessionsOnlyId();
         } else {
 
             setStaff(null);
@@ -551,6 +553,20 @@ public class BookingController implements Serializable {
         return dbl;
     }
 
+    private List<Object[]> fetchFeeById(Long l) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "Select f.feeType,sum(f.fee),sum(f.ffee) "
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item.id=:ses "
+                + " group by f.feeType ";
+        m.put("ses", l);
+        List<Object[]> objs = getItemFeeFacade().findAggregates(jpql, m);
+
+        return objs;
+    }
+
     private double fetchLocalFee(Item item, PaymentMethod paymentMethod) {
         String jpql;
         Map m = new HashMap();
@@ -588,6 +604,43 @@ public class BookingController implements Serializable {
         if (obj == null) {
             return 0;
         }
+
+        return obj;
+    }
+
+    private Object[] fetchLocalForiegnFeeById(Long l, PaymentMethod paymentMethod) {
+        String jpql;
+        Map m = new HashMap();
+        FeeType[] fts = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff};
+        List<FeeType> feeTypes = Arrays.asList(fts);
+        jpql = "Select sum(f.fee),sum(f.ffee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item.id=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.Staff, FeeType.OtherInstitution};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+            }
+        }
+        m.put("ses", l);
+//        System.out.println("paymentMethod = " + paymentMethod);
+//        System.out.println("feeTypes = " + feeTypes);
+//        System.out.println("m = " + m);
+        Object[] obj=getBillFacade().findAggregateModified(jpql, m, TemporalType.DATE);
 
         return obj;
     }
@@ -646,6 +699,19 @@ public class BookingController implements Serializable {
         return list;
     }
 
+    private List<ItemFee> fetchItemFeeById(Long l) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "Select f "
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item.id=:ses ";
+        m.put("ses", l);
+        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+//        System.err.println("Fetch Fess " + list.size());
+        return list;
+    }
+
     public void calculateFee(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
         for (ServiceSession ss : lstSs) {
             Double[] dbl = fetchFee(ss, FeeType.OwnInstitution);
@@ -663,6 +729,37 @@ public class BookingController implements Serializable {
             ss.setTotalFfee(fetchForiegnFee(ss, paymentMethod));
             ss.setItemFees(fetchFee(ss));
         }
+    }
+
+    public void calculateFeeBySessionIdList(List<Long> lstSs, PaymentMethod paymentMethod) {
+        System.err.println("Cal Fee IN = " + new Date());
+        for (Long ss : lstSs) {
+//            System.err.println("Cal Fee List = " + new Date());
+            ServiceSession session = getServiceSessionFacade().find(ss);
+            List<Object[]> objs = fetchFeeById(ss);
+            for (Object[] o : objs) {
+                FeeType ft = (FeeType) o[0];
+                if (ft == FeeType.OwnInstitution) {
+                    session.setHospitalFee((double) o[1]);
+                    session.setHospitalFfee((double) o[2]);
+                    continue;
+                }
+                if (ft == FeeType.Staff) {
+                    session.setProfessionalFee((double) o[1]);
+                    session.setProfessionalFfee((double) o[2]);
+                    continue;
+                }
+                if (ft == FeeType.Staff) {
+                    session.setTaxFee((double) o[1]);
+                    session.setTaxFfee((double) o[2]);
+                }
+            }
+            Object[] ob=fetchLocalForiegnFeeById(ss, paymentMethod);
+            session.setTotalFee((double) ob[0]);
+            session.setTotalFfee((double) ob[1]);
+            session.setItemFees(fetchItemFeeById(ss));
+        }
+        System.err.println("Cal Fee Out = " + new Date());
     }
 
     public void calculateFeeBooking(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
@@ -705,20 +802,29 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
-        System.err.println("Time in = " + new Date());
+        System.err.println("original Time in = " + new Date());
 
         System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
-                    + " and s.originatingSession is null"
+                    + " and s.originatingSession is null "
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             System.out.println("m = " + m);
+            System.out.println("sql = " + sql);
             List<ServiceSession> tmp = new ArrayList<>();
+            System.err.println("Time stage 2.1 = " + new Date());
             tmp = getServiceSessionFacade().findBySQL(sql, m);
-            System.err.println("Time stage 2 = " + new Date());
+
+            for (ServiceSession ss : tmp) {
+                ss.getStaff();
+                ss.getDepartment();
+
+            }
+
+            System.err.println("Time stage 2.2 = " + new Date());
             System.err.println("Fetch Sessions " + tmp.size());
             calculateFee(tmp, channelBillController.getPaymentMethod());
             System.err.println("Time stage 3 Calculate = " + new Date());
@@ -726,6 +832,45 @@ public class BookingController implements Serializable {
             System.err.println("Time stage 4 = " + new Date());
             generateSessionEvents(serviceSessions);
             checkDoctorArival(serviceSessions);
+        }
+    }
+
+    public void generateSessionsOnlyId() {
+        System.err.println("Time in = " + new Date());
+        serviceSessions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+        m.put("staff", getStaff());
+        m.put("class", ServiceSession.class);
+        System.err.println("Time stage 1 = " + new Date());
+        if (staff != null) {
+            sql = "Select s.id From ServiceSession s "
+                    + " where s.retired=false "
+                    + " and s.staff=:staff "
+                    + " and s.originatingSession is null "
+                    + " and type(s)=:class "
+                    + " order by s.sessionWeekday,s.startingTime ";
+            System.out.println("Consultant = " + getStaff().getPerson().getName());
+            System.out.println("m = " + m);
+            System.out.println("sql = " + sql);
+            List<Long> tmp = new ArrayList<>();
+            System.err.println("Time stage 2.1 = " + new Date());
+            tmp = getServiceSessionFacade().findLongList(sql, m);
+            System.err.println("Time stage 2.2 = " + new Date());
+            
+            System.err.println("Fetch Original Sessions " + tmp.size());
+            System.err.println("Time stage 3.1 = " + new Date());
+            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+            System.err.println("Time stage 3.2 = " + new Date());
+
+            System.err.println("Time stage 4.1 = " + new Date());
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, sessionStartingDate);
+            System.err.println("Fetch Created Sessions " + serviceSessions.size());
+            System.err.println("Time stage 4.2 = " + new Date());
+            
+            System.err.println("Time stage 5 = " + new Date());
+            generateSessionEvents(serviceSessions);
+            System.err.println("Time stage 6 = " + new Date());
         }
     }
 
@@ -738,7 +883,14 @@ public class BookingController implements Serializable {
             e.setStartDate(s.getTransStartTime());
             e.setEndDate(s.getTransEndTime());
             eventModel.addEvent(e);
+            checkDoctorArival(s);
         }
+    }
+
+    public void checkDoctorArival(ServiceSession s) {
+//        System.out.println("s.getName() = " + s.getName());
+        s.setArival(findArrivals(s));
+//        System.out.println("s.getArival() = " + s.getArival());
     }
 
     public void checkDoctorArival(List<ServiceSession> sss) {
@@ -861,11 +1013,11 @@ public class BookingController implements Serializable {
 
         String sql = "Select bs From ArrivalRecord bs "
                 + " where bs.retired=false"
-                + " and bs.serviceSession=:ss "
-                + " and bs.sessionDate= :ssDate ";
+                + " and bs.serviceSession.id=:ss "
+                + " and bs.sessionDate=:ssDate ";
         HashMap hh = new HashMap();
         hh.put("ssDate", ss.getSessionDate());
-        hh.put("ss", ss);
+        hh.put("ss", ss.getId());
         arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
 
         if (arrivalRecord != null) {
@@ -1003,6 +1155,21 @@ public class BookingController implements Serializable {
 
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
+    }
+
+    public void listnerStaffListForRowSelectNew() {
+        listnerStaffListForRowSelect();
+        listnerClearSelectedServiceSession();
+    }
+
+    public void listnerServiceSessionListForRowSelectNew() {
+        generateSessionsOnlyId();
+        listnerClearSelectedServiceSession();
+    }
+
+    public void listnerBillSessionListForRowSelectNew() {
+        fillBillSessions();
+        listnerClearSelectedBillSession();
     }
 
     public void listnerStaffRowSelect() {

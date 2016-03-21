@@ -15,85 +15,87 @@
             <h:form id="form"  >
                 <p:growl autoUpdate="true" />
                 <p:panel id="panIx"  >
-                    
+
                     <f:facet name="header" >
                         <h:outputLabel value="List of Investigations"></h:outputLabel>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="panIx" />
                         </p:commandButton>
-                        
+
                         <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
                             <pe:exporter type="xlsx" target="tbl" fileName="DepartmentIncome"
                                          facetBackground="#008000" facetFontSize="15" 
                                          facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
                         </p:commandButton>
-                        
+
                     </f:facet>
-                    
+
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.itemFee}" var="ix"  >
 
                         <f:facet name="header">
-                            <h:outputLabel  value="Lab Investigation Fee list - (2013/2014)" />
+                            <h:outputLabel  value="Lab Investigation Fee list " />
                         </f:facet>
-                        
+
                         <p:column headerText="No." >                            
                             <f:facet name="header">
                                 <h:outputLabel value="No"/>    
                             </f:facet>
                             <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
                         </p:column>  
-                        
-                        <p:column headerText="Investigation Name" >
+
+                        <p:column headerText="Investigation Name"  sortBy="#{ix.item.name}" filterBy="#{ix.item.name}">
                             <f:facet name="header">
                                 <h:outputLabel value="Investigation Name"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.item.name}" ></h:outputLabel>
                         </p:column>
-                        
-                        <p:column headerText="Investigation Name" >
+
+                        <p:column headerText="Status"  sortBy="#{ix.item.inactive}" filterBy="#{ix.item.inactive}">
                             <f:facet name="header">
-                                <h:outputLabel value="Investigation Name"/>    
+                                <h:outputLabel value="Status"/>    
                             </f:facet>
-                            <h:outputLabel value="#{ix.item.retired}" ></h:outputLabel>
+                            <!--<h:outputLabel value="#{ix.item.inactive}" ></h:outputLabel>-->
+                            <h:outputLabel  value="Active" style="color: green;" rendered="#{!ix.item.inactive}"/>
+                                    <h:outputLabel  value="Inactive" style="color: red;" rendered="#{ix.item.inactive}"/>
                         </p:column>
-                        
+
                         <p:column headerText="Institution Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Institution Name"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Department Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Department Name"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                         </p:column>
-                        
-                         <p:column headerText="Item Institution Name" >
+
+                        <p:column headerText="Item Institution Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Item Institution Name"/>    
                             </f:facet>
-                             <h:outputLabel value="#{ix.item.institution.name}" ></h:outputLabel>
+                            <h:outputLabel value="#{ix.item.institution.name}" ></h:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Item Department Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Item Department Name"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.item.department.name}" ></h:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Item Category Name" >
                             <f:facet name="header">
                                 <h:outputLabel value="Item Category Name"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.item.category.name}" ></h:outputLabel>
                         </p:column>
-                        
-                        
+
+
 
                         <p:column headerText="Hospiatal Fee" >
                             <f:facet name="header">
@@ -101,7 +103,7 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.fee}" rendered="#{ix.feeType=='OwnInstitution'}" ></h:outputLabel>
                         </p:column>
-                        
+
                         <p:column headerText="Staff Fee" >
                             <f:facet name="header">
                                 <h:outputLabel value="Staff Fee"/>    
@@ -113,6 +115,12 @@
                                 <h:outputLabel value="Regent Fee"/>    
                             </f:facet>
                             <h:outputLabel value="#{ix.fee}" rendered="#{ix.feeType=='Chemical'}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Collecting Center Fee" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Collecting Center Fee"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.fee}" rendered="#{ix.feeType=='CollectingCentre'}" ></h:outputLabel>
                         </p:column>
                         <p:column headerText="Total" >
                             <f:facet name="header">

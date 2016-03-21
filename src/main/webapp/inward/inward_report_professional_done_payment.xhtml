@@ -110,7 +110,12 @@
                                         <h:outputLabel style="color: red;" rendered="#{billedBill.bill.cancelled}" value="#{billedBill.bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                         </h:outputLabel>
                                     </h:panelGroup>
-                                </p:column>    
+                                </p:column>
+                                <p:column headerText="Department"  >
+                                    <h:outputLabel value="#{billedBill.paidForBillFee.bill.toDepartment.name}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Service Name"  >
                                     <h:outputLabel value="#{billedBill.paidForBillFee.billItem.item.name}" >
                                         <f:convertNumber pattern="#,##0.00"/>

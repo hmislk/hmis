@@ -18,8 +18,7 @@
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
-                        <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
-                        <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
+                        <p:ajax  event="keyup" process="@this" update="@this :#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch')).keypress(function (event) {
@@ -39,8 +38,11 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} :#{p:component('tblBookingsOfSelectedSession')}" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  
+                                 :#{p:component('tblSessionsOfSelectedConsultant')} 
+                                 :#{p:component('panelSelectedBookinDetails')} 
+                                 :#{p:component('tblBookingsOfSelectedSession')}" 
+                                 listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
                             <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" ></poue:tooltip>
@@ -74,15 +76,11 @@
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
-                                 update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
-                                 listener="#{bookingController.generateSessions}"/>
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} 
-                                 :#{p:component('tblBookingsOfSelectedSession')}" 
-                                 listener="#{bookingController.listnerClearSelectedServiceSession}"/>
+                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} 
+                                 :#{p:component('panelSelectedBookinDetails')} 
+                                 :#{p:component('tblBookingsOfSelectedSession')}"  
+                                 listener="#{bookingController.listnerServiceSessionListForRowSelectNew}"/>
                     </p:dataTable>
-
-
-
                 </h:panelGroup>
 
                 <h:panelGroup >
@@ -108,11 +106,10 @@
                                  style="min-height: 300px;">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
-                                listener="#{bookingController.fillBillSessions}" />
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('panelSelectedBookinDetails')} 
-                                 :#{p:component('tblBookingsOfSelectedSession')}" 
-                                 listener="#{bookingController.listnerClearSelectedBillSession()}"/>
+                                update=":#{p:component('tblBookingsOfSelectedSession')} 
+                                :#{p:component('lblSessionTotal')} 
+                                :#{p:component('panelSelectedBookinDetails')}"
+                                listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
                         <p:column style="text-wrap: none;width: 20px!important;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                             <h:outputText value="* " rendered="#{ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" >
@@ -360,7 +357,9 @@
                             </p:dataTable>
 
                             <h:outputLabel id="ballance" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <h:outputLabel id="ballance2" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                            <f:convertNumber  pattern="#,##0.00"/>
+                            </h:outputLabel>
 
                             <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
                             <h:panelGroup id="autoStaff" style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">

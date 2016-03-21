@@ -163,6 +163,10 @@ public class StaffSalary implements Serializable {
     String systemLatedays10min;//for payshhet Print 
     @Transient
     String systemLatedays90min;//for payshhet Print 
+    @Transient
+    String departmentString;
+    @Transient
+    String rosterString;
     String comments;
 
     public String getChequeNumberSalary() {
@@ -1143,6 +1147,22 @@ public class StaffSalary implements Serializable {
 
     public void setSystemLatedays90min(String systemLatedays90min) {
         this.systemLatedays90min = systemLatedays90min;
+    }
+
+    public String getDepartmentString() {
+        return departmentString;
+    }
+
+    public void setDepartmentString(String departmentString) {
+        this.departmentString = departmentString;
+    }
+
+    public String getRosterString() {
+        return rosterString;
+    }
+
+    public void setRosterString(String rosterString) {
+        this.rosterString = rosterString;
     }
 
 }

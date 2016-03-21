@@ -21,17 +21,29 @@
                     </p:calendar>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process by Bill Created Date" 
-                                        action="#{pharmacySaleReport.createPharmacyIssueBHT}" style="float: right;" onclick="onSubmitButton();" />
+                                         action="#{pharmacySaleReport.createPharmacyIssueBHT}" style="float: right;" onclick="onSubmitButton();" />
                     </p:panelGrid>                    
 
                 </p:panel>   
 
-                <p:panel id="reportPrint">
+                <p:panel id="reportPrint" styleClass="noBorder normalFont" >
                     <p:dataTable id="tbl" value="#{pharmacySaleReport.itemWithDepBHTIssues}" var="iwbi">
-                        <p:columnGroup type="header">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Report"/>
+                            <br/>
+                            <h:outputLabel value="From  "/>
+                            <h:outputLabel value="#{pharmacySaleReport.fromDate}">
+                                <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                            <h:outputLabel value="To  "/>
+                            <h:outputLabel value="#{pharmacySaleReport.toDate}">
+                                <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:columnGroup type="header">                           
                             <p:row>
                                 <p:column headerText="Department">                                    
-                                </p:column>
+                                </p :column>
                                 <p:column headerText="Unit Margine">                                    
                                 </p:column>
                                 <p:column headerText="Qty">                                    

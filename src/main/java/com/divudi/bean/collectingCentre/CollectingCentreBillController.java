@@ -9,6 +9,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
+import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -127,6 +128,8 @@ public class CollectingCentreBillController implements Serializable {
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
     @EJB
@@ -434,6 +437,11 @@ public class CollectingCentreBillController implements Serializable {
         calTotals();
     }
 
+     public void listnerSelectLabBooks(){
+         channelBillController.fetchRecentChannelBooks(collectingCentre);
+         
+    }
+    
     public String getStrTenderedValue() {
         return strTenderedValue;
     }
