@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -94,6 +95,7 @@ public class ChannelSearchController implements Serializable {
     PaymentMethod paymentMethod;
     String comment;
     String txtSearch;
+    String txtSearchRef;
     boolean printPreview = false;
 
     /**
@@ -116,27 +118,48 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        
-            String sql = "Select bs From BillSession bs "
-                    + " where bs.retired=false "
-                    + " and bs.sessionDate between :fd and :td "
-                    + " and bs.bill.insId=:ts"
-                    + " order by bs.id desc";
-            HashMap hh = new HashMap();
-            
-//            BillSession bs = new BillSession();
-//            bs.getBill().getInsId();
-//            bs.getBill().getDeptId();
-            
-            
-            hh.put("fd", getFromDate());
-            hh.put("td", getToDate());
-            hh.put("ts", txtSearch);
-            
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
-            System.out.println("searchedBillSessions = " + searchedBillSessions);
+        System.out.println("getFromDate() = " + getFromDate());
+        System.out.println("getToDate() = " + getToDate());
+        System.out.println("txtSearch = " + txtSearch);
+        if (getFromDate() == null && getToDate() == null && (txtSearch == null || txtSearch.trim().equals(""))&& (txtSearchRef == null || txtSearchRef.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Plese Select From To Dates or BillNo Or Agent Referane No.");
+            return;
+        }
 
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "Select bs From BillSession bs "
+                + " where bs.retired=false ";
+
+        if (txtSearch != null && !txtSearch.trim().equals("")) {
+            sql += " and  ((upper(bs.bill.insId) like :ts ) "
+                    + " or (upper(bs.bill.deptId) like :ts ))";
+            m.put("ts", "%" + txtSearch.trim().toUpperCase() + "%");
+        }
         
+        if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
+            sql += " and upper(bs.billItem.agentRefNo) like :ts2 ";
+            m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
+        }
+
+        if (getFromDate() != null && getToDate() != null) {
+            sql += " and bs.sessionDate between :fd and :td ";
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+        }
+
+        sql += " order by bs.id desc";
+
+        if (getFromDate() != null && getToDate() != null) {
+            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        } else {
+            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m);
+        }
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("searchedBillSessions = " + searchedBillSessions.size());
+
     }
 
     public List<BillSession> getBillSessions() {
@@ -573,6 +596,14 @@ public class ChannelSearchController implements Serializable {
 
     public void setSearchedBillSessions(List<BillSession> searchedBillSessions) {
         this.searchedBillSessions = searchedBillSessions;
+    }
+
+    public String getTxtSearchRef() {
+        return txtSearchRef;
+    }
+
+    public void setTxtSearchRef(String txtSearchRef) {
+        this.txtSearchRef = txtSearchRef;
     }
 
 }

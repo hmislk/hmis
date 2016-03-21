@@ -1039,6 +1039,17 @@ public class BookingController implements Serializable {
         selectedBillSession = null;
         getChannelBillController().setBillSession(null);
     }
+    
+    public void viewBill(BillSession bs){
+        setSpeciality(bs.getServiceSession().getStaff().getSpeciality());
+        System.out.println("getSpeciality().getName() = " + getSpeciality().getName());
+        setStaff(bs.getServiceSession().getStaff());
+        System.out.println("getStaff().getPerson().getName() = " + getStaff().getPerson().getName());
+        setSelectedServiceSession(bs.getServiceSession());
+        System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
+        setSelectedBillSession(bs);
+        System.out.println("getSelectedBillSession() = " + getSelectedBillSession());
+    }
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
