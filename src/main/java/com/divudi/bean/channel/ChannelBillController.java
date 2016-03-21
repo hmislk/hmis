@@ -61,6 +61,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -1221,6 +1222,8 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
+        
+        removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
@@ -1436,7 +1439,7 @@ public class ChannelBillController implements Serializable {
         bookingController.generateSessions();
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
-            
+
             printingBill.setRetired(true);
             printingBill.setRetireComments("Skip System Error");
             printingBill.setRetiredAt(new Date());
@@ -1499,6 +1502,80 @@ public class ChannelBillController implements Serializable {
         sessionController.setBill(printingBill);
 
         UtilityController.addSuccessMessage("Channel Booking Added.");
+    }
+
+    public void removeAgencyNullBill(ServiceSession ss) {
+        List<BillSession> billSessions = new ArrayList<>();
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo desc ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", ss.getSessionDate());
+        hh.put("ss", ss);
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE, 5);
+
+        for (BillSession bs : billSessions) {
+            System.out.println("bs.getBill().getCreditCompany() = " + bs.getBill().getCreditCompany());
+            System.out.println("bs.getBill().getBillType() = " + bs.getBill().getBillType());
+            System.out.println("bs.getBill().getPaymentMethod() = " + bs.getBill().getPaymentMethod());
+            if (errorCheckAfterSaveBill(bs.getBill())) {
+                System.err.println("Error Bill");
+                bs.getBill().setRetired(true);
+                bs.getBill().setRetireComments("Skip System Error");
+                bs.getBill().setRetiredAt(new Date());
+                getBillFacade().edit(bs.getBill());
+
+                BillItem bi;
+                List<BillFee> BillFees;
+                Map m = new HashMap();
+                m.put("b", bs.getBill());
+                if (bs.getBill().getSingleBillItem() != null) {
+                    bi = getBillItemFacade().find(bs.getBill().getSingleBillItem().getId());
+                } else {
+                    sql = " select bi from billItem bi where "
+                            + " bi.bill=:b ";
+                    bi = getBillItemFacade().findFirstBySQL(sql, m);
+                }
+                if (bi != null) {
+                    bi.setRetired(true);
+                    bi.setRetireComments("Skip System Error");
+                    bi.setRetirer(getSessionController().getLoggedUser());
+                    bi.setRetiredAt(new Date());
+                    getBillItemFacade().edit(bi);
+                }
+
+                bs.setRetired(true);
+                bs.setRetireComments("Skip System Error");
+                bs.setRetirer(getSessionController().getLoggedUser());
+                bs.setRetiredAt(new Date());
+                getBillSessionFacade().edit(bs);
+
+                sql = " select bf from BillFee bf where "
+                        + " bf.bill=:b ";
+
+                BillFees = getBillFeeFacade().findBySQL(sql, m);
+                if (!BillFees.isEmpty()) {
+                    for (BillFee bf : BillFees) {
+                        bf.setRetired(true);
+                        bf.setRetireComments("Skip System Error");
+                        bf.setRetirer(getSessionController().getLoggedUser());
+                        bf.setRetiredAt(new Date());
+                        getBillFeeFacade().edit(bf);
+                    }
+                }
+                System.err.println("Skiped System Error");
+            }
+
+        }
+
     }
 
     public void clearBillValues() {
