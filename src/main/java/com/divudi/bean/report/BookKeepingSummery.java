@@ -3634,7 +3634,7 @@ public class BookKeepingSummery implements Serializable {
         createCollections2Hos();
 
 //        createDoctorPaymentInward();
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpd(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
 
         creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
@@ -3710,6 +3710,28 @@ public class BookKeepingSummery implements Serializable {
 
             DepartmentPayment newRow = new DepartmentPayment();
             newRow.setDepartment(department);
+            newRow.setTotalPayment(dbl);
+
+            if (dbl != 0) {
+                departmentPayments.add(newRow);
+            }
+
+        }
+        
+        return departmentPayments;
+
+    }
+    
+    public List<DepartmentPayment> createDoctorPaymentOpdBySpecility(List<PaymentMethod> pms, List<PaymentMethod> npms) {
+        List<DepartmentPayment> departmentPayments = new ArrayList<>();
+        List<Object[]> list = getBillBean().fetchDoctorPaymentBySpecility(fromDate, toDate, BillType.OpdBill, institution,pms,npms);
+
+        for (Object[] obj : list) {
+            String spec = (String) obj[0];
+            double dbl = (Double) obj[1];
+
+            DepartmentPayment newRow = new DepartmentPayment();
+            newRow.setSpecility(spec);
             newRow.setTotalPayment(dbl);
 
             if (dbl != 0) {
@@ -3956,8 +3978,8 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         /////
-        departmentProfessionalPayments=createDoctorPaymentOpd(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpd(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
@@ -4073,7 +4095,7 @@ public class BookKeepingSummery implements Serializable {
         createCollections2HosMonth();
         //createDoctorPaymentInward();
         /////////////////
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpd(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
         departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
@@ -4095,8 +4117,8 @@ public class BookKeepingSummery implements Serializable {
         createInwardCollectionMonth();
 //        agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
 //        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
-        departmentProfessionalPayments=createDoctorPaymentOpd(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpd(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
@@ -4129,8 +4151,10 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createCashCategoryWithProMonth2() {
-        createDoctorPaymentOpd();
-        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill);
+        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
     }
 
     private void createFinalSummery() {

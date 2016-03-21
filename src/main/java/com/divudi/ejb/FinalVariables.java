@@ -8,7 +8,9 @@ import com.divudi.bean.channel.SheduleController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.entity.ServiceSession;
+import com.divudi.facade.ServiceSessionFacade;
 import java.util.List;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
@@ -23,6 +25,8 @@ public class FinalVariables {
     SheduleController sheduleController;
     @Inject
     SessionController sessionController;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
 //    public double getMaximumWorkingHourPerWeek() {
 //        return 45;
 //    }
@@ -64,6 +68,30 @@ public class FinalVariables {
     public Integer getSessionSessionDayCounterLargest(List<ServiceSession> inputSessions) {
         int maxRowNumber = 0;
         for (ServiceSession ss : inputSessions) {
+//            System.out.println("maxRowNumber = " + maxRowNumber);
+//            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
+            if (maxRowNumber < ss.getMaxTableRows()) {
+                maxRowNumber = ss.getMaxTableRows();
+//                System.out.println("maxRowNumber = " + maxRowNumber);
+            }
+        }
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (maxRowNumber!=0) {
+                return maxRowNumber;
+            }else{
+                maxRowNumber = 14;
+            }
+        } else if (maxRowNumber < 14) {
+            maxRowNumber = 14;
+        }
+
+        return maxRowNumber;
+    }
+    
+    public Integer getSessionSessionDayCounterLargestById(List<Long> inputSessions) {
+        int maxRowNumber = 0;
+        for (Long s : inputSessions) {
+            ServiceSession ss=serviceSessionFacade.find(s);
 //            System.out.println("maxRowNumber = " + maxRowNumber);
 //            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
             if (maxRowNumber < ss.getMaxTableRows()) {
