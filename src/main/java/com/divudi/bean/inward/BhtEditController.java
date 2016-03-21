@@ -12,6 +12,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
@@ -74,6 +76,10 @@ public class BhtEditController implements Serializable {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
+    @Inject
+    CommonFunctions commonFunctions;
+
+    YearMonthDay yearMonthDay;
 
     public void resetSpecialities() {
         if (current == null) {
@@ -102,7 +108,7 @@ public class BhtEditController implements Serializable {
 
         return false;
     }
-    
+
 //      private boolean checkServiceAdded() {
 //        String sql = "select b from BilledBill b"
 //                + "  where b.retired=false "
@@ -117,7 +123,6 @@ public class BhtEditController implements Serializable {
 //
 //        return false;
 //    }
-
     public void cancelBht() {
         if (current == null) {
             return;
@@ -127,14 +132,13 @@ public class BhtEditController implements Serializable {
             UtilityController.addErrorMessage("Some Is made for this Bht please cancel all bills added for this bht ");
             return;
         }
-        
-        if(getComment() == null || getComment().trim().equals("")){
+
+        if (getComment() == null || getComment().trim().equals("")) {
             //System.out.println("comment = " + comment);
             UtilityController.addErrorMessage("Type a Comment");
             return;
         }
-        
-        
+
         //Net to check if Any Payment Paid for this BHT
         for (PatientRoom pr : getPatientRoom()) {
             pr.setRetired(true);
@@ -169,8 +173,6 @@ public class BhtEditController implements Serializable {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    
 
     public List<Admission> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and upper(c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or upper(c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
@@ -189,7 +191,7 @@ public class BhtEditController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Admission> completePatientAll(String query) {
         List<Admission> suggestions;
         String sql;
@@ -198,7 +200,7 @@ public class BhtEditController implements Serializable {
         } else {
             sql = "select c from Admission c where "
                     + " c.retired=false "
-//                    + " and c.discharged=false "
+                    //                    + " and c.discharged=false "
                     + " and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') "
                     + " order by c.bhtNo ";
             ////System.out.println(sql);
@@ -243,6 +245,7 @@ public class BhtEditController implements Serializable {
         patientList = null;
         current = null;
         selectText = "";
+        yearMonthDay=new YearMonthDay();
     }
 
     public void save() {
@@ -251,7 +254,7 @@ public class BhtEditController implements Serializable {
         getPersonFacade().edit(getCurrent().getGuardian());
         updateFirstPatientRoomAdmissionTime();
         getEjbFacade().edit(current);
-        if (current.getFinalBill()!=null) {
+        if (current.getFinalBill() != null) {
             getBillFacade().edit(current.getFinalBill());
             UtilityController.addSuccessMessage("Final Bill Updated");
         }
@@ -274,6 +277,11 @@ public class BhtEditController implements Serializable {
 
         tmp.setAdmittedAt(getCurrent().getDateOfAdmission());
         getPatientRoomFacade().edit(tmp);
+    }
+
+    public void dateChangeListen() {
+        getCurrent().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+
     }
 
     public void setSelectText(String selectText) {
@@ -313,6 +321,15 @@ public class BhtEditController implements Serializable {
     public void setCurrent(Admission current) {
         this.current = current;
         createPatientRoom();
+        if (current == null) {
+            getYearMonthDay().setDay("0");
+            getYearMonthDay().setMonth("0");
+            getYearMonthDay().setYear("0");
+        } else {
+            getYearMonthDay().setDay(current.getPatient().getAgeDays() + "");
+            getYearMonthDay().setMonth(current.getPatient().getAgeMonths() + "");
+            getYearMonthDay().setYear(current.getPatient().getAgeYears() + "");
+        }
     }
 
     private AdmissionFacade getFacade() {
@@ -410,6 +427,25 @@ public class BhtEditController implements Serializable {
 
     public void setInwardStaffPaymentBillController(InwardStaffPaymentBillController inwardStaffPaymentBillController) {
         this.inwardStaffPaymentBillController = inwardStaffPaymentBillController;
+    }
+
+    public YearMonthDay getYearMonthDay() {
+        if (yearMonthDay == null) {
+            yearMonthDay = new YearMonthDay();
+        }
+        return yearMonthDay;
+    }
+
+    public void setYearMonthDay(YearMonthDay yearMonthDay) {
+        this.yearMonthDay = yearMonthDay;
+    }
+
+    public CommonFunctions getCommonFunctions() {
+        return commonFunctions;
+    }
+
+    public void setCommonFunctions(CommonFunctions commonFunctions) {
+        this.commonFunctions = commonFunctions;
     }
 
     /**

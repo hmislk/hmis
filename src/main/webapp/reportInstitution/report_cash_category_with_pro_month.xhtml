@@ -44,21 +44,23 @@
                         <p:commandButton value="Process OPD Done Only" ajax="false"  styleClass="noPrintButton" style="float: right;" rendered="false"
                                          action="#{bookKeepingSummery.createCashCategoryWithProMonth2}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                                <p:printer target="panelPrint" />
-                            </p:commandButton>
-                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                                <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                             outside:outside,
-                                             pharmacy:pharmacy,
-                                             inward:inward,                                     
-                                             col,
-                                             opd_professional:opd_professional,
-                                             inward_professional:inward_professional,                                     
-                                             finalSum" 
-                                             fileName="Book_Keeping_Summery_with_pro_day"
-                                             facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
-                            </p:commandButton>
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,
+                                         opd_professional_credit:opd_professional_credit,
+                                         opd_new_credit:opd_new_credit,
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward:inward,                                     
+                                         col,
+                                         opd_professional:opd_professional,
+                                         inward_professional:inward_professional,                                     
+                                         finalSum" 
+                                         fileName="Book_Keeping_Summery_with_pro_day"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
                     </h:panelGrid>
                 </f:facet>
 
@@ -67,6 +69,10 @@
             <!--            <p:spacer height="30" />-->
 
             <in:opd_new_with id="opd_new" />
+
+            <p:spacer height="30"/>
+
+            <in:opd_new_with_1 id="opd_new_credit" />
 
             <p:spacer height="30"/>
 
@@ -95,6 +101,10 @@
             <p:spacer height="30"/>
 
             <in:opd_professional_payment id="opd_professional"/>  
+
+            <p:spacer height="30"/>
+            
+            <in:opd_professional_payment_credit id="opd_professional_credit"/>  
 
             <p:spacer height="30"/>
 

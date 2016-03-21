@@ -74,7 +74,7 @@
                         <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -82,7 +82,7 @@
                         <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true" rowStyleClass="#{ss.hold ? 'greenText': ss.blocked ? 'redText' :''}">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
@@ -207,7 +207,7 @@
                                         </f:facet>
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}" >
-                                                <f:ajax event="change"  execute="@this" render="txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
+                                                <f:ajax event="change"  execute="@this" render="@this txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
                                             </p:selectBooleanCheckbox>  
                                         </f:facet>
                                     </p:cellEditor>
@@ -220,7 +220,7 @@
                                         </f:facet>
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}" >
-                                                <f:ajax event="change" execute="@this" render="txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
+                                                <f:ajax event="change" execute="@this" render="@this txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
                                             </p:selectBooleanCheckbox>   
                                         </f:facet>
                                     </p:cellEditor>

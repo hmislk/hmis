@@ -46,7 +46,7 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReportByItemBatch()}"/>
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReportByItemBatch2}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
@@ -61,6 +61,7 @@
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
+                        <br/>
                         <h:outputLabel value="From  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                             <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>

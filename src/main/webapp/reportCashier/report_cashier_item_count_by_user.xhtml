@@ -45,7 +45,7 @@
                         <f:facet name="footer">
                             <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
-                        <h:panelGrid columns="6" styleClass="noPrintButton" >
+                        <h:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -56,11 +56,18 @@
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
-                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}" placeholder="User Name"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
-                                            
+                            <h:outputLabel styleClass="noPrintButton" value="Departmnet" />
                             <au:department value="#{commonReport.department}" />
- 
+                            <h:outputLabel styleClass="noPrintButton" value="Only Hos Fee"/>
+                            <p:selectBooleanCheckbox id="cbHos" value="#{commonReport.onlyHosFee}" >
+                                <p:ajax event="change" process="@this" update="cbStaff @this" listener="#{commonReport.listnerHosFee}" />
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel styleClass="noPrintButton" value="Only Staff Fee"/>
+                            <p:selectBooleanCheckbox id="cbStaff" value="#{commonReport.onlyStaffFee}" >
+                                <p:ajax event="change" process="@this" update="cbHos @this" listener="#{commonReport.listnerStaffFee}" />
+                            </p:selectBooleanCheckbox>
                         </h:panelGrid>
                         <p:panel id="reportPrint">
                             <p:dataTable value="#{commonReport.itemCountRows}" var="ir" id="tb1" rowIndexVar="i">
@@ -88,15 +95,41 @@
                                         <f:convertNumber pattern="#,##0" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column styleClass="numberCol" >
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyStaffFee}">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Value" />
+                                        <p:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.staffFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalStaff}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyHosFee}" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Hos" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.hosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalHos}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{!commonReport.onlyHosFee and !commonReport.onlyStaffFee}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Total" />
                                     </f:facet>
                                     <h:outputLabel value="#{ir.value}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{commonReport.billTotal}" >
+                                        <p:outputLabel value="#{commonReport.billTotal}" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -130,15 +163,41 @@
                                         <f:convertNumber pattern="#,##0" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column styleClass="numberCol" >
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyStaffFee}">
                                     <f:facet name="header">
-                                        <p:outputLabel value="Value" />
+                                        <p:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.staffFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalCancelStaff}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyHosFee}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Hos" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.hosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalCancelHos}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{!commonReport.onlyHosFee and !commonReport.onlyStaffFee}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Total" />
                                     </f:facet>
                                     <h:outputLabel value="#{ir.value}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{commonReport.billTotalCancel}" >
+                                        <p:outputLabel value="#{commonReport.billTotalCancel}" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -172,15 +231,41 @@
                                         <f:convertNumber pattern="#,##0" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column styleClass="numberCol" >
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyStaffFee}" >
                                     <f:facet name="header">
-                                        <p:outputLabel value="Value" />
+                                        <p:outputLabel value="Staff" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.staffFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalRefundStaff}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{(!commonReport.onlyHosFee and !commonReport.onlyStaffFee)or commonReport.onlyHosFee}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Hos" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ir.hosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <p:outputLabel value="#{commonReport.billTotalRefundHos}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="numberCol" rendered="#{!commonReport.onlyHosFee and !commonReport.onlyStaffFee}">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Total" />
                                     </f:facet>
                                     <h:outputLabel value="#{ir.value}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{commonReport.billTotalRefund}" >
+                                        <p:outputLabel value="#{commonReport.billTotalRefund}" style="float: right;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -189,7 +274,13 @@
 
                             <f:facet name="footer">
                                 <p:outputLabel value="Net Total : " />
-                                <p:outputLabel value="#{commonReport.billTotal+commonReport.billTotalCancel+commonReport.billTotalRefund}" >
+                                <p:outputLabel value="#{commonReport.billTotal+commonReport.billTotalCancel+commonReport.billTotalRefund}" rendered="#{!commonReport.onlyHosFee and !commonReport.onlyStaffFee}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="#{commonReport.billTotalHos+commonReport.billTotalCancelHos+commonReport.billTotalRefundHos}" rendered="#{commonReport.onlyHosFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="#{commonReport.billTotalStaff+commonReport.billTotalCancelStaff+commonReport.billTotalRefundStaff}" rendered="#{commonReport.onlyStaffFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </f:facet>

@@ -59,7 +59,7 @@
                             <f:convertNumber pattern="#,##0"/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Total" styleClass="numberCol">
+                    <p:column headerText="Total" styleClass="numberCol" sortBy="#{bs.billFee+bs.billCanncelFee+bs.refundFee}">
                         <p:outputLabel value="#{bs.billFee+bs.billCanncelFee+bs.refundFee}" >
                             <f:convertNumber pattern="##,###,##0.00" />
                         </p:outputLabel>
