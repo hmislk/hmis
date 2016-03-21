@@ -718,6 +718,42 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    
+    public List<Object[]> fetchDoctorPaymentBySpecility(Date fromDate, Date toDate, BillType refBillType, Institution i,
+            List<PaymentMethod> paymentMethods, List<PaymentMethod> notPaymentMethods) {
+        HashMap hm = new HashMap();
+        String sql;
+
+        sql = "Select b.paidForBillFee.staff.speciality.name,sum(b.netValue) "
+                + " FROM BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.billType=:bType "
+                + " and b.referanceBillItem.bill.billType=:refType "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.bill.institution=:ins ";
+
+        if (paymentMethods != null) {
+            sql += " and b.referanceBillItem.bill.paymentMethod in :pms ";
+            hm.put("pms", paymentMethods);
+        }
+
+        if (notPaymentMethods != null) {
+            sql += " and b.referanceBillItem.bill.paymentMethod not in :npms ";
+            hm.put("npms", notPaymentMethods);
+        }
+
+        sql += " group by b.paidForBillFee.staff.speciality.name "
+                + " order by b.paidForBillFee.staff.speciality.name ";
+
+        hm.put("bType", BillType.PaymentBill);
+        hm.put("refType", refBillType);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("ins", i);
+
+        return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
 
 //    sql = "select bf.paidForBillFee.staff.speciality,"
 //                + " sum(bf.paidForBillFee.feeValue) "
