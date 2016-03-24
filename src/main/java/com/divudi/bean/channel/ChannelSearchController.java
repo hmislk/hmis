@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
@@ -20,6 +21,7 @@ import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
+import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillComponentFacade;
@@ -77,7 +79,8 @@ public class ChannelSearchController implements Serializable {
     WebUserController webUserController;
     @Inject
     BillController billController;
-
+    @Inject
+    CommonController commonController;
     /**
      * Properties
      */
@@ -121,23 +124,36 @@ public class ChannelSearchController implements Serializable {
         System.out.println("getFromDate() = " + getFromDate());
         System.out.println("getToDate() = " + getToDate());
         System.out.println("txtSearch = " + txtSearch);
-        if (getFromDate() == null && getToDate() == null && (txtSearch == null || txtSearch.trim().equals(""))&& (txtSearchRef == null || txtSearchRef.trim().equals(""))) {
-            JsfUtil.addErrorMessage("Plese Select From To Dates or BillNo Or Agent Referane No.");
+        if (getFromDate() == null && getToDate() == null && (txtSearch == null || txtSearch.trim().equals("")) && (txtSearchRef == null || txtSearchRef.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Please Select From To Dates or BillNo Or Agent Referane No.");
             return;
+        }
+        if ((getFromDate() == null && getToDate() != null) || (getFromDate() != null && getToDate() == null)) {
+            JsfUtil.addErrorMessage("Please Check From,TO Dates");
+            return;
+        }
+        if (getFromDate() != null && getToDate() != null) {
+            double count = commonController.dateDifferenceInMinutes(getFromDate(), getToDate()) / (60 * 24);
+            System.out.println("count = " + count);
+            if (count > 1) {
+                JsfUtil.addErrorMessage("Please Selected Date Range To Long.(Date Range limit for 1 day)");
+                return;
+            }
         }
 
         String sql;
         HashMap m = new HashMap();
 
         sql = "Select bs From BillSession bs "
-                + " where bs.retired=false ";
+                + " where bs.retired=false "
+                + " and type(bs.bill)=:class ";
 
         if (txtSearch != null && !txtSearch.trim().equals("")) {
             sql += " and  ((upper(bs.bill.insId) like :ts ) "
                     + " or (upper(bs.bill.deptId) like :ts ))";
             m.put("ts", "%" + txtSearch.trim().toUpperCase() + "%");
         }
-        
+
         if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
             sql += " and upper(bs.billItem.agentRefNo) like :ts2 ";
             m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
@@ -150,6 +166,8 @@ public class ChannelSearchController implements Serializable {
         }
 
         sql += " order by bs.id desc";
+
+        m.put("class", BilledBill.class);
 
         if (getFromDate() != null && getToDate() != null) {
             searchedBillSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
