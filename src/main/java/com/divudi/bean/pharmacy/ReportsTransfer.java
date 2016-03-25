@@ -11,6 +11,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -105,6 +106,8 @@ public class ReportsTransfer implements Serializable {
     PharmacyBean pharmacyBean;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    CommonFunctions commonFunctions;
 
     /**
      * Methods
@@ -509,6 +512,36 @@ public class ReportsTransfer implements Serializable {
 
         }
 
+    }
+    
+    public void createTransferIssueBillSummery(){
+        fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
+    }
+    
+    public void createTransferReciveBillSummery(){
+        fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+    }
+    
+    public void fetchBillTotalByToDepartment(Date fd,Date td,Department dep,BillType bt){
+        listz=new ArrayList<>();
+        netTotalValues = 0.0;
+        
+        List<Object[]> objects=getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt);
+        
+        for (Object[] ob : objects) {
+            Department d=(Department) ob[0];
+            double dbl=(double) ob[1];
+            
+            String1Value3 sv=new String1Value3();
+            sv.setString(d.getName());
+            sv.setValue1(dbl);
+            listz.add(sv);
+            
+            netTotalValues+=dbl;
+            
+        }
+        
+        
     }
 
     public void createDepartmentIssueStore() {
@@ -1591,6 +1624,9 @@ public class ReportsTransfer implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate==null) {
+            fromDate=commonFunctions.getStartOfMonth();
+        }
         return fromDate;
     }
 
@@ -1599,6 +1635,9 @@ public class ReportsTransfer implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate==null) {
+            toDate=commonFunctions.getEndOfMonth(new Date());
+        }
         return toDate;
     }
 
