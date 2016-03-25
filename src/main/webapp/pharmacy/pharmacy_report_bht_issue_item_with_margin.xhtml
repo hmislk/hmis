@@ -30,12 +30,12 @@
                     <p:dataTable id="tbl" value="#{pharmacySaleReport.itemWithDepBHTIssues}" var="iwbi">
                         <f:facet name="header">
                             <h:outputLabel value="Item Report"/>
-                            <br/>
+                           &#13;&nbsp;
                             <h:outputLabel value="From  "/>
                             <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                                 <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <h:outputLabel value="To  "/>
+                            </h:outputLabel>&#13;&nbsp;
+                            <h:outputLabel value="To  "/>&#13;&nbsp;
                             <h:outputLabel value="#{pharmacySaleReport.toDate}">
                                 <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
@@ -43,7 +43,7 @@
                         <p:columnGroup type="header">                           
                             <p:row>
                                 <p:column headerText="Department">                                    
-                                </p :column>
+                                </p:column>
                                 <p:column headerText="Unit Margine">                                    
                                 </p:column>
                                 <p:column headerText="Qty">                                    

@@ -17,7 +17,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Summary by Supplier">
 
 
-                    <p:panelGrid columns="10" style="noPrintButton">
+                    <p:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -82,7 +82,7 @@
                                 <f:convertDateTime pattern="dd MM yyyy HH:mm a"/>
                             </h:outputLabel>
                             <h:outputLabel value="GRN by - #{commonReport.department.name}"/> 
-                            <br/>
+                            &#13;&nbsp;
                             <h:outputLabel value="GRN"/>
                         </f:facet>
 
