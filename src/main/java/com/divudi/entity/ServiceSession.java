@@ -81,6 +81,8 @@ public class ServiceSession extends Item implements Serializable {
     int transRowNumber;
     @Transient
     Boolean arival;
+    @Transient
+    boolean serviceSessionCreateForOriginatingSession=false;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -416,6 +418,14 @@ public class ServiceSession extends Item implements Serializable {
 
     public void setArival(Boolean arival) {
         this.arival = arival;
+    }
+
+    public boolean isServiceSessionCreateForOriginatingSession() {
+        return serviceSessionCreateForOriginatingSession;
+    }
+
+    public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
+        this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
 }
