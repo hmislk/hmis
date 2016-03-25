@@ -64,8 +64,11 @@
                         <h:outputLabel value="To Date"/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputLabel>  <br/>
+                        </h:outputLabel>  
+                        <br/>
                         <h:outputLabel value="Pharmacy Sale BillItems"/>
+                        <br/>
+                        <h:outputLabel value="Department : #{pharmacySaleReport.department.name}"/>
                     </f:facet>
                     <p:column>
                         <f:facet name="header">
