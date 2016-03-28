@@ -35,7 +35,7 @@
                                     completeMethod="#{ampController.completeAmpByName}" 
                                     var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                         <p:column headerText="Item">
-                            <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                            <h:outputLabel value="#{myItem.name}"></h:outputLabel>
                         </p:column>
                         <p:column headerText="Code">
                             <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
@@ -60,14 +60,14 @@
                         <h:outputLabel value="From Date :  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputLabel>
+                        </h:outputLabel>&#13;&nbsp;
                         <h:outputLabel value="To Date"/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
                         </h:outputLabel>  
-                        <br/>
+                        &#13;&nbsp;
                         <h:outputLabel value="Pharmacy Sale BillItems"/>
-                        <br/>
+                        &#13;&nbsp;
                         <h:outputLabel value="Department : #{pharmacySaleReport.department.name}"/>
                     </f:facet>
                     <p:column>
@@ -78,7 +78,7 @@
 
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column>
                         <f:facet name="header">
                             <h:outputLabel value="Item Code "/>
@@ -137,6 +137,11 @@
                         <h:outputLabel value="#{b.netValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.grantTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
                 </p:dataTable>
 
@@ -213,6 +218,11 @@
                         <h:outputLabel value="#{b.netValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.grantNetTotalWholeSale}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
                     </p:column>
                 </p:dataTable>
 

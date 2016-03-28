@@ -611,10 +611,10 @@ public class ChannelBean {
                 }
             } else {
                 for (ServiceSession ss : sessions) {
-                    if (ss.isServiceSessionCreateForOriginatingSession()) {
-                        
-                        continue;
-                    }
+//                    if (ss.isServiceSessionCreateForOriginatingSession()) {
+//                        System.err.println("******");
+//                        continue;
+//                    }
                     if (ss.getSessionDate() != null) {
                         Calendar sessionDate = Calendar.getInstance();
                         sessionDate.setTime(ss.getSessionDate());

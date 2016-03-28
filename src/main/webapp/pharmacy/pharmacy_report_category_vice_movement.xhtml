@@ -61,7 +61,9 @@
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
-                        <br/>
+                        &#13;&nbsp;
+                        <h:outputLabel value="From"/>
+                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>&#13;&nbsp;
                         <h:outputLabel value="From Date :  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
