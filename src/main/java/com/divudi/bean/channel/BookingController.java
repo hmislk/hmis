@@ -134,6 +134,7 @@ public class BookingController implements Serializable {
     String selectTextConsultant = "";
     String selectTextSession = "";
     ArrivalRecord arrivalRecord;
+    PaymentMethod canPayMetTmp;
 
     private ScheduleModel eventModel;
 
@@ -323,6 +324,7 @@ public class BookingController implements Serializable {
         billSessions = null;
         sessionStartingDate = null;
         consultants=null;
+        channelBillController.makeNullSearchData();
     }
 
     public List<Staff> completeStaff(String query) {
@@ -1206,6 +1208,35 @@ public class BookingController implements Serializable {
         selectedBillSession = null;
         getChannelBillController().setBillSession(null);
     }
+    
+    public void viewBill(BillSession bs){
+//        setSpeciality(bs.getServiceSession().getStaff().getSpeciality());
+//        System.out.println("++++getSpeciality().getName() = " + getSpeciality().getName());
+        
+//        getSelectedConsultants();
+//        setSpeciality(bs.getServiceSession().getStaff().getSpeciality());
+//        setStaff(bs.getServiceSession().getStaff());
+//        System.out.println("++++bs.getServiceSession().getStaff().getName() = " + bs.getServiceSession().getStaff().getPerson().getName());
+//        System.out.println("++++getStaff().getPerson().getName() = " + getStaff().getPerson().getName());
+        
+//        generateSessionsOnlyId();
+//        setSelectedServiceSession(bs.getServiceSession());
+//        System.out.println("++++bs.getServiceSession() = " + bs.getServiceSession());
+//        System.out.println("++++getSelectedServiceSession() = " + getSelectedServiceSession());
+        
+//        fillBillSessions();
+        System.out.println("++++channelBillController.getBillSession() = " + channelBillController.getBillSession());
+        System.out.println("++++channelBillController.getBillSessionTmp() = " + channelBillController.getBillSessionTmp());
+        setSelectedBillSession(bs);
+//        getChannelBillController().setBillSession(bs);
+        System.out.println("++++bs = " + bs);
+        System.out.println("++++getSelectedBillSession() = " + getSelectedBillSession());
+        System.out.println("++++channelBillController.getBillSession() = " + channelBillController.getBillSession());
+        System.out.println("++++channelBillController.getBillSessionTmp() = " + channelBillController.getBillSessionTmp());
+        channelBillController.listnerSetBillSession(bs);
+        System.out.println("++++channelBillController.getBillSession() = " + channelBillController.getBillSession());
+        System.out.println("++++channelBillController.getBillSessionTmp() = " + channelBillController.getBillSessionTmp());
+    }
 
     public void setBillSessions(List<BillSession> billSessions) {
         this.billSessions = billSessions;
@@ -1455,6 +1486,14 @@ public class BookingController implements Serializable {
 
     public ChannelStaffPaymentBillController getChannelStaffPaymentBillController() {
         return channelStaffPaymentBillController;
+    }
+
+    public PaymentMethod getCanPayMetTmp() {
+        return canPayMetTmp;
+    }
+
+    public void setCanPayMetTmp(PaymentMethod canPayMetTmp) {
+        this.canPayMetTmp = canPayMetTmp;
     }
 
 }

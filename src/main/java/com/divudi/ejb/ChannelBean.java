@@ -578,7 +578,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
-
+                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -602,6 +602,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -610,6 +611,10 @@ public class ChannelBean {
                 }
             } else {
                 for (ServiceSession ss : sessions) {
+//                    if (ss.isServiceSessionCreateForOriginatingSession()) {
+//                        System.err.println("******");
+//                        continue;
+//                    }
                     if (ss.getSessionDate() != null) {
                         Calendar sessionDate = Calendar.getInstance();
                         sessionDate.setTime(ss.getSessionDate());
@@ -634,7 +639,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
-
+                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -658,6 +663,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }

@@ -118,8 +118,7 @@
 
 
 
-
-            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}">
+            <p:dataTable id="finalSum" value="#{bookKeepingSummery.finalValues}" var="s" >
                 <p:column>
                     <h:outputLabel value="#{s.string}"/>
                 </p:column>

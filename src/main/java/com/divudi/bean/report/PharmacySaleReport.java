@@ -373,10 +373,15 @@ public class PharmacySaleReport implements Serializable {
             sql += " and bi.bill.fromInstitution=:de ";
             m.put("de", searchKeyword.getIns());
         }
+        if (department != null) {
+            sql += "and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
 
         m.put("bt", BillType.PharmacyGrnBill);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -514,7 +519,20 @@ public class PharmacySaleReport implements Serializable {
 
     public void createTableSaleBillItems() {
         billItems = createSaleBillItems(BillType.PharmacySale);
+        grantTotal = fetchSaleByBillTotal(billItems);
         wholeSaleBillItems = createSaleBillItems(BillType.PharmacyWholeSale);
+        grantNetTotalWholeSale = fetchSaleByBillTotal(wholeSaleBillItems);
+    }
+
+    public double fetchSaleByBillTotal(List<BillItem> bis) {
+        double db = 0.0;
+        for (BillItem bi : bis) {
+            System.out.println("bi = " + db);
+            db = db + bi.getNetValue();
+            System.out.println("bi2 = " + db);
+
+        }
+        return db;
     }
 
     public void createSaleBillItems() {

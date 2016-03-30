@@ -48,13 +48,13 @@
                     <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
                     </p:column>
-                    
+
                     <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    
+
                     <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
                             <f:convertNumber pattern="#,##0.00" />
@@ -98,11 +98,11 @@
                 <h:panelGroup   id="gpBillPreview">
 
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
-                    
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" class="noBorder">
                         <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" class="noBorder">
                         <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>

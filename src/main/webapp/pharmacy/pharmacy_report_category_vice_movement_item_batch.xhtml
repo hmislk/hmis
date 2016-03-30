@@ -61,17 +61,19 @@
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
-                        <br/>
+                        &#13;&nbsp;
+                        <h:outputLabel value="From"/>
+                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>&#13;&nbsp;
                         <h:outputLabel value="From  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                             <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                         </h:outputLabel>
-                        <p:spacer width="10" height="1"/>
+                        &#13;&nbsp;
                         <h:outputLabel value="To  "/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
                             <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                         </h:outputLabel>
-                        <br/>
+                       &#13;&nbsp;
                     </f:facet>
 
                     <p:column >
@@ -119,11 +121,11 @@
                             <h:outputLabel value="Opd Sale Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.opdSale}">
-                            <f:convertNumber pattern="#,##0.000" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{pharmacySaleReport.totalOpdSale}" style="float:  right;">
-                                <f:convertNumber pattern="#,##0.000" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
@@ -140,11 +142,11 @@
                             <h:outputLabel value="Inward Issue Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.inwardIssue}">
-                            <f:convertNumber pattern="#,##0.000" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{pharmacySaleReport.totalInwardIssue}" style="float:  right;">
-                                <f:convertNumber pattern="#,##0.000" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
@@ -161,11 +163,11 @@
                             <h:outputLabel value="Department Issue Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.departmentIssue}">
-                            <f:convertNumber pattern="#,##0.000" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
-                                <f:convertNumber pattern="#,##0.000" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
@@ -185,7 +187,7 @@
                             <h:outputLabel value="Movement Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.opdSale+i.inwardIssue+i.departmentIssue}">
-                            <f:convertNumber pattern="#,##0.000" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>                      
                     </p:column>
 
@@ -205,12 +207,12 @@
                             <h:outputLabel value="Stock Value" />
                         </f:facet>
                         <h:outputLabel value="#{i.stock.stock*i.itemBatch.purcahseRate}">
-                            <f:convertNumber pattern="#,##0.000" />
+                            <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{pharmacySaleReport.totalPurchaseValue}"
                                            style="float:  right;">
-                                <f:convertNumber pattern="#,##0.000" />
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>

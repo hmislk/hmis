@@ -74,6 +74,7 @@ import org.primefaces.event.TabChangeEvent;
 public class ChannelBillController implements Serializable {
 
     private BillSession billSession;
+    private BillSession billSessionTmp;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
     private Area area;
@@ -137,6 +138,8 @@ public class ChannelBillController implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelSearchController channelSearchController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -646,6 +649,14 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelAgentPaidBill() {
+        System.out.println("getBillSession() = " + getBillSession());
+        System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
+        setBillSession(getBillSessionTmp());
+        System.out.println("getBillSession() = " + getBillSession());
+        System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
+        System.out.println("getCancelPaymentMethod() = " + getCancelPaymentMethod());
+        System.out.println("getComment() = " + getComment());
+        System.out.println("bookingController.getCanPayMetTmp() = " + bookingController.getCanPayMetTmp());
         if (getBillSession() == null) {
             UtilityController.addErrorMessage("No BillSession");
             return;
@@ -1185,7 +1196,14 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
+    
+    public void clearAll(){
+        makeNull();
+        makeNullSearchData();
+    }
+    
     public void makeNull() {
+        System.err.println("make null");
         amount = 0.0;
         foriegn = false;
         billFee = null;
@@ -1211,6 +1229,15 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
+        
+    }
+    
+    public void makeNullSearchData(){
+        channelSearchController.setFromDate(null);
+        channelSearchController.setToDate(null);
+        channelSearchController.setTxtSearch("");
+        channelSearchController.setTxtSearchRef("");
+        channelSearchController.setSearchedBillSessions(null);
     }
 
     @Inject
@@ -2047,6 +2074,11 @@ public class ChannelBillController implements Serializable {
         }
         return refundBillFee;
     }
+    
+    public void listnerSetBillSession(BillSession bs){
+        setBillSessionTmp(bs);
+        setBillSession(bs);
+    }
 
     public void setBillFee(List<BillFee> billFee) {
         this.billFee = billFee;
@@ -2495,6 +2527,14 @@ public class ChannelBillController implements Serializable {
 
     public void setInstitutionOnCallAgency(Institution institutionOnCallAgency) {
         this.institutionOnCallAgency = institutionOnCallAgency;
+    }
+
+    public BillSession getBillSessionTmp() {
+        return billSessionTmp;
+    }
+
+    public void setBillSessionTmp(BillSession billSessionTmp) {
+        this.billSessionTmp = billSessionTmp;
     }
 
 }

@@ -3397,10 +3397,10 @@ public class CommonReport implements Serializable {
                         }
                         itemCountRows.get(itemCountRows.size() - 1).setValue(itemCountRows.get(itemCountRows.size() - 1).getValue() + (double) obj[3]);
                         billTotal += (double) obj[3];
-                    continue;
+                        continue;
                     }
                 }
-                
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
@@ -3435,10 +3435,10 @@ public class CommonReport implements Serializable {
                         }
                         itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).setValue(itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).getValue() + (double) obj[3]);
                         billTotalCancel += (double) obj[3];
-                    continue;
+                        continue;
                     }
                 }
-                
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
@@ -3473,10 +3473,10 @@ public class CommonReport implements Serializable {
                         }
                         itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).setValue(itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).getValue() + (double) obj[3]);
                         billTotalRefund += (double) obj[3];
-                    continue;
+                        continue;
                     }
                 }
-                
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
@@ -4000,6 +4000,15 @@ public class CommonReport implements Serializable {
         cashChequeSumAfter.add(tmp3);
         cashChequeSumAfter.add(tmp4);
 
+        ////////////////////////////////////////
+        cashChequeCreditSummery = new ArrayList<>();
+
+        tmp1 = new String1Value1();
+        tmp1.setString("Final Total");
+        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+
+        cashChequeCreditSummery.add(tmp1);
+
     }
 
     public List<String1Value1> getCreditSlipSum2() {
@@ -4268,6 +4277,7 @@ public class CommonReport implements Serializable {
 
     private List<String1Value1> cashChequeSum;
     private List<String1Value1> cashChequeSumAfter;
+    private List<String1Value1> cashChequeCreditSummery;
 
     public List<String1Value1> getCashChequeSum2() {
         List<BillsTotals> list2 = new ArrayList<>();
@@ -5007,6 +5017,14 @@ public class CommonReport implements Serializable {
 
     public void setOnlyHosFee(boolean onlyHosFee) {
         this.onlyHosFee = onlyHosFee;
+    }
+
+    public List<String1Value1> getCashChequeCreditSummery() {
+        return cashChequeCreditSummery;
+    }
+
+    public void setCashChequeCreditSummery(List<String1Value1> cashChequeCreditSummery) {
+        this.cashChequeCreditSummery = cashChequeCreditSummery;
     }
 
 }
