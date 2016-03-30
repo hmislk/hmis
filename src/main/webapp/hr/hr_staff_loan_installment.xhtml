@@ -56,7 +56,7 @@
                             <f:ajax event="change" render="calComplete" execute="@this" />
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="Complete Date"/>
-                        <p:calendar id="calComplete" value="#{staffLoanController.current.completedAt}"  navigator="true" pattern="dd MM yyyy" disabled="#{!staffLoanController.current.completed}" />
+                        <p:calendar id="calComplete" value="#{staffLoanController.current.completedAt}"  navigator="true" pattern="dd MM yyyy"  />
                         <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
                         <p:commandButton value="Remove" action="#{staffLoanController.remove}" ajax="false" onclick="onSubmitButton();"/>
                     </h:panelGrid>
@@ -92,7 +92,9 @@
 
                     </h:panelGrid>
 
-                    <h:panelGrid columns="4">
+                    <h:panelGrid columns="2">
+<!--                        <h:outputLabel value="With Account No"/>
+                        <p:selectBooleanCheckbox value="#{staffLoanController.showAccountNo}" />-->
                         <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
@@ -106,7 +108,7 @@
                     <p:panel id="loaninstall" styleClass="noBorder summeryBorder" >
                         <f:facet name="header">
                             <h:outputLabel value="Loan And Advances" styleClass="noPrintButton"/>
-                            <p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();" styleClass="noPrintButton"/>
+                            <!--<p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();" styleClass="noPrintButton"/>-->
                         </f:facet>
                         <p:dataTable value="#{staffLoanController.paysheetComponents}" id="tb5"
                                      var="i" scrollHeight="200"
@@ -149,6 +151,18 @@
                                     <h:outputLabel value="EMP Code"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Bank" sortBy="#{i.staff.bankBranch.institution.name}"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bank"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.bankBranch.institution.name}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Acc. No" sortBy="#{i.staff.accountNo}"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Acc. No"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.accountNo}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="componentType" rendered="false">
                                 <f:facet name="header">
@@ -282,7 +296,7 @@
                             </p:column>
 
                             <p:column styleClass="noPrintButton">
-                                <p:commandButton value="Edit" ajax="false" onclick="onSubmitButton();">
+                                <p:commandButton value="Edit" ajax="false">
                                     <f:setPropertyActionListener target="#{staffLoanController.current}"  value="#{i}" />
                                 </p:commandButton>
                             </p:column>
