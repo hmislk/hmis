@@ -373,10 +373,15 @@ public class PharmacySaleReport implements Serializable {
             sql += " and bi.bill.fromInstitution=:de ";
             m.put("de", searchKeyword.getIns());
         }
+        if (department != null) {
+            sql += "and bi.bill.department=:dep ";
+            m.put("dep", department);
+        }
 
         m.put("bt", BillType.PharmacyGrnBill);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
+
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 

@@ -1585,7 +1585,7 @@ public class BookKeepingSummery implements Serializable {
 
             System.out.println("item name" + item.getName());
 
-            sql = " select sum(bf.feeGrossValue),count(bf.billItem.bill) from BillFee bf "
+            sql = " select sum(bf.feeGrossValue),count(distinct(bf.billItem.bill)) from BillFee bf "
                     + " where bf.retired=false "
                     + " and bf.billItem.item=:itm ";
 
@@ -1633,7 +1633,7 @@ public class BookKeepingSummery implements Serializable {
             if (refunded) {
                 sql += " and bf.bill.refunded=false ";
             }
-
+            
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
             System.out.println("obj = " + obj);
