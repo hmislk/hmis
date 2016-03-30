@@ -106,11 +106,11 @@
                     </tr>
 
                     <tr>
-                        <td></td>
-                        <td>
-                            <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+                        <td colspan="3">
+                            <center>
+                                <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+                            </center>
                         </td>
-                        <td></td>
                     </tr>
                     
                     <tr>
@@ -218,7 +218,7 @@
                         <td colspan="3">
                             <p>
                                 You are kindly requested to remit this amount by cheque written in favour of "
-                                #{sessionController.loggedUser.staff.workingDepartment.institution.name} "
+                                #{sessionController.loggedUser.institution.name} "
                                 with the least Possible.
                             </p>
                         </td>

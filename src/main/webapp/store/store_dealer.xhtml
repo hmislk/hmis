@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:p="http://primefaces.org/ui">
 
 
@@ -79,6 +80,58 @@
                             </h:panelGrid>
                         </p:panel>
                     </h:panelGrid>
+                </p:panel>
+                <p:panel header="Manage Store DistributorS List" id="panelPrint" styleClass="noBorder summeryBorder" >
+                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
+                        <pe:exporter type="xlsx" target="tbl1" fileName="Store_Delors"  />
+                    </p:commandButton>
+                    <p:dataTable id="tbl1" value="#{storeDealorController.items}" var="d" rowIndexVar="i">
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Distributor" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.name}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Code" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.institutionCode}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Address" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.address}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Phone" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.phone}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Mobile" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.mobile}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Email" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.email}" />
+                        </p:column>
+                    </p:dataTable>
                 </p:panel>
             </h:form>
 

@@ -115,7 +115,14 @@
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
 
-                <p:column headerText="BHT No">
+                <p:column headerText="Name">
+                    <f:facet name="header">
+                        <p:outputLabel value="Name"/>
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.patient.person.name}" />
+                </p:column>
+                
+<!--                <p:column headerText="BHT No">
                     <f:facet name="header">
                         <p:outputLabel value="BHT No"/>
                     </f:facet>
@@ -124,7 +131,7 @@
                         <h:outputLabel value="COUNT  (#{serviceSummery.count})">                                   
                         </h:outputLabel>
                     </f:facet>
-                </p:column>
+                </p:column>-->
 
                 <p:column headerText="Date">
                     <f:facet name="header">
