@@ -13,6 +13,7 @@ import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
@@ -53,6 +54,7 @@ public class StaffLoanController implements Serializable {
     @EJB
     HumanResourceBean humanResourceBean;
     boolean chequeDetails = false;
+    boolean showAccountNo=false;
 
     private boolean errorCheck() {
 
@@ -110,25 +112,30 @@ public class StaffLoanController implements Serializable {
         if (errorCheck()) {
             return;
         }
-
+        System.out.println("getCurrent().isCompleted() = " + getCurrent().isCompleted());
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             if(!getCurrent().isCompleted()){
                 getCurrent().setCompletedAt(null);
+                System.out.println("1.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             
             getStaffPaysheetComponentFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             if (getCurrent().isCompleted()) {
                 getCurrent().setCompleter(getSessionController().getLoggedUser());
+                System.out.println("2.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             if(!getCurrent().isCompleted()){
                 getCurrent().setCompletedAt(null);
+                System.out.println("3.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             getStaffPaysheetComponentFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Updated");
         }
-
+        System.out.println("getCurrent().getCompletedAt() = " + getCurrent().getCompletedAt());
         makeNull();
     }
 
@@ -407,5 +414,13 @@ public class StaffLoanController implements Serializable {
 
     public void setSelectedList(List<StaffPaysheetComponent> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public boolean isShowAccountNo() {
+        return showAccountNo;
+    }
+
+    public void setShowAccountNo(boolean showAccountNo) {
+        this.showAccountNo = showAccountNo;
     }
 }

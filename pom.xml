@@ -57,6 +57,7 @@
             <type>jar</type>
         </dependency>
         
+            
         <dependency>
             <groupId>unknown.binary</groupId>
             <artifactId>org.eclipse.persistence.oracle</artifactId>

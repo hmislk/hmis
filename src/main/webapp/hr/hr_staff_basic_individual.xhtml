@@ -137,6 +137,14 @@
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.code}" ></h:outputLabel>
                             </p:column>
+                            <p:column headerText="DOJ"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="DOJ"  />
+                                </f:facet>
+                                <h:outputLabel value="#{i.staff.dateJoined}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
                             <p:column headerText="From"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="From"  />
