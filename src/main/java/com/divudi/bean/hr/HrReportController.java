@@ -1199,6 +1199,11 @@ public class HrReportController implements Serializable {
             sql += " and ss.staffSalary.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
+        
+        if (getReportKeyWord().isBool1()) {
+            sql += " and ss.lastEditedAt is not null "
+                    + " and ss.lastEditor is not null ";
+        }
 
         return sql;
     }

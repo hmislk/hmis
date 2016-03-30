@@ -45,7 +45,7 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton actionListener="#{creditSummeryController.createCreditDueTable}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter subTable="true" type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
+                            <pe:exporter type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
                         </p:commandButton>
 
                     </h:panelGrid>
@@ -70,12 +70,21 @@
                         </h:outputLabel>
                     </f:facet>
                     <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="Bill No" />
+                        </f:facet>
                         <h:outputLabel value="#{b.insId}" />
                     </p:column>                      
                     <p:column>
+                        <f:facet name="header">
+                            <p:outputLabel value="Patient Name" />
+                        </f:facet>
                         <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column style="text-align: right;">                               
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Value" />
+                        </f:facet>
                         <h:outputLabel value="#{b.netTotal}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>

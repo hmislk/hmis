@@ -1585,7 +1585,7 @@ public class BookKeepingSummery implements Serializable {
 
             System.out.println("item name" + item.getName());
 
-            sql = " select sum(bf.feeGrossValue),count(bf.billItem.bill) from BillFee bf "
+            sql = " select sum(bf.feeGrossValue),count(distinct(bf.billItem.bill)) from BillFee bf "
                     + " where bf.retired=false "
                     + " and bf.billItem.item=:itm ";
 
@@ -1633,7 +1633,7 @@ public class BookKeepingSummery implements Serializable {
             if (refunded) {
                 sql += " and bf.bill.refunded=false ";
             }
-
+            
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
             System.out.println("obj = " + obj);
@@ -3596,6 +3596,46 @@ public class BookKeepingSummery implements Serializable {
         collections2Hos.add(dd);
 
     }
+    
+    private void createCollections2HosMonth2() {
+        collections2Hos = new ArrayList<>();
+        String1Value2 dd;
+        ////////////////
+        dd = new String1Value2();
+        dd.setString("Agent Collections ");
+        dd.setValue1(agentPaymentTotal);
+        collections2Hos.add(dd);
+        ////////////////
+        dd = new String1Value2();
+        dd.setString("CC Collections ");
+        dd.setValue1(collectingCentrePaymentTotal);
+        collections2Hos.add(dd);
+        //////////////////
+        dd = new String1Value2();
+        dd.setString("Credit Company Opd Collections ");
+        dd.setValue1(creditCompanyTotal);
+        collections2Hos.add(dd);
+        //////////////////
+        dd = new String1Value2();
+        dd.setString("Credit Company Inward Collections ");
+        dd.setValue1(creditCompanyTotalInward);
+        collections2Hos.add(dd);
+        /////////////////
+        dd = new String1Value2();
+        dd.setString("Collection For the Day");
+        calGrantTotal2HosWithPro();
+        Double dbl = getGrantTotal();
+        dbl = dbl - pettyCashTotal;
+        dd.setValue1(dbl);
+        collections2Hos.add(dd);
+        //////////////////////
+        dd = new String1Value2();
+        dd.setString("Petty cash Payments");
+        dbl = pettyCashTotal;
+        dd.setValue1(dbl);
+        collections2Hos.add(dd);
+
+    }
 
     public void createCashCategoryWithoutProDay() {
         makeNull();
@@ -4136,7 +4176,7 @@ public class BookKeepingSummery implements Serializable {
         collectingCentrePaymentTotal = getBillBean().calBillTotal(BillType.CollectingCentrePaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
-        createCollections2HosMonth();
+        createCollections2HosMonth2();
         departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
         departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
