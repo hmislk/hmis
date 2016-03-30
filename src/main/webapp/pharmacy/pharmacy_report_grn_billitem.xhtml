@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="GRN Bill Item Report">
-                <h:panelGrid columns="4" styleClass="noPrintButton">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
                     </p:calendar>
@@ -18,7 +18,7 @@
                     <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
 
-                    <p:outputLabel value="Dealer"></p:outputLabel>
+                    <p:outputLabel value="Dealer"></p:outputLabel> 
                     <p:autoComplete value="#{pharmacySaleReport.searchKeyword.ins}" 
                                     completeMethod="#{institutionController.completeCompany}" 
                                     var="de" itemLabel="#{de.name}" itemValue="#{de}" converter="institutionConverter">
@@ -29,7 +29,13 @@
 
                     <p:outputLabel value="GRN Number"></p:outputLabel>
                     <p:inputText value="#{pharmacySaleReport.searchKeyword.billNo}"></p:inputText>
-                    <p:outputLabel></p:outputLabel>
+                    <p:outputLabel value="Department"/>
+                    <p:autoComplete  value="#{pharmacySaleReport.department}"
+                                         completeMethod="#{departmentController.completeDept}" var="i"
+                                         itemValue="#{i}" itemLabel="#{i.name}"
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
+                               
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createGRNBillItemTable()}"/>
                         <p:commandButton actionListener="#{pharmacySaleReport.createGRNBillItemTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
