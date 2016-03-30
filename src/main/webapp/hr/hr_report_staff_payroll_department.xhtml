@@ -56,23 +56,13 @@
                 </p:selectOneMenu>
                 <h:outputLabel value="Institution"/>
                 <hr:institution value="#{salaryCycleController.reportKeyWord.institution}"/>
-                <h:outputLabel value="Department : "/>
-                <hr:department value="#{salaryCycleController.reportKeyWord.department}"/>
-                <h:outputLabel value="Employee : "/>
-                <hr:completeStaff value="#{salaryCycleController.reportKeyWord.staff}"/>
-                <h:outputLabel value="Staff Category : "/>
-                <hr:completeStaffCategory value="#{salaryCycleController.reportKeyWord.staffCategory}"/>
-                <h:outputLabel value="Staff Designation : "/>
-                <hr:completeDesignation value="#{salaryCycleController.reportKeyWord.designation}"/>
-                <h:outputLabel value="Staff Roster : "/>
-                <hr:completeRoster value="#{salaryCycleController.reportKeyWord.roster}"/>
             </h:panelGrid>
 
             <p:commandButton value="Print" ajax="false" action="#" styleClass="noPrintButton" >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" styleClass="noPrintButton" ></p:commandButton>
-            <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlocked()}" styleClass="noPrintButton" ></p:commandButton>
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRollDepartmentWise}" styleClass="noPrintButton" ></p:commandButton>
+            <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlockedDepartmentWise}" styleClass="noPrintButton" ></p:commandButton>
 
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
 
@@ -89,24 +79,15 @@
                 <h:outputLabel value="#{salaryCycleController.reportKeyWord.institution.name}" />
                 <br/>
             </h:panelGroup>
-            <h:panelGroup rendered="#{salaryCycleController.reportKeyWord.department ne null}" >
-                <h:outputLabel value="Department : #{salaryCycleController.reportKeyWord.department.name}"/>
-                <br/>
-            </h:panelGroup>
-            <h:panelGroup rendered="#{salaryCycleController.reportKeyWord.roster ne null}" >
-                <h:outputLabel value="Roster : #{salaryCycleController.reportKeyWord.roster.name}"/>
-                <br/>
-            </h:panelGroup>
-
 
             <table id="tbl" border="1"  style="border: 1px solid black;" >
                 <thead>
                     <tr>  
-                        <th>Code</th>
-                        <th>EPF</th>
+                        <th colspan="4">Department</th>
+<!--                        <th>EPF</th>
                         <th>Join</th>
                         <th>Satff </th>
-                        <th>Des</th>
+                        <th>Des</th>-->
                         <th>Basic+BR</th>
                         <th>Merchan</th>
                         <th>Poya</th>
@@ -133,16 +114,16 @@
                     </tr>
                 </thead>
                 <tbody>                   
-                    <ui:repeat value="#{salaryCycleController.staffSalarys}" var="scc">
+                    <ui:repeat value="#{salaryCycleController.staffSalarysGroup}" var="scc">
                         <tr >
-                            <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.codeInterger}" /></td>
-                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.epfNo}" /></td>
+                            <td style="white-space: nowrap;" colspan="4" ><h:outputLabel value="#{scc.departmentString}" /></td>
+<!--                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.epfNo}" /></td>
                             <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.dateJoined}" >
                                     <f:convertDateTime pattern="dd MM yy" />
                                 </h:outputLabel>
                             </td>
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.person.name}" /></td>                                
-                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.roster.name}" /></td>  
+                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.designation.name}" /></td>  -->
                             <td style="text-align: right;;" ><h:outputText value="#{scc.basicValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                   
@@ -231,7 +212,7 @@
                         </tr>
                     </ui:repeat>
                     <tr>
-                        <td colspan="5"><h:outputLabel value="Totals"/></td>
+                        <td colspan="4"><h:outputLabel value="Totals"/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.basicVal}" >
                                 <f:convertNumber pattern="#,##0.00" />

@@ -503,7 +503,7 @@
                         <p:spacer height="30"/>
 
 
-                        <p:dataTable id="sum3" value="#{commonReport.creditSlipSumAfter}"  var="i" >
+                        <p:dataTable id="sum3" value="#{commonReport.creditSlipSumAfter}"  var="i" rendered="false" >
                             <f:facet name="header">
                                 <h:outputLabel value="Credit Summary  After Cash Transaction"/>
                             </f:facet>
@@ -519,7 +519,7 @@
 
                         <p:spacer height="30"/>
 
-                        <p:dataTable id="sum4" value="#{commonReport.cashChequeSumAfter}"  var="i" >
+                        <p:dataTable id="sum4" value="#{commonReport.cashChequeSumAfter}"  var="i" rendered="false" >
                             <f:facet name="header">
                                 <h:outputLabel value="Cash Summary  After Cash Transaction"/>
                             </f:facet>
@@ -532,8 +532,22 @@
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
-
-
+                        
+                        <p:spacer height="30"/>
+                        
+                        <p:dataTable id="sum22" value="#{commonReport.cashChequeCreditSummery}"  var="i" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Summary"/>
+                            </f:facet>
+                            <p:column>
+                                <h:outputLabel value="#{i.string}"/>
+                            </p:column>
+                            <p:column style="font-weight: bold;text-align:right;" >
+                                <h:outputLabel value="#{i.value}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
 
                         <p:spacer height="30"/>
 

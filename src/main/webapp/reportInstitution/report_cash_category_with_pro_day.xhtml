@@ -43,7 +43,8 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
+                            <pe:exporter type="xlsx" target="opd_new:opd_new,
+                                         opd_new_credit:opd_new_credit,
                                          outside:outside,
                                          pharmacy:pharmacy,
                                          pharmacyWholeSale:pharmacyWholeSale,
@@ -53,6 +54,7 @@
                                          credit_collection_inward:credit_collection_inward,
                                          col,
                                          opd_professional:opd_professional,
+                                         opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,
                                          credit_card:credit_card,
                                          slip:slip,
@@ -74,16 +76,21 @@
 
             <p:spacer height="30"/>
 
+            <in:opd_new_with_1 id="opd_new_credit" />
+
+
+            <p:spacer height="30"/>
+
             <in:outside_with id="outside" />
 
             <p:spacer height="30"/>
 
             <in:pharmacy id="pharmacy"/>
-            
+
             <p:spacer height="30"/>
-            
+
             <in:pharmacy_whole_sale id="pharmacyWholeSale"/>
-            
+
             <p:spacer height="30"/>
 
             <in:channel id="channel"/>
@@ -97,7 +104,7 @@
             <in:agent_collection id="agent_collection"/>
 
             <p:spacer height="30"/>
-            
+
             <in:collecting_centre_collection id="collecting_centre_collection"/>
 
             <p:spacer height="30"/>
@@ -131,6 +138,10 @@
             <p:spacer height="30"/>
 
             <in:opd_professional_payment id="opd_professional"/> 
+
+            <p:spacer height="30"/>
+            
+            <in:opd_professional_payment_credit id="opd_professional_credit"/> 
 
             <p:spacer height="30"/>
 
@@ -415,11 +426,11 @@
                                 <p:column style="text-align: right;" >
                                     <h:outputLabel value="......................." />
                                 </p:column>-->
-                 <f:facet name="footer" >
-                <h:outputLabel value="Printed By :#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-            </f:facet>
+                <f:facet name="footer" >
+                    <h:outputLabel value="Printed By :#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                </f:facet>
             </p:dataTable>
-           
+
         </h:form>
     </ui:define>
 

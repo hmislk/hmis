@@ -51,11 +51,11 @@
                                          stickyHeader="true"
                                          value="#{reportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Unit Issue From "/>
+                                    <h:outputLabel value="Unit Issue From "/>&#13;&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
                                     <h:outputLabel value=" To "/>
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>
-                                    <h:panelGrid columns="4">
+                                    &#13;&nbsp;
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -64,7 +64,6 @@
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
                                 </f:facet>
 
                                 <p:column headerText="Bill No">

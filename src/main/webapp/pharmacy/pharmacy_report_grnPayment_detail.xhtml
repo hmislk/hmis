@@ -17,7 +17,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Payment Detail">
 
 
-                    <h:panelGrid columns="8" style="noPrintButton">
+                    <h:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -88,13 +88,12 @@
                             <h:outputLabel value="From  "/>
                             <h:outputLabel value="#{commonReport.fromDate}">
                                 <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <p:spacer width="10" height="1"/>
+                            </h:outputLabel> &#13;&nbsp;
                             <h:outputLabel value="To  "/>
                             <h:outputLabel value="#{commonReport.toDate}">
                                 <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                             </h:outputLabel>
-                            <br/>
+                            &#13;&nbsp;
                             <h:outputLabel value="GRN Payment"/>
                         </f:facet>
 

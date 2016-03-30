@@ -38,9 +38,13 @@
                         </p:commandButton>
 
 
-                        <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i"  >
+                        <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"  var="i" styleClass="noBorder normalFont" >
 
                             <f:facet name="header">  
+                                <h:outputLabel value="BHT Issue"/>
+                                &#13;&nbsp;
+                                <h:outputLabel value="From"/>
+                                <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>&#13;&nbsp;
                                 <h:outputLabel value="From" />
                                 <h:outputLabel  value="#{reportsTransfer.fromDate}" >
                                     <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
@@ -48,8 +52,8 @@
                                 <h:outputLabel value="To"/>
                                 <h:outputLabel  value="#{reportsTransfer.toDate}" >
                                     <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
-                                </h:outputLabel><br/>
-                                <h:outputLabel value="GRN"/>
+                                </h:outputLabel>&#13;&nbsp;
+
                             </f:facet>
 
                             <p:column headerText="Item">

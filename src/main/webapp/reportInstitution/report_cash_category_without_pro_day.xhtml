@@ -37,13 +37,14 @@
 
                     <h:panelGrid columns="5">
                         <p:spacer width="110" height="1"/>
-                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                        action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithoutProDay}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="opd_new:opd_new,
+                                         opd_new_credit:opd_new_credit,
                                          outside:outside,
                                          pharmacy:pharmacy,
                                          inward_collection1:inward_collection1,
@@ -51,6 +52,7 @@
                                          credit_collection:credit_collection,
                                          credit_collection_inward:credit_collection_inward,
                                          col,
+                                         opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,
                                          credit_card:credit_card,
                                          slip:slip,
@@ -70,6 +72,9 @@
 
             <in:opd_new id="opd_new" professional="false"/>
 
+            <p:spacer height="30"/>
+
+            <in:opd_new_1 id="opd_new_credit" professional="false"/>
 
             <p:spacer height="30"/>
 
@@ -88,7 +93,7 @@
             <in:agent_collection id="agent_collection"/>
 
             <p:spacer height="30"/>
-            
+
             <in:collecting_centre_collection id="collecting_centre_collection"/>
 
             <p:spacer height="30"/>
@@ -119,6 +124,10 @@
                 </p:column>
             </p:dataTable>
 
+
+            <p:spacer height="30"/>
+            
+            <in:opd_professional_payment_credit id="opd_professional_credit"/>  
 
             <p:spacer height="30"/>
 

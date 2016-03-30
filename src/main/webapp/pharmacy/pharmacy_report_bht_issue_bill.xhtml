@@ -45,9 +45,10 @@
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
                                          value="#{reportsTransfer.transferBills}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="BHT Issue From"/>
+                                    <h:outputLabel value="BHT Issue From"/>&#13;&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
+                                   &#13;&nbsp;
+                                    <!--<h:panelGrid columns="4">-->
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -56,7 +57,7 @@
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                    <!--</h:panelGrid>-->
                                 </f:facet>
 
                                 <p:column headerText="BHT No">

@@ -14,10 +14,10 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Unit Issue Report" >
+                    <p:panel header="Pharmacy Transfer Receive Summery Report" >
 
-                        <h:panelGrid columns="6" >
-                            <h:outputLabel value="Issue From" ></h:outputLabel>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Transfer Recive From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
@@ -30,24 +30,23 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.createDepartmentIssue()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{reportsTransfer.createTransferReciveBillSummery}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Unit_Issue_Report_by_department"  />
+                                <pe:exporter type="xlsx" target="tbl" fileName="Pharmacy_Transfer_Receive_Summery_Report"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
 
-                        <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         stickyHeader="true"
+                        <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tbl"
                                          value="#{reportsTransfer.listz}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Unit Issue From "/>
+                                    <h:outputLabel value="Pharmacy Transfer Receive Summery Report"/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
                                     <br/>
                                     <!--<h:panelGrid columns="4">-->

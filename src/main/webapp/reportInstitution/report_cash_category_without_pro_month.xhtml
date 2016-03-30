@@ -12,13 +12,13 @@
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form id="panelPrint" styleClass="noBorder summeryBorder">
-         
+
             <p:panel>
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary Without Pro (Month)"  styleClass="noPrintButton" />
-                   
-                    
-                    
+
+
+
 
                     <h:panelGrid columns="2"  styleClass="noPrintButton"  >
                         <h:outputLabel value="From Date"/>
@@ -39,30 +39,36 @@
 
                     <h:panelGrid columns="5">
                         <p:spacer width="110" height="1"/>
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                    action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
-                    <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new,                                     
-                                     outside:outside,
-                                     pharmacy:pharmacy,
-                                     inward:inward,                                     
-                                     col,
-                                     inward_professional:inward_professional,                                     
-                                     finalSum" 
-                                     fileName="Book_Keeping_Summery_without_pro_month_by_category_month_end"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
-                    </p:commandButton>
+                        <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
+                                         action="#{bookKeepingSummery.createCashCategoryWithoutProMonth}"/>
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="opd_new:opd_new, 
+                                         opd_new_credit:opd_new_credit,
+                                         outside:outside,
+                                         pharmacy:pharmacy,
+                                         inward:inward,                                     
+                                         col,
+                                         opd_professional_credit:opd_professional_credit,
+                                         inward_professional:inward_professional,                                     
+                                         finalSum" 
+                                         fileName="Book_Keeping_Summery_without_pro_month_by_category_month_end"
+                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
                     </h:panelGrid>
-                    
+
                 </f:facet>
             </p:panel>
             <!--            <p:spacer height="30" />-->
 
             <in:opd_new id="opd_new"/>
+
+            <p:spacer height="30"/>
+
+            <in:opd_new_1 id="opd_new_credit"/>
 
             <p:spacer height="30"/>
 
@@ -92,6 +98,10 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
+
+            <p:spacer height="30"/>
+            
+            <in:opd_professional_payment_credit id="opd_professional_credit"/>  
 
             <p:spacer height="30"/>
 

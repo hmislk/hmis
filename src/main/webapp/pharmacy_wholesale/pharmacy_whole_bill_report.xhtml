@@ -55,11 +55,11 @@
                                          rowsPerPageTemplate="20, 50, 100"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Pharmacy Whole Sale Report : "/>
-                                    <h:outputLabel value="#{billController.department.name}"/> <br/>
+                                    <h:outputLabel value="#{billController.department.name}"/> &#13;&nbsp;
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{billController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                        </h:outputLabel><p:spacer width="30" height="1"/>
+                                        </h:outputLabel>&#13;&nbsp;
                                         <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{billController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>

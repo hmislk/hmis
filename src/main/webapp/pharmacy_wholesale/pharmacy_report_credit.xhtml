@@ -57,7 +57,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Pharmacy WholeSale Credit Bills"/>
                                     <h:outputLabel value=" - #{billController.department.name}" rendered="#{billController.department ne null}"/> 
-                                    <h:panelGrid columns="4">
+                                    &#13;&nbsp;
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{billController.fromDate}">
                                             <f:convertDateTime pattern="yyyy MM dd - hh:mm:ss a" ></f:convertDateTime>
@@ -66,7 +66,7 @@
                                         <h:outputLabel value="#{billController.toDate}">
                                             <f:convertDateTime pattern="yyyy MM dd - hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                    </h:panelGrid>
+                                    
                                 </f:facet>
 
                                 <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                

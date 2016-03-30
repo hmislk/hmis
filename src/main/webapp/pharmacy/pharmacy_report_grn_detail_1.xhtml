@@ -17,7 +17,7 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Pharmacy Return without Traising">
 
 
-                    <h:panelGrid columns="8" style="noPrintButton">
+                    <h:panelGrid columns="2" style="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -66,7 +66,11 @@
                     <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" sortBy="#{b.billType}">
 
-                        <f:facet name="header">  
+                        <f:facet name="header"> 
+                            <h:outputLabel value="Department"/>
+                            <h:outputLabel value="#{commonReport.department.name}"/> &#13;&nbsp;
+                            <h:outputLabel value="Ref Institution"/>
+                            <h:outputLabel value="#{commonReport.referenceInstitution.name}"/> &#13;&nbsp;
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
                                 <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
