@@ -55,6 +55,7 @@ public class ReportKeyWord {
     boolean additionalDetails;
     WebUser webUser;
     private String string;
+    boolean bool1;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -278,6 +279,14 @@ public class ReportKeyWord {
         this.string = string;
     }
 
+    public boolean isBool1() {
+        return bool1;
+    }
+
+    public void setBool1(boolean bool1) {
+        this.bool1 = bool1;
+    }
+
     public void resetKeyWord() {
         dayTypes = null;
         staff = null;
@@ -306,6 +315,7 @@ public class ReportKeyWord {
         additionalDetails = false;
         webUser = null;
         string="";
+        bool1=false;
     }
 
 }

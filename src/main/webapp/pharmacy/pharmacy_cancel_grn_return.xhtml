@@ -61,7 +61,11 @@
                     </h:panelGroup>
 
 
-                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
+                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" id="panelPrint" styleClass="noBorder summeryBorder" >
+                        <p:commandButton ajax="false" value="Print"  
+                                         styleClass="noPrintButton" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
 <!--                        <pharmacy:grnReturn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
 
                         <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
