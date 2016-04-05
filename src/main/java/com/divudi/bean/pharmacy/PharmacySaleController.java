@@ -1183,6 +1183,9 @@ public class PharmacySaleController implements Serializable {
     }
 
     public void settlePreBill() {
+        System.err.println("Pharmacy For Cashier Bill Start - = " + new Date());
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        
         editingQty = null;
 
         if (getPreBill().getBillItems().isEmpty()) {
@@ -1224,12 +1227,19 @@ public class PharmacySaleController implements Serializable {
         resetAll();
 
         billPreview = true;
+        
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        System.err.println("Pharmacy For Cashier Bill Start - = " + new Date());
+        
     }
 
     @EJB
     private CashTransactionBean cashTransactionBean;
 
     public void settleBillWithPay() {
+        System.err.println("OPD Bill Start - = " + new Date());
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        
         editingQty = null;
 
         if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
@@ -1313,6 +1323,9 @@ public class PharmacySaleController implements Serializable {
 
         resetAll();
         billPreview = true;
+        
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        System.err.println("OPD Bill End - = " + new Date());
 
     }
 

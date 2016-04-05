@@ -941,6 +941,8 @@ public class BillController implements Serializable {
     }
 
     public void settleBill() {
+        System.err.println("OPD Bill Start - = " + new Date());
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
         if (errorCheck()) {
             return;
         }
@@ -1003,6 +1005,8 @@ public class BillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        System.err.println("sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        System.err.println("OPD Bill End - = " + new Date());
     }
 
     public boolean checkBillValues(Bill b) {
