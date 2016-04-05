@@ -82,9 +82,9 @@ public class CashRecieveBillController implements Serializable {
             selectBillListener();
             addToBill();
         }
-        //if (billItems != null) {
-           // selectedBillItems.addAll(billItems);
-       // }
+//        if (billItems != null) {
+//            selectedBillItems.addAll(billItems);
+//        }
         calTotal();
     }
 

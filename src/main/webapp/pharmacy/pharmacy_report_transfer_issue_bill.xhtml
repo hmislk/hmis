@@ -16,7 +16,7 @@
 
                     <p:panel header="Detailed Transfer Listing (Do not consider receieve) - By Bills" >
 
-                        <h:panelGrid columns="8" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
@@ -46,45 +46,30 @@
                         </h:panelGrid>
 
 
-                        <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                        value="#{reportsTransfer.transferBills}" var="i"  
-                                        rows="20"
-                                        paginator="true"
-                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                        rowsPerPageTemplate="20, 50, 100" 
-                                        >
+                        <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tbl" value="#{reportsTransfer.transferBills}" var="i" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Transfer Issue To "/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
-                                        </h:outputLabel>
-                                    </h:panelGrid>
+                                    <br></br>
+                                    <h:outputLabel value="From  "/>
+                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                    <h:outputLabel value="To  "/>
+                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </f:facet>
 
-                                <p:column headerText="Bill No"
-                                          sortBy="#{i.deptId}"
-                                          filterBy="#{i.deptId}"
-                                          filterMatchMode="contains"
-                                          >
+                                <p:column headerText="Bill No" sortBy="#{i.deptId}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}" ></h:outputLabel>                                    
                                 </p:column>
 
-                                <p:column headerText="Cancelled No"
-                                          sortBy="#{i.cancelledBill.deptId}"
-                                          filterBy="#{i.cancelledBill.deptId}"
-                                          filterMatchMode="contains"
-                                          >
+                                <p:column headerText="Cancelled No" sortBy="#{i.cancelledBill.deptId}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled No"/>
                                     </f:facet>
@@ -112,7 +97,7 @@
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="2" footerText="Totals">
+                                        <p:column colspan="3" footerText="Totals">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="Totals" ></h:outputLabel>
                                             </f:facet>

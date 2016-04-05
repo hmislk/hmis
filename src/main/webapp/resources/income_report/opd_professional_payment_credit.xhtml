@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.departmentProfessionalPaymentsCredit}" var="a" 
+                     rendered="#{bookKeepingSummery.departmentProfessionalPaymentsCredit.size()!=0}">
+            <f:facet name="header">               
+                <p:outputLabel value="OPD Professional Payment (Credit)" />    
+            </f:facet>
+            <p:column>
+                <h:outputLabel value="#{a.specility}" rendered="#{a.totalPayment!=0}"/>
+            </p:column>
+            <p:column></p:column>
+            <p:column></p:column>
+            <p:column></p:column>
+            <p:column style="text-align: right;">
+                <h:outputLabel value="#{0-a.totalPayment}" rendered="#{a.totalPayment!=0}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>                
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Department Payment Total"/>
+                    <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.departmentProfessionalPaymentTotalCredit}">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{0-bookKeepingSummery.departmentProfessionalPaymentTotalCredit}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>   
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+
+        </p:dataTable>  
+    </cc:implementation>
+</html>

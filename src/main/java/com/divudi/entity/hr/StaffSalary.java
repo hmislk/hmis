@@ -56,7 +56,7 @@ public class StaffSalary implements Serializable {
     double rpmWithMutiplingFactor1_5;
     @Transient
     double rpmWithMutiplingFactor2_5;
-    
+
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -159,8 +159,15 @@ public class StaffSalary implements Serializable {
     double transLeaveMaternity1st;
     @Transient
     double transLeaveMaternity2nd;
+    @Transient
+    String systemLatedays10min;//for payshhet Print 
+    @Transient
+    String systemLatedays90min;//for payshhet Print 
+    @Transient
+    String departmentString;
+    @Transient
+    String rosterString;
     String comments;
-            
 
     public String getChequeNumberSalary() {
         return chequeNumberSalary;
@@ -379,26 +386,24 @@ public class StaffSalary implements Serializable {
     }
 
     public double getRpmWithMutiplingFactor1_5() {
-        rpmWithMutiplingFactor1_5=roundOff(getBasicRatePerMinute()*1.5);
+        rpmWithMutiplingFactor1_5 = roundOff(getBasicRatePerMinute() * 1.5);
         return rpmWithMutiplingFactor1_5;
     }
 
     public void setRpmWithMutiplingFactor1_5(double rpmWithMutiplingFactor1_5) {
-        rpmWithMutiplingFactor1_5=roundOff(getBasicRatePerMinute()*1.5);
+        rpmWithMutiplingFactor1_5 = roundOff(getBasicRatePerMinute() * 1.5);
         this.rpmWithMutiplingFactor1_5 = rpmWithMutiplingFactor1_5;
     }
 
     public double getRpmWithMutiplingFactor2_5() {
-        rpmWithMutiplingFactor2_5=roundOff(getBasicRatePerMinute()*2.5);
+        rpmWithMutiplingFactor2_5 = roundOff(getBasicRatePerMinute() * 2.5);
         return rpmWithMutiplingFactor2_5;
     }
 
     public void setRpmWithMutiplingFactor2_5(double rpmWithMutiplingFactor2_5) {
-        rpmWithMutiplingFactor2_5=roundOff(getBasicRatePerMinute()*2.5);
+        rpmWithMutiplingFactor2_5 = roundOff(getBasicRatePerMinute() * 2.5);
         this.rpmWithMutiplingFactor2_5 = rpmWithMutiplingFactor2_5;
     }
-    
-    
 
     public Department getDepartment() {
         return department;
@@ -594,7 +599,7 @@ public class StaffSalary implements Serializable {
 //                } else {
 //                    value = 0 - spc.getComponantValue();
 //                }
-                
+
 //                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getName()!=null){
 //                    System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getName() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getName());
 //                }
@@ -606,9 +611,6 @@ public class StaffSalary implements Serializable {
 //                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()!=0){
 //                    System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()); 
 //                }
-                
-                
-
                 switch (paysheetComponentType) {
                     case BasicSalary:
                         basicValue += value;
@@ -683,8 +685,8 @@ public class StaffSalary implements Serializable {
     }
 
     public double getTransNetSalry() {
-     return   (getTransTotalDeduction()-(getNoPayValueBasic()+getNoPayValueAllowance()))+
-                (getTransTotalAllowance()+getTransEpfEtfDiductableSalary());
+        return (getTransTotalDeduction() - (getNoPayValueBasic() + getNoPayValueAllowance()))
+                + (getTransTotalAllowance() + getTransEpfEtfDiductableSalary());
 //        return roundOff(getTransGrossSalary() + getTransTotalAllowance() + getTransTotalDeduction());
     }
 
@@ -1129,6 +1131,38 @@ public class StaffSalary implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getSystemLatedays10min() {
+        return systemLatedays10min;
+    }
+
+    public void setSystemLatedays10min(String systemLatedays10min) {
+        this.systemLatedays10min = systemLatedays10min;
+    }
+
+    public String getSystemLatedays90min() {
+        return systemLatedays90min;
+    }
+
+    public void setSystemLatedays90min(String systemLatedays90min) {
+        this.systemLatedays90min = systemLatedays90min;
+    }
+
+    public String getDepartmentString() {
+        return departmentString;
+    }
+
+    public void setDepartmentString(String departmentString) {
+        this.departmentString = departmentString;
+    }
+
+    public String getRosterString() {
+        return rosterString;
+    }
+
+    public void setRosterString(String rosterString) {
+        this.rosterString = rosterString;
     }
 
 }

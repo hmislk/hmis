@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -58,6 +59,8 @@ public class ServiceSummery implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     // private List<DailyCash> dailyCashs;
     @Temporal(TemporalType.TIMESTAMP)
     private Date fromDate;
@@ -780,6 +783,7 @@ public class ServiceSummery implements Serializable {
     CommonFunctions commonFunctions;
 
     public void createServiceSummeryLab() {
+        Date startTime = new Date();
 
         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
@@ -834,10 +838,13 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery(/faces/reportLab/report_opd_service_summery.xhtml)");
 
     }
 
     public void createServiceSummeryLabNew() {
+        Date startTime = new Date();
 
         long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
 
@@ -885,6 +892,7 @@ public class ServiceSummery implements Serializable {
             reagentFeeTotalGT += svItem.getValue4();
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery by bill types(/faces/reportLab/report_opd_service_summery_by_bill_types.xhtml)");
     }
 
     public void createSummaryTable(Bill bill) {
@@ -940,6 +948,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceSummeryInwardAddedDate() {
+        Date startTime = new Date();
+        
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -958,6 +968,8 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/lab summery inward/summery by added date(/faces/reportLab/report_inward_service_detail_added_lab.xhtml)");
 
     }
 
@@ -1898,6 +1910,14 @@ public class ServiceSummery implements Serializable {
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -100,6 +101,9 @@ public class InwardReportController1 implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
+
+    @Inject
+    CommonController commonController;
 
     double billFreeGross;
     double billFeeMargin;
@@ -410,11 +414,8 @@ public class InwardReportController1 implements Serializable {
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
 
-        
 //        Remove Cancelled
-        
-        
-         sql = "select bf.paidForBillFee.staff.speciality,"
+        sql = "select bf.paidForBillFee.staff.speciality,"
                 + " sum(bf.paidForBillFee.feeValue) "
                 + " from BillItem bf"
                 + " where bf.retired=false "
@@ -422,8 +423,7 @@ public class InwardReportController1 implements Serializable {
                 + " and bf.bill.billType=:btp"
                 + " and (bf.paidForBillFee.bill.billType=:refBtp1"
                 + " or bf.paidForBillFee.bill.billType=:refBtp2)";
-        
-        
+
         if (byDischargDate) {
             sql += " and bf.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fd and :td ";
         } else {
@@ -451,10 +451,8 @@ public class InwardReportController1 implements Serializable {
         sql += " group by bf.paidForBillFee.staff.speciality "
                 + " order by bf.paidForBillFee.staff.speciality.name ";
 
-        
         //System.out.println("sql = " + sql);
         //System.out.println("m = " + m);
-        
         return getBillFeeFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -1216,6 +1214,8 @@ public class InwardReportController1 implements Serializable {
     }
 
     public void createRoomTime() {
+        Date startTime = new Date();
+        
         categoryTimes = new ArrayList<>();
 
         for (RoomCategory rm : roomCategoryController.getItems()) {
@@ -1243,6 +1243,8 @@ public class InwardReportController1 implements Serializable {
             row.setAdded(added);
             categoryTimes.add(row);
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Room time report(/faces/inward/inward_report_room.xhtml)");
     }
 
     public void createRoomTime(Category cat) {
@@ -1265,6 +1267,8 @@ public class InwardReportController1 implements Serializable {
     }
 
     public void createBHTDiscountTable() {
+        Date statTime = new Date();
+        
         String sql;
         Map m = new HashMap();
         billItems = new ArrayList<>();
@@ -1314,6 +1318,8 @@ public class InwardReportController1 implements Serializable {
         inwardMargin = dbl[1];
         inwardDiscount = dbl[2];
         inwardNetValue = dbl[3];
+        
+        commonController.printReportDetails(fromDate, toDate, statTime, "Discount Report(/faces/inward/inward_report_discount.xhtml)");
 
     }
 
@@ -1492,6 +1498,8 @@ public class InwardReportController1 implements Serializable {
     }
 
     public void process() {
+        Date startTime = new Date();
+
         makeNull();
 
         createOpdServiceWithoutPro();
@@ -1502,6 +1510,8 @@ public class InwardReportController1 implements Serializable {
         createFinalSummeryMonth();
         createPaidByPatient();
         createCreditPayment();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT income by categories All BHT/Process(/faces/inward/inward_report_bht_income_by_caregories.xhtml)");
 
     }
 
@@ -2884,4 +2894,13 @@ public class InwardReportController1 implements Serializable {
         }
 
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

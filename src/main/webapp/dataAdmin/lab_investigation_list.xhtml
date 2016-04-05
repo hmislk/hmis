@@ -67,7 +67,7 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                         </p:column>
-                        <p:column headerText="Category"  style="width: 45%;" sortBy="#{ix.investigationCategory.name}">
+                        <p:column headerText="Category"  style="width: 45%;" sortBy="#{ix.investigationCategory.name}" filterBy="#{ix.investigationCategory.name}">
                             <f:facet name="header">
                                 <h:outputLabel value="Investigation Category"/>
                             </f:facet>

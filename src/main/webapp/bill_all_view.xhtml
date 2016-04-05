@@ -446,10 +446,10 @@
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip21.item.name}"/>
                                     </p:column>
-                                    <p:column headerText="1" rendered="#{bip21.paidForBillFee}">
+                                    <p:column headerText="1">
                                         <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
                                     </p:column>
-                                    <p:column headerText="2" rendered="#{bip21.paidForBillFee}">
+                                    <p:column headerText="2" >
                                         <p:cellEditor>
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />

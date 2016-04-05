@@ -9,6 +9,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
+import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -120,6 +121,8 @@ public class CollectingCentreBillController implements Serializable {
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
+    CommonController commonController;
+    @Inject
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -127,6 +130,8 @@ public class CollectingCentreBillController implements Serializable {
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
     @EJB
@@ -434,6 +439,11 @@ public class CollectingCentreBillController implements Serializable {
         calTotals();
     }
 
+     public void listnerSelectLabBooks(){
+         channelBillController.fetchRecentChannelBooks(collectingCentre);
+         
+    }
+    
     public String getStrTenderedValue() {
         return strTenderedValue;
     }
@@ -650,6 +660,8 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        
         if (errorCheck()) {
             return;
         }
@@ -702,6 +714,8 @@ public class CollectingCentreBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -1969,5 +1983,14 @@ public class CollectingCentreBillController implements Serializable {
     public void setReminingCashPaid(double reminingCashPaid) {
         this.reminingCashPaid = reminingCashPaid;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }

@@ -57,7 +57,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalary()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_no_pay_and_late"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -65,24 +65,25 @@
                         <p:panel id="gpBillPreview"   styleClass="noBorder summeryBorder"  >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
-                                    <h:outputLabel value="  No Pay And Late No Pay  Report "  />
-                                    <h:outputLabel/><br/>
-                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        
+
+                                    <h:outputLabel value="  No Pay And Late No Pay  Report " />
+                                    <br/>                                   
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
+
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
                                     </h:panelGroup>
+
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
                                         <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
                                         <br/>
                                     </h:panelGroup>
-                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
+                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
                                         <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
                                         <br/>
                                     </h:panelGroup>
 
-                                    
+
                                 </f:facet>
                                 <p:column headerText="Emp No">
                                     <f:facet name="header">

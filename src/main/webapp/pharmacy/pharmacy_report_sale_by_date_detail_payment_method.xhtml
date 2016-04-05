@@ -38,7 +38,7 @@
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
-                        <h:outputLabel value="Pharmacy Sale Billed"/><br/>
+                        <h:outputLabel value="Pharmacy Sale Billed"/>
                         <h:outputLabel value="From Date :  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
@@ -46,7 +46,8 @@
                         <h:outputLabel value="To Date"/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
-                        </h:outputLabel>                       
+                        </h:outputLabel>   &#13;&nbsp;
+                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
                     </f:facet>
 
                     <p:columnGroup type="header">

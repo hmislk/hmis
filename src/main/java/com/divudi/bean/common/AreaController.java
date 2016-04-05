@@ -67,6 +67,10 @@ public class AreaController implements Serializable {
     }
 
     public void saveSelected() {
+        if (getCurrent().getName().isEmpty() || getCurrent().getName() == null) {
+            UtilityController.addErrorMessage("Please enter Value");
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -135,10 +139,10 @@ public class AreaController implements Serializable {
     public List<Area> getItems() {
         if (items == null) {
             String j;
-            j="select a "
+            j = "select a "
                     + " from Area a "
                     + " where a.retired=false "
-                    + " orrder by a.name";
+                    + " order by a.name";
             items = getFacade().findBySQL(j);
         }
         return items;

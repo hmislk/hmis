@@ -344,6 +344,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node2305 = new PrivilageNode("Channel Sheduling", node23, Privileges.ChannellingChannelSheduling);
         TreeNode node2306 = new PrivilageNode("Channel Agent Fee", node23, Privileges.ChannellingChannelAgentFee);
         TreeNode node2309 = new PrivilageNode("Channel Booking Change", node23, Privileges.ChannelBookingChange);
+        TreeNode node2310=new PrivilageNode("Print Past Booking Recipt", node23, Privileges.ChannellingPrintInPastBooking);
         TreeNode node2307 = new PrivilageNode("Payment", node23);
         TreeNode node23070 = new PrivilageNode("Payment Menu", node2307, Privileges.ChannellingPayment);
         TreeNode node23071 = new PrivilageNode("Pay Doctor", node2307, Privileges.ChannellingPaymentPayDoctor);

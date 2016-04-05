@@ -13,6 +13,7 @@ import com.divudi.entity.Department;
 public class DepartmentPayment {
     private Department department;
     private double totalPayment;
+    String specility;
 
     public Department getDepartment() {
         return department;
@@ -28,5 +29,13 @@ public class DepartmentPayment {
 
     public void setTotalPayment(double totalPayment) {
         this.totalPayment = totalPayment;
+    }
+
+    public String getSpecility() {
+        return specility;
+    }
+
+    public void setSpecility(String specility) {
+        this.specility = specility;
     }
 }

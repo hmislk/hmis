@@ -79,6 +79,10 @@ public class ServiceSession extends Item implements Serializable {
 
     @Transient
     int transRowNumber;
+    @Transient
+    Boolean arival;
+    @Transient
+    boolean serviceSessionCreateForOriginatingSession=false;
 
     public SessionNumberGenerator getSessionNumberGenerator() {
         return sessionNumberGenerator;
@@ -244,8 +248,8 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransStartTime() {
         Calendar st = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
-        System.out.println("sessionAt = " + sessionAt);
-        System.out.println("startingTime = " + startingTime);
+//        System.out.println("sessionAt = " + sessionAt);
+//        System.out.println("startingTime = " + startingTime);
         if (sessionAt == null || startingTime == null) {
             return null;
         }
@@ -261,7 +265,7 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransEndTime() {
         Calendar st = Calendar.getInstance();
         Calendar ending = Calendar.getInstance();
-        System.out.println("sessionAt = " + sessionAt);
+//        System.out.println("sessionAt = " + sessionAt);
         if (sessionAt == null || getEndingTime() == null) {
             return null;
         }
@@ -396,16 +400,32 @@ public class ServiceSession extends Item implements Serializable {
             sessionText += ses.getTransDisplayCountWithoutCancelRefund();
             sessionText += "</font>";
             sessionText += CommonFunctions.round(ses.totalFee);
-            if(ses.getMaxNo()!=0){
-                
-            }
-                
-        }
-    return sessionText ;
-}
+            if (ses.getMaxNo() != 0) {
 
-public void setSessionText(String sessionText) {
+            }
+
+        }
+        return sessionText;
+    }
+
+    public void setSessionText(String sessionText) {
         this.sessionText = sessionText;
+    }
+
+    public Boolean getArival() {
+        return arival;
+    }
+
+    public void setArival(Boolean arival) {
+        this.arival = arival;
+    }
+
+    public boolean isServiceSessionCreateForOriginatingSession() {
+        return serviceSessionCreateForOriginatingSession;
+    }
+
+    public void setServiceSessionCreateForOriginatingSession(boolean serviceSessionCreateForOriginatingSession) {
+        this.serviceSessionCreateForOriginatingSession = serviceSessionCreateForOriginatingSession;
     }
 
 }

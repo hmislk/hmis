@@ -102,7 +102,7 @@
                                                             </p:outputLabel>
                                                         </p:column>-->
                             <p:column headerText="Turn Around time" >
-                                <h:panelGroup rendered="#{pi.printingAt ne null}" >
+                                <h:panelGroup rendered="#{pi.approveAt ne null}" >
                                     <p:outputLabel value="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt)}" rendered="#{commonController.dateDifferenceInMinutes(pi.sampledAt, pi.approveAt) lt 60}" >
                                         <f:convertNumber pattern="0" ></f:convertNumber>
                                     </p:outputLabel>
@@ -117,7 +117,7 @@
                                     </p:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-
+                            
 
                         </p:dataTable>
 

@@ -56,10 +56,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
@@ -72,6 +74,7 @@ import org.primefaces.event.TabChangeEvent;
 public class ChannelBillController implements Serializable {
 
     private BillSession billSession;
+    private BillSession billSessionTmp;
     private String patientTabId = "tabNewPt";
     private Patient newPatient;
     private Area area;
@@ -135,6 +138,8 @@ public class ChannelBillController implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     DoctorSpecialityController doctorSpecialityController;
+    @Inject
+    ChannelSearchController channelSearchController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -545,6 +550,9 @@ public class ChannelBillController implements Serializable {
 
         listBillFees = billFeeFacade.findBySQL(sql, hm);
         billSession = bs;
+        System.out.println("bs = " + bs);
+        System.out.println("billSession = " + billSession);
+        System.out.println("bookingController.getSelectedBillSession() = " + bookingController.getSelectedBillSession());
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
@@ -644,6 +652,18 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelAgentPaidBill() {
+        System.out.println("getBillSession() = " + getBillSession());
+        System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
+        if (getBillSessionTmp()!=null) {
+            setBillSession(getBillSessionTmp());
+        }else{
+            setBillSession(getBillSession());
+        }
+        System.out.println("getBillSession() = " + getBillSession());
+        System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
+        System.out.println("getCancelPaymentMethod() = " + getCancelPaymentMethod());
+        System.out.println("getComment() = " + getComment());
+        System.out.println("bookingController.getCanPayMetTmp() = " + bookingController.getCanPayMetTmp());
         if (getBillSession() == null) {
             UtilityController.addErrorMessage("No BillSession");
             return;
@@ -1183,7 +1203,14 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
+    
+    public void clearAll(){
+        makeNull();
+        makeNullSearchData();
+    }
+    
     public void makeNull() {
+        System.err.println("make null");
         amount = 0.0;
         foriegn = false;
         billFee = null;
@@ -1204,11 +1231,22 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         toStaff = null;
         paymentScheme = null;
-        area=null;
+        area = null;
         doctorSpecialityController.setSelectText("");
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
+        comment="";
+        commentR="";
+        
+    }
+    
+    public void makeNullSearchData(){
+        channelSearchController.setFromDate(null);
+        channelSearchController.setToDate(null);
+        channelSearchController.setTxtSearch("");
+        channelSearchController.setTxtSearchRef("");
+        channelSearchController.setSearchedBillSessions(null);
     }
 
     @Inject
@@ -1220,6 +1258,8 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
+        
+        removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
@@ -1371,6 +1411,13 @@ public class ChannelBillController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckAfterSaveBill(Bill b) {
+        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+            return true;
+        }
+        return false;
+    }
+
     private void savePatient() {
         switch (getPatientTabId()) {
             case "tabNewPt":
@@ -1426,9 +1473,145 @@ public class ChannelBillController implements Serializable {
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessions();
+        //********************retier bill,billitem,billsession***********************************************
+        if (errorCheckAfterSaveBill(printingBill)) {
+
+            printingBill.setRetired(true);
+            printingBill.setRetireComments("Skip System Error");
+            printingBill.setRetiredAt(new Date());
+            getBillFacade().edit(printingBill);
+
+            BillItem bi;
+            BillSession bs;
+            List<BillFee> BillFees;
+            String sql;
+            Map m = new HashMap();
+            m.put("b", printingBill);
+            if (printingBill.getSingleBillItem() != null) {
+                bi = getBillItemFacade().find(printingBill.getSingleBillItem().getId());
+            } else {
+                sql = " select bi from billItem bi where "
+                        + " bi.bill=:b ";
+                bi = getBillItemFacade().findFirstBySQL(sql, m);
+            }
+            if (bi != null) {
+                bi.setRetired(true);
+                bi.setRetireComments("Skip System Error");
+                bi.setRetirer(getSessionController().getLoggedUser());
+                bi.setRetiredAt(new Date());
+                getBillItemFacade().edit(bi);
+            }
+
+            if (printingBill.getSingleBillSession() != null) {
+                bs = getBillSessionFacade().find(printingBill.getSingleBillSession().getId());
+            } else {
+                sql = " select bs from BillSession bs where "
+                        + " bs.bill=:b ";
+                bs = getBillSessionFacade().findFirstBySQL(sql, m);
+            }
+            if (bs != null) {
+                bs.setRetired(true);
+                bs.setRetireComments("Skip System Error");
+                bs.setRetirer(getSessionController().getLoggedUser());
+                bs.setRetiredAt(new Date());
+                getBillSessionFacade().edit(bs);
+            }
+
+            sql = " select bf from BillFee bf where "
+                    + " bf.bill=:b ";
+
+            BillFees = getBillFeeFacade().findBySQL(sql, m);
+            if (!BillFees.isEmpty()) {
+                for (BillFee bf : BillFees) {
+                    bf.setRetired(true);
+                    bf.setRetireComments("Skip System Error");
+                    bf.setRetirer(getSessionController().getLoggedUser());
+                    bf.setRetiredAt(new Date());
+                    getBillFeeFacade().edit(bf);
+                }
+            }
+            System.err.println("Skiped System Error");
+            return;
+        }
+        //********************retier bill,billitem,billsession***********************************************
         settleSucessFully = true;
         sessionController.setBill(printingBill);
+
         UtilityController.addSuccessMessage("Channel Booking Added.");
+    }
+
+    public void removeAgencyNullBill(ServiceSession ss) {
+        List<BillSession> billSessions = new ArrayList<>();
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo desc ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", ss.getSessionDate());
+        hh.put("ss", ss);
+        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE, 5);
+
+        for (BillSession bs : billSessions) {
+            System.out.println("bs.getBill().getCreditCompany() = " + bs.getBill().getCreditCompany());
+            System.out.println("bs.getBill().getBillType() = " + bs.getBill().getBillType());
+            System.out.println("bs.getBill().getPaymentMethod() = " + bs.getBill().getPaymentMethod());
+            if (errorCheckAfterSaveBill(bs.getBill())) {
+                System.err.println("Error Bill");
+                bs.getBill().setRetired(true);
+                bs.getBill().setRetireComments("Skip System Error");
+                bs.getBill().setRetiredAt(new Date());
+                getBillFacade().edit(bs.getBill());
+
+                BillItem bi;
+                List<BillFee> BillFees;
+                Map m = new HashMap();
+                m.put("b", bs.getBill());
+                if (bs.getBill().getSingleBillItem() != null) {
+                    bi = getBillItemFacade().find(bs.getBill().getSingleBillItem().getId());
+                } else {
+                    sql = " select bi from billItem bi where "
+                            + " bi.bill=:b ";
+                    bi = getBillItemFacade().findFirstBySQL(sql, m);
+                }
+                if (bi != null) {
+                    bi.setRetired(true);
+                    bi.setRetireComments("Skip System Error");
+                    bi.setRetirer(getSessionController().getLoggedUser());
+                    bi.setRetiredAt(new Date());
+                    getBillItemFacade().edit(bi);
+                }
+
+                bs.setRetired(true);
+                bs.setRetireComments("Skip System Error");
+                bs.setRetirer(getSessionController().getLoggedUser());
+                bs.setRetiredAt(new Date());
+                getBillSessionFacade().edit(bs);
+
+                sql = " select bf from BillFee bf where "
+                        + " bf.bill=:b ";
+
+                BillFees = getBillFeeFacade().findBySQL(sql, m);
+                if (!BillFees.isEmpty()) {
+                    for (BillFee bf : BillFees) {
+                        bf.setRetired(true);
+                        bf.setRetireComments("Skip System Error");
+                        bf.setRetirer(getSessionController().getLoggedUser());
+                        bf.setRetiredAt(new Date());
+                        getBillFeeFacade().edit(bf);
+                    }
+                }
+                System.err.println("Skiped System Error");
+            }
+
+        }
+
     }
 
     public void clearBillValues() {
@@ -1900,6 +2083,11 @@ public class ChannelBillController implements Serializable {
         }
         return refundBillFee;
     }
+    
+    public void listnerSetBillSession(BillSession bs){
+        setBillSessionTmp(bs);
+        setBillSession(bs);
+    }
 
     public void setBillFee(List<BillFee> billFee) {
         this.billFee = billFee;
@@ -2348,6 +2536,14 @@ public class ChannelBillController implements Serializable {
 
     public void setInstitutionOnCallAgency(Institution institutionOnCallAgency) {
         this.institutionOnCallAgency = institutionOnCallAgency;
+    }
+
+    public BillSession getBillSessionTmp() {
+        return billSessionTmp;
+    }
+
+    public void setBillSessionTmp(BillSession billSessionTmp) {
+        this.billSessionTmp = billSessionTmp;
     }
 
 }

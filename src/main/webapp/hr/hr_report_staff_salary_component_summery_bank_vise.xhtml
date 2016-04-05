@@ -52,7 +52,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponentSummeryBankVise}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_over_time"  />
+                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_component_summery_bank_vise"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -60,7 +60,7 @@
                         <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder">                     
                             <p:dataTable id="tb1" value="#{hrReportController.bankViseSalaryAndOts}" var="ss" rowIndexVar="i">
                                 <f:facet name="header">
-                                    <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                                    
                                     <h:outputLabel value="Staff Salary Component(Bank Vise)"/>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.paysheetComponent.name}"  />
                                     <br/>

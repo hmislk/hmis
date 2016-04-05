@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -63,6 +64,8 @@ public class InwardProfessionalBillController implements Serializable {
     SessionController sessionController;
     @Inject
     AdmissionController admissionController;
+    @Inject 
+    CommonController commonController;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -716,9 +719,14 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void makeNull() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         current = null;
         batchBill = null;
         makeNullList();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Service & Items/Add Outside Charges(/faces/inward/inward_bill_professional.xhtml)");
     }
 
     public void makeNullList() {
@@ -987,4 +995,13 @@ public class InwardProfessionalBillController implements Serializable {
         this.inwardBean = inwardBean;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

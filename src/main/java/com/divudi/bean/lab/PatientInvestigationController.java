@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
@@ -69,6 +70,8 @@ public class PatientInvestigationController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private PatientInvestigationFacade ejbFacade;
     @EJB
@@ -657,6 +660,8 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareToSample() {
+        Date startTime = new Date();
+        
         String temSql;
         getCurrent().getSampledAt();
         Map temMap = new HashMap();
@@ -664,6 +669,8 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/sampling(/faces/lab_sample.xhtml)");
     }
 
     List<PatientInvestigation> toReceive;
@@ -673,6 +680,8 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void toPrintWorksheets() {
+        Date startTime = new Date();
+        
         String temSql;
         Map temMap = new HashMap();
         temSql = "SELECT i FROM PatientInvestigation i where "
@@ -686,6 +695,7 @@ public class PatientInvestigationController implements Serializable {
 //        ////System.out.println("Sql is " + temSql);
         toReceive = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/worksheets(/faces/lab_receive.xhtml)");
     }
 
     public void markYetToReceiveOnes() {
@@ -934,4 +944,14 @@ public class PatientInvestigationController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

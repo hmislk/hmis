@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -78,6 +79,8 @@ public class CommonReport implements Serializable {
     SessionController sessionController;
     @Inject
     BillSearch billSearch;
+    @Inject
+    private CommonController commonController;
     /**
      *
      * Properties
@@ -206,6 +209,9 @@ public class CommonReport implements Serializable {
     List<ItemCountRow> itemCountRowsCancel;
     List<ItemCountRow> itemCountRowsRefund;
 
+    boolean onlyStaffFee = false;
+    boolean onlyHosFee = false;
+
     public List<Bill> getBills() {
         return bills;
     }
@@ -244,6 +250,12 @@ public class CommonReport implements Serializable {
     double billTotal;
     double billTotalCancel;
     double billTotalRefund;
+    double billTotalHos;
+    double billTotalCancelHos;
+    double billTotalRefundHos;
+    double billTotalStaff;
+    double billTotalCancelStaff;
+    double billTotalRefundStaff;
 
     public double getBillTotal() {
         return billTotal;
@@ -267,6 +279,54 @@ public class CommonReport implements Serializable {
 
     public void setBillTotalRefund(double billTotalRefund) {
         this.billTotalRefund = billTotalRefund;
+    }
+
+    public double getBillTotalHos() {
+        return billTotalHos;
+    }
+
+    public void setBillTotalHos(double billTotalHos) {
+        this.billTotalHos = billTotalHos;
+    }
+
+    public double getBillTotalCancelHos() {
+        return billTotalCancelHos;
+    }
+
+    public void setBillTotalCancelHos(double billTotalCancelHos) {
+        this.billTotalCancelHos = billTotalCancelHos;
+    }
+
+    public double getBillTotalRefundHos() {
+        return billTotalRefundHos;
+    }
+
+    public void setBillTotalRefundHos(double billTotalRefundHos) {
+        this.billTotalRefundHos = billTotalRefundHos;
+    }
+
+    public double getBillTotalStaff() {
+        return billTotalStaff;
+    }
+
+    public void setBillTotalStaff(double billTotalStaff) {
+        this.billTotalStaff = billTotalStaff;
+    }
+
+    public double getBillTotalCancelStaff() {
+        return billTotalCancelStaff;
+    }
+
+    public void setBillTotalCancelStaff(double billTotalCancelStaff) {
+        this.billTotalCancelStaff = billTotalCancelStaff;
+    }
+
+    public double getBillTotalRefundStaff() {
+        return billTotalRefundStaff;
+    }
+
+    public void setBillTotalRefundStaff(double billTotalRefundStaff) {
+        this.billTotalRefundStaff = billTotalRefundStaff;
     }
 
     public double getTotalFee() {
@@ -2106,6 +2166,9 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCredit(calValue(new RefundBill(), billType, PaymentMethod.Credit));
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
 
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, " Summery by bill type(/reportCashier/report_cashier_detailed_user_by_billType.xhtml)");
+
     }
 
     public void createTableByBillTypeWebUser() {
@@ -2277,6 +2340,7 @@ public class CommonReport implements Serializable {
     }
 
     public void createLabCashierSummeryReport() {
+        Date startTime = new Date();
 
         recreteModal();
 
@@ -2347,6 +2411,9 @@ public class CommonReport implements Serializable {
 
         //////////
         createSumAfterCash();
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
 
     }
 
@@ -2673,9 +2740,13 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml or /reportCashier/report_cashier_summery_by_user.xhtml)");
+
     }
 
     public void createCashierTableByUserUsingReciptNo() {
+        Date startTime = new Date();
         fromDate = null;
         toDate = null;
         if (fromReciptNo == null) {
@@ -2699,6 +2770,8 @@ public class CommonReport implements Serializable {
             return;
         }
         createCashierTableByUser();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report/Using recipt No(//reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml or /reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml)");
     }
 
     public Date fetchDate(String s) {
@@ -3309,50 +3382,138 @@ public class CommonReport implements Serializable {
     }
 
     public void createUserOPDSeviceCount() {
-        if (webUser==null) {
-            JsfUtil.addErrorMessage("Select User");
-            return;
-        }
+//        if (webUser == null) {
+//            JsfUtil.addErrorMessage("Select User");
+//            return;
+//        }
+        Date startTime = new Date();
+
         List<Object[]> objects = new ArrayList<>();
-        billTotal=0.0;
-        billTotalCancel=0.0;
-        billTotalRefund=0.0;
+        billTotal = 0.0;
+        billTotalCancel = 0.0;
+        billTotalRefund = 0.0;
+        billTotalHos = 0.0;
+        billTotalCancelHos = 0.0;
+        billTotalRefundHos = 0.0;
+        billTotalStaff = 0.0;
+        billTotalCancelStaff = 0.0;
+        billTotalRefundStaff = 0.0;
         itemCountRows = new ArrayList<>();
-        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
+                if (itemCountRows.size() > 0) {
+                    Item i = (Item) obj[0];
+                    FeeType ft = (FeeType) obj[2];
+                    if (i.equals(itemCountRows.get(itemCountRows.size() - 1).getItem())) {
+                        if (ft == FeeType.Staff) {
+                            itemCountRows.get(itemCountRows.size() - 1).setStaffFee(itemCountRows.get(itemCountRows.size() - 1).getStaffFee() + (double) obj[3]);
+                            billTotalStaff += (double) obj[3];
+                        } else {
+                            itemCountRows.get(itemCountRows.size() - 1).setHosFee(itemCountRows.get(itemCountRows.size() - 1).getHosFee() + (double) obj[3]);
+                            billTotalHos += (double) obj[3];
+                        }
+                        itemCountRows.get(itemCountRows.size() - 1).setValue(itemCountRows.get(itemCountRows.size() - 1).getValue() + (double) obj[3]);
+                        billTotal += (double) obj[3];
+                        continue;
+                    }
+                }
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
-                row.setValue((double) obj[2]);
-                billTotal+=row.getValue();
+                FeeType ft = (FeeType) obj[2];
+                if (ft == FeeType.Staff) {
+                    row.setStaffFee((double) obj[3]);
+                    billTotalStaff += (double) obj[3];
+                } else {
+                    row.setHosFee((double) obj[3]);
+                    billTotalHos += (double) obj[3];
+                }
+                row.setValue((double) obj[3]);
+                billTotal += row.getValue();
                 itemCountRows.add(row);
+
             }
         }
         itemCountRowsCancel = new ArrayList<>();
-        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
+                if (itemCountRowsCancel.size() > 0) {
+                    Item i = (Item) obj[0];
+                    FeeType ft = (FeeType) obj[2];
+                    if (i.equals(itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).getItem())) {
+                        if (ft == FeeType.Staff) {
+                            itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).setStaffFee(itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).getStaffFee() + (double) obj[3]);
+                            billTotalCancelStaff += (double) obj[3];
+                        } else {
+                            itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).setHosFee(itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).getHosFee() + (double) obj[3]);
+                            billTotalCancelHos += (double) obj[3];
+                        }
+                        itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).setValue(itemCountRowsCancel.get(itemCountRowsCancel.size() - 1).getValue() + (double) obj[3]);
+                        billTotalCancel += (double) obj[3];
+                        continue;
+                    }
+                }
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
-                row.setValue((double) obj[2]);
-                billTotalCancel+=row.getValue();
+                FeeType ft = (FeeType) obj[2];
+                if (ft == FeeType.Staff) {
+                    row.setStaffFee((double) obj[3]);
+                    billTotalCancelStaff += (double) obj[3];
+                } else {
+                    row.setHosFee((double) obj[3]);
+                    billTotalCancelHos += (double) obj[3];
+                }
+                row.setValue((double) obj[3]);
+                billTotalCancel += row.getValue();
                 itemCountRowsCancel.add(row);
+
             }
         }
         itemCountRowsRefund = new ArrayList<>();
-        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, webUser, fromDate, toDate);
+        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
+                if (itemCountRowsRefund.size() > 0) {
+                    Item i = (Item) obj[0];
+                    FeeType ft = (FeeType) obj[2];
+                    if (i.equals(itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).getItem())) {
+                        if (ft == FeeType.Staff) {
+                            itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).setStaffFee(itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).getStaffFee() + (double) obj[3]);
+                            billTotalRefundStaff += (double) obj[3];
+                        } else {
+                            itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).setHosFee(itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).getHosFee() + (double) obj[3]);
+                            billTotalRefundHos += (double) obj[3];
+                        }
+                        itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).setValue(itemCountRowsRefund.get(itemCountRowsRefund.size() - 1).getValue() + (double) obj[3]);
+                        billTotalRefund += (double) obj[3];
+                        continue;
+                    }
+                }
+
                 ItemCountRow row = new ItemCountRow();
                 row.setItem((Item) obj[0]);
                 row.setCount((long) obj[1]);
-                row.setValue((double) obj[2]);
-                billTotalRefund+=row.getValue();
+                FeeType ft = (FeeType) obj[2];
+                if (ft == FeeType.Staff) {
+                    row.setStaffFee((double) obj[3]);
+                    billTotalRefundStaff += (double) obj[3];
+                } else {
+                    row.setHosFee((double) obj[3]);
+                    billTotalRefundHos += (double) obj[3];
+                }
+                row.setValue((double) obj[3]);
+                billTotalRefund += row.getValue();
                 itemCountRowsRefund.add(row);
+
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier service count report(/reportCashier/report_cashier_item_count_by_user.xhtml)");
 
     }
 
@@ -3360,8 +3521,9 @@ public class CommonReport implements Serializable {
             Class[] itemClasses,
             BillType[] billTypes,
             Institution ins,
+            Department dep,
             WebUser webUser,
-            Date fd, Date td) {
+            Date fd, Date td, boolean hf, boolean sf) {
 
         List<Object[]> items = new ArrayList<>();
         String sql;
@@ -3369,6 +3531,7 @@ public class CommonReport implements Serializable {
 
         sql = "select i, "
                 + " count(bi.bill), "
+                + " bf.fee.feeType, "
                 + " sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i "
                 + " where bi.bill.retired=false "
@@ -3377,6 +3540,11 @@ public class CommonReport implements Serializable {
         if (ins != null) {
             sql += " and bi.bill.institution=:ins ";
             m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += "and bi.bill.department=:dep";
+            m.put("dep", dep);
         }
 
         if (webUser != null) {
@@ -3399,10 +3567,20 @@ public class CommonReport implements Serializable {
             m.put("ics", Arrays.asList(itemClasses));
         }
 
+        if (hf) {
+            sql += " and bf.fee.feeType!=:ft ";
+            m.put("ft", FeeType.Staff);
+        }
+
+        if (sf) {
+            sql += " and bf.fee.feeType=:ft ";
+            m.put("ft", FeeType.Staff);
+        }
+
         m.put("fd", fd);
         m.put("td", td);
 
-        sql += " group by i.name "
+        sql += " group by i.name,bf.fee.feeType "
                 + " order by i.name ";
 
         System.out.println("m = " + m);
@@ -3413,6 +3591,18 @@ public class CommonReport implements Serializable {
         System.out.println("items = " + items);
 
         return items;
+    }
+
+    public void listnerHosFee() {
+        if (onlyHosFee) {
+            onlyStaffFee = false;
+        }
+    }
+
+    public void listnerStaffFee() {
+        if (onlyStaffFee) {
+            onlyHosFee = false;
+        }
     }
 
     public void recreteModal() {
@@ -3830,6 +4020,15 @@ public class CommonReport implements Serializable {
         cashChequeSumAfter.add(tmp3);
         cashChequeSumAfter.add(tmp4);
 
+        ////////////////////////////////////////
+        cashChequeCreditSummery = new ArrayList<>();
+
+        tmp1 = new String1Value1();
+        tmp1.setString("Final Total");
+        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+
+        cashChequeCreditSummery.add(tmp1);
+
     }
 
     public List<String1Value1> getCreditSlipSum2() {
@@ -4098,6 +4297,7 @@ public class CommonReport implements Serializable {
 
     private List<String1Value1> cashChequeSum;
     private List<String1Value1> cashChequeSumAfter;
+    private List<String1Value1> cashChequeCreditSummery;
 
     public List<String1Value1> getCashChequeSum2() {
         List<BillsTotals> list2 = new ArrayList<>();
@@ -4131,6 +4331,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createCollectingCenterBillTable() {
+        Date startTime = new Date();
+
         bills = new ArrayList<>();
 
         BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
@@ -4145,9 +4347,13 @@ public class CommonReport implements Serializable {
             totalCC += b.getTransTotalCCFee();
             total += b.getNetTotal();
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc detail(/faces/reportLab/report_lab_collection_centre.xhtml)");
     }
 
     public void createCollectingCenterSummeryTable() {
+        Date startTime = new Date();
+
         collectingCenteRows = new ArrayList<>();
         total = 0.0;
         totalCC = 0.0;
@@ -4176,6 +4382,8 @@ public class CommonReport implements Serializable {
             totalCC += totcc;
             total += tot;
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc summeries(/faces/reportLab/report_lab_collection_centre_summery.xhtml)");
 
     }
 
@@ -4233,6 +4441,20 @@ public class CommonReport implements Serializable {
         }
     }
 
+    /**
+     * @return the commonController
+     */
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    /**
+     * @param commonController the commonController to set
+     */
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
     public class CollectingCenteRow {
 
         Institution i;
@@ -4277,6 +4499,8 @@ public class CommonReport implements Serializable {
 
         Item item;
         long count;
+        double hosFee;
+        double staffFee;
         double value;
 
         public Item getItem() {
@@ -4301,6 +4525,22 @@ public class CommonReport implements Serializable {
 
         public void setValue(double value) {
             this.value = value;
+        }
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getStaffFee() {
+            return staffFee;
+        }
+
+        public void setStaffFee(double staffFee) {
+            this.staffFee = staffFee;
         }
 
     }
@@ -4803,6 +5043,30 @@ public class CommonReport implements Serializable {
 
     public void setItemCountRowsRefund(List<ItemCountRow> itemCountRowsRefund) {
         this.itemCountRowsRefund = itemCountRowsRefund;
+    }
+
+    public boolean isOnlyStaffFee() {
+        return onlyStaffFee;
+    }
+
+    public void setOnlyStaffFee(boolean onlyStaffFee) {
+        this.onlyStaffFee = onlyStaffFee;
+    }
+
+    public boolean isOnlyHosFee() {
+        return onlyHosFee;
+    }
+
+    public void setOnlyHosFee(boolean onlyHosFee) {
+        this.onlyHosFee = onlyHosFee;
+    }
+
+    public List<String1Value1> getCashChequeCreditSummery() {
+        return cashChequeCreditSummery;
+    }
+
+    public void setCashChequeCreditSummery(List<String1Value1> cashChequeCreditSummery) {
+        this.cashChequeCreditSummery = cashChequeCreditSummery;
     }
 
 }

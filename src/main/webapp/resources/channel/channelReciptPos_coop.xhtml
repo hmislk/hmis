@@ -325,6 +325,20 @@
                         </tr>
                         <tr>
                             <td>
+                                <h:outputLabel value="Print By" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <p:spacer width="10" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 <p:spacer width="10" ></p:spacer>
                             </td>                            
                         </tr>
