@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.lab.InvestigationController;
@@ -59,6 +60,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private SessionController sessionController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    CommonController commonController;
     /**
      * EJBs
      */
@@ -125,6 +128,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCounts() {
+        Date startTime = new Date();
+        
         items = new ArrayList<>();
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
         totalCount=0l;
@@ -139,6 +144,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/reportlab(/faces/reportLab/investigation_counts.xhtml)");
     }
     @Inject
     InvestigationController investigationController;
@@ -190,6 +197,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
+        Date startTime = new Date();
+        
         if (institution==null) {
             JsfUtil.addErrorMessage("Select Institution");
             return;
@@ -219,9 +228,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/counts/By billed institution(faces/reportLab/report_lab_by_billed_institution.xhtml)");
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledDepartment() {
+        Date startTime = new Date();
+        
         if (department==null) {
             JsfUtil.addErrorMessage("Select Department");
             return;
@@ -251,9 +264,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/counts/By billed depatment(/faces/reportLab/report_lab_by_billed_department.xhtml)");
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
+        Date startTime = new Date();
+        
         if (reportedInstitution==null) {
             JsfUtil.addErrorMessage("Select Institution");
             return;
@@ -283,9 +300,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/counts/By reported institution(/faces/reportLab/report_lab_by_reported_institution.xhtml)");
+
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
+        Date startTime = new Date();
+        
         if (reportedDepartment==null) {
             JsfUtil.addErrorMessage("Select Department");
             return;
@@ -315,9 +337,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/counts/By reported depatment(/faces/reportLab/report_lab_by_reported_department.xhtml)");
     }
 
     public void createInvestigationTurnoverTimeByBills() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
         sql = "Select pi "
@@ -343,9 +369,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/turn around time by bill(/faces/reportLab/turn_over_time_bills.xhtml)");
     }
 
     public void createInvestigationTurnoverTime() {
+        Date startTime = new Date();
+        
         System.out.println("createInvestigationTurnoverTime ");
         double averateMins = 0;
         double totalMins = 0;
@@ -377,6 +407,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         System.out.println("totalMins = " + totalMins);
         totalCount = (long) (totalMins / averageCount);
         progressStarted = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/turn around time average(/faces/reportLab/turn_over_time.xhtml)");
     }
 
     public void setItem(Item item) {
@@ -1392,4 +1424,13 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.pis = pis;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

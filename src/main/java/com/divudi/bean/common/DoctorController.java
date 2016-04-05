@@ -41,6 +41,8 @@ public class DoctorController implements Serializable {
     SessionController sessionController;
     @Inject
     SpecialityController specialityController;
+    @Inject
+    CommonController commonController;
     @EJB
     private DoctorFacade ejbFacade;
     @EJB
@@ -71,10 +73,14 @@ public class DoctorController implements Serializable {
     }
 
     public void listDoctors(){
+        Date startTime = new Date();
+        
          String temSql;
             temSql = "SELECT d FROM Doctor d where d.retired=false ";
             doctors = getFacade().findBySQL(temSql);   
-
+            
+            commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
+            
     }
     public List<Doctor> getSelectedItems() {
         String sql = "";
@@ -327,4 +333,13 @@ public class DoctorController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

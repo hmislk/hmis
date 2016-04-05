@@ -58,6 +58,9 @@ public class AppointmentController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    
+    @Inject
+    CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -156,6 +159,9 @@ public class AppointmentController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        Date fromDate = new Date();
+        Date toDate = new Date();
         if (errorCheck()) {
             return;
         }
@@ -170,6 +176,9 @@ public class AppointmentController implements Serializable {
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward appoinment(/faces/inward/inward_appointment.xhtml)");
     }
 
     private void saveBill(Patient p) {
@@ -530,4 +539,13 @@ public class AppointmentController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

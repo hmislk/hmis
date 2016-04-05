@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -97,13 +98,15 @@ public class mdInwardReportController implements Serializable {
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
-    
+    @Inject
+    CommonController commonController;
+
     //reporting purpuse
-    boolean showCreatedDate=false;
-    boolean showServiceDate=false;
-    boolean showDischargeDate=false;
-    boolean showDepartment=false;
-    boolean showCategory=false;
+    boolean showCreatedDate = false;
+    boolean showServiceDate = false;
+    boolean showDischargeDate = false;
+    boolean showDepartment = false;
+    boolean showCategory = false;
 
     public PaymentMethod[] getPaymentMethods() {
 
@@ -227,6 +230,8 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createServiceBillsByAddedDate() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -247,9 +252,13 @@ public class mdInwardReportController implements Serializable {
 
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Report/service report/Report by bill(/faces/inward/report_md_inward_bill.xhtml)");
+
     }
 
     public void createServiceBillsByDischargeDate() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -269,7 +278,7 @@ public class mdInwardReportController implements Serializable {
             bills = new ArrayList<>();
 
         }
-
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Report/service report/Report by bill(/faces/inward/report_md_inward_bill.xhtml)");
     }
 
     public List<Bill> getBills() {
@@ -277,6 +286,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createInwardBalancePaymentBills() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -322,11 +332,14 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
         count = getBillFacade().findLongByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Balance payment report (D)(/faces/inward/inward_search_balance_payment.xhtml)");
+
     }
 
     private long count;
 
     public void createInwardBalancePaymentBills1() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -356,6 +369,8 @@ public class mdInwardReportController implements Serializable {
         for (BillItem b : billItem) {
             total += b.getNetValue();
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Balance payment report (D)(/faces/inward/inward_search_balance_payment_1.xhtml)");
     }
 
     public List<Bill> getBillsDischarged() {
@@ -494,7 +509,11 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void listInBhtBillItems() {
+        Date startTime = new Date();
+
         listInBhtBillItems(BillType.PharmacyBhtPre);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, " BHT intrim error correction(/faces/inward/report_bht_issue_by_bill_item.xhtml)");
 
     }
 
@@ -833,6 +852,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void allBhtTotPySummerries() {
+        Date startTime = new Date();
 
         bil = inwdPaymentBills(new BilledBill());
         cancel = inwdPaymentBills(new CancelledBill());
@@ -842,6 +862,7 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = calTotInwdPaymentBills(new CancelledBill());
         refundTotal = calTotInwdPaymentBills(new RefundBill());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Deposits of dicharged patient and complete payment of discharged patient(/faces/inward/bht_deposit_by_discharge_date_and_created_date.xhtml)");
     }
 
     private double calInwdPaymentBillsNotDischarge(Bill bill) {
@@ -1400,6 +1421,8 @@ public class mdInwardReportController implements Serializable {
 
     public void createDepositByCreatedDateNotDischarged() {
 
+        Date startTime = new Date();
+
         bil = depositByCreatedDate(new BilledBill(), false);
         cancel = depositByCreatedDate(new CancelledBill(), false);
         refund = depositByCreatedDate(new RefundBill(), false);
@@ -1407,6 +1430,8 @@ public class mdInwardReportController implements Serializable {
         totalValue = depositByCreatedDateValue(new BilledBill(), false);
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), false);
         refundTotal = depositByCreatedDateValue(new RefundBill(), false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Deposite of discharged patient (/faces/inward/bht_deposit_by_created_date_not_discharge.xhtml)");
 
     }
 
@@ -1418,6 +1443,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createDepositByCreatedDateDischarged() {
+        Date startTime = new Date();
 
         bil = depositByCreatedDate(new BilledBill(), true);
         cancel = depositByCreatedDate(new CancelledBill(), true);
@@ -1427,9 +1453,11 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill(), true);
         refundTotal = depositByCreatedDateValue(new RefundBill(), true);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payment by created date discharged only(/faces/inward/bht_deposit_by_created_date_discharged.xhtml)");
     }
 
     public void createAllPaymentByCreatedDateDischarged() {
+        Date startTime = new Date();
 
         bil = allPaymentByCreatedDate(new BilledBill(), true);
         cancel = allPaymentByCreatedDate(new CancelledBill(), true);
@@ -1439,9 +1467,12 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = allPaymentByCreatedDateValue(new CancelledBill(), true);
         refundTotal = allPaymentByCreatedDateValue(new RefundBill(), true);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "All payment of discharged patient(/faces/inward/all_payment_by_created_date_discharged_only.xhtml)");
     }
 
     public void createDepositByCreatedDateDischargedAll() {
+        Date startTime = new Date();
 
         bil = depositByCreatedDate(new BilledBill());
         cancel = depositByCreatedDate(new CancelledBill());
@@ -1451,9 +1482,15 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = depositByCreatedDateValue(new CancelledBill());
         refundTotal = depositByCreatedDateValue(new RefundBill());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, " Payment by created date(/faces/inward/bht_deposit_by_created_date_discharged_all.xhtml)");
+
     }
 
     public void admittedPatientSummerries() {
+
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         bil = inwdPaymentBillsAdmitted(new BilledBill());
         cancel = inwdPaymentBillsAdmitted(new CancelledBill());
@@ -1462,6 +1499,8 @@ public class mdInwardReportController implements Serializable {
         totalValue = calPaymentBillsAdmitted(new BilledBill());
         cancelledTotal = calPaymentBillsAdmitted(new CancelledBill());
         refundTotal = calPaymentBillsAdmitted(new RefundBill());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Deposit of admitted patients(/faces/inward/bht_deposit_of_admitted_patient.xhtml)");
 
     }
 
@@ -1473,6 +1512,8 @@ public class mdInwardReportController implements Serializable {
     double grantTotal;
 
     public void allBhtPySummerriesByCreatedDate() {
+
+        Date startTime = new Date();
 //        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
         String sql = "";
         completePayments = fetchPaymentBills(sql);
@@ -1485,17 +1526,25 @@ public class mdInwardReportController implements Serializable {
         sql = "";
         grantTotal = calPaymentBills(sql);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "All payment by created date (/faces/inward/bht_deposit_by_created_date_all.xhtml)");
+
     }
 
     public void dipositsOfNotDischarged() {
+        Date startTime = new Date();
 //        String sql = " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
         String sql = "";
         completePayments = fetchPaymentBillsNotDicharged();
         completePaymentsTotal = calPaymentBillsNotDicharged();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "All deposite of not discharged patient(/faces/inward/bht_deposit_of_not_discharged_patient.xhtml)");
+        
 
     }
 
     public void dipositsOfNotDischargedByBht() {
+        Date startTime = new Date();
+        
         String sql = "";
         Map temMap = new HashMap();
         sql = "select b.patientEncounter,sum(b.netTotal)"
@@ -1550,6 +1599,7 @@ public class mdInwardReportController implements Serializable {
 
         completePaymentsTotal = calPaymentBillsNotDicharged();
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "All deposite of not discharged patient by BHT(/faces/inward/bht_deposit_of_not_discharged_patient_by_bht.xhtml)");
     }
 
     @EJB
@@ -1633,6 +1683,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void disBhtPySummerries() {
+        Date startTime = new Date();
 
         bil = inwdPaymentBillsDischarge(new BilledBill());
         cancel = inwdPaymentBillsDischarge(new CancelledBill());
@@ -1642,6 +1693,7 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = calInwdPaymentBillsDischarge(new CancelledBill());
         refundTotal = calInwdPaymentBillsDischarge(new RefundBill());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "complete Payment of discharged payment(/faces/inward/bht_deposit_by_discharge_date.xhtml)");
     }
 
     public void makeListNull() {
@@ -1652,6 +1704,8 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createItemWithFeeByAddedDate() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         List<Item> tmp;
@@ -1724,6 +1778,8 @@ public class mdInwardReportController implements Serializable {
             //System.out.println("ss " + iwf.getItem());
             itemWithFees.add(iwf);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Reports/Service Report/Report by item(Count)(/faces/inward/report_md_inward_item.xhtml)");
     }
 
     public void createItemWithFeeByDischargeDate() {
@@ -1805,6 +1861,8 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createItemWithFeeByAddedDate1() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -1814,7 +1872,6 @@ public class mdInwardReportController implements Serializable {
         temMap.put("bTp", BillType.InwardBill);
 
         //System.out.println("in");
-
         if (getPaymentMethod() == null) {
             sql = "select bi "
                     + " FROM BillFee bi "
@@ -1865,7 +1922,7 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
-        
+
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -1876,6 +1933,8 @@ public class mdInwardReportController implements Serializable {
             total += bf.getFee().getFee();
             //System.out.println("total = " + total);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Reports/Service Report/Report by item/process by bill date(/faces/inward/report_md_inward_item_1.xhtml)");
 
     }
 
@@ -1888,7 +1947,10 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void createItemWithFeeWithBillByBillDate() {
+        Date startTime = new Date();
+
         createBillWithBillFee(false, false, true);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward report/service report/Report by item with bill(/faces/inward/report_md_inward_item_with_bill.xhtml)");
     }
 
     //619
@@ -1965,7 +2027,6 @@ public class mdInwardReportController implements Serializable {
         m.put("bTp", BillType.InwardBill);
 
         //System.out.println("in");
-
         sql = "select sum(bi.fee.fee) FROM BillFee bi"
                 + " where bi.bill.billType= :bTp ";
 
@@ -2021,7 +2082,7 @@ public class mdInwardReportController implements Serializable {
         if (add) {
             sql += " and bi.billItem.billTime between :fromDate and :toDate ";
         }
-        
+
         sql += " order by bi.id ";
 
         m.put("toDate", getToDate());
@@ -2061,6 +2122,8 @@ public class mdInwardReportController implements Serializable {
 
     //
     public void createItemWithFeeByAddedDate2() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -2070,7 +2133,6 @@ public class mdInwardReportController implements Serializable {
         temMap.put("bTp", BillType.InwardBill);
 
         //System.out.println("in");
-
         if (getPaymentMethod() == null) {
             sql = "select bi "
                     + " FROM BillFee bi "
@@ -2121,7 +2183,7 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
-        
+
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -2133,9 +2195,13 @@ public class mdInwardReportController implements Serializable {
             //System.out.println("total = " + total);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Reports/Service Report/Report by item/process by addeed date(/faces/inward/report_md_inward_item_1.xhtml)");
+
     }
 
     public void createItemWithFeeByDischargeDate1() {
+        Date startTime = new Date();
+
         makeListNull();
         String sql;
         billItem = new ArrayList<>();
@@ -2196,7 +2262,7 @@ public class mdInwardReportController implements Serializable {
 
             temMap.put("p", getPaymentMethod());
         }
-        
+
         sql += " order by bi.billItem.bill.patientEncounter.bhtNo ";
 
         billfees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -2207,6 +2273,8 @@ public class mdInwardReportController implements Serializable {
             total += bf.getFee().getFee();
             //System.out.println("total = " + total);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Reports/Service Report/Report by item/process by dichraged date(/faces/inward/report_md_inward_item_1.xhtml)");
 
     }
 
@@ -2826,6 +2894,14 @@ public class mdInwardReportController implements Serializable {
             this.due = due;
         }
 
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

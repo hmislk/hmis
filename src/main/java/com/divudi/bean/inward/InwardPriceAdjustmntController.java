@@ -7,6 +7,8 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.inward;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -49,7 +51,9 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
-    SessionController sessionController;    
+    SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private PriceMatrixFacade ejbFacade;
     @Enumerated(EnumType.STRING)
@@ -81,9 +85,7 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void setInwardPriceAdjustments(List<InwardPriceAdjustment> inwardPriceAdjustments) {
         this.inwardPriceAdjustments = inwardPriceAdjustments;
     }
-    
-    
-    
+
 //    public void copyPriceMetrixAsCredit(){
 //        
 //        String sql;
@@ -109,7 +111,6 @@ public class InwardPriceAdjustmntController implements Serializable {
 //            ejbFacade.create(prima);
 //        }
 //    }
-
     public void saveSelected() {
 
         if (fromPrice == toPrice) {
@@ -209,8 +210,6 @@ public class InwardPriceAdjustmntController implements Serializable {
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
-    
-    
 
     public Institution getInstitution() {
         return institution;
@@ -288,6 +287,10 @@ public class InwardPriceAdjustmntController implements Serializable {
     }
 
     public void createCategroyService() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -299,6 +302,8 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("service", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
         items = getFacade().findBySQL(sql, hm);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - service(/faces/inward/inward_price_adjustment_service.xhtml)");
     }
 
     public void createCategroyServicePharmacy() {
@@ -318,6 +323,10 @@ public class InwardPriceAdjustmntController implements Serializable {
     }
 
     public void createCategroyInvestiagtion() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -328,9 +337,16 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("cat", InvestigationCategory.class);
 
         items = getFacade().findBySQL(sql, hm);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Investigation"
+                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void createCategroyPharmacy() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -341,9 +357,16 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("cat", PharmaceuticalItemCategory.class);
 
         items = getFacade().findBySQL(sql, hm);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Pharmacy"
+                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void createCategroyStore() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        
         filterItems = null;
         String sql;
         HashMap hm = new HashMap();
@@ -354,6 +377,9 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("cat", StoreItemCategory.class);
 
         items = getFacade().findBySQL(sql, hm);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Store"
+                + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
     }
 
     public void onEdit(PriceMatrix tmp) {
@@ -421,4 +447,13 @@ public class InwardPriceAdjustmntController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

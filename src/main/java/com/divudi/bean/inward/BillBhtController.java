@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -75,6 +76,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -325,6 +328,10 @@ public class BillBhtController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        
         //   bills = new ArrayList<>();
         bills = null;
         if (errorCheck()) {
@@ -333,6 +340,8 @@ public class BillBhtController implements Serializable {
         //for daily return credit card transaction
         paymentMethod=null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+    
+    commonController.printReportDetails(fromDate, toDate, startTime, "Services & Items/Add Services(/faces/inward/inward_bill_service.xhtml)");
     }
 
     public void settleBillSurgery() {
@@ -1109,4 +1118,13 @@ public class BillBhtController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }
