@@ -51,9 +51,15 @@ public class OpdPreBillReportController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    CommonController commonController;
+    @Inject
     CashierReportController cashierReportController;
     @Inject
     EnumController enumController;
+    @Inject
+    CommonController commonController1; 
+
+            
 
     List<Bill> bills;
     List<WebUserBillsTotal> webUserBillsTotals;
@@ -126,6 +132,8 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByUser() {
+        
+        Date startTime = new Date();
 
         if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
@@ -140,9 +148,13 @@ public class OpdPreBillReportController implements Serializable {
         userCancellededBillsPharmacy = createBillsTotals(new CancelledBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
         userRefundedBillsPharmacy = createBillsTotals(new RefundBill(), BillType.PharmacySale, getWebUser(), getDepartment(), getToDepartment());
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml or /reportCashierBillFeePayment/report_cashier_summery_by_user.xhtml)");
     }
 
     public void createCashierTableByUserPayment() {
+        Date startTime = new Date();
+        
         System.err.println("getWebUser() = " + getWebUser().getWebUserPerson().getName());
         System.err.println("Date F = " + getFromDate());
         if (getWebUser() == null) {
@@ -203,6 +215,7 @@ public class OpdPreBillReportController implements Serializable {
 
         calTotals(billsTotalses);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/Cashier Report(/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml/ /reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml)");
     }
 
     public String createCashierTableByUserPaymentForDetail() {
@@ -216,11 +229,17 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByAllUserPaymentDetail() {
+        Date startTime = new Date();
         createCashierTableByAllUserPayment(true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier report(/reportCashierBillFeePayment/report_cashier_summery_all.xhtml)");
     }
 
     public void createCashierTableByAllUserPaymentSummery() {
+        Date startTime  = new Date();
         createCashierTableByAllUserPayment(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier reports(Payments)/ All cashier summery( /reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml)");
     }
 
     public void createCashierTableByAllUserPayment(boolean detail) {
@@ -992,4 +1011,21 @@ public class OpdPreBillReportController implements Serializable {
     public void setUserCancellededBillsDocPay(BillsTotals userCancellededBillsDocPay) {
         this.userCancellededBillsDocPay = userCancellededBillsDocPay;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    public CommonController getCommonController1() {
+        return commonController1;
+    }
+
+    public void setCommonController1(CommonController commonController1) {
+        this.commonController1 = commonController1;
+    }
+    
 }

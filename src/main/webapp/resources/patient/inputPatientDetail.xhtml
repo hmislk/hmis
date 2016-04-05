@@ -28,11 +28,12 @@
                          style="width:300px;text-transform:uppercase;">
             </p:inputText>
             <!--            <p:outputLabel value="NIC"/>-->
-            <p:inputMask mask="999999999V" id="nic" 
+<!--            <p:inputMask mask="999999999V" id="nic" 
                          autocomplete="off" maxlength="11" 
                          value="#{cc.attrs.patient.person.nic}"
                          style="width: 100px;">
-            </p:inputMask>
+            </p:inputMask>-->
+            <p:inputText id="nic"  placeholder="NIC" autocomplete="off" maxlength="12" value="#{cc.attrs.patient.person.nic}" />
             <!--<p:outputLabel value="Sex"/>-->
             <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>

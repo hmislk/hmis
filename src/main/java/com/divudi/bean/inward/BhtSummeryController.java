@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -62,6 +63,7 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -109,6 +111,8 @@ public class BhtSummeryController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    CommonController commonController;
     //////////////////////////
     @Inject
     private SessionController sessionController;
@@ -1161,7 +1165,6 @@ public class BhtSummeryController implements Serializable {
         //System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
         //System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
         //System.out.println("4." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getRoom().getName());
-
         UtilityController.addSuccessMessage("Bill Saved");
 
         printPreview = true;
@@ -1287,6 +1290,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String toPrintItrim() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         //  makeNull();
         getIntrimPrintController().makeNull();
         if (getPatientEncounter() == null) {
@@ -1315,6 +1321,8 @@ public class BhtSummeryController implements Serializable {
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Intrim Bill/Inprint(/faces/inward/inward_bill_intrim.xhtml)");
+        
         return "inward_bill_intrim_print";
     }
 
@@ -1380,6 +1388,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String toSettle() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getPatientEncounter() == null) {
             return "";
         }
@@ -1409,8 +1421,12 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         updateTotal();
 
-        return "inward_bill_final";
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Intrim Bill/Tosettle(/faces/inward/inward_bill_intrim.xhtml)");
 
+        return "inward_bill_final";
+        
+        
     }
 
     private void saveBill() {
@@ -1531,6 +1547,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTables() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         makeNull();
 
         if (patientEncounter == null) {
@@ -1558,9 +1577,15 @@ public class BhtSummeryController implements Serializable {
         } else {
             date = null;
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Intrim Bill(/faces/inward/inward_bill_intrim.xhtml)");
     }
 
     public void createTablesWithEstimatedProfessionalFees() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        
         makeNull();
 
         if (patientEncounter == null) {
@@ -1588,9 +1613,11 @@ public class BhtSummeryController implements Serializable {
         } else {
             date = null;
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Estimated Professional Fees/Refresh(/faces/inward/inward_bill_intrim.xhtml)");
+        
     }
 
-    
     private List<PatientItem> createPatientItems() {
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter());
 
@@ -1661,8 +1688,8 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
-    
-    public void updateAdmissionFee(AdmissionType at){
+
+    public void updateAdmissionFee(AdmissionType at) {
         getAdmissionTypeFacade().edit(at);
         createTables();
     }
@@ -1784,7 +1811,7 @@ public class BhtSummeryController implements Serializable {
             System.out.println("dischargeAt = " + dischargedAt);
             long dCount = getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt);
             System.out.println("dCount = " + dCount);
-            
+
             if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
                 System.out.println("p.getCurrentMoCharge() = " + p.getCurrentMoCharge());
                 System.out.println("p.getAddedMoCharge() = " + p.getAddedMoCharge());
@@ -2373,6 +2400,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setAdmissionTypeFacade(AdmissionTypeFacade admissionTypeFacade) {
         this.admissionTypeFacade = admissionTypeFacade;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

@@ -84,6 +84,8 @@ public class SearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     TransferController transferController;
+    @Inject
+    private CommonController commonController;
 
     /**
      * Properties
@@ -200,6 +202,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPatientInvestigationsTableLogin() {
+        Date startTime = new Date();
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
@@ -244,6 +247,8 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab_search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPreRefundTable() {
@@ -294,10 +299,16 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search bills for refunds(/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml)");
+
     }
 
     public void reportSettledOPDBills() {
+        Date startTime = new Date();
         settledBills(billType.OpdBill);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Credit Payment Bills(/opd_search_bill_full_paid.xhtml)");
     }
 
     public void reportSettledPharmacyBills() {
@@ -341,7 +352,10 @@ public class SearchController implements Serializable {
     }
 
     public void createCreditBillsWithOPDBill() {
+        Date startTime = new Date();
         createCreditBillsWithBill(billType.OpdBill);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Credit paid bills with OPDbills(/opd_search_bill_full_paid_bills.xhtml)");
     }
 
     public void createCreditBillsWithPharmacyBill() {
@@ -412,6 +426,14 @@ public class SearchController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public class billsWithbill {
@@ -497,6 +519,7 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordToPayBills() {
+        Date startTime = new Date();
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -542,6 +565,8 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Credit bill/Bill to pay search(/opd_search_bill_to_pay.xhtml)");
     }
 
     public void createTablePharmacyCreditToPayBills() {
@@ -2442,6 +2467,7 @@ public class SearchController implements Serializable {
     }
 
     public void createDueFeeTableAll() {
+        Date sartTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -2491,9 +2517,12 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         calTotal();
+        
+        commonController.printReportDetails(fromDate, toDate, sartTime, "Doctor Payment Due Report(/faces/inward/inward_professional_payment_due.xhtml)");
     }
 
     public void createDueFeeTableAndPaidFeeTable() {
+        Date startTime = new Date();
 
         dueTotal = 0.0;
         doneTotal = 0.0;
@@ -2584,11 +2613,13 @@ public class SearchController implements Serializable {
             doneTotal += bf2.getFeeValue();
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD doctor payment and due(/opd_search_professional_payment_due_1.xhtml)");
     }
 
     double totalPaying;
 
     public void fillDocPayingBillFee() {
+        Date startTime  = new Date();
 
         String sql;
         Map m = new HashMap();
@@ -2625,6 +2656,8 @@ public class SearchController implements Serializable {
         for (BillItem dFee : billItems) {
             totalPaying += dFee.getPaidForBillFee().getFeeValue();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD doctor payments(by bill item)(/reportCashier/report_doctor_payment_opd.xhtml)");
 
     }
 
@@ -2888,6 +2921,8 @@ public class SearchController implements Serializable {
     }
 
     public void createDueFeeReportInward() {
+        
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -2963,6 +2998,7 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor payment due report inward(/faces/inward/inward_report_professional_payment_due.xhtml)");
     }
 
     public void createPaymentTable() {
@@ -2983,7 +3019,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.paidForBillFee.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getPaymentMethod() != null) {
             sql += " and  b.paidForBillFee.bill.paymentMethod=:pm ";
             temMap.put("pm", getSearchKeyword().getPaymentMethod());
@@ -3043,7 +3079,7 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.paidForBillFee.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getPaymentMethod() != null) {
             sql += " and  b.paidForBillFee.bill.paymentMethod=:pm ";
             temMap.put("pm", getSearchKeyword().getPaymentMethod());
@@ -3218,7 +3254,7 @@ public class SearchController implements Serializable {
     }
 
     public void createBillItemTableByKeyword() {
-
+        Date startTime = new Date();
         String sql;
         Map m = new HashMap();
         m.put("toDate", toDate);
@@ -3261,10 +3297,14 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
 
         //   searchBillItems = new LazyBillItem(tmp);
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD billIltem search(/opd_search_billitem_own.xhtml)");
     }
 
     public void createBillItemTableByKeywordAll() {
-
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
         m.put("toDate", toDate);
@@ -3307,9 +3347,12 @@ public class SearchController implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         //   searchBillItems = new LazyBillItem(tmp);
+        
+       commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTable() {
+        Date startTime = new Date();
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
@@ -3359,6 +3402,8 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTableByLoggedInstitution() {
@@ -3411,6 +3456,8 @@ public class SearchController implements Serializable {
     }
 
     public void searchPatientInvestigations() {
+        Date startTime = new Date();
+        
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
                 + " b.createdAt between :fromDate and :toDate  ";
@@ -3419,6 +3466,8 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/reporting(/faces/lab/search_reports.xhtml)");
     }
 
     public String fillUserPatientReport() {
@@ -3426,15 +3475,15 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
         m.put("pn", getSessionController().getPhoneNo());
         m.put("bn", getSessionController().getBillNo());
-        if (getSessionController().getPhoneNo()==null ||getSessionController().getPhoneNo().equals("")) {
+        if (getSessionController().getPhoneNo() == null || getSessionController().getPhoneNo().equals("")) {
             JsfUtil.addErrorMessage("Please Enter Phone Number");
             return "";
         }
-        if (getSessionController().getBillNo()==null ||getSessionController().getBillNo().equals("")) {
+        if (getSessionController().getBillNo() == null || getSessionController().getBillNo().equals("")) {
             JsfUtil.addErrorMessage("Please Enter Bill Number");
             return "";
         }
-        
+
         System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
         System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
 //        String s1=getSessionController().getPhoneNo().substring(0, 3);
@@ -3447,10 +3496,10 @@ public class SearchController implements Serializable {
                 + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
                 + " (upper(pr.billItem.bill.insId)=:bn or upper(pr.billItem.bill.deptId)=:bn) "
                 + " order by pr.id desc ";
-        
+
         m.put("pn", getSessionController().getPhoneNo());
         m.put("bn", getSessionController().getBillNo());
-        
+
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
         System.out.println("m = " + m);
         System.out.println("userPatientInvestigations = " + userPatientInvestigations.size());
@@ -3474,6 +3523,7 @@ public class SearchController implements Serializable {
     }
 
     public void createPatientInvestigationsTableAll() {
+        Date startTime = new Date();
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
@@ -3520,26 +3570,28 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(patientInvestigations);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab_search_for_reporting_ondemand.xhtml)");
 
     }
-    
-    public void checkRefundBillItems(List<PatientInvestigation> pis){
+
+    public void checkRefundBillItems(List<PatientInvestigation> pis) {
         for (PatientInvestigation pi : pis) {
             markRefundBillItem(pi);
         }
     }
-    
-    public void markRefundBillItem(PatientInvestigation pi){
+
+    public void markRefundBillItem(PatientInvestigation pi) {
         String sql;
-        Map m=new HashMap();
+        Map m = new HashMap();
         sql = "select bi from BillItem bi "
                 + " where bi.referanceBillItem.id=:bi ";
         m.put("bi", pi.getBillItem().getId());
-        List<BillItem> bis=getBillItemFacade().findBySQL(sql, m);
+        List<BillItem> bis = getBillItemFacade().findBySQL(sql, m);
         System.out.println("bis.size() = " + bis.size());
         if (bis.isEmpty()) {
             pi.getBillItem().setTransRefund(false);
-        }else{
+        } else {
             pi.getBillItem().setTransRefund(true);
         }
     }
@@ -3729,6 +3781,7 @@ public class SearchController implements Serializable {
     }
 
     public void createOpdBathcBillPreTable() {
+        Date startTime = new Date();
         aceptPaymentBills = null;
         String sql;
         Map temMap = new HashMap();
@@ -3751,9 +3804,12 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search All(/opd_search_pre_batch_bill.xhtml)");
     }
 
     public void createOpdBathcBillPreTablePaidOnly() {
+        Date startTime = new Date();
         aceptPaymentBills = null;
         String sql;
         Map temMap = new HashMap();
@@ -3776,9 +3832,12 @@ public class SearchController implements Serializable {
 
         //System.err.println("Sql " + sql);
         aceptPaymentBills = getBillFacade().findBySQLWithoutCache(sql, temMap, TemporalType.TIMESTAMP, 25);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search Paid only(/opd_search_pre_batch_bill.xhtml)");
     }
 
     public void createOpdBathcBillPreTableNotPaidOly() {
+        Date startTime = new Date();
         aceptPaymentBills = new ArrayList<>();
         String sql;
         Map temMap = new HashMap();
@@ -3831,6 +3890,8 @@ public class SearchController implements Serializable {
         System.out.println("aceptPaymentBills = " + aceptPaymentBills);
         abs.removeAll(pbs);
         aceptPaymentBills.addAll(abs);
+        
+         commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search not Paid only(/opd_search_pre_batch_bill.xhtml)");
     }
 
     public void createOpdPreTable() {
@@ -3846,15 +3907,21 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyPreTable() {
+        Date startTime = new Date();
         createPreTable(BillType.PharmacyPre);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy Bill Search to Pay(Search All :/pharmacy/pharmacy_search_pre_bill.xhtml)");
     }
 
     public void createPharmacyPreTableNotPaid() {
+        Date startTime = new Date();
         createPreTableNotPaid(BillType.PharmacyPre);
+        commonController.printReportDetails(fromDate, toDate, startTime, "PharmacyPreTableNotPaid(/pharmacy/pharmacy_search_pre_bill.xhtml)");
     }
 
     public void createPharmacyPreTablePaid() {
+        Date startTime = new Date();
         createPreTablePaid(BillType.PharmacyPre);
+        commonController.printReportDetails(fromDate, toDate, startTime, "PharmacyPreTablePaid(/pharmacy/pharmacy_search_pre_bill.xhtml)");
     }
 
     public void createPreTable(BillType bt) {
@@ -4171,11 +4238,16 @@ public class SearchController implements Serializable {
     WebUserController webUserController;
 
     public void createOpdBillSearch() {
+        Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
     public void createCollectingCentreBillSearch() {
+        Date startTime = new Date();
         createTableByKeyword(BillType.CollectingCentreBill);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
     }
 
     public void createTableByKeyword(BillType billType) {
@@ -5021,6 +5093,7 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardServiceTable() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -5065,10 +5138,13 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Service bill (/faces/inward/inward_search_service.xhtml)");
 
     }
 
     public void createInwardServiceTablebyLoggedDepartment() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -5115,6 +5191,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab_inward_search_service.xhtml)");
 
     }
 
@@ -5164,7 +5242,8 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardFinalBillsCheck() {
-
+        Date startTime = new Date();
+        
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where"
@@ -5204,10 +5283,13 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "search/Final Bill Search By Discharg date(/faces/inward/inward_search_final_check.xhtml)");
 
     }
 
     public void createInwardFinalBills() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -5249,9 +5331,12 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final bill search(/faces/inward/inward_search_final.xhtml)");
     }
 
     public void createInwardIntrimBills() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -5292,6 +5377,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Intrim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
 
     }
 
@@ -5553,6 +5640,7 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardProBills() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -5593,6 +5681,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Professional Bills(/faces/inward/inward_search_professional.xhtml)");
 
     }
 

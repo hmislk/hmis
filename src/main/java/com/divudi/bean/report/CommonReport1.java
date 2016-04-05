@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
@@ -44,6 +45,8 @@ public class CommonReport1 implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     ///////////////////
     @EJB
     private BillFacade billFacade;
@@ -351,6 +354,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public void listBillItemsByReferringDoctor() {
+        
+        Date startTime = new Date();
 
         referralBillItems = new ArrayList<>();
         Map m = new HashMap();
@@ -386,6 +391,8 @@ public class CommonReport1 implements Serializable {
         for (BillItem bi : referralBillItems) {
             biledBillsTotal+=bi.getNetValue();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
         
     }
 
@@ -1461,6 +1468,8 @@ public class CommonReport1 implements Serializable {
     }
 
     public void createOpdBillList() {
+        Date startTime = new Date();
+        
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please Select Payment Scheme");
             return;
@@ -1471,6 +1480,8 @@ public class CommonReport1 implements Serializable {
         biledBillsTotal = fetchBillsTotal(new BilledBill(), BillType.OpdBill, paymentScheme);
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml)");
     }
 
     public List<Bill> fetchBills(Bill b, BillType billType, PaymentScheme ps) {
@@ -1664,4 +1675,13 @@ public class CommonReport1 implements Serializable {
     public void setRefundBillsTotal(double refundBillsTotal) {
         this.refundBillsTotal = refundBillsTotal;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }
