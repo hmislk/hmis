@@ -550,6 +550,9 @@ public class ChannelBillController implements Serializable {
 
         listBillFees = billFeeFacade.findBySQL(sql, hm);
         billSession = bs;
+        System.out.println("bs = " + bs);
+        System.out.println("billSession = " + billSession);
+        System.out.println("bookingController.getSelectedBillSession() = " + bookingController.getSelectedBillSession());
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
@@ -651,7 +654,11 @@ public class ChannelBillController implements Serializable {
     public void cancelAgentPaidBill() {
         System.out.println("getBillSession() = " + getBillSession());
         System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
-        setBillSession(getBillSessionTmp());
+        if (getBillSessionTmp()!=null) {
+            setBillSession(getBillSessionTmp());
+        }else{
+            setBillSession(getBillSession());
+        }
         System.out.println("getBillSession() = " + getBillSession());
         System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
         System.out.println("getCancelPaymentMethod() = " + getCancelPaymentMethod());
@@ -1229,6 +1236,8 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
+        comment="";
+        commentR="";
         
     }
     
