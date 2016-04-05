@@ -5,6 +5,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -78,6 +79,8 @@ public class CommonReport implements Serializable {
     SessionController sessionController;
     @Inject
     BillSearch billSearch;
+    @Inject
+    private CommonController commonController;
     /**
      *
      * Properties
@@ -2163,6 +2166,9 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCredit(calValue(new RefundBill(), billType, PaymentMethod.Credit));
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
 
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, " Summery by bill type(/reportCashier/report_cashier_detailed_user_by_billType.xhtml)");
+
     }
 
     public void createTableByBillTypeWebUser() {
@@ -2334,6 +2340,7 @@ public class CommonReport implements Serializable {
     }
 
     public void createLabCashierSummeryReport() {
+        Date startTime = new Date();
 
         recreteModal();
 
@@ -2404,6 +2411,9 @@ public class CommonReport implements Serializable {
 
         //////////
         createSumAfterCash();
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
 
     }
 
@@ -2730,9 +2740,13 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml or /reportCashier/report_cashier_summery_by_user.xhtml)");
+
     }
 
     public void createCashierTableByUserUsingReciptNo() {
+        Date startTime = new Date();
         fromDate = null;
         toDate = null;
         if (fromReciptNo == null) {
@@ -2756,6 +2770,8 @@ public class CommonReport implements Serializable {
             return;
         }
         createCashierTableByUser();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report/Using recipt No(//reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml or /reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml)");
     }
 
     public Date fetchDate(String s) {
@@ -3370,6 +3386,8 @@ public class CommonReport implements Serializable {
 //            JsfUtil.addErrorMessage("Select User");
 //            return;
 //        }
+        Date startTime = new Date();
+
         List<Object[]> objects = new ArrayList<>();
         billTotal = 0.0;
         billTotalCancel = 0.0;
@@ -3494,6 +3512,8 @@ public class CommonReport implements Serializable {
 
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier service count report(/reportCashier/report_cashier_item_count_by_user.xhtml)");
 
     }
 
@@ -4311,6 +4331,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createCollectingCenterBillTable() {
+        Date startTime = new Date();
+
         bills = new ArrayList<>();
 
         BillType billTypes[] = {BillType.LabBill, BillType.CollectingCentreBill};
@@ -4325,9 +4347,13 @@ public class CommonReport implements Serializable {
             totalCC += b.getTransTotalCCFee();
             total += b.getNetTotal();
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc detail(/faces/reportLab/report_lab_collection_centre.xhtml)");
     }
 
     public void createCollectingCenterSummeryTable() {
+        Date startTime = new Date();
+
         collectingCenteRows = new ArrayList<>();
         total = 0.0;
         totalCC = 0.0;
@@ -4356,6 +4382,8 @@ public class CommonReport implements Serializable {
             totalCC += totcc;
             total += tot;
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc summeries(/faces/reportLab/report_lab_collection_centre_summery.xhtml)");
 
     }
 
@@ -4411,6 +4439,20 @@ public class CommonReport implements Serializable {
             b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
             b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
         }
+    }
+
+    /**
+     * @return the commonController
+     */
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    /**
+     * @param commonController the commonController to set
+     */
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public class CollectingCenteRow {

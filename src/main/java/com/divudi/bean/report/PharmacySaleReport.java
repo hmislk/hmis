@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -225,6 +226,8 @@ public class PharmacySaleReport implements Serializable {
     /////
 
     /////
+    @Inject
+    CommonController commonController;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -381,7 +384,6 @@ public class PharmacySaleReport implements Serializable {
         m.put("bt", BillType.PharmacyGrnBill);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -3013,6 +3015,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createLabHadnOverReportByDate() {
+        Date startTime = new Date();
+
         billedSummery = new PharmacySummery();
 
         billedSummery.setBills(new ArrayList<String1Value3>());
@@ -3052,6 +3056,7 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setCancelledTotal(calGrantHandOverDiscount());
         billedSummery.setRefundedTotal(calGrantHandOverProf());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Handover Report by date(/reportLab/report_lab_hand_over_by_date_summery.xhtml)");
     }
 
     public double calValueSale(BillType billType, PaymentMethod paymentMethod, Department department, Bill bill1, Bill bill2) {
@@ -3222,23 +3227,39 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createDailyOpdFeeSummeryWithCounts() {
+        Date startTime = new Date();
+        
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery with counts(/faces/reportLab/report_lab_by_date_summery_cash_credit_only_total.xhtml)");
     }
 
     public void createDailyOpdFeeSummeryWithoutCounts() {
+        Date startTime = new Date();
+
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill};
         createFeeSummeryWithoutCounts(btps);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/OPD fee summery(/faces/reportLab/report_lab_by_date_summery_cash_credit.xhtml)");
     }
 
     public void createDailyInwardFeeSummeryWithCounts() {
+        Date startTime = new Date();
+
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/OPD fee summery with count(/faces/reportLab/daily_inward_fee_summery_counts.xhtml)");
     }
 
     public void createDailyInwardFeeSummeryWithoutCounts() {
+        Date startTime = new Date();
+        
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithoutCounts(btps);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery(report_lab_by_date_summery_cash_credit.xhtml)");
     }
 
     public void createLabSummeryInward() {
@@ -3342,6 +3363,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createLabReportByDate() {
+        Date startTime = new Date();
+
         billedSummery = new PharmacySummery();
 
         billedSummery.setBills(new ArrayList<String1Value3>());
@@ -3388,6 +3411,8 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setBilledTotal(hospitalFeeTot);
         billedSummery.setCancelledTotal(profeTotal);
         billedSummery.setRefundedTotal(regentTot);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery by day(/faces/reportLab/report_lab_by_date_summery.xhtml)");
 
     }
 
@@ -6603,6 +6628,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setItemsWithDistributers(List<ItemsWithDistributer> itemsWithDistributers) {
         this.itemsWithDistributers = itemsWithDistributers;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

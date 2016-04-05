@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -41,6 +42,9 @@ public class InstitutionLabSumeryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    
+    @Inject
+     private CommonController commonController;       
     
     String txtSearch;
     
@@ -988,6 +992,7 @@ public class InstitutionLabSumeryController implements Serializable {
     }
 
     public void createLabBillsWithoutOwn() {
+        Date startTime = new Date();
 
         bills = fetchBills();
 
@@ -998,6 +1003,8 @@ public class InstitutionLabSumeryController implements Serializable {
         }
 
         setString1Value1Table();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Handover Report(/reportIncome/report_income_without_credit_by_institution.xhtml)");
 
     }
 
@@ -1443,6 +1450,14 @@ public class InstitutionLabSumeryController implements Serializable {
 
     public void setBilledBills(List<Bill> billedBills) {
         this.billedBills = billedBills;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

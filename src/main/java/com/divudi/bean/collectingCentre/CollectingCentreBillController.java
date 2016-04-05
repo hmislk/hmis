@@ -121,6 +121,8 @@ public class CollectingCentreBillController implements Serializable {
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
+    CommonController commonController;
+    @Inject
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -658,6 +660,8 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        
         if (errorCheck()) {
             return;
         }
@@ -710,6 +714,8 @@ public class CollectingCentreBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, String refNo) {
@@ -1977,5 +1983,14 @@ public class CollectingCentreBillController implements Serializable {
     public void setReminingCashPaid(double reminingCashPaid) {
         this.reminingCashPaid = reminingCashPaid;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }

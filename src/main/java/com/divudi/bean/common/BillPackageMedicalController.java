@@ -81,6 +81,8 @@ public class BillPackageMedicalController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -659,8 +661,11 @@ public class BillPackageMedicalController implements Serializable {
         return tot;
     }
 
-    public void createMedicalPackageBillItems() {
+    public void createMedicalPackageBillItems() { 
+        Date startTime = new Date();
         createBillItems(new MedicalPackage());
+        
+        commonController.printReportDetails(frmDate, toDate, startTime, "Medical package detail report(/reportCashier/report_opd_package_medical.xhtml)");
 
     }
 
@@ -677,12 +682,18 @@ public class BillPackageMedicalController implements Serializable {
     }
 
     public void createOtherPackageBillItemsOld() {
+        Date startTime = new Date();
         createBillItems(new Packege());
+        
+        commonController.printReportDetails(frmDate, toDate, startTime, "Package detail report -by bill item(/reportCashier/report_opd_package.xhtml)");
 
     }
 
     public void createOtherPackageBills() {
+        Date startTime = new Date();
         createBills(new Packege());
+        
+        commonController.printReportDetails(frmDate, toDate, startTime, " Package detail report - by bill(/reportCashier/report_opd_package_bill.xhtml)");
     }
 
     public void clearBillItemValues() {
@@ -1200,9 +1211,15 @@ public class BillPackageMedicalController implements Serializable {
         this.ServiceItem = ServiceItem;
     }
 
-    /**
-     *
-     */
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
     @FacesConverter(forClass = Bill.class)
     public static class BillControllerConverter implements Converter {
 

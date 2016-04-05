@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.data.BillType;
@@ -84,6 +85,8 @@ public class BhtSummeryFinalizedController implements Serializable {
     InwardBeanController inwardBean;
     @Inject
     InwardReportControllerBht inwardReportControllerBht;
+    @Inject
+    CommonController commonController;
     double billItemGross;
     double billItemMargin;
     double billItemDiscount;
@@ -369,6 +372,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     double totalNet;
 
     public void createBhtInwardChargeTypeTable() {
+        Date startTime = new Date();
         
         billItemsInward = new ArrayList<>();
         for (PatientEncounter pe : patientEncounters()) {
@@ -387,6 +391,8 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalDiscount+=bi.getDiscount();
             totalNet+=bi.getNetValue();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
 
     }
 
@@ -1180,4 +1186,13 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void setActiveBackButton(boolean activeBackButton) {
         this.activeBackButton = activeBackButton;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

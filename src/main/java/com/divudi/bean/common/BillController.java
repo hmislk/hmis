@@ -101,6 +101,8 @@ public class BillController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    CommonController commonController;
+    @Inject
     PaymentSchemeController paymentSchemeController;
     @EJB
     BillNumberGenerator billNumberGenerator;
@@ -661,6 +663,8 @@ public class BillController implements Serializable {
     }
 
     public void getOpdBills() {
+        Date startTime = new Date();
+        
         BillType[] billTypes = {BillType.OpdBill};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         if (r == null) {
@@ -683,6 +687,8 @@ public class BillController implements Serializable {
         if (r.getGrossTotal() != null) {
             grosTotal = r.getGrossTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
     }
 
     public void getPharmacySaleBills() {
@@ -941,6 +947,7 @@ public class BillController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
         if (errorCheck()) {
             return;
         }
@@ -1003,6 +1010,9 @@ public class BillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
     }
 
     public boolean checkBillValues(Bill b) {
@@ -2455,4 +2465,13 @@ public class BillController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }
