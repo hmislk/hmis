@@ -1241,14 +1241,18 @@ public class BillController implements Serializable {
     }
 
     private boolean errorCheck() {
-
+        
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
         if (!sessionController.getUserPreference().isOpdSettleWithoutPatientPhoneNumber()) {
-            if (getNewPatient().getPerson().getPhone() == null) {
+            if (getNewPatient().getPerson().getPhone() == null ) {
+                UtilityController.addErrorMessage("Please Insert a Phone Number");
+                return true;
+            }
+            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
                 UtilityController.addErrorMessage("Please Insert a Phone Number");
                 return true;
             }
@@ -1294,6 +1298,7 @@ public class BillController implements Serializable {
 
             boolean checkAge = false;
             for (BillEntry be : getLstBillEntries()) {
+                System.out.println("be.getBillItem().getItem().getDepartment().getDepartmentType() = " + be.getBillItem().getItem().getDepartment().getDepartmentType());
                 if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
                     //  //System.err.println("ttttt");
                     checkAge = true;

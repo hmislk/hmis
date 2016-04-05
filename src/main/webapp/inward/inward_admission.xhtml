@@ -160,11 +160,7 @@
                                             <!--<p:outputLabel  value="Name" />-->
                                             <p:inputText id="gname" autocomplete="off" value="#{admissionController.current.guardian.name}"/>
                                             <!--<p:outputLabel value="NIC"/>-->
-                                            <p:inputMask mask="999999999V" id="gnic" 
-                                                         autocomplete="off" maxlength="11" 
-                                                         value="#{admissionController.current.guardian.nic}"
-                                                         >
-                                            </p:inputMask>
+                                            <p:inputText id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
                                             <!--<p:outputLabel value="Address" />-->
                                             <p:inputText id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                             <!--<p:outputLabel value="Mobile No" />-->

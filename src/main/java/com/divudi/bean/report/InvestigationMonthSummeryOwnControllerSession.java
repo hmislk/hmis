@@ -34,6 +34,7 @@ import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -118,16 +119,16 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public Item getItem() {
         return item;
     }
-    
-    public void clearList(){
+
+    public void clearList() {
         items = new ArrayList<>();
-        totalCount=0l;
+        totalCount = 0l;
     }
 
     public void createInvestigationMonthEndSummeryCounts() {
         items = new ArrayList<>();
         List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, true, null, true, null, true, null, false, new Class[]{Investigation.class});
-        totalCount=0l;
+        totalCount = 0l;
         for (Item w : ixs) {
             if (totalCount == null) {
                 totalCount = 0l;
@@ -142,55 +143,56 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
     @Inject
     InvestigationController investigationController;
-    public void createInvestigationExistTable(){
-        items= new ArrayList<>();
+
+    public void createInvestigationExistTable() {
+        items = new ArrayList<>();
         List<Investigation> investigations;
-        investigations=new ArrayList<>();
-        
+        investigations = new ArrayList<>();
+
         investigations.addAll(investigationController.getInvestigationItems());
-        System.out.println("investigations = " + investigations);        
-        
-        if(investigations.isEmpty()){
+        System.out.println("investigations = " + investigations);
+
+        if (investigations.isEmpty()) {
             UtilityController.addErrorMessage("No Investigations");
             return;
         }
-        
-        for(Investigation i:investigations){
-            InvestigationSummeryData temp =new InvestigationSummeryData();
-            
+
+        for (Investigation i : investigations) {
+            InvestigationSummeryData temp = new InvestigationSummeryData();
+
             temp.setInvestigation(i);
-            
+
             temp.setB(checkAvailabilityOfReport(i));
-            
-            if(temp.getInvestigation()!=null){
+
+            if (temp.getInvestigation() != null) {
                 System.out.println("Adding");
                 items.add(temp);
             }
-            
+
         }
     }
-    
-    public boolean checkAvailabilityOfReport(Investigation investigation){
-        boolean exist=false;
+
+    public boolean checkAvailabilityOfReport(Investigation investigation) {
+        boolean exist = false;
         String sql;
-        HashMap hm=new HashMap();
-        
+        HashMap hm = new HashMap();
+
         sql = "Select ri from ReportItem ri "
                 + " where ri.retired=false "
                 + " and ri.item=:itm ";
-        
+
         hm.put("itm", investigation);
-        
-        if(reportItemFacade.findFirstBySQL(sql, hm)!=null){
-            exist=true;
+
+        if (reportItemFacade.findFirstBySQL(sql, hm) != null) {
+            exist = true;
         }
-        System.out.println("reportItemFacade.findFirstBySQL(sql, hm)"+reportItemFacade.findFirstBySQL(sql, hm));
-        
+        System.out.println("reportItemFacade.findFirstBySQL(sql, hm)" + reportItemFacade.findFirstBySQL(sql, hm));
+
         return exist;
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledInstitution() {
-        if (institution==null) {
+        if (institution == null) {
             JsfUtil.addErrorMessage("Select Institution");
             return;
         }
@@ -198,7 +200,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, false, institution, true, null, true, null, true, null, false, new Class[]{Investigation.class});
         if (ixs.isEmpty()) {
             JsfUtil.addErrorMessage("No Bills For This Date Range");
             return;
@@ -222,7 +224,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByBilledDepartment() {
-        if (department==null) {
+        if (department == null) {
             JsfUtil.addErrorMessage("Select Department");
             return;
         }
@@ -230,7 +232,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, false, department, true, null, true, null, false, new Class[]{Investigation.class});
         if (ixs.isEmpty()) {
             JsfUtil.addErrorMessage("No Bills For This Date Range");
             return;
@@ -254,7 +256,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedInstitution() {
-        if (reportedInstitution==null) {
+        if (reportedInstitution == null) {
             JsfUtil.addErrorMessage("Select Institution");
             return;
         }
@@ -262,7 +264,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, true, null, false, reportedInstitution, true, null, false, new Class[]{Investigation.class});
         if (ixs.isEmpty()) {
             JsfUtil.addErrorMessage("No Bills For This Date Range");
             return;
@@ -286,7 +288,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createInvestigationMonthEndSummeryCountsFilteredByReportedDepartment() {
-        if (reportedDepartment==null) {
+        if (reportedDepartment == null) {
             JsfUtil.addErrorMessage("Select Department");
             return;
         }
@@ -294,7 +296,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         totalCount = null;
         progressStarted = true;
         progressValue = 0;
-        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill,BillType.CollectingCentreBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
+        List<Item> ixs = billEjb.getItemsInBills(fromDate, toDate, new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill}, true, null, true, null, true, null, false, reportedDepartment, false, new Class[]{Investigation.class});
         if (ixs.isEmpty()) {
             JsfUtil.addErrorMessage("No Bills For This Date Range");
             return;
@@ -332,7 +334,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             sql += " and b.toDepartment=:dep ";
             m.put("dep", department);
         }
-        
+
         if (item != null) {
             sql += " and bi.item=:i ";
             m.put("i", item);
@@ -397,14 +399,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
-    }
-
-    public List<InvestigationSummeryData> getItemsLab() {
-        return itemsLab;
-    }
-
-    public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
-        this.itemsLab = itemsLab;
     }
 
     public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
@@ -506,6 +500,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     private long countTotal;
+    double itemValue = 0.0;
 
     List<ItemInstitutionCollectingCentreCountRow> insInvestigationCountRows;
 
@@ -718,6 +713,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 itemsLab.add(temp);
             }
         }
+
 //        countTotal = 0;
 //
 //        long billed = getCount2(new BilledBill());
@@ -728,6 +724,27 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //        //System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
+    }
+
+    public void createItemNewChanges() {
+        itemsLab = new ArrayList<>();
+        countTotal = 0;
+        itemValue = 0;
+        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill};
+        for (Item w : getInvestigations3(bts)) {
+            InvestigationSummeryData temp = new InvestigationSummeryData();
+            temp.setInvestigation(w);
+            long temCoint = calculateInvestigationBilledCount(w, bts);
+            temp.setCount(temCoint);
+            countTotal += temCoint;
+            double tempTotal = calculateInvestigationBilledValue(w, bts);
+            temp.setTotal(tempTotal);
+            itemValue += tempTotal;
+            if (temp.getCount() != 0 || temp.getTotal() != 0) {
+                itemsLab.add(temp);
+            }
+
+        }
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -781,6 +798,67 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         is.setCount(c);
         is.setTotal(tot);
+    }
+    
+    private long calculateInvestigationBilledCount(Item w, BillType[] bts) {
+        long billed = getCount3(new BilledBill(), w, bts);
+        long cancelled = getCount3(new CancelledBill(), w, bts);
+        long refunded = getCount3(new RefundBill(), w, bts);
+        return billed - (cancelled + refunded);
+    }
+    
+    private double calculateInvestigationBilledValue(Item w, BillType[] bts) {
+        double billed = getTotalValue(new BilledBill(), w, bts);
+        double cancelled = getTotalValue(new CancelledBill(), w, bts);
+        double refunded = getTotalValue(new RefundBill(), w, bts);
+        return billed + (cancelled + refunded);
+    }
+    
+    private long getCount3(Bill bill, Item item, BillType[] bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select count(bi) FROM BillItem bi where bi.bill.billType in :bTypes and bi.item =:itm"
+                + " and type(bi.bill)=:billClass "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (getCreditCompany() != null) {
+            sql += " and (bi.bill.collectingCentre=:col or bi.bill.fromInstitution=:col) ";
+            temMap.put("col", getCreditCompany());
+        } else {
+            sql += " and (bi.bill.collectingCentre is not null or bi.bill.fromInstitution is not null) ";
+        }
+        sql += " order by bi.item.name";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", item);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bTypes", Arrays.asList(bts));
+        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double getTotalValue(Bill bill, Item item, BillType[] bts) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select sum(bi.netValue) FROM BillItem bi where bi.bill.billType in :bTypes and bi.item =:itm"
+                + " and type(bi.bill)=:billClass "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (getCreditCompany() != null) {
+            sql += " and (bi.bill.collectingCentre=:col or bi.bill.fromInstitution=:col) ";
+            temMap.put("col", getCreditCompany());
+        } else {
+            sql += " and (bi.bill.collectingCentre is not null or bi.bill.fromInstitution is not null) ";
+        }
+        sql += " order by bi.item.name";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("itm", item);
+        temMap.put("billClass", bill.getClass());
+        temMap.put("bTypes", Arrays.asList(bts));
+        return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
     }
 
     private long getCount(Bill bill, Item item) {
@@ -936,8 +1014,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
         return is;
     }
-    
-    private InvestigationSummeryData setIxSummeryCountBilledIns(Item w,Institution i) {
+
+    private InvestigationSummeryData setIxSummeryCountBilledIns(Item w, Institution i) {
         InvestigationSummeryData is = new InvestigationSummeryData();
         is.setInvestigation(w);
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, false, i, true, null, true, null, true, null);
@@ -950,8 +1028,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
         return is;
     }
-    
-    private InvestigationSummeryData setIxSummeryCountReportedIns(Item w,Institution i) {
+
+    private InvestigationSummeryData setIxSummeryCountReportedIns(Item w, Institution i) {
         InvestigationSummeryData is = new InvestigationSummeryData();
         is.setInvestigation(w);
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, false, i, true, null);
@@ -964,8 +1042,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
         return is;
     }
-    
-    private InvestigationSummeryData setIxSummeryCountBilledDep(Item w,Department d) {
+
+    private InvestigationSummeryData setIxSummeryCountBilledDep(Item w, Department d) {
         InvestigationSummeryData is = new InvestigationSummeryData();
         is.setInvestigation(w);
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, false, d, true, null, true, null);
@@ -978,8 +1056,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(net);
         return is;
     }
-    
-    private InvestigationSummeryData setIxSummeryCountReportedDep(Item w,Department d) {
+
+    private InvestigationSummeryData setIxSummeryCountReportedDep(Item w, Department d) {
         InvestigationSummeryData is = new InvestigationSummeryData();
         is.setInvestigation(w);
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, false, d);
@@ -1104,6 +1182,30 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
+        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return investigations;
+    }
+
+    public List<Item> getInvestigations3(BillType[] bts) {
+        Map temMap = new HashMap();
+        String sql = "select distinct ix from BillItem bi join bi.item ix "
+                + " where type(ix) =:ixtype  "
+                + " and bi.bill.billType in :bTypes "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (getCreditCompany() != null) {
+            sql += " and (bi.bill.collectingCentre=:col or bi.bill.fromInstitution=:col) ";
+            temMap.put("col", getCreditCompany());
+        } else {
+            sql += " and (bi.bill.collectingCentre is not null or bi.bill.fromInstitution is not null) ";
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ixtype", Investigation.class);
+        temMap.put("bTypes", Arrays.asList(bts));
+
         investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
@@ -1390,6 +1492,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void setPis(List<PatientInvestigation> pis) {
         this.pis = pis;
+    }
+
+    public double getItemValue() {
+        return itemValue;
+    }
+
+    public void setItemValue(double itemValue) {
+        this.itemValue = itemValue;
+    }
+
+    public List<InvestigationSummeryData> getItemsLab() {
+        return itemsLab;
+    }
+
+    public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
+        this.itemsLab = itemsLab;
     }
 
 }
