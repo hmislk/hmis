@@ -611,7 +611,7 @@ public class Bill implements Serializable {
 
     public void setIntInvoiceNumber(int intInvoiceNumber) {
         this.intInvoiceNumber = intInvoiceNumber;
-        invoiceNumber = intInvoiceNumber + "";
+//        invoiceNumber = intInvoiceNumber + ""; change petty cash number to ruhunu hospital(Mr.Lahiru)
     }
 
     public List<Payment> getPayments() {

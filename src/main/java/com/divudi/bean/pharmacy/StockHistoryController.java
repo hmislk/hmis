@@ -22,6 +22,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -51,9 +52,22 @@ public class StockHistoryController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("ht", HistoryType.MonthlyRecord);
-        jpql = "select FUNC('Date',s.stockAt) from StockHistory s where s.historyType=:ht and s.stockAt between :fd and :td group by FUNC('Date',s.stockAt)";
+//        jpql = "select FUNC('Date',s.stockAt) from StockHistory s where s.historyType=:ht and s.stockAt between :fd and :td group by FUNC('Date',s.stockAt)";
+        jpql = "select distinct(s.createdAt) from StockHistory s "
+                + " where s.historyType=:ht"
+                + " and s.createdAt between :fd and :td "
+                + " order by s.createdAt desc ";
+
+//        List<StockHistory> historys=facade.findBySQL(jpql, m,TemporalType.TIMESTAMP);
+//        for (StockHistory history : historys) {
+//            System.out.println("history.getStockAt() = " + history.getStockAt());
+//            System.out.println("history.getStockAt() = " + history.getCreatedAt());
+//        }
         //System.out.println("m = " + m);
-        pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m);
+        pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m,TemporalType.TIMESTAMP);
+        for (Date d : pharmacyStockHistoryDays) {
+            System.out.println("d = " + d);
+        }
     }
 
     public void fillStockHistories() {
@@ -61,15 +75,28 @@ public class StockHistoryController implements Serializable {
         Map m = new HashMap();
         m.put("hd", historyDate);
         m.put("ht", HistoryType.MonthlyRecord);
-        if (department == null) {
-            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd order by s.item.name";
-        } else {
+//        if (department == null) {
+//            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd order by s.item.name";
+//        } else {
+//            m.put("d", department);
+//            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd order by s.item.name";
+//        }
+        jpql = "select s from StockHistory s "
+                + " where s.historyType=:ht "
+                + " and s.createdAt=:hd ";
+        
+        if (department != null) {
+            jpql += " and s.department=:d  ";
             m.put("d", department);
-            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd order by s.item.name";
         }
-        //System.out.println("m = " + m);
-        //System.out.println("jpql = " + jpql);
-        pharmacyStockHistories = facade.findBySQL(jpql, m);
+
+        jpql += " order by s.item.name";
+
+        
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        System.out.println("pharmacyStockHistories.size() = " + pharmacyStockHistories.size());
+        pharmacyStockHistories = facade.findBySQL(jpql, m,TemporalType.TIMESTAMP);
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;
         for (StockHistory psh : pharmacyStockHistories) {
@@ -77,23 +104,35 @@ public class StockHistoryController implements Serializable {
             totalStockSaleValue += psh.getStockSaleValue();
         }
     }
-    
+
     public void fillStockHistoriesWithOutZero() {
         String jpql;
         Map m = new HashMap();
         m.put("hd", historyDate);
         m.put("ht", HistoryType.MonthlyRecord);
-        if (department == null) {
-            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
-        } else {
+//        if (department == null) {
+//            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
+//        } else {
+//            m.put("d", department);
+//            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
+//        }
+        jpql = "select s from StockHistory s "
+                + " where s.historyType=:ht "
+                + " and s.stockQty>0 "
+                + " and s.createdAt =:hd ";
+        
+        if (department != null) {
+            jpql += " and s.department=:d  ";
             m.put("d", department);
-            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
         }
-        //System.out.println("m = " + m);
-        //System.out.println("jpql = " + jpql);
-        pharmacyStockHistories = facade.findBySQL(jpql, m);
+
+        jpql += " order by s.item.name";
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        pharmacyStockHistories = facade.findBySQL(jpql, m,TemporalType.TIMESTAMP);
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;
+        System.out.println("pharmacyStockHistories.size() = " + pharmacyStockHistories.size());
         for (StockHistory psh : pharmacyStockHistories) {
             totalStockPurchaseValue += psh.getStockPurchaseValue();
             totalStockSaleValue += psh.getStockSaleValue();
