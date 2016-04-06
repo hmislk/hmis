@@ -120,6 +120,8 @@ public class BillSearch implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    private CommonController commonController;
+    @Inject
     private WebUserController webUserController;
     @Inject
     private PharmacyPreSettleController pharmacyPreSettleController;
@@ -426,7 +428,8 @@ public class BillSearch implements Serializable {
     }
 
     public List<Bill> getUserBillsOwn() {
-        List<Bill> userBills;
+        Date startTime = new Date();
+       List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
             ////System.out.println("user is null");
@@ -437,8 +440,14 @@ public class BillSearch implements Serializable {
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
+            
         }
+         commonController.printReportDetails(fromDate, toDate, startTime, "Bill list(/opd_search_user_bills.xhtml)");
         return userBills;
+        
+       
+       
+        
     }
 
     public List<Bill> getBillsOwn() {
@@ -2326,6 +2335,16 @@ public class BillSearch implements Serializable {
 
     public void setOpdPreSettleController(OpdPreSettleController opdPreSettleController) {
         this.opdPreSettleController = opdPreSettleController;
+    }
+
+ 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+   
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
     public class BillTypeIncomeRecord {

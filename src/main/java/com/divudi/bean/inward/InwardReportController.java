@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -69,6 +70,10 @@ public class InwardReportController implements Serializable {
     List<IndividualBhtIncomeByCategoryRecord> individualBhtIncomeByCategoryRecord;
 
     List<AdmissionType> admissionty;
+    
+    //////////////
+    @Inject
+    CommonController commonController;
 
     @EJB
     PatientEncounterFacade peFacade;
@@ -125,23 +130,41 @@ public class InwardReportController implements Serializable {
     double netPaid;
 
     public void fillAdmissionBook() {
+        Date startTime = new Date();
+        
         fillAdmissions(null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/fill all(/faces/inward/admission_book.xhtml)");
     }
 
     public void fillAdmissionBookOnlyInward() {
+        Date startTime = new Date();
+        
         fillAdmissions(false, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/Fill UnDischarged Only(/faces/inward/admission_book.xhtml)");
     }
 
     public void fillAdmissionBookOnlyDischarged() {
+        Date startTime = new Date();
         fillAdmissions(true, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/Fill Discharged Only(/faces/inward/admission_book.xhtml)");
     }
 
     public void fillAdmissionBookOnlyDischargedNotFinalized() {
+        Date startTime = new Date();
         fillAdmissions(true, false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/Fill Discharged and Payment Not Finalized(/faces/inward/admission_book.xhtml)");
+        
     }
 
     public void fillAdmissionBookOnlyDischargedFinalized() {
+        Date startTime = new Date();
         fillAdmissions(true, true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/Fill Discharged and Payment Finalized(/faces/inward/admission_book.xhtml)");
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
@@ -324,7 +347,7 @@ public class InwardReportController implements Serializable {
         Map m = new HashMap();
         String sql = "select sum(b.netValue) "
                 + "  from BillItem b "
-                + " where b.bill.patientEncounter=:pe"
+                + " where b.patientEncounter=:pe"
                 + " and b.bill.billType=:btp "
                 + " and b.bill.createdAt <= :td ";
 
@@ -399,6 +422,8 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillDischargeBookPaymentFinalizedNoChanges() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
@@ -428,9 +453,13 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calTotalDischargedNoChanges();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged list and due report/Process All(/faces/inward/discharge_book_no_changes_due.xhtml)");
     }
 
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=false "
@@ -485,6 +514,8 @@ public class InwardReportController implements Serializable {
             }
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged list and due report/Process Due Only(/faces/inward/discharge_book_no_changes_due.xhtml)");
 
     }
 
@@ -504,6 +535,9 @@ public class InwardReportController implements Serializable {
     }
 
     public void createOutSideBillsByAddedDate() {
+        Date startTime = new Date();
+        
+        
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -533,10 +567,15 @@ public class InwardReportController implements Serializable {
         for (BillItem b : billItems) {
             setTotal(getTotal() + b.getBill().getNetTotal());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Outside bill report(/faces/inward/report_out_side_inward_bill.xhtml)");
 
     }
 
     public void createOutSideBillsByDischargeDate() {
+        
+         Date startTime = new Date();
+         
         makeListNull();
         String sql;
         Map temMap = new HashMap();
@@ -566,10 +605,14 @@ public class InwardReportController implements Serializable {
         for (BillItem b : billItems) {
             setTotal(getTotal() + b.getBill().getNetTotal());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Time server report(/faces/inward/report_out_side_inward_bill.xhtml)");
 
     }
 
     public void createPatientInvestigationsTableAll() {
+        Date startTime = new Date();
+        
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
                 + " i join pi.billItem.bill b join b.patient.person p where "
@@ -592,6 +635,8 @@ public class InwardReportController implements Serializable {
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Investigation Trace(/faces/inward/investigation_search_for_reporting_bht.xhtml)");
 
     }
 
@@ -652,6 +697,9 @@ public class InwardReportController implements Serializable {
     }
 
     public void listBhtViceIncome() {
+        Date startTime = new Date();
+        
+        
         String sql;
         individualBhtIncomeByCategoryRecord = new ArrayList<>();
         grossTotals = 0.0;
@@ -706,6 +754,7 @@ public class InwardReportController implements Serializable {
             individualBhtIncomeByCategoryRecord.add(ibr);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, " BHT vice income by categories(/faces/inward/inward_report_bht_vice_income_by_caregories.xhtml)");
     }
 
     public void listDischargedBhtIncomeByCategories() {
@@ -775,6 +824,8 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillProfessionalPaymentDone() {
+        Date startTime = new Date();
+        
         billedBill = createBilledBillProfessionalPaymentTableInwardAll(new BilledBill());
         cancelledBill = createCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
         refundBill = createCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
@@ -782,9 +833,13 @@ public class InwardReportController implements Serializable {
         totalBilledBill = calTotalCreateBilledBillProfessionalPaymentTableInwardAll(new BilledBill());
         totalCancelledBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
         totalRefundBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor payment done detailed/Process By Created Date(Inward)(/faces/inward/inward_report_professional_done_payment.xhtml)");
     }
 
     public void fillProfessionalPaymentDoneOPD() {
+        Date startTime = new Date();
+        
         BillType[] bts = {BillType.OpdBill};
         List<BillType> billTypes = Arrays.asList(bts);
         billedBill = createProfessionalPaymentTable(new BilledBill(), BillType.PaymentBill, billTypes);
@@ -794,6 +849,8 @@ public class InwardReportController implements Serializable {
         totalBilledBill = createProfessionalPaymentTableTotals(new BilledBill(), BillType.PaymentBill, billTypes);
         totalCancelledBill = createProfessionalPaymentTableTotals(new CancelledBill(), BillType.PaymentBill, null);
         totalRefundBill = createProfessionalPaymentTableTotals(new RefundBill(), BillType.PaymentBill, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, " Doctor payment done detailed/Process By Created Date(OPD)(/faces/inward/inward_report_professional_done_payment.xhtml)");
     }
 
     List<BillItem> createBilledBillProfessionalPaymentTableInwardAll(Bill bill) {
@@ -1562,4 +1619,13 @@ public class InwardReportController implements Serializable {
         this.withoutCancelBHT = withoutCancelBHT;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

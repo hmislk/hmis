@@ -163,6 +163,7 @@
                                                                      value="#{billController.newPatient.person.phone}"
                                                                      style="width: 100px;">
                                                         </p:inputMask>
+
                                                     </td>
                                                     <td  >
                                                         <p:autoComplete id="acNewPtArea" converter="areaCon" 
@@ -170,7 +171,9 @@
                                                                         var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                         itemValue="#{pta}" forceSelection="true" 
                                                                         value="#{billController.newPatient.person.area}" ></p:autoComplete>
-                                                        <p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />
+                                                        <!--<p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />-->
+                                                        <p:inputText maxlength="12" value="#{billController.newPatient.person.nic}"/>
+
                                                     </td>
 
                                                 </tr>
@@ -591,7 +594,7 @@
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreview">
                                 <ui:repeat value="#{billController.bills}" var="bill">
@@ -612,7 +615,7 @@
 
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
                                 <ui:repeat value="#{billController.bills}" var="b">
@@ -633,7 +636,7 @@
 
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="fiveFivePaperWithHeadings">
                                 <ui:repeat value="#{billController.bills}" var="b">
@@ -654,7 +657,7 @@
 
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewRmh">
                                 <ui:repeat value="#{billController.bills}" var="b">
@@ -677,7 +680,7 @@
 
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="gpPosBill">
                                 <div style="page-break-after: always;">
@@ -708,7 +711,7 @@
 
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                         return false;"/>
                             </div>
                             <h:panelGroup id="gpPosBillWithoutLogo">
                                 <div style="page-break-after: always;">

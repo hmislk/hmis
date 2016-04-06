@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -29,6 +30,7 @@ import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,11 @@ public class InwardReportControllerBht implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
+
+    ////
+    @Inject
+    CommonController commonController;
+
     double opdSrviceGross;
     double opdServiceMargin;
     double opdServiceDiscount;
@@ -304,7 +311,7 @@ public class InwardReportControllerBht implements Serializable {
         bill.setNetTotal(bill.getTotal() - bill.getDiscount());
         billFacade.edit(bill);
 
-        if (bill.getSingleBillItem()!=null) {
+        if (bill.getSingleBillItem() != null) {
             bill.getSingleBillItem().setDiscount(bill.getDiscount());
             bill.getSingleBillItem().setNetValue(bill.getSingleBillItem().getGrossValue() - bill.getSingleBillItem().getDiscount());
 
@@ -841,6 +848,8 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public void process() {
+        Date startTime = new Date();
+
         makeNull();
 
         createOpdServiceWithoutPro();
@@ -856,6 +865,8 @@ public class InwardReportControllerBht implements Serializable {
 
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
+        
+        commonController.printReportDetails(startTime, startTime, startTime, "BHT income by categories individual BHT( /faces/inward/inward_report_bht_income_by_caregories_bht.xhtml)");
     }
 
     public void calTotal() {
@@ -879,6 +890,7 @@ public class InwardReportControllerBht implements Serializable {
                 + timedGross - timedDiscount
                 + professionalGross
                 + inwardNetValue;
+
     }
 
     public void process2() {
@@ -1299,4 +1311,13 @@ public class InwardReportControllerBht implements Serializable {
         this.netTotal = netTotal;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

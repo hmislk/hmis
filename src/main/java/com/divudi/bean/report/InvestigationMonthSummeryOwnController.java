@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -53,6 +54,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     private SessionController sessionController;
     @Inject
     CommonReport commonReport;
+    @Inject
+    CommonController commonController;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -399,6 +402,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     public void createItemNewChanges() {
+        Date startTime = new Date();
+        
         itemsLab = new ArrayList<>();
         countTotal = 0;
         itemValue = 0;
@@ -427,6 +432,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //        //System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc count(/faces/reportLab/report_lab_by_collection_centre_investigation_count.xhtml)");
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -1534,5 +1541,14 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
 
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }

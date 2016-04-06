@@ -6,6 +6,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -125,6 +126,8 @@ public class BookKeepingSummery implements Serializable {
     String header = "";
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
 
     public void makeNull() {
         //List
@@ -711,6 +714,7 @@ public class BookKeepingSummery implements Serializable {
     List<BookKeepingSummeryRow> bookKeepingSummeryRowsCredit;
 
     public void createOPdLabListWithProDayEndTable() {
+        Date startTime = new Date();
 
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
@@ -960,9 +964,12 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/investigation summery fee type(/faces/reportLab/report_investigation_summery_by_feetype.xhtml)");
     }
 
     public void createOPdLabListWithProDayEndTableWithCredit() {
+        Date startTime = new Date();
 
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
@@ -1228,6 +1235,8 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalWithCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery fee type with credit(/faces/reportLab/report_investigation_summery_by_feetype_with_credit.xhtml)");
     }
 
     public long calCountTotal(long count) {
@@ -1347,6 +1356,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createInwardFee() {
+        Date startTime = new Date();
+        
         Map hm = new HashMap();
         String sql;
         bookKeepingSummeryRows = new ArrayList<>();
@@ -1403,6 +1414,8 @@ public class BookKeepingSummery implements Serializable {
             }
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/Lab Summery Inward/Investigation Summery Inward(/faces/reportLab/report_investigation_summery_by_inward.xhtml)");
 
     }
 
@@ -1464,6 +1477,7 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createLabTotalAllReportByDate() {
+        Date startTime = new Date();
 
         bookKeepingSummeryRowsInward = new ArrayList<>();
         grantTotal = 0;
@@ -1509,9 +1523,12 @@ public class BookKeepingSummery implements Serializable {
             nowDate = nc.getTime();
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD by date(/faces/reportLab/report_investigation_summery_by_date_inward_opd.xhtml)");
     }
 
     public void createInwardOpdFee() {
+        Date startTime = new Date();
         //bookKeepingSummeryRowsOpd = new ArrayList<>();
         bookKeepingSummeryRowsInward = new ArrayList<>();
         BillType bt[] = {BillType.InwardBill, BillType.OpdBill};
@@ -1528,9 +1545,12 @@ public class BookKeepingSummery implements Serializable {
 //        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
 //        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
 //        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD(/faces/reportLab/report_investigation_summery_by_inward_opd.xhtml)");
     }
 
     public void createInwardOpdCount() {
+        Date startTime = new Date();
         //bookKeepingSummeryRowsOpd = new ArrayList<>();
         bookKeepingSummeryRowsInward = new ArrayList<>();
         BillType bt[] = {BillType.InwardBill, BillType.OpdBill};
@@ -1540,6 +1560,8 @@ public class BookKeepingSummery implements Serializable {
                 getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
 
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD count(/faces/reportLab/report_investigation_summery_by_inward_opd_count.xhtml)");
 
     }
 
@@ -1670,6 +1692,7 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createOPdLabListWithProDayEndTablebyPaymentMethod() {
+        Date startTime = new Date();
 
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
@@ -1914,6 +1937,8 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalByPayMethod = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), paymentMethod);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery regent fee  by payment method(/faces/reportLab/report_investigation_summery_by_regent_fee_by_pay_method.xhtml)");
     }
 
     public void createOPdLabListWithProDayEndTablebyInward() {
@@ -2882,6 +2907,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createLabSummeryInward() {
+        Date startTime = new Date();
+        
         bksr = new BookKeepingSummeryRow();
 
         bksr.setBills(new ArrayList<String1Value3>());
@@ -2932,6 +2959,8 @@ public class BookKeepingSummery implements Serializable {
         bksr.setHosFee(hospitalFeeTot);
         bksr.setProFee(profeTotal);
         bksr.setReagentFee(regentTot);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/summery inward by date(/faces/reportLab/report_lab_by_date_summery_inward.xhtml)");
 
     }
 
@@ -4587,5 +4616,15 @@ public class BookKeepingSummery implements Serializable {
     public void setHeader(String header) {
         this.header = header;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 
 }

@@ -264,7 +264,7 @@
                                 <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                     <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl 
+                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2
                                             creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
                                             lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessions}" />
                                 </p:selectOneMenu>
@@ -577,9 +577,9 @@
                                     </div>
 
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
-                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
+                                        <p:outputLabel value="Namesss"/>#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -639,8 +639,8 @@
                                 <p:panel header="Booking &amp; Settling" rendered="#{bookingController.selectedBillSession.bill.paidBill eq bookingController.selectedBillSession.bill and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
-                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -697,8 +697,8 @@
                                 <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient ne null}"/>
-                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient eq null}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne 'null'}"/>
+                                        <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle eq 'null'}"/>
                                         <p:outputLabel value="Consultant"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.staff.person.nameWithTitle}"/>
                                         <p:outputLabel value="Appo. No"/>
@@ -1037,10 +1037,11 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
+                                    <f:selectItem itemLabel="Title" />
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
                                 <p:outputLabel value="Name"/>
-                                <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" />
+                                <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                                 <h:outputLabel value="Phone"/>
                                 <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" value="#{bookingController.selectedBillSession.bill.patient.person.phone}">
                                 </p:inputMask>

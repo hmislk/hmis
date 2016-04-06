@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -51,6 +52,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardStaffPaymentBillController implements Serializable {
 
+    @Inject
+    CommonController commonController; 
+    
     @EJB
     private RefundBillFacade refundBillFacade;
     private List<BillComponent> billComponents;
@@ -139,7 +143,12 @@ public class InwardStaffPaymentBillController implements Serializable {
     Institution institution;
 
     public void fillDocPayingBillFeeByCreatedDate() {
+        Date startTime = new Date();
+        
         fillDocPayingBillFee(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill item)(/faces/inward/report_doctor_payment.xhtml)");
+        
     }
 
     public void fillDocPayingBillFeeByDischargeDate() {
@@ -207,13 +216,21 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void fillDocPayingBillByCreatedDate() {
+        Date startTime = new Date();
+        
         fillDocPayingBill(false);
         fillDocPayingBillCancel(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment (By bill)(/faces/inward/report_doctor_payment_by_bill.xhtml)");
     }
 
     public void fillDocPayingBillByDischargeDate() {
+        Date startTime = new Date();
+        
         fillDocPayingBill(true);
         fillDocPayingBillCancel(true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Doctor Payment summery(/faces/inward/report_doctor_payment_by_bill.xhtml)");
     }
 
     public void fillDocPayingBill(boolean dischargeDate) {
@@ -1438,7 +1455,10 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public List<BillItem> getDocPayDischarged() {
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Discharged/Not discharged Doctor payment summery/Doctor Payments For Discharged patients(/faces/inward/inward_professional_payment_discharged_or_notdischarged.xhtml)");
         return docPayDischarged;
+        
     }
 
     public void setDocPayDischarged(List<BillItem> docPayDischarged) {
@@ -1528,5 +1548,15 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setTotalDocFeeDueNotDischarged(double totalDocFeeDueNotDischarged) {
         this.totalDocFeeDueNotDischarged = totalDocFeeDueNotDischarged;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 
 }

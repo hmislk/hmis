@@ -1276,6 +1276,9 @@ public class PharmacySaleController3 implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBillWithPay() {
+        System.err.println("3.Pharmacy Bill Start - = " + new Date());
+        System.err.println("3.sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        
         editingQty = null;
 
         if (getPaymentMethod() == null) {
@@ -1351,7 +1354,9 @@ public class PharmacySaleController3 implements Serializable {
 
         resetAll();
         billPreview = true;
-
+        System.err.println("3.sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        System.err.println("3.Pharmacy Bill Start - = " + new Date());
+        
     }
 
     public String newPharmacyRetailSale() {
