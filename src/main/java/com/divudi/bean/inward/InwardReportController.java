@@ -347,7 +347,7 @@ public class InwardReportController implements Serializable {
         Map m = new HashMap();
         String sql = "select sum(b.netValue) "
                 + "  from BillItem b "
-                + " where b.bill.patientEncounter=:pe"
+                + " where b.patientEncounter=:pe"
                 + " and b.bill.billType=:btp "
                 + " and b.bill.createdAt <= :td ";
 

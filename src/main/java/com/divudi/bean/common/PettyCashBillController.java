@@ -141,7 +141,6 @@ public class PettyCashBillController implements Serializable {
         System.out.println("sql = " + sql);
         List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() =" + tmp.size());
         if (tmp.size() > 0) {
             System.out.println("tmp.get(0).getInsId() =" + tmp.get(0).getInsId());
             return true;
