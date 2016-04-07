@@ -95,6 +95,8 @@ public class ServiceSummery implements Serializable {
     double hosFeeTotalGT;
     double reagentFeeTotalGT;
     double outSideFeeTotoalGT;
+    
+    boolean onlyInwardBills;
 
     List<String1Value5> string1Value5;
 
@@ -791,11 +793,20 @@ public class ServiceSummery implements Serializable {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
-
-        BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
-        List<BillType> bts = Arrays.asList(billType);
+        List<BillType> bts = new ArrayList<>();
+        if (onlyInwardBills) {
+            BillType billType[] = { BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        } else {
+            BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        }
 
         serviceSummery = new ArrayList<>();
+        proFeeTotal = 0;
+        hosFeeTotal = 0;
+        outSideFeeTotoal = 0;
+        reagentFeeTotal = 0;
         for (BillItem i : getBillItem(bts, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
@@ -807,7 +818,7 @@ public class ServiceSummery implements Serializable {
 
             proFeeTotal += bi.getProFee();
             hosFeeTotal += bi.getHospitalFee();
-            outSideFeeTotoal+= bi.getOutSideFee();
+            outSideFeeTotoal += bi.getOutSideFee();
             reagentFeeTotal += bi.getReagentFee();
 
             serviceSummery.add(bi);
@@ -845,7 +856,6 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery(/faces/reportLab/report_opd_service_summery.xhtml)");
 
     }
@@ -1925,6 +1935,14 @@ public class ServiceSummery implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isOnlyInwardBills() {
+        return onlyInwardBills;
+    }
+
+    public void setOnlyInwardBills(boolean onlyInwardBills) {
+        this.onlyInwardBills = onlyInwardBills;
     }
 
 }

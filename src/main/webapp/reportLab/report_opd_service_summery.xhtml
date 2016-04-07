@@ -47,10 +47,11 @@
 
                     <h:outputLabel value="Payment Type : " ></h:outputLabel>
                     <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">
-                        <f:selectItem itemLabel="Opd and Inward"/>
+                        <f:selectItem itemLabel="Select Payment Methord"/>
                         <f:selectItems value="#{enumController.paymentMethods}"  />
                     </p:selectOneMenu>
-
+                    <h:outputLabel value="Only Inward : " ></h:outputLabel>
+                    <p:selectBooleanCheckbox value="#{serviceSummery.onlyInwardBills}" />
                 </h:panelGrid>
                 <h:panelGrid columns="4">
                     <p:commandButton id="btnRefresh" value="Process" ajax="false" 

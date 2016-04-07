@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
@@ -75,6 +76,8 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
+    @Inject
+    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -424,11 +427,20 @@ public class ReorderController implements Serializable {
     }
 
     public void fillReorders() {
+        Date startTime = new Date();
+        
         generateReorders(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public void fillReordersForRequiredItems() {
+        Date startTime = new Date();
+        
         generateReorders(false, true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
     }
 
     public List<Reorder> getReorders() {
@@ -502,7 +514,12 @@ public class ReorderController implements Serializable {
     }
 
     public void generateReorders() {
+        Date startTime = new Date();
+        
         generateReorders(true, false, departmentListMethod);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+        
     }
 
     public void generateReorders(boolean overWrite) {
@@ -1322,5 +1339,14 @@ public class ReorderController implements Serializable {
         }
 
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }
