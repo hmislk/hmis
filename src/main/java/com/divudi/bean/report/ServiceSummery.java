@@ -95,6 +95,8 @@ public class ServiceSummery implements Serializable {
     double hosFeeTotalGT;
     double reagentFeeTotalGT;
     double outSideFeeTotoalGT;
+    
+    boolean onlyInwardBills;
 
     List<String1Value5> string1Value5;
 
@@ -791,18 +793,34 @@ public class ServiceSummery implements Serializable {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
-
-        BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
-        List<BillType> bts = Arrays.asList(billType);
+        List<BillType> bts = new ArrayList<>();
+        if (onlyInwardBills) {
+            BillType billType[] = { BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        } else {
+            BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        }
 
         serviceSummery = new ArrayList<>();
+        proFeeTotal = 0;
+        hosFeeTotal = 0;
+        outSideFeeTotoal = 0;
+        reagentFeeTotal = 0;
         for (BillItem i : getBillItem(bts, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
             //System.out.println("bi = " + bi);
+
+            proFeeTotal += bi.getProFee();
+            hosFeeTotal += bi.getHospitalFee();
+            outSideFeeTotoal += bi.getOutSideFee();
+            reagentFeeTotal += bi.getReagentFee();
+
             serviceSummery.add(bi);
         }
 
@@ -811,10 +829,10 @@ public class ServiceSummery implements Serializable {
 //        //System.out.println("hosFeeTotal = " + hosFeeTotal);
 //        //System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
 //        //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
-        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
-        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
-        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
-        reagentFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
+//        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
+//        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
+//        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
+//        reagentFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
 //        List<BillFee> billfees =new ArrayList<>();
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
@@ -838,7 +856,6 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery(/faces/reportLab/report_opd_service_summery.xhtml)");
 
     }
@@ -949,7 +966,7 @@ public class ServiceSummery implements Serializable {
 
     public void createServiceSummeryInwardAddedDate() {
         Date startTime = new Date();
-        
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -968,7 +985,7 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/lab summery inward/summery by added date(/faces/reportLab/report_inward_service_detail_added_lab.xhtml)");
 
     }
@@ -1918,6 +1935,14 @@ public class ServiceSummery implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isOnlyInwardBills() {
+        return onlyInwardBills;
+    }
+
+    public void setOnlyInwardBills(boolean onlyInwardBills) {
+        this.onlyInwardBills = onlyInwardBills;
     }
 
 }

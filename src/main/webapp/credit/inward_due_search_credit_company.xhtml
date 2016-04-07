@@ -171,7 +171,60 @@
                                     </p:row>
                                 </p:columnGroup>
                             </p:subTable>
-
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total" colspan="3" />
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalPaidTotalPatient}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTransPaidTotalPatient}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalPaidTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTransPaidTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal-(creditCompanyDueController.finalPaidTotal+creditCompanyDueController.finalPaidTotalPatient)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal-(creditCompanyDueController.finalTransPaidTotalPatient+creditCompanyDueController.finalTransPaidTotal)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
 
                         </p:dataTable>
                         <f:facet name="footer" >
