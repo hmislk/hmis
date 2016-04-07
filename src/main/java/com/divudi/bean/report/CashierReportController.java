@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -45,6 +46,8 @@ public class CashierReportController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private CommonController commonController;
     @EJB
     private CommonFunctions commonFunction;
     @EJB
@@ -319,10 +322,14 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
+        
+        Date startTime = new Date();
+        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
 
     }
     
     public void calCashierDataUsingReciptNo() {
+        Date startTime = new Date();
         fromDate = null;
         toDate = null;
         if (fromReciptNo == null) {
@@ -346,9 +353,12 @@ public class CashierReportController implements Serializable {
             return;
         }
         calCashierData();
+        
+       commonController.printReportDetails(fromDate, toDate, startTime, "All cashier report(Using recipt No)(/reportCashier/report_cashier_summery_all_by_reciptno.xhtml)");
     }
 
     public void calCashierDataTotalOnly() {
+        Date startTime = new Date();
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
         webUserBillsTotals = new ArrayList<>();
         for (WebUser webUser : getCashiers()) {
@@ -429,6 +439,7 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
+        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
 
     }
     
@@ -459,6 +470,7 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierDataTotalOnlyWithoutPro() {
+        Date startTime = new Date();
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
         webUserBillsTotals = new ArrayList<>();
         for (WebUser webUser : getCashiersWithoutPro()) {
@@ -500,6 +512,8 @@ public class CashierReportController implements Serializable {
             webUserBillsTotals.add(tmp);
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery without professional(/reportCashier/report_cashier_summery_all_total_only_without_pro.xhtml)");
 
     }
 
@@ -1264,5 +1278,14 @@ public class CashierReportController implements Serializable {
 
     public void setToReciptNo(String toReciptNo) {
         this.toReciptNo = toReciptNo;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 }

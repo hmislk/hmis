@@ -65,6 +65,12 @@ public class CreditCompanyDueController implements Serializable {
     @EJB
     AdmissionFacade admissionFacade;
 
+    double finalTotal;
+    double finalPaidTotal;
+    double finalPaidTotalPatient;
+    double finalTransPaidTotal;
+    double finalTransPaidTotalPatient;
+
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
     }
@@ -463,10 +469,10 @@ public class CreditCompanyDueController implements Serializable {
         }
 
     }
-    
+
     public void createOpdCreditDueBillItem() {
-        List<Institution> setIns=new ArrayList<>();
-        if (creditCompany!=null) {
+        List<Institution> setIns = new ArrayList<>();
+        if (creditCompany != null) {
             setIns.add(creditCompany);
         } else {
             setIns.addAll(getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true));
@@ -509,6 +515,11 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardCreditDue() {
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, true);
         institutionEncounters = new ArrayList<>();
+        finalTotal = 0.0;
+        finalPaidTotal = 0.0;
+        finalPaidTotalPatient = 0.0;
+        finalTransPaidTotal = 0.0;
+        finalTransPaidTotalPatient = 0.0;
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, true);
 
@@ -525,6 +536,11 @@ public class CreditCompanyDueController implements Serializable {
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidByCreditCompany());
                 newIns.setTransPaidTotal(newIns.getTransPaidTotal() + b.getTransPaidByCompany());
             }
+            finalTotal += newIns.getTotal();
+            finalPaidTotal += newIns.getPaidTotal();
+            finalPaidTotalPatient += newIns.getPaidTotalPatient();
+            finalTransPaidTotal += newIns.getTransPaidTotal();
+            finalTransPaidTotalPatient += newIns.getTransPaidTotalPatient();
 
             institutionEncounters.add(newIns);
         }
@@ -551,7 +567,7 @@ public class CreditCompanyDueController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     public double createInwardPaymentTotalCredit(PatientEncounter pe, Date fd, Date td, BillType bt) {
 
         String sql;
@@ -871,6 +887,46 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public double getFinalTotal() {
+        return finalTotal;
+    }
+
+    public void setFinalTotal(double finalTotal) {
+        this.finalTotal = finalTotal;
+    }
+
+    public double getFinalPaidTotal() {
+        return finalPaidTotal;
+    }
+
+    public void setFinalPaidTotal(double finalPaidTotal) {
+        this.finalPaidTotal = finalPaidTotal;
+    }
+
+    public double getFinalPaidTotalPatient() {
+        return finalPaidTotalPatient;
+    }
+
+    public void setFinalPaidTotalPatient(double finalPaidTotalPatient) {
+        this.finalPaidTotalPatient = finalPaidTotalPatient;
+    }
+
+    public double getFinalTransPaidTotal() {
+        return finalTransPaidTotal;
+    }
+
+    public void setFinalTransPaidTotal(double finalTransPaidTotal) {
+        this.finalTransPaidTotal = finalTransPaidTotal;
+    }
+
+    public double getFinalTransPaidTotalPatient() {
+        return finalTransPaidTotalPatient;
+    }
+
+    public void setFinalTransPaidTotalPatient(double finalTransPaidTotalPatient) {
+        this.finalTransPaidTotalPatient = finalTransPaidTotalPatient;
     }
 
 }

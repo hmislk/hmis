@@ -50,7 +50,9 @@
                             </f:facet>
                             <p:columnGroup type="header">
                                 <p:row>
-                                    <p:column headerText="Patient Encounter">                                    
+                                    <p:column headerText="BHT No">                                    
+                                    </p:column>
+                                    <p:column headerText="Date Of Discharge">                                    
                                     </p:column>
                                     <p:column headerText="Patient Name">                                    
                                     </p:column>
@@ -70,6 +72,11 @@
                                 </f:facet>
                                 <p:column>                              
                                     <h:outputLabel value="#{b.bhtNo}" />                                
+                                </p:column>
+                                <p:column>                              
+                                    <h:outputLabel value="#{b.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                    </h:outputLabel>                                
                                 </p:column>
                                 <p:column>                               
                                     <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
@@ -111,7 +118,7 @@
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column footerText="Total" colspan="2" />
+                                        <p:column footerText="Total" colspan="3" />
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.total}">
@@ -164,11 +171,65 @@
                                     </p:row>
                                 </p:columnGroup>
                             </p:subTable>
-                            <f:facet name="footer" >
-                                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                            </f:facet>
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total" colspan="3" />
+                                    <p:column style="text-align: right;">
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalPaidTotalPatient}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTransPaidTotalPatient}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalPaidTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTransPaidTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{!creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal-(creditCompanyDueController.finalPaidTotal+creditCompanyDueController.finalPaidTotalPatient)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" rendered="#{creditCompanyDueController.withOutDueUpdate}" >
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{creditCompanyDueController.finalTotal-(creditCompanyDueController.finalTransPaidTotalPatient+creditCompanyDueController.finalTransPaidTotal)}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
 
                         </p:dataTable>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
                     </p:panel>
                 </h:form>
             </ui:define>

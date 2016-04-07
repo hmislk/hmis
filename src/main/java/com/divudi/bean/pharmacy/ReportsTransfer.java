@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
@@ -108,6 +109,10 @@ public class ReportsTransfer implements Serializable {
     ItemFacade itemFacade;
     @EJB
     CommonFunctions commonFunctions;
+    
+    ////////////
+    @Inject
+    CommonController commonController;
 
     /**
      * Methods
@@ -977,6 +982,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCountsBht() {
+        Date startTime = new Date();
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, null);
 
@@ -1020,10 +1026,13 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml)");
 
     }
 
     public void fillItemCountsBhtSurgery() {
+        Date startTime = new Date();
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, SurgeryBillType.PharmacyItem);
 
@@ -1066,6 +1075,8 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml)");
 
     }
 
@@ -1954,5 +1965,15 @@ public class ReportsTransfer implements Serializable {
     public void setTotalBHTIssueValue(double totalBHTIssueValue) {
         this.totalBHTIssueValue = totalBHTIssueValue;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 
 }

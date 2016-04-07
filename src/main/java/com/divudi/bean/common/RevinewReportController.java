@@ -67,6 +67,9 @@ public class RevinewReportController implements Serializable {
 
     @Inject
     OpdPreBillReportController opdPreBillReportController;
+    
+    @Inject
+    CommonController commonController;
 
     @EJB
     CommonFunctions commonFunctions;
@@ -283,6 +286,7 @@ public class RevinewReportController implements Serializable {
     }
 
     public void createCashierTableByDepartment() {
+        Date startime = new Date();
 
         makNull();
 
@@ -349,6 +353,8 @@ public class RevinewReportController implements Serializable {
         userRefundedBillsPharmacyList.add(createReNewTotal(userRefundedBillsPharmacyList, null));
         reNewReportFinalTotal.add(createReNewTotal(reNewReportFinalTotal, null));
 
+        
+        commonController.printReportDetails(fromDate, toDate, startime, "Department vise income(/reportCashierBillFeePayment/report_cashier_summery_departmentwise.xhtml)");
     }
 
     public BillsTotals createReNewTotal(List<BillsTotals> bts, Department dep) {
@@ -381,4 +387,13 @@ public class RevinewReportController implements Serializable {
         bt.setCredit(credit);
         return bt;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

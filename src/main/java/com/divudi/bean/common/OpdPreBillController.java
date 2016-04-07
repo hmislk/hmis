@@ -91,6 +91,8 @@ public class OpdPreBillController implements Serializable {
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
+    @Inject
+    private CommonController commonController;
     @EJB
     BillNumberGenerator billNumberGenerator;
     @EJB
@@ -311,6 +313,7 @@ public class OpdPreBillController implements Serializable {
     }
     
     public void createBillFeePayments(){
+        Date startTime = new Date();
         billFeePayments=new ArrayList<>();
         String sql;
         Map m=new HashMap();
@@ -324,6 +327,8 @@ public class OpdPreBillController implements Serializable {
         m.put("td", toDate);
         
         billFeePayments=getBillFeePaymentFacade().findBySQL(sql, m);
+        
+       commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
         
     }
 
@@ -1947,4 +1952,13 @@ public class OpdPreBillController implements Serializable {
 //            }
 //        }
 //    }
+
+    
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
 }

@@ -3,6 +3,7 @@
  * and open the currentlate in the editor.
  */
 package com.divudi.bean.common;
+
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -22,6 +23,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -105,11 +107,6 @@ public class PettyCashBillController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getInvoiceNumber().isEmpty()) {
-            UtilityController.addErrorMessage("Enter Invoice Number");
-            return true;
-        }
-
         if (getCurrent().getNetTotal() < 1) {
             UtilityController.addErrorMessage("Type Amount");
             return true;
@@ -124,17 +121,44 @@ public class PettyCashBillController implements Serializable {
     }
 
     private boolean checkInvoice() {
-        String sql = "Select b From BilledBill b where b.retired=false and b.cancelledBill is null and b.billType= :btp and upper(b.invoiceNumber)='" + getCurrent().getInvoiceNumber().trim().toUpperCase() + "'";
+        Calendar year = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
+        c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
+        Date fd = c.getTime();
+        System.out.println("d = " + fd);
+        String inv = createInvoiceNumberSuffix() + getCurrent().getIntInvoiceNumber();
+        System.out.println("inv = " + inv);
+        String sql = "Select b From BilledBill b where "
+                + " b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType= :btp "
+                + " and b.createdAt > :fd "
+                + " and upper(b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
         HashMap h = new HashMap();
         h.put("btp", BillType.PettyCash);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIME);
+        h.put("fd", fd);
+        System.out.println("h = " + h);
+        System.out.println("sql = " + sql);
+        List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
-        //   ////System.out.println("asdsads" + tmp.size());
         if (tmp.size() > 0) {
+            System.out.println("tmp.get(0).getInsId() =" + tmp.get(0).getInsId());
             return true;
         }
 
         return false;
+    }
+
+    private String createInvoiceNumberSuffix() {
+        
+        Calendar c = Calendar.getInstance();
+        int y = c.get(Calendar.YEAR);
+        String s1 = y + "";
+        String s2 = y + 1 + "";
+        String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
+        System.out.println("s = " + s);
+
+        return s;
     }
 
     @Inject
@@ -221,6 +245,7 @@ public class PettyCashBillController implements Serializable {
         }
 
         getCurrent().setTotal(getCurrent().getNetTotal());
+        getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + getCurrent().getIntInvoiceNumber());
 
         saveBill();
         saveBillItem();
@@ -229,6 +254,7 @@ public class PettyCashBillController implements Serializable {
         getSessionController().setLoggedUser(wb);
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
+        System.out.println("getCurrent().getInvoiceNumber() = " + getCurrent().getInvoiceNumber());
 
     }
 

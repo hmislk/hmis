@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -96,6 +97,9 @@ public class PharmacySaleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    
+    @Inject
+    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -1230,6 +1234,11 @@ public class PharmacySaleController implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBillWithPay() {
+        Date startTime = new Date();
+
+        Date fromDate = null;
+        Date toDate = null;
+
         editingQty = null;
 
         if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
@@ -1313,6 +1322,8 @@ public class PharmacySaleController implements Serializable {
 
         resetAll();
         billPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
 
     }
 
@@ -2094,5 +2105,14 @@ public class PharmacySaleController implements Serializable {
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }
