@@ -1167,6 +1167,8 @@ public class SearchController implements Serializable {
     }
 
     public void createIssueTable() {
+        Date startTime = new Date();
+        
         String sql;
         HashMap tmp = new HashMap();
         tmp.put("toDate", getToDate());
@@ -1200,6 +1202,8 @@ public class SearchController implements Serializable {
             b.setTmpRefBill(getRefBill(b));
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/receive (/faces/pharmacy/pharmacy_transfer_issued_list.xhtml)");
 
     }
 
@@ -1591,6 +1595,8 @@ public class SearchController implements Serializable {
     }
 
     public void createRequestTable() {
+        Date startTime = new Date();
+        
         String sql;
 
         HashMap tmp = new HashMap();
@@ -1620,6 +1626,8 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             b.setListOfBill(getIssudBills(b));
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
 
     }
 
@@ -1900,6 +1908,8 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTable() {
+        Date startTime = new Date();
+        
         //  searchBillItems = null;
         String sql;
         Map m = new HashMap();
@@ -1933,6 +1943,8 @@ public class SearchController implements Serializable {
         sql += " order by bi.id desc  ";
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Search adjustment bills(/faces/pharmacy/pharmacy_search_adjustment_bill_item.xhtml)");
 
     }
 
@@ -2077,7 +2089,11 @@ public class SearchController implements Serializable {
     }
 
     public void createPoRequestedAndApprovedPharmacy() {
+        Date startTime = new Date();
+        
         createPoRequestedAndApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(All Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
     }
 
     public void createPoRequestedAndApprovedStore() {
@@ -2108,7 +2124,11 @@ public class SearchController implements Serializable {
     }
 
     public void createApprovedPharmacy() {
+        Date startTime = new Date();
+        
         createApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(Approved Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
     }
 
     public void createApprovedStore() {
@@ -2141,7 +2161,11 @@ public class SearchController implements Serializable {
     }
 
     public void createNotApprovedPharmacy() {
+        Date startTime = new Date();
+        
         createNotApproved(InstitutionType.Dealer, BillType.PharmacyOrder);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/PO approval(To Approve Requests)(/faces/pharmacy/pharmacy_purhcase_order_list_to_approve.xhtml)");
     }
 
     public void createNotApprovedStore() {
@@ -2273,6 +2297,8 @@ public class SearchController implements Serializable {
     }
 
     public void createGrnTable() {
+        Date startTime = new Date();
+        
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -2294,6 +2320,8 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN return(Logged Institution Search)(/faces/pharmacy/pharmacy_grn_list_for_return.xhtml)");
 
     }
 
@@ -2323,6 +2351,8 @@ public class SearchController implements Serializable {
     }
 
     public void createGrnTableAllIns() {
+        Date startTime = new Date();
+        
         bills = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -2343,6 +2373,8 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             b.setListOfBill(getReturnBill(b, BillType.PharmacyGrnReturn));
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN return(All Search)(/faces/pharmacy/pharmacy_grn_list_for_return.xhtmxl)");
 
     }
 
@@ -2381,7 +2413,11 @@ public class SearchController implements Serializable {
     }
 
     public void createPoTablePharmacy() {
+        Date startTime = new Date();
+        
         createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/GRN receive(search)(/faces/pharmacy/pharmacy_purchase_order_list_for_recieve.xhtml)");
     }
 
     public void createPoTableStore() {
@@ -4167,33 +4203,58 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyPayment() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.Dealer};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search Pharmacy Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
+
     }
 
     public void createStorePayment() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search Store Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
     }
 
     public void createStorePaharmacyPayment() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPayment);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment done search(Search All Payment)(/faces/dealorPayment/search_dealor_payment.xhtml)");
     }
 
     public void createPharmacyPaymentPre() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.Dealer};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search Pharmacy Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
     }
 
     public void createStorePaymentPre() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search Store Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
     }
 
     public void createStorePaharmacyPaymentPre() {
+        Date startTime = new Date();
+        
         InstitutionType[] institutionTypes = {InstitutionType.Dealer, InstitutionType.StoreDealor};
         createGrnPaymentTable(Arrays.asList(institutionTypes), BillType.GrnPaymentPre);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/GRN Payment approval(Search All Payment)(/faces/dealorPayment/search_dealor_payment_pre.xhtml)");
     }
 
     private void createGrnPaymentTable(List<InstitutionType> institutionTypes, BillType billType) {

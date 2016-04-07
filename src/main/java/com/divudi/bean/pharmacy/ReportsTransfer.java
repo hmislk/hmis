@@ -304,6 +304,8 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersReceive() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -336,9 +338,13 @@ public class ReportsTransfer implements Serializable {
             purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer receieve by bill item(/faces/pharmacy/pharmacy_report_transfer_receive_bill_item.xhtml)");
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -369,9 +375,13 @@ public class ReportsTransfer implements Serializable {
             purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
     }
 
     public void fillDepartmentTransfersIssueByBill() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -415,6 +425,8 @@ public class ReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill (/faces/pharmacy/pharmacy_report_transfer_issue_bill.xhtml)");
     }
 
     public void fillDepartmentBHTIssueByBill() {
@@ -1348,6 +1360,8 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -1380,6 +1394,8 @@ public class ReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer receieve by bill(/faces/pharmacy/pharmacy_report_transfer_receive_bill.xhtml)");
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
