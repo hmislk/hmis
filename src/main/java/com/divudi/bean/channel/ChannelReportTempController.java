@@ -818,7 +818,7 @@ public class ChannelReportTempController implements Serializable {
         channelTotal = new ChannelTotal();
         Date nowDate = getFromDate();
 //        while (nowDate.before(getToDate())) {
-        while (nowDate.before(todayLastBillDate)) {
+        while (nowDate.before(todayLastBillDate)||nowDate.equals(todayLastBillDate)) {
             ChannelDateDetailRow row = new ChannelDateDetailRow();
             String formatedDate;
             Date fd;
@@ -1456,8 +1456,8 @@ public class ChannelReportTempController implements Serializable {
             temMap.put("w", wUser);
         }
 
-        temMap.put("fdc", commonFunctions.getStartOfDay(new Date()));
-        temMap.put("tdc", commonFunctions.getEndOfDay(new Date()));
+        temMap.put("fdc", commonFunctions.getStartOfDay(getFromDate()));
+        temMap.put("tdc", commonFunctions.getEndOfDay(getFromDate()));
         temMap.put("btps", billTypes);
         temMap.put("ins", getSessionController().getInstitution());
 

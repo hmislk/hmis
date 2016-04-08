@@ -689,6 +689,8 @@ public class SearchController implements Serializable {
     }
 
     public void createVariantReportSearch() {
+        Date startTime = new Date();
+        
         String sql = "";
         HashMap tmp = new HashMap();
 
@@ -717,6 +719,8 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("bTp", BillType.PharmacyMajorAdjustment);
         bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant adjustments(/faces/pharmacy/pharmacy_variant_ajustment_pre_list.xhtml)");
     }
 
     List<Bill> prescreptionBills;
@@ -739,6 +743,8 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyPrescriptionBillTable() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         m.put("bt", BillType.PharmacyPre);
         m.put("rBt", BillType.PharmacySale);
@@ -764,6 +770,8 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt ";
 
         prescreptionBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Prescription report(/faces/pharmacy/report_prescreption.xhtml)");
 
     }
 
@@ -858,6 +866,7 @@ public class SearchController implements Serializable {
     double netTotalValue;
 
     public void createPharmacyStaffBill() {
+        Date startTime = new Date();
 
         Map m = new HashMap();
         m.put("bt", BillType.PharmacyPre);
@@ -882,6 +891,8 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             netTotalValue += b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill.xhtml)");
     }
 
     public void createPharmacyTableRe() {
@@ -1254,8 +1265,11 @@ public class SearchController implements Serializable {
     }
 
     public void createIssuePharmacyReport() {
+        Date startTime = new Date();
 //        fetchPharmacyBills(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
         fetchPharmacyBillsNew(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transfer Report/Report transfer issued not receieved(/faces/pharmacy/pharmacy_transfer_issued_list_report.xhtml)");
     }
 
     public void createIssueStoreReport() {
@@ -1263,7 +1277,11 @@ public class SearchController implements Serializable {
     }
 
     public void createPoNotPharmacyApproveReport() {
+        Date startTime = new Date();
+        
         fetchPharmacyBills(BillType.PharmacyOrder, BillType.PharmacyAdjustment);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Purchase ordered not approved.(/faces/pharmacy/pharmacy_transfer_issued_list_not_approve_report.xhtml)");
     }
 
     public void createPoNotStoreApproveReport() {
@@ -1440,6 +1458,7 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByBillType() {
+        Date startTime = new Date();
 
         String sql;
         Map temMap = new HashMap();
@@ -1520,6 +1539,8 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, maxResult);
         //     //System.err.println("SIZE : " + lst.size());
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Search/(/faces/pharmacy/pharmacy_search.xhtml)");
     }
 
     public void createTableByBillTypeAllDepartment() {
