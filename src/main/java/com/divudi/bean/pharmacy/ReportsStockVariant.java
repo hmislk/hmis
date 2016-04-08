@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -57,6 +58,8 @@ public class ReportsStockVariant implements Serializable {
      */
     @Inject
     DealerController dealerController;
+    @Inject
+    CommonController commonController;
 
     /**
      * EJBs
@@ -118,6 +121,10 @@ public class ReportsStockVariant implements Serializable {
     private PharmacyErrorChecking pharmacyErrorChecking;
 
     public void fillCategoryStocks() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (department == null || category == null) {
             UtilityController.addErrorMessage("Please select a department && Category");
             return;
@@ -141,6 +148,8 @@ public class ReportsStockVariant implements Serializable {
 
             systemStockValue += (r.getSystemStock() * r.getPurchaseRate());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant report(/faces/pharmacy/pharmacy_variant_category_stock_by_item.xhtml)");
 
     }
 
@@ -388,5 +397,15 @@ public class ReportsStockVariant implements Serializable {
     public void setRecordedBillAfter(Bill recordedBillAfter) {
         this.recordedBillAfter = recordedBillAfter;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 
 }

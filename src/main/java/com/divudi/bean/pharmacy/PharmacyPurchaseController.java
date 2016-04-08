@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -85,7 +86,7 @@ public class PharmacyPurchaseController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     BillEjb billEjb;
-    
+
     /**
      * Controllers
      */
@@ -93,11 +94,11 @@ public class PharmacyPurchaseController implements Serializable {
     private SessionController sessionController;
     @Inject
     PharmacyCalculation pharmacyBillBean;
-    
+    @Inject
+    CommonController commonController;
     /**
      * Properties
      */
-    
     private BilledBill bill;
     private BillItem currentBillItem;
     private boolean printPreview;
@@ -113,27 +114,40 @@ public class PharmacyPurchaseController implements Serializable {
     List<PharmacyStockRow> rows;
 
     BillListWithTotals billListWithTotals;
-    
 
-    public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment(){
-        BillType[] bts= new BillType[] {BillType.PharmacyGrnBill,BillType.PharmacyPurchaseBill,BillType.PharmacyGrnReturn,BillType.PurchaseReturn,};
-        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+    public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
+        BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnReturn, BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Fill All)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
-    
-    public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment(){
-        BillType[] bts= new BillType[] {BillType.PharmacyPurchaseBill,BillType.PurchaseReturn,};
-        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+
+    public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
+        BillType[] bts = new BillType[]{BillType.PharmacyPurchaseBill, BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Purchase Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
-    
-    public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment(){
-        BillType[] bts= new BillType[] {BillType.PharmacyGrnBill,BillType.PurchaseReturn,};
-        Class[] bcs = new Class[]{BilledBill.class,CancelledBill.class,RefundBill.class};
+
+    public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
+        BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PurchaseReturn,};
+        Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(GRN Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
-    
+
     public void fillItemVicePurchaseAndGoodReceive() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         BillItem bi = new BillItem();
@@ -168,6 +182,8 @@ public class PharmacyPurchaseController implements Serializable {
         List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m);
 
         rows = lsts;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Item-vise purchase /good receive(/faces/pharmacy/report_item_vice_purchase_and_good_receive.xhtml)");
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
@@ -374,6 +390,10 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void settle() {
 
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBill().getFromInstitution() == null) {
             UtilityController.addErrorMessage("Select Dealor");
             return;
@@ -395,7 +415,7 @@ public class PharmacyPurchaseController implements Serializable {
 
         saveBill();
         //   saveBillComponent();
-        
+
         Payment p = createPayment(getBill());
 
         for (BillItem i : getBillItems()) {
@@ -430,7 +450,6 @@ public class PharmacyPurchaseController implements Serializable {
         getPharmacyBillBean().calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
 
         getBillFacade().edit(getBill());
-        
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -438,6 +457,8 @@ public class PharmacyPurchaseController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
         //   recreate();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase (settle)(/faces/pharmacy/pharmacy_purchase.xhtml)");
     }
 
     public void removeItem(BillItem bi) {
@@ -614,7 +635,7 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void calTotal() {
         double tot = 0.0;
-        double saleValue =0.0;
+        double saleValue = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
             p.setQty((double) p.getPharmaceuticalBillItem().getQtyInUnit());
@@ -623,7 +644,7 @@ public class PharmacyPurchaseController implements Serializable {
             double netValue = p.getQty() * p.getRate();
             p.setNetValue(0 - netValue);
             tot += p.getNetValue();
-            saleValue += (p.getPharmaceuticalBillItem().getQtyInUnit() + p.getPharmaceuticalBillItem().getFreeQtyInUnit()) * p.getPharmaceuticalBillItem().getRetailRate() ;
+            saleValue += (p.getPharmaceuticalBillItem().getQtyInUnit() + p.getPharmaceuticalBillItem().getFreeQtyInUnit()) * p.getPharmaceuticalBillItem().getRetailRate();
         }
         getBill().setTotal(tot);
         getBill().setNetTotal(tot);
@@ -779,7 +800,14 @@ public class PharmacyPurchaseController implements Serializable {
     public void setBillListWithTotals(BillListWithTotals billListWithTotals) {
         this.billListWithTotals = billListWithTotals;
     }
-    
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
     
 
 }

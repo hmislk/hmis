@@ -7,6 +7,8 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
@@ -51,6 +53,8 @@ public class AmpController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private AmpFacade ejbFacade;
     List<Amp> selectedItems;
@@ -74,6 +78,10 @@ public class AmpController implements Serializable {
     ItemsDistributorsController itemDistributorsController;
 
     public void fillItemsForItemSupplierPrices() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         List<Amp> amps = getLongCodeItems();
         itemSupplierPrices = new ArrayList<>();
         for (Amp a : amps) {
@@ -92,9 +100,15 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public void fillPricesForItemSupplierPrices() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
 //        List<Amp> amps = getLongCodeItems();
 //        itemSupplierPrices = new ArrayList<>();
 //        for (Amp a : amps) {
@@ -111,12 +125,20 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Prices For Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public void fillSuppliersForItemSupplierPrices() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Suppliers For Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public List<Amp> getListToRemove() {
@@ -197,6 +219,10 @@ public class AmpController implements Serializable {
     }
 
     public void createItemList() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         Map m = new HashMap();
         m.put("dep", DepartmentType.Store);
         String sql = "select c from Amp c "
@@ -206,6 +232,8 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findBySQL(sql, m);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
     }
 
     public void createItemListPharmacy() {
@@ -316,11 +344,10 @@ public class AmpController implements Serializable {
         return ampList;
     }
 
-    
-    public void prepareAddNewVmp(){
+    public void prepareAddNewVmp() {
         addingVtmInVmp = new VtmsVmps();
     }
-    
+
     public List<Amp> completeAmpByCode(String qry) {
 
         Map m = new HashMap();
@@ -458,9 +485,6 @@ public class AmpController implements Serializable {
         }
 
     }
-    
-               
-    
 
     public void saveSelected() {
         if (errorCheck()) {
@@ -486,7 +510,7 @@ public class AmpController implements Serializable {
         if (current.getName() == null || current.getName().equals("")) {
             current.setName(createAmpName());
         }
-        
+
         current.setDepartmentType(DepartmentType.Pharmacy);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -655,10 +679,6 @@ public class AmpController implements Serializable {
         this.itemSupplierPrices = itemSupplierPrices;
     }
 
-   
-
-    
-    
     /**
      *
      */
@@ -749,4 +769,13 @@ public class AmpController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

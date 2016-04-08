@@ -692,6 +692,8 @@ public class BillController implements Serializable {
     }
 
     public void getPharmacySaleBills() {
+        Date startTime = new Date();
+        
         BillType[] billTypes;
         if (billType == null) {
             billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
@@ -729,6 +731,8 @@ public class BillController implements Serializable {
         if (r.getGrossTotal() != null) {
             grosTotal = r.getGrossTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
     }
 
     public Double getGrosTotal() {
@@ -740,6 +744,8 @@ public class BillController implements Serializable {
     }
 
     public void getPharamacyWholeSaleCreditBills() {
+        Date startTime = new Date();
+        
         BillType[] billTypes = {BillType.PharmacyWholeSale};
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
@@ -747,24 +753,34 @@ public class BillController implements Serializable {
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
     }
 
     public void getPharmacyBills() {
+        Date startTime = new Date();
+        
         BillType[] billTypes = {BillType.PharmacySale};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
     }
 
     public void getPharmacyWholeBills() {
+        Date startTime = new Date();
+        
         BillType[] billTypes = {BillType.PharmacySale};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml)");
     }
 
     public BillEjb getBillEjb() {
@@ -1257,7 +1273,7 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (!sessionController.getUserPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
             if (getNewPatient().getPerson().getPhone() == null ) {
                 UtilityController.addErrorMessage("Please Insert a Phone Number");
                 return true;
