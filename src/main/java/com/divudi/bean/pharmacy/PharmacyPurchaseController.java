@@ -116,24 +116,38 @@ public class PharmacyPurchaseController implements Serializable {
     BillListWithTotals billListWithTotals;
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnReturn, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Fill All)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
         BillType[] bts = new BillType[]{BillType.PharmacyPurchaseBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Purchase Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
+        Date startTime = new Date();
+        
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(GRN Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void fillItemVicePurchaseAndGoodReceive() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         BillItem bi = new BillItem();
@@ -168,6 +182,8 @@ public class PharmacyPurchaseController implements Serializable {
         List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m);
 
         rows = lsts;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Item-vise purchase /good receive(/faces/pharmacy/report_item_vice_purchase_and_good_receive.xhtml)");
     }
 
     public void calculatePurchaseRateAndWholesaleRateFromRetailRate() {
