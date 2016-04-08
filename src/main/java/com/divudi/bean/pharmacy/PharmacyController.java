@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -67,6 +68,7 @@ public class PharmacyController implements Serializable {
     /////
     @Inject
     private SessionController sessionController;
+    @Inject CommonController commonController;
     @Inject
     AmpController ampController;
     //////////
@@ -162,6 +164,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void createAllItemTransactionSummery() {
+        Date startTime = new Date();
+        
         hasInward = false;
         hasIssue = false;
         hasPurchase = false;
@@ -313,6 +317,9 @@ public class PharmacyController implements Serializable {
         }
         
         Collections.sort(itemTransactionSummeryRows);
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/All item transaction summery(/faces/pharmacy/raport_all_item_transaction_summery.xhtml)");
 
     }
 
@@ -891,6 +898,8 @@ public class PharmacyController implements Serializable {
     private ItemController itemController;
 
     public void averageByDate() {
+        Date startTime = new Date();
+        
         Calendar frm = Calendar.getInstance();
         frm.setTime(fromDate);
         Calendar to = Calendar.getInstance();
@@ -903,6 +912,8 @@ public class PharmacyController implements Serializable {
         }
 
         createStockAverage(dayCount);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Date)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
 
     }
 
@@ -923,6 +934,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void averageByMonth() {
+        Date startTime = new Date();
+        
         Calendar frm = Calendar.getInstance();
         frm.setTime(fromDate);
         Calendar to = Calendar.getInstance();
@@ -935,6 +948,8 @@ public class PharmacyController implements Serializable {
         }
 
         createStockAverage(Math.abs(monthCount));
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Sale Reports/Institution Item moment(Average By Month)(/faces/pharmacy/pharmacy_report_institution_movement.xhtml)");
 
     }
 
@@ -1352,6 +1367,8 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillDetails() {
+        Date startTime = new Date();
+        
         createInstitutionSale();
         createInstitutionBhtIssue();
         createInstitutionStock();
@@ -1362,6 +1379,9 @@ public class PharmacyController implements Serializable {
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
+        
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Transaction reports/Item transaction details(/faces/pharmacy/pharmacy_item_transactions.xhtml)");
     }
 
     public void createTable() {
@@ -1892,4 +1912,12 @@ public class PharmacyController implements Serializable {
         this.hasTransferIn = hasTransferIn;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

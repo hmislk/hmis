@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyErrorCheckingEjb;
@@ -22,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -34,6 +36,8 @@ public class PharmacyErrorChecking implements Serializable {
 
     @EJB
     PharmacyErrorCheckingEjb ejb;
+    @Inject
+            CommonController commonController;
 
     List<BillItem> billItems;
     Date fromDate;
@@ -61,8 +65,14 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public void listPharmacyMovement() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/error detection(/faces/pharmacy/pharmacy_error_checking.xhtml)");
     }
 
     public void listPharmacyMovementByDateRange() {
@@ -70,7 +80,11 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public void listPharmacyMovementByDateRangeOnlyStockChange() {
+        Date startTime = new Date();
+        
         billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/ error detection by date(/faces/pharmacy/pharmacy_error_checking_date.xhtml)");
     }
 
     public void listPharmacyMovementNew() {
@@ -191,7 +205,7 @@ public class PharmacyErrorChecking implements Serializable {
                     }
                     break;
                 default:
-                    //System.err.println("Default  " + bi.getBill().getBillType());
+                //System.err.println("Default  " + bi.getBill().getBillType());
                 //System.err.println("Default  " + bi.getBill().getClass());
                 //System.err.println("Default  " + bi.getQty());
 
@@ -460,4 +474,13 @@ public class PharmacyErrorChecking implements Serializable {
         this.pharmacyBean = pharmacyBean;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
 import com.divudi.entity.Category;
@@ -12,11 +13,13 @@ import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -26,6 +29,9 @@ import javax.inject.Named;
 @Named("pharmacyUpdateBulkController")
 @SessionScoped
 public class PharmacyUpdateBulkController implements Serializable {
+
+    @Inject
+    CommonController commonController;
     
     @EJB
     AmpFacade ampFacade;
@@ -35,23 +41,23 @@ public class PharmacyUpdateBulkController implements Serializable {
 
     public PharmacyUpdateBulkController() {
     }
-    
-    public void calerAll(){
-        amps=new ArrayList<>();
-        category=null;
-        updateCategory=null;
+
+    public void calerAll() {
+        amps = new ArrayList<>();
+        category = null;
+        updateCategory = null;
     }
 
     public void fillPharmacyItems() {
-        
-        if (category==null) {
+
+        if (category == null) {
             UtilityController.addErrorMessage("Select Category....");
             return;
         }
-        
+
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select c from Amp c where "
                 + " c.retired=false and"
                 + " (c.departmentType is null"
@@ -61,15 +67,18 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         m.put("dep", DepartmentType.Store);
         m.put("cat", category);
-        
+
         amps = getAmpFacade().findBySQL(sql, m);
     }
-    
+
     public void fillPharmacyDiscountDisAllowedItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         
         String sql;
         Map m = new HashMap();
-        
+
         sql = "select c from Amp c where "
                 + " c.retired=false "
                 + " and (c.departmentType is null or c.departmentType!=:dep) "
@@ -77,28 +86,29 @@ public class PharmacyUpdateBulkController implements Serializable {
                 + " order by c.name ";
 
         m.put("dep", DepartmentType.Store);
-        
+
         amps = getAmpFacade().findBySQL(sql, m);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk discount allowed(/faces/pharmacy/pharmacy_update_discount_allowed_bulk.xhtml)");
     }
-    
-    public void updatePharmacyItemCategory(){
-        if(amps==null || amps.isEmpty()){
+
+    public void updatePharmacyItemCategory() {
+        if (amps == null || amps.isEmpty()) {
             UtilityController.addErrorMessage("Nothing To Update.");
             return;
         }
-        
-        if(updateCategory==null){
+
+        if (updateCategory == null) {
             UtilityController.addErrorMessage("Select Update Category...");
             return;
         }
-        
-        if(category.equals(updateCategory)){
+
+        if (category.equals(updateCategory)) {
             UtilityController.addErrorMessage("Nothing To Update.Same Category...");
             return;
         }
-        
+
         //System.out.println("Size = " + amps.size());
-        
         for (Amp a : amps) {
             //System.out.println("**********************************");
             //System.out.println("Name = " + a.getName());
@@ -108,19 +118,18 @@ public class PharmacyUpdateBulkController implements Serializable {
             //System.out.println("Categery Name After = " + a.getCategory().getName());
             //System.out.println("**********************************");
         }
-        
+
         UtilityController.addSuccessMessage("Updated...");
-        
+
     }
-    
-    public void updatePharmacyItemDiscountAllowed(){
-        if(amps==null || amps.isEmpty()){
+
+    public void updatePharmacyItemDiscountAllowed() {
+        if (amps == null || amps.isEmpty()) {
             UtilityController.addErrorMessage("Nothing To Update.");
             return;
         }
-        
+
         //System.out.println("Size = " + amps.size());
-        
         for (Amp a : amps) {
             //System.out.println("**********************************");
             //System.out.println("Name = " + a.getName());
@@ -130,9 +139,9 @@ public class PharmacyUpdateBulkController implements Serializable {
             //System.out.println("Discount Allowd After = " + a.getDiscountAllowed());
             //System.out.println("**********************************");
         }
-        
+
         UtilityController.addSuccessMessage("Updated...");
-        
+
     }
 
     public AmpFacade getAmpFacade() {
@@ -166,5 +175,13 @@ public class PharmacyUpdateBulkController implements Serializable {
     public void setUpdateCategory(Category updateCategory) {
         this.updateCategory = updateCategory;
     }
-    
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

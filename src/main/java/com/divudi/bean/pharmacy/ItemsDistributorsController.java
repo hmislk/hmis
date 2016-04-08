@@ -7,6 +7,8 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -54,6 +56,8 @@ public class ItemsDistributorsController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    CommonController commonController;
+    @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
     private List<ItemsDistributors> items = null;
@@ -91,14 +95,14 @@ public class ItemsDistributorsController implements Serializable {
             return false;
         }
     }
-    
+
     public Institution getDistributor(Item i) {
         String sql = "Select i from ItemsDistributors i where i.retired=false"
-                + " and i.item=:item" +
-                " order by i.id desc";
-        Map m =new HashMap();
+                + " and i.item=:item"
+                + " order by i.id desc";
+        Map m = new HashMap();
         m.put("item", i);
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql,m);
+        ItemsDistributors tmp = getFacade().findFirstBySQL(sql, m);
         if (tmp != null) {
             return tmp.getInstitution();
         } else {
@@ -245,6 +249,10 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void createItemDistributorTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         searchItems = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -275,6 +283,8 @@ public class ItemsDistributorsController implements Serializable {
         sql += " order by b.institution.name,b.item.name ";
 
         searchItems = getFacade().findBySQL(sql, tmp);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Check enterd data/Item distributor(/faces/pharmacy/pharmacy_item_by_distributor.xhtml)");
 
     }
 
@@ -488,4 +498,13 @@ public class ItemsDistributorsController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }
