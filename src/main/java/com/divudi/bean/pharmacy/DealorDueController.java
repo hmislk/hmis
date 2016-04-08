@@ -134,7 +134,7 @@ public class DealorDueController implements Serializable {
         List<BillType> billTypesListReturn = Arrays.asList(billTypesArrayReturn);
         fillIDealorDue(billTypesListBilled, billTypesListReturn);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Pharmacy Due)(/faces/dealorPayment/dealor_due.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Dealer due search(Process Pharmacy Due)(/faces/dealorPayment/dealor_due.xhtml )");
     }
 
     public void fillStoreDue() {

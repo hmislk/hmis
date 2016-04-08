@@ -127,6 +127,10 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settleSurgeryBhtIssue() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBatchBill() == null) {
             return;
         }
@@ -144,6 +148,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/BHT issue/pharmacy issue/Pharmacy BHT issue(/faces/theater/inward_bill_surgery_issue.xhtml)");
 
     }
 
@@ -532,8 +538,8 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
- 
-    commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
     }
 
     public void settleStoreBhtIssue() {
@@ -1074,5 +1080,5 @@ public class PharmacySaleBhtController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
 }

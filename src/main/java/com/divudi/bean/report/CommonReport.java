@@ -2869,6 +2869,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createGrnDetailTableStore() {
+        Date startTime = new Date();
+        
         recreteModal();
 
         grnBilled = new BillsTotals();
@@ -2908,6 +2910,8 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
     }
 
 //    public void createGrnDetailTableStore() {
@@ -3112,6 +3116,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createPurchaseDetailTableStore() {
+        Date startTime = new Date();
+        
         recreteModal();
 
         purchaseBilled = new BillsTotals();
@@ -3143,7 +3149,11 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Purchase/Purchase summery(/faces/store/store_report_purchase_detail.xhtml)");
     }
+    
+    
 
 //    public void createPurchaseDetailTableStore() {
 //        recreteModal();
@@ -3229,6 +3239,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createGrnDetailTableByDealorStore() {
+        Date startTime = new Date();
+        
         recreateList();
 
         grnBilled = new BillsTotals();
@@ -3260,6 +3272,8 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
+        
+         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/store/store_report_grn_detail_by_supplier.xhtml)");
     }
 
 //    public void createGrnDetailTableByDealorStore() {

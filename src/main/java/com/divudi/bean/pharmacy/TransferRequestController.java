@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -48,6 +49,8 @@ public class TransferRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -71,11 +74,18 @@ public class TransferRequestController implements Serializable {
     private boolean printPreview;
 
     public void recreate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         bill = null;
         currentBillItem = null;
         dealor = null;
         billItems = null;
         printPreview = false;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(New Bill)(/faces/theater/theater_transfer_request.xhtml)");
+        
     }
 
     private boolean checkItems(Item item) {
@@ -119,10 +129,10 @@ public class TransferRequestController implements Serializable {
 
     @EJB
     StockFacade stockFacade;
-    
+
     public void addAllItem() {
 
-        if(getBill().getToDepartment() ==null){
+        if (getBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Dept ?");
             return;
         }
@@ -130,8 +140,8 @@ public class TransferRequestController implements Serializable {
         Map m = new HashMap();
         m.put("dept", getBill().getToDepartment());
         List<Stock> allAvailableStocks = stockFacade.findBySQL(jpql, m);
-        for(Stock s : allAvailableStocks){
-            currentBillItem =null;
+        for (Stock s : allAvailableStocks) {
+            currentBillItem = null;
             getCurrentBillItem().setItem(s.getItemBatch().getItem());
             getCurrentBillItem().setTmpQty(s.getStock());
             addItem();
@@ -150,7 +160,7 @@ public class TransferRequestController implements Serializable {
 
         currentBillItem = null;
     }
-    
+
     public void addItem() {
 
         if (errorCheck()) {
@@ -192,6 +202,10 @@ public class TransferRequestController implements Serializable {
     }
 
     public void request() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBill().getToDepartment() == null) {
             UtilityController.addErrorMessage("Select Requested Department");
             return;
@@ -247,6 +261,8 @@ public class TransferRequestController implements Serializable {
         UtilityController.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Transfer/request(/faces/theater/theater_transfer_request.xhtml)");
 
     }
 
@@ -406,4 +422,13 @@ public class TransferRequestController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

@@ -6,6 +6,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
@@ -49,7 +50,9 @@ public class StoreReportsTransfer implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    
+    @Inject
+    CommonController commonController;
+
     Department fromDepartment;
     Department toDepartment;
     Department department;
@@ -221,6 +224,8 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersReceive() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -251,9 +256,13 @@ public class StoreReportsTransfer implements Serializable {
             purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill item(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
 
@@ -288,9 +297,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
     }
 
     public void fillDepartmentUnitIssueByBillItemStore() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
 
@@ -325,9 +338,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetValue();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_report_unit_issue_bill_item.xhtml)");
     }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -350,6 +367,8 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit by department(/faces/store/store_report_unit_issue_department.xhtml)");
     }
 
     public ArrayList<DepartmentBillRow> getDrows() {
@@ -361,9 +380,11 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public void createDepartmentIssueStore() {
+        Date startTime = new Date();
+        
         listz = new ArrayList<>();
 
-        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(),getSessionController().getDepartment());
+        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getSessionController().getDepartment());
         if (list == null) {
             return;
         }
@@ -383,6 +404,8 @@ public class StoreReportsTransfer implements Serializable {
             listz.add(newD);
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by department(summery)(/faces/store/store_report_unit_issue_department_by_departmaent.xhtm)");
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
     }
@@ -420,6 +443,8 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
+        Date startTime = new Date();
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -534,9 +559,13 @@ public class StoreReportsTransfer implements Serializable {
         }
 
         purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public void fillDepartmentTransfersIssueByBill() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -575,9 +604,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer issue by bill (/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -610,6 +643,8 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 
     /**
