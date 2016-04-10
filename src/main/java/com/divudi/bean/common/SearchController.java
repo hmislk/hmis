@@ -5036,6 +5036,8 @@ public class SearchController implements Serializable {
     }
 
     public void channelPaymentBills() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -5093,6 +5095,8 @@ public class SearchController implements Serializable {
         m.put("class", BilledBill.class);
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment done search(/faces/channel/channel_payment_bill_search.xhtml)");
 
     }
 
@@ -5136,6 +5140,8 @@ public class SearchController implements Serializable {
     }
 
     public void createChannelDueBillFee() {
+        Date startTime = new Date();
+        
         selectedServiceSession = null;
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -5194,6 +5200,8 @@ public class SearchController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
         billFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment due search(/faces/channel/channel_payments_due_search.xhtml)");
 
     }
 
