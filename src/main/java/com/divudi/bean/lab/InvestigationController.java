@@ -9,6 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -65,6 +66,8 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -250,13 +253,24 @@ public class InvestigationController implements Serializable {
     }
 
     public String listAllIxs() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql;
         sql = "Select i from Investigation i where i.retired=false order by i.name";
         allIxs = getFacade().findBySQL(sql);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Lists/Lab investigation list(/faces/lab/lab_investigation_list.xhtml)");
         return "/lab/lab_investigation_list";
+
     }
 
     public void prepareSelectedReportSamples() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         System.out.println("prepareSelectedReportSamples");
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
@@ -270,6 +284,8 @@ public class InvestigationController implements Serializable {
                 ixWithoutSamples.add(ix);
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Setup/report samples(/faces/lab/report_samples.xhtml)");
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -614,7 +630,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
     }
-    
+
     public void markSelectedActive() {
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Active");
@@ -625,11 +641,11 @@ public class InvestigationController implements Serializable {
             i.setInactive(false);
             getFacade().edit(i);
         }
-        
+
         UtilityController.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
     }
-    
+
     public void markSelectedInactive() {
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Inactive");
@@ -640,12 +656,10 @@ public class InvestigationController implements Serializable {
             i.setInactive(true);
             getFacade().edit(i);
         }
-        
+
         UtilityController.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
     }
-    
-    
 
     public Institution getInstitution() {
         return institution;
@@ -805,6 +819,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void createInvestigationWithDynamicLables() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         investigationWithInvestigationItemses = new ArrayList<>();
         for (Investigation in : fetchInvestigations()) {
             InvestigationWithInvestigationItems items = new InvestigationWithInvestigationItems();
@@ -816,6 +834,8 @@ public class InvestigationController implements Serializable {
             }
             investigationWithInvestigationItemses.add(items);
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1177,4 +1197,13 @@ public class InvestigationController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

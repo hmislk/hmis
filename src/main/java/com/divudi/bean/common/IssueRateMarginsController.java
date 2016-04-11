@@ -91,6 +91,10 @@ public class IssueRateMarginsController implements Serializable {
     DepartmentController departmentController;
 
     public void addAllDep() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (fromDepartment == null) {
             return;
         }
@@ -108,6 +112,8 @@ public class IssueRateMarginsController implements Serializable {
         }
 
         createMargins();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Unit issue margin(Add All)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public void onEdit(IssueRateMargins tmp) {
@@ -189,7 +195,7 @@ public class IssueRateMarginsController implements Serializable {
                 + " where m.retired=false ";
 
         items = ejbFacade.findBySQL(sql);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
     }
 
@@ -326,5 +332,4 @@ public class IssueRateMarginsController implements Serializable {
         this.commonController = commonController;
     }
 
-    
 }

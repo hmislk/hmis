@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -84,6 +85,8 @@ public class SurgeryBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     InwardTimedItemController inwardTimedItemController;
+    @Inject
+    CommonController commonController;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -114,7 +117,7 @@ public class SurgeryBillController implements Serializable {
         updateBill(bf.getBill());
         getBillBean().updateBatchBill(getBatchBill());
     }
-    
+
     public void removeTimeService(PatientItem patientItem) {
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
@@ -234,7 +237,7 @@ public class SurgeryBillController implements Serializable {
         /////////////
         timedEncounterComponents = null;
         departmentBillItems = null;
-        pharmacyIssues=null;
+        pharmacyIssues = null;
 
     }
 
@@ -421,6 +424,10 @@ public class SurgeryBillController implements Serializable {
     }
 
     public void save() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (generalChecking()) {
             return;
         }
@@ -437,6 +444,8 @@ public class SurgeryBillController implements Serializable {
         UtilityController.addSuccessMessage("Surgery Detail Successfull Updated");
 
         makeNull();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Add surgories/Save Surgery Detail(/faces/theater/inward_bill_surgery.xhtml)");
     }
 
     /**
@@ -757,4 +766,14 @@ public class SurgeryBillController implements Serializable {
         this.pharmacyIssues = pharmacyIssues;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }
+
