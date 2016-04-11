@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.hr.StaffController;
@@ -141,6 +142,8 @@ public class ChannelReportController implements Serializable {
     private ChannelBean channelBean;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     StaffController staffController;
     @Inject
@@ -352,6 +355,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void fillIncomeWithAgentBookings() {
+        Date startTime = new Date();
+
         String j;
         Map m = new HashMap();
 
@@ -477,6 +482,8 @@ public class ChannelReportController implements Serializable {
         rowBundle = new ChannelReportColumnModelBundle();
         rowBundle.setBundle(nr);
         rowBundle.setRows(rows);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Reports/Income report/Income with agent report(/faces/channel/income_with_agent_bookings.xhtml)");
 
     }
 
@@ -871,6 +878,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createBillSession_report_1() {
+        Date startTime = new Date();
+
         billSessionsBilled = createBillSessionQuery(new BilledBill(), PaymentEnum.Paid, DateEnum.AppointmentDate, getReportKeyWord());
         billSessionsCancelled = createBillSessionQuery(new CancelledBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
         billSessionsReturn = createBillSessionQuery(new RefundBill(), PaymentEnum.Paid, DateEnum.CreatedDate, getReportKeyWord());
@@ -981,6 +990,8 @@ public class ChannelReportController implements Serializable {
             totalRefund += ls.getValue3();
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report(/faces/channel/channel_report_bill_session_1.xhtml)");
+
     }
 
     public void updateChannel() {
@@ -1017,6 +1028,7 @@ public class ChannelReportController implements Serializable {
     List<Bill> refundBills;
 
     public void channelBillClassList() {
+        Date startTime = new Date();
 
         billedBills = new ArrayList<>();
         cancelBills = new ArrayList<>();
@@ -1034,10 +1046,14 @@ public class ChannelReportController implements Serializable {
         totalRefundDoc = calTotalDoc(refundBills);
         netTotal = totalBilled + totalCancel + totalRefund;
         netTotalDoc = totalBilledDoc + totalCancelDoc + totalRefundDoc;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill detail summery(/faces/channel/channel_report_by_bill_class.xhtml)");
 
     }
 
     public void channelBillClassListByPaymentMethord() {
+        Date startTime = new Date();
+        
         if (webUser == null) {
             JsfUtil.addErrorMessage("Select User......");
             return;
@@ -1086,6 +1102,8 @@ public class ChannelReportController implements Serializable {
         totalRefundDoc = calTotalDoc(refundBills);
         netTotal = totalBilled + totalCancel + totalRefund;
         netTotalDoc = totalBilledDoc + totalCancelDoc + totalRefundDoc;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/All bill detail by paymnet method(/faces/channel/channel_report_by_bill_class_by_user_by_payment_methord.xhtml)");
 
     }
 
@@ -1181,6 +1199,8 @@ public class ChannelReportController implements Serializable {
     double departmentRefundBillTotal;
 
     public void createDepartmentBills() {
+        Date startTime = new Date();
+        
         deps = getDepartments();
         depBills = new ArrayList<>();
         for (Department d : deps) {
@@ -1194,6 +1214,8 @@ public class ChannelReportController implements Serializable {
 
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/All department bill summery(/faces/channel/channel_report_department_wise_bills.xhtml)");
 
     }
 
@@ -1741,6 +1763,7 @@ public class ChannelReportController implements Serializable {
     List<FeetypeFee> feetypeFees;
 
     public void createFeeTypeBillFeeList() {
+        Date startTime = new Date();
 
         feetypeFees = new ArrayList<>();
 
@@ -1769,6 +1792,8 @@ public class ChannelReportController implements Serializable {
         billedBillTotal = calFeeTotal(new BilledBill());
         canceledBillTotl = calFeeTotal(new CancelledBill());
         refundBillTotal = calFeeTotal(new RefundBill());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill Fees(/faces/channel/channel_report_by_fee.xhtml)");
     }
 
     public double calFeeTypeTotal(List<BillFee> billFees) {
@@ -2028,6 +2053,8 @@ public class ChannelReportController implements Serializable {
     List<BillFee> listRefundBillFees;
 
     public void getUsersWithFeeType() {
+        Date startTime = new Date();
+
         if (getFeeType() == null) {
             JsfUtil.addErrorMessage("Please Insert Fee Type");
         } else {
@@ -2036,14 +2063,22 @@ public class ChannelReportController implements Serializable {
             listRefundBillFees = getBillFeeWithFeeTypes(new RefundBill(), getFeeType());
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill fees with fee type(/faces/channel/report_cashier_summery_with_fee-type.xhtml)");
+
     }
 
     public void createChannelDoctorPaymentTable() {
+        Date startTime = new Date();
         createChannelDoctorPayment(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Doctor payment report(/faces/channel/channel_payment_report.xhtml)");
     }
 
     public void createChannelDoctorPaymentTableBySession() {
+        Date startTime = new Date();
         createChannelDoctorPayment(true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Doctor payment report by session(/faces/channel/channel_payment_report_by_session.xhtml)");
     }
 
     public void createChannelDoctorPayment(boolean bySession) {
@@ -2083,6 +2118,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createDoctorPaymentBySession() {
+        Date startTime = new Date();
+        
         System.out.println("create doctor payment");
         doctorPaymentSummeryRows = new ArrayList<>();
 
@@ -2112,6 +2149,8 @@ public class ChannelReportController implements Serializable {
             }
 
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Doctor payment report by session date(/faces/channel/channel_payment_report_by_date.xhtml)");
     }
 
     public List<DoctorPaymentSummeryRowSub> getSessionTotal(List<BillType> bts, BillType bt, Staff staff) {
@@ -2281,6 +2320,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createUnpaidDoctorVoucher() {
+        Date startTime = new Date();
+        
         System.out.println("create doctor un-paid");
         doctorPaymentSummeryRows = new ArrayList<>();
 
@@ -2313,6 +2354,8 @@ public class ChannelReportController implements Serializable {
                 doctorPaymentSummeryRows.add(doctorPaymentSummeryRow);
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Doctor un-paid report(/faces/channel/channel_unpaid_report.xhtml)");
     }
 
     public List<DoctorPaymentSummeryRowSub> getDoctorUnPaidSummeryRowSubs(Date d, List<BillType> bts) {
@@ -2576,8 +2619,11 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAbsentPatientTable() {
+        Date startTime = new Date();
         channelBills = new ArrayList<>();
         channelBills.addAll(getChannelBillsAbsentPatient(staff));
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Absent report/patient Absent report(/faces/channel/channel_report_absent_patients.xhtml)");
     }
 
     public List<Bill> getChannelBillsAbsentPatient(Staff stf) {
@@ -2699,11 +2745,17 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAllChannelBillReportByCreatedDate() {
+        Date startTime = new Date();
         createAllChannelBillReport(true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/All channel bills(Process Created Date)(/faces/channel/channel_report_all_bills.xhtml)");
     }
 
     public void createAllChannelBillReportBySessionDate() {
+        Date startTime = new Date();
         createAllChannelBillReport(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/All channel bills(Process Session Date)(/faces/channel/channel_report_all_bills.xhtml)");
     }
 
     public void createAllChannelBillReport(boolean createdDate) {
@@ -2777,7 +2829,10 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createConsultantCountTableByCreatedDate() {
+        Date startTime = new Date();
         createConsultantCountTable(false);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Count/Count report by doctor/(/faces/channel/channel_report_by_consultant.xhtml)");
     }
 
     public void createConsultantCountTableBySessionDate() {
@@ -2852,19 +2907,31 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createChannelPatientCountByCreatedDate() {
+        Date startTime = new Date();
+
         createChannelPatientCount(false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Created Date)(/faces/channel/channel_report_patient_count.xhtml)");
     }
 
     public void createChannelPatientCountBySessionDate() {
+        Date startTime = new Date();
         createChannelPatientCount(true);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Session Date)(/faces/channel/channel_report_patient_count.xhtml)");
     }
 
     public void createChannelHospitalIncomeByCreatedDate() {
+        Date startTime = new Date();
         createChannelHospitalIncome(false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Created Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
     }
 
     public void createChannelHospitalIncomeBySessionDate() {
+        Date startTime = new Date();
         createChannelHospitalIncome(true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Session Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
     }
 
     public void createChannelPatientCount(boolean sessionDate) {
@@ -3147,11 +3214,19 @@ public class ChannelReportController implements Serializable {
     }
 
     public void channelBillListCreatedDate() {
+        Date startTime = new Date();
+
         channelBillList(true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill summery(Process Created Date)(/faces/channel/channel_report_all_booking.xhtml)");
     }
 
     public void channelBillListSessionDate() {
+        Date startTime = new Date();
+
         channelBillList(false);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill summery(Process Session Date)(/faces/channel/channel_report_all_booking.xhtml)");
+
     }
 
     public void channelBillList(boolean createdDate) {
@@ -3178,6 +3253,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createChannelFees() {
+        Date startTime = new Date();
+
         valueList = new ArrayList<>();
         FeeType[] fts = {FeeType.Staff, FeeType.OwnInstitution, FeeType.OtherInstitution, FeeType.Service};
 
@@ -3187,6 +3264,7 @@ public class ChannelReportController implements Serializable {
         calTotals(valueList);
 
         //System.out.println("***Done***");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Income buy feetype bu session date(/faces/channel/channel_report_by_fee_1.xhtml)");
     }
 
     public void setFeeTotals(List<String1Value3> s1v3s, FeeType feeType) {
@@ -3713,6 +3791,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createTotalDoctorAll() {
+        Date startTime = new Date();
 
         channelDoctors = new ArrayList<ChannelDoctor>();
         HashMap m = new HashMap();
@@ -3748,6 +3827,8 @@ public class ChannelReportController implements Serializable {
         }
 
         calTotal();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/BTT(/faces/channel/channel_doctor_view_today_all.xhtml)");
 
     }
 
@@ -3948,13 +4029,18 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAgentHistoryTable() {
+        Date startTime = new Date();
         agentHistorys = new ArrayList<>();
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, null);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent History(/faces/channel/channel_report_agent_history.xhtml)");
 
     }
 
     public void createAgentBookings() {
+        Date startTime = new Date();
+        
         HashMap m = new HashMap();
 
         String sql = " select b from Bill b "
@@ -3994,6 +4080,8 @@ public class ChannelReportController implements Serializable {
         }
         netTotal = calTotal(channelBills);
         netTotalDoc = calTotalDoc(channelBills);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/All agent booking detail list(/faces/channel/channel_report_agent_channels.xhtml)");
 
     }
 
@@ -4007,6 +4095,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAgentHistorySubTable() {
+        Date startTime = new Date();
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
@@ -4036,6 +4125,7 @@ public class ChannelReportController implements Serializable {
             nowDate = cal.getTime();
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent statement(/faces/channel/channel_report_agent_history_1.xhtml)");
     }
 
     public void createCollectingCenterHistorySubTable() {
@@ -5204,6 +5294,14 @@ public class ChannelReportController implements Serializable {
             this.date = date;
         }
 
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }
