@@ -4086,11 +4086,14 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createCollectingCentreHistoryTable() {
+        Date startTime = new Date();
         agentHistorys = new ArrayList<>();
         HistoryType[] hts = {HistoryType.CollectingCentreBalanceUpdateBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreDepositCancel, HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(hts);
 
         agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
 
     }
 
@@ -4129,6 +4132,8 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createCollectingCenterHistorySubTable() {
+        Date startTime = new Date();
+        
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
@@ -4161,6 +4166,7 @@ public class ChannelReportController implements Serializable {
             nowDate = cal.getTime();
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center statements(/faces/reportLab/collecting_center_report_history_1.xhtml)");
     }
 
     public List<AgentHistory> createAgentHistory(Date fd, Date td, Institution i, List<HistoryType> hts) {

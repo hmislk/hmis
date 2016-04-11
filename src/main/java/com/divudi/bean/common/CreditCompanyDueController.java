@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -64,6 +65,8 @@ public class CreditCompanyDueController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
+    @Inject
+    CommonController commonController;
 
     double finalTotal;
     double finalPaidTotal;
@@ -89,6 +92,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createAgeTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         makeNull();
         System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
@@ -115,6 +122,7 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Due age(/faces/credit/credit_company_opd_due_age.xhtml)");
     }
 
     public void createAgeAccessTable() {
@@ -452,6 +460,8 @@ public class CreditCompanyDueController implements Serializable {
     private CreditBean creditBean;
 
     public void createOpdCreditDue() {
+        Date startTime = new Date();
+
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -467,6 +477,8 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Due search(/faces/credit/credit_company_opd_due.xhtml)");
 
     }
 
@@ -927,6 +939,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setFinalTransPaidTotalPatient(double finalTransPaidTotalPatient) {
         this.finalTransPaidTotalPatient = finalTransPaidTotalPatient;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

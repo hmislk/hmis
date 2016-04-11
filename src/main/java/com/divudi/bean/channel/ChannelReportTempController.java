@@ -543,11 +543,15 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createCollectingCenterPaymentTable() {
+        Date startTime = new Date();
+        
         bills = new ArrayList<>();
         BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
         Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
         bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
         System.out.println("bills.size() = " + bills.size());
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center deposists(/faces/reportLab/report_collecting_center_payment_bill.xhtml)");
 
     }
 
@@ -558,7 +562,11 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createCollectingCenterReferenceBooks() {
+        Date startTime = new Date();
+        
         createAgentReferenceBooks(ReferenceBookEnum.LabBook);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/ Collecting center book report(/faces/reportLab/lab_report_collecting_center_referece_book.xhtml)");
     }
 
     public void createAgentReferenceBooks(ReferenceBookEnum bookEnum) {
@@ -1556,6 +1564,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createCollectingcenterBalanceTable() {
+        Date startTime = new Date();
+        
         String sql;
         HashMap m = new HashMap();
         sql = "select c from Institution c "
@@ -1565,6 +1575,8 @@ public class ChannelReportTempController implements Serializable {
         m.put("typ", InstitutionType.CollectingCentre);
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center current balance(/faces/reportLab/report_collecting_center_balance.xhtml)");
     }
 
     public void createStaffWiseChannelBillTypeCountTable() {
