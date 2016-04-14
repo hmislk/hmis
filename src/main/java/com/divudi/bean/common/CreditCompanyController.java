@@ -34,6 +34,8 @@ public class CreditCompanyController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController; 
     @EJB
     private InstitutionFacade ejbFacade;
     List<Institution> selectedItems;
@@ -126,11 +128,15 @@ public class CreditCompanyController implements Serializable {
     }
 
     public void fillCreditCompany() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         String sql = "select i from Institution i "
                 + "where i.retired=false ";
         institutions = getEjbFacade().findBySQL(sql);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Credit Company/credit card companies(/faces/dataAdmin/credit_companies.xhtml)");
     }
 
     public void setSelectText(String selectText) {
@@ -196,6 +202,15 @@ public class CreditCompanyController implements Serializable {
         }
         return items;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
     /**
      *

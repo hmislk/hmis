@@ -338,6 +338,8 @@ public class CommonReport implements Serializable {
     }
 
     public String displayOutsideBillFees() {
+        Date startTime = new Date();
+        
         String jpql;
         BillFee bf = new BillFee();
 
@@ -354,8 +356,13 @@ public class CommonReport implements Serializable {
         billFees = getBillFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
         totalFee = displayOutsideCalBillFees();
         billTotal = displayOutsideBillFeeBillTotals();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Fees for outside institution(/faces/lab/lab_report_by_outside_institution.xhtml)");
         return "/lab/lab_report_by_outside_institution";
+        
     }
+    
+    
 
     public BillsTotals getChannelCancells() {
         if (channelCancells == null) {
@@ -2141,6 +2148,8 @@ public class CommonReport implements Serializable {
     }
 
     public void createTableByBillType() {
+        Date startTime = new Date();
+
         billedBills = null;
         cancellededBills = null;
         refundedBills = null;
@@ -2166,7 +2175,6 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCredit(calValue(new RefundBill(), billType, PaymentMethod.Credit));
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
 
-        Date startTime = new Date();
         commonController.printReportDetails(fromDate, toDate, startTime, " Summery by bill type(/reportCashier/report_cashier_detailed_user_by_billType.xhtml)");
 
     }
@@ -2201,7 +2209,7 @@ public class CommonReport implements Serializable {
 
     public void fetchPharmacySummeryAll() {
         Date startTime = new Date();
-        
+
         pharmacyCashBilledBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new BilledBill());
         pharmacyCashCancelBills = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new CancelledBill());
         pharmacyCashReturnbill = getPharmacyBills(PaymentMethod.Cash, BillType.PharmacySale, new RefundBill());
@@ -2235,7 +2243,6 @@ public class CommonReport implements Serializable {
         //pharmacyUnitIssueCancelBillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new CancelledBill());
         //pharmacyUnitIssueReturnbillTotals = getPharmacyBillTotal(BillType.PharmacyIssue, new RefundBill());
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Summery all reports/Pharmacy all report(/faces/pharmacy/pharmacy_report_summery_all.xhtml)");
     }
 
@@ -2415,15 +2422,14 @@ public class CommonReport implements Serializable {
 
         //////////
         createSumAfterCash();
-        
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
 
     }
 
     public void createCashierTableByUser() {
         Date startTime = new Date();
-        
+
         recreteModal();
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
@@ -2746,7 +2752,6 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml or /reportCashier/report_cashier_summery_by_user.xhtml)");
 
     }
@@ -2819,7 +2824,7 @@ public class CommonReport implements Serializable {
 
     public void createGrnDetailTable() {
         Date startTime = new Date();
-        
+
         recreteModal();
 
         grnBilled = new BillsTotals();
@@ -2864,13 +2869,12 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml)");
     }
 
     public void createGrnDetailTableStore() {
         Date startTime = new Date();
-        
+
         recreteModal();
 
         grnBilled = new BillsTotals();
@@ -2910,7 +2914,6 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
         getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
     }
 
@@ -3028,7 +3031,7 @@ public class CommonReport implements Serializable {
 //    }
     public void createGrnPaymentTable() {
         Date startTime = new Date();
-        
+
         recreteModal();
 
         GrnPaymentBill = new BillsTotals();
@@ -3060,13 +3063,12 @@ public class CommonReport implements Serializable {
         getGrnPaymentCancellReturn().setCash(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Cash, getDepartment()));
         getGrnPaymentCancellReturn().setCredit(calValue(new CancelledBill(), BillType.GrnPaymentReturn, PaymentMethod.Credit, getDepartment()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/GRN Payment summery(/faces/pharmacy/pharmacy_report_grnPayment_detail.xhtml or /faces/pharmacy/pharmacy_report_grnPayment_detail_by_supplier.xhtml)");
     }
 
     public void createPurchaseDetailTable() {
         Date startTime = new Date();
-        
+
         recreteModal();
 
         purchaseBilled = new BillsTotals();
@@ -3111,13 +3113,12 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase summery by supplier(/faces/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml or /faces/pharmacy/pharmacy_report_purchase_detail.xhtml or /faces/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml)");
     }
 
     public void createPurchaseDetailTableStore() {
         Date startTime = new Date();
-        
+
         recreteModal();
 
         purchaseBilled = new BillsTotals();
@@ -3149,11 +3150,8 @@ public class CommonReport implements Serializable {
         getPurchaseReturnCancel().setCash(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Cash, getDepartment()));
         getPurchaseReturnCancel().setCredit(calValue(new CancelledBill(), BillType.PurchaseReturn, PaymentMethod.Credit, getDepartment()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Purchase/Purchase summery(/faces/store/store_report_purchase_detail.xhtml)");
     }
-    
-    
 
 //    public void createPurchaseDetailTableStore() {
 //        recreteModal();
@@ -3190,7 +3188,7 @@ public class CommonReport implements Serializable {
 //    }
     public void createGrnDetailTableByDealor() {
         Date startTime = new Date();
-        
+
         recreateList();
 
         grnBilled = new BillsTotals();
@@ -3234,13 +3232,12 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setSaleCash(calSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setSaleCredit(calSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml)");
     }
 
     public void createGrnDetailTableByDealorStore() {
         Date startTime = new Date();
-        
+
         recreateList();
 
         grnBilled = new BillsTotals();
@@ -3272,8 +3269,7 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setCash(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setCredit(calValue(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
 
-        
-         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/store/store_report_grn_detail_by_supplier.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/store/store_report_grn_detail_by_supplier.xhtml)");
     }
 
 //    public void createGrnDetailTableByDealorStore() {
@@ -3344,6 +3340,8 @@ public class CommonReport implements Serializable {
     }
 
     public void fillInstitutionReferralBills() {
+        Date startTime = new Date();
+        
         //Done By Pasan
 //        String jpql;
 //        Map m = new HashMap();
@@ -3388,9 +3386,12 @@ public class CommonReport implements Serializable {
         m.put("td", toDate);
         referralBills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
 
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Referral Reports/Institution Referral/(/faces/reportInstitution/report_referrals_index.xhtml)");
     }
 
     public void fillInstitutionReferralBillItems() {
+        Date startTime = new Date();
 
         String jpql;
         Map m = new HashMap();
@@ -3414,6 +3415,9 @@ public class CommonReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         referralBillItems = getBillItemFac().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Referral Reports/Institution Referral bill item wise(/faces/reportInstitution/report_referral_institution_detail_by_billItem.xhtml)");
 
     }
 

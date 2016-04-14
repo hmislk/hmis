@@ -229,6 +229,8 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillAdmissionBookOnlyInwardDeleted() {
+        Date startTime = new Date();
+        
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.retired=true "
@@ -243,6 +245,7 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Check deleted data/Dealor BHT List(/faces/dataAdmin/deleted_admission_book.xhtml)");
     }
 
     double total;

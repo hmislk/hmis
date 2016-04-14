@@ -2633,7 +2633,7 @@ public class SearchController implements Serializable {
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         calTotal();
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Payment due search/(/faces/opd_search_professional_payment_due.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Payment due search/(/faces/opd_search_professional_payment_due.xhtml or /faces/reportIncome/opd_professional_payment_due.xhtml)");
     }
 
     public void createDueFeeTableAll() {

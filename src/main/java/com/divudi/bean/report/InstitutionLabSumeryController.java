@@ -581,6 +581,8 @@ public class InstitutionLabSumeryController implements Serializable {
     }
 
     public void createTableCashCreditBills() {
+        Date startTime = new Date();
+        
         if (paymentMethod == null) {
             UtilityController.addErrorMessage("Payment Methord...!");
             return;
@@ -600,6 +602,8 @@ public class InstitutionLabSumeryController implements Serializable {
         //System.out.println("canBills = " + canBills);
         //System.out.println("refBills = " + refBills);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/OPD cash credit bill report(/faces/reportInstitution/report_opd_cash_credit_by_institution.xhtml)");
     }
 
     public PaymentMethod[] getPaymentMethord() {
@@ -852,6 +856,7 @@ public class InstitutionLabSumeryController implements Serializable {
     }
 
     public void createLabBills() {
+        Date startTime = new Date();
 
         if (institution == null) {
             UtilityController.addErrorMessage("Select Institution");
@@ -884,6 +889,9 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("toIns", getInstitution());
 
         labBilleds = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By institution bill count(/faces/reportIncome/report_income_with_credit_by_institution_for_build_bills.xhtml)");
     }
 
 //    public double calPaidTotal(List<Bill> bills) {
