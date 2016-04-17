@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
@@ -47,6 +48,8 @@ public class FingerPrintRecordController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private FingerPrintRecordFacade ejbFacade;
     List<FingerPrintRecord> selectedItems;
@@ -98,11 +101,19 @@ public class FingerPrintRecordController implements Serializable {
     }
 
     public void createFingerPrintRecordTableCreatedAt() {
+        Date startTime = new Date();
+        
         createFingerPrintRecordTable(true);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
     }
 
     public void createFingerPrintRecordTableSiftDate() {
+         Date startTime = new Date();
+        
         createFingerPrintRecordTable(false);
+        
+         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Edit fingure print recode(/faces/hr/hr_staff_finger_edit_search.xhtml)");
     }
 
     public void viewStaffFinger(FingerPrintRecord fpr) {
@@ -401,4 +412,14 @@ public class FingerPrintRecordController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

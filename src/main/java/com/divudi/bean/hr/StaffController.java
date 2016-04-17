@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -81,6 +82,8 @@ public class StaffController implements Serializable {
     HrReportController hrReportController;
     @Inject
     StaffSalaryController staffSalaryController;
+    @Inject
+    CommonController commonController;
     ////
     @EJB
     private StaffEmploymentFacade staffEmploymentFacade;
@@ -306,6 +309,9 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable(Date ssDate) {
+        Date startTime = new Date();
+        Date toDate = null;
+        
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -358,6 +364,8 @@ public class StaffController implements Serializable {
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
         fetchWorkDays(staffWithCode);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff payrol(selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
     }
 
     public void createResignedStaffTable() {
@@ -436,6 +444,10 @@ public class StaffController implements Serializable {
     }
 
     public void createActiveStaffTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -483,6 +495,8 @@ public class StaffController implements Serializable {
         //System.out.println(sql);
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
 
     }
 
@@ -490,7 +504,7 @@ public class StaffController implements Serializable {
         for (Staff s : staffs) {
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             System.out.println("staffSalaryController.getSalaryCycle() = " + staffSalaryController.getSalaryCycle());
-            if (staffSalaryController.getSalaryCycle()!=null) {
+            if (staffSalaryController.getSalaryCycle() != null) {
                 s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
                 s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
 
@@ -987,22 +1001,22 @@ public class StaffController implements Serializable {
             UtilityController.addErrorMessage("Plaese Select Speciality.");
             return;
         }
-        
-        if (current.getPerson().getLastName() == null||current.getPerson().getLastName().isEmpty()) {
+
+        if (current.getPerson().getLastName() == null || current.getPerson().getLastName().isEmpty()) {
             UtilityController.addErrorMessage("Last Name Requied To Save");
             return;
         }
-        
-        if (current.getPerson().getInitials() == null||current.getPerson().getInitials().isEmpty()) {
+
+        if (current.getPerson().getInitials() == null || current.getPerson().getInitials().isEmpty()) {
             UtilityController.addErrorMessage("Initials Requied To Save");
             return;
         }
-        
-        if (current.getPerson().getFullName() == null||current.getPerson().getFullName().isEmpty()) {
+
+        if (current.getPerson().getFullName() == null || current.getPerson().getFullName().isEmpty()) {
             UtilityController.addErrorMessage("Full Name Requied To Save");
             return;
         }
-        
+
         if (current.getPerson().getNameWithInitials() == null) {
             UtilityController.addErrorMessage("Name With Initials Requied To Save");
             return;
@@ -1392,4 +1406,14 @@ public class StaffController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

@@ -8,6 +8,7 @@ import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -88,6 +89,8 @@ public class PracticeBookingController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     private PatientController patientController;
+    @Inject
+    CommonController commonController; 
     ///////////////////
     @EJB
     DoctorFacade doctorFacade;
@@ -331,14 +334,14 @@ public class PracticeBookingController implements Serializable {
         opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
         if (opdVisit == null) {
             newOpdVisit();
-            String tt = "" ;
+            String tt = "";
             SimpleDateFormat sm = new SimpleDateFormat("dd MMMM yyyy");
-            tt= sm.format(new Date());
+            tt = sm.format(new Date());
             tt += "\n\n";
             tt += billSession.getBill().getPatient().getPerson().getNameWithTitle();
-            tt+="\n";
+            tt += "\n";
             tt += billSession.getBill().getPatient().getAge();
-            tt+="\n";
+            tt += "\n";
             opdVisit.setComments(tt);
         }
     }
@@ -567,13 +570,21 @@ public class PracticeBookingController implements Serializable {
     }
 
     public void listCompleteAndToCompleteBillSessions() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         listCompletedBillSessions();
         listToCompleteBillSessions();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/EHR/Queue/(/faces/clinical/clinical_queue.xhtml)");
     }
 
     List<PatientEncounter> encounters;
 
     public void listPatientEncounters() {
+        Date startTime = new Date();
+        
         String sql = "Select pe From PatientEncounter pe "
                 + " where pe.retired=false "
                 + " and pe.patientEncounterType=:t "
@@ -586,6 +597,8 @@ public class PracticeBookingController implements Serializable {
         PatientEncounter pe = new PatientEncounter();
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findBySQL(sql, hh, TemporalType.DATE);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/Daily visits/(/faces/clinical/report_queue.xhtml)");
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -886,6 +899,14 @@ public class PracticeBookingController implements Serializable {
 
     public void setPharmacySaleController(PharmacySaleController pharmacySaleController) {
         this.pharmacySaleController = pharmacySaleController;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }
