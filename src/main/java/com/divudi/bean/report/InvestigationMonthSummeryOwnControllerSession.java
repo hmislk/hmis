@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.lab.InvestigationController;
@@ -60,6 +61,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private SessionController sessionController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    CommonController commonController;
     /**
      * EJBs
      */
@@ -587,6 +590,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createIxCountByInstitutionAndCollectingCentre() {
+        Date startTime = new Date();
+        
         String jpql;
         Map m;
         m = new HashMap();
@@ -625,6 +630,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Investigation counts by institution and collecting centers(/faces/reportLab/ix_count_by_institution_and_collecting_centre.xhtml)");
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
@@ -1508,6 +1516,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
     public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
         this.itemsLab = itemsLab;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

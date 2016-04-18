@@ -542,7 +542,7 @@ public class ChannelBean {
 
         Calendar c = Calendar.getInstance();
         c.setTime(nowDate);
-        c.add(Calendar.MONTH, 1);
+        c.add(Calendar.MONTH, 2);
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;

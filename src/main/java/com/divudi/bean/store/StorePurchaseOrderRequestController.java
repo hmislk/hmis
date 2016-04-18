@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -42,6 +43,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -96,7 +99,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
             UtilityController.addErrorMessage("Please select and item from the list");
             return;
         }
-        
+
         for (BillItem bi : getBillItems()) {
             if (getCurrentBillItem().getItem().equals(bi.getItem())) {
                 UtilityController.addErrorMessage("Already added this item");
@@ -108,8 +111,7 @@ public class StorePurchaseOrderRequestController implements Serializable {
         getCurrentBillItem().getPharmaceuticalBillItem().
                 setPurchaseRateInUnit(getStoreBeen().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getStoreBeen().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        
-        
+
         getBillItems().add(getCurrentBillItem());
 
         calTotal();
@@ -245,6 +247,10 @@ public class StorePurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getCurrentBill().getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please Select Paymntmethod");
             return;
@@ -268,6 +274,8 @@ public class StorePurchaseOrderRequestController implements Serializable {
         UtilityController.addSuccessMessage("Request Succesfully Created");
 
         recreate();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(Request)(/faces/store/store_purhcase_order_request.xhtml)");
 
     }
 
@@ -427,6 +435,14 @@ public class StorePurchaseOrderRequestController implements Serializable {
 
     public void setStoreBeen(StoreBean storeBeen) {
         this.storeBeen = storeBeen;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

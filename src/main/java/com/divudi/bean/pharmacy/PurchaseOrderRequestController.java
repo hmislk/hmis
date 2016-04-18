@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -44,6 +45,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -213,16 +216,26 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void createOrderWithItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getCurrentBill().getToInstitution() == null) {
             UtilityController.addErrorMessage("Please Select Dealor");
 
         }
 
         generateBillComponent();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(Fill with Item)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
     }
 
     public void request() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getCurrentBill().getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please Select Paymntmethod");
             return;
@@ -239,6 +252,8 @@ public class PurchaseOrderRequestController implements Serializable {
         UtilityController.addSuccessMessage("Request Succesfully Created");
 
         recreate();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase Orders(request)(/faces/pharmacy/pharmacy_purhcase_order_request.xhtml)");
 
     }
 
@@ -262,6 +277,7 @@ public class PurchaseOrderRequestController implements Serializable {
     private ItemController itemController;
 
     public void setInsListener() {
+        
         getItemController().setInstituion(getCurrentBill().getToInstitution());
     }
 
@@ -389,6 +405,14 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

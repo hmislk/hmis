@@ -42,6 +42,8 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class PettyCashBillController implements Serializable {
 
+    @Inject
+    CommonController commonController;
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -150,7 +152,7 @@ public class PettyCashBillController implements Serializable {
     }
 
     private String createInvoiceNumberSuffix() {
-        
+
         Calendar c = Calendar.getInstance();
         int y = c.get(Calendar.YEAR);
         String s1 = y + "";
@@ -210,6 +212,9 @@ public class PettyCashBillController implements Serializable {
     private CashTransactionBean cashTransactionBean;
 
     public void settleBill() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         if (errorCheck()) {
             return;
@@ -255,6 +260,8 @@ public class PettyCashBillController implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
         System.out.println("getCurrent().getInvoiceNumber() = " + getCurrent().getInvoiceNumber());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Petty Cash/ Petty Cash payment(/faces/petty_cash_bill.xhtml)");
 
     }
 
@@ -373,4 +380,14 @@ public class PettyCashBillController implements Serializable {
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

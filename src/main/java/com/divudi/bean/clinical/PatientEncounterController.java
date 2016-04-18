@@ -9,6 +9,7 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -88,6 +89,8 @@ public class PatientEncounterController implements Serializable {
     PharmacySaleController pharmacySaleController;
     @Inject
     BillController billController;
+    @Inject
+            CommonController commonController;
 
     /**
      * Properties
@@ -270,6 +273,8 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void listAllEncounters() {
+        Date startTime = new Date();
+        
         String jpql;
         Map m = new HashMap();
         jpql = "select pe from PatientEncounter pe where pe.retired=false and pe.createdAt between :fd and :td ";
@@ -291,6 +296,8 @@ public class PatientEncounterController implements Serializable {
         //System.out.println("2. sql = " + jpql);
         items = getFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
         //System.out.println("3. items = " + items);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
     }
 
     public void listPeriodEncounters() {
@@ -763,6 +770,16 @@ public class PatientEncounterController implements Serializable {
     public void setCurrentChannelBills(List<Bill> currentChannelBills) {
         this.currentChannelBills = currentChannelBills;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 
 }
 

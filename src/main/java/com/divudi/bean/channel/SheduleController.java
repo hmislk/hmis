@@ -399,7 +399,7 @@ public class SheduleController implements Serializable {
             UtilityController.addErrorMessage("Set Weekday or Date");
             return true;
         }
-        
+
         if (current.getSessionWeekday() != null && getCurrent().getSessionDate() != null) {
             UtilityController.addErrorMessage("Ycan Select Only Weekday or Date");
             return true;
@@ -608,29 +608,107 @@ public class SheduleController implements Serializable {
                 + " and f.serviceSession is not null ";
         List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
         System.out.println("serviceSessionsAll.size() = " + serviceSessionsAll.size());
+        for (ServiceSession s : serviceSessionsAll) {
+            
+        }
+        List<ServiceSession> tmpList = new ArrayList<>();
+        tmpList.addAll(serviceSessionsAll);
+        tmpList.removeAll(fetchSessionByFee("On-Call Fee", FeeType.OwnInstitution));
+        createFeesForServiceSessionList(tmpList, "On-Call Fee", FeeType.OwnInstitution);
+        
+        tmpList.addAll(serviceSessionsAll);
+        tmpList.removeAll(fetchSessionByFee("Scan Fee", FeeType.Service));
+        createFeesForServiceSessionList(tmpList, "Scan Fee", FeeType.Service);
+        
+        tmpList.addAll(serviceSessionsAll);
+        tmpList.removeAll(fetchSessionByFee("Agency Fee", FeeType.OtherInstitution));
+        createFeesForServiceSessionList(tmpList, "Agency Fee", FeeType.OtherInstitution);
+        
+        tmpList.addAll(serviceSessionsAll);
+        tmpList.removeAll(fetchSessionByFee("Hospital Fee", FeeType.OwnInstitution));
+        createFeesForServiceSessionList(tmpList, "Hospital Fee", FeeType.OwnInstitution);
+        
+        tmpList.addAll(serviceSessionsAll);
+        tmpList.removeAll(fetchSessionByFee("Doctor Fee", FeeType.Staff));
+        createFeesForServiceSessionList(tmpList, "Doctor Fee", FeeType.Staff);
+
+//        List<ServiceSession> serviceSessions = serviceSessionFacade.findBySQL(sql, m);
+//        System.out.println("serviceSessions.size() = " + serviceSessions.size());
+//        serviceSessionsAll.removeAll(serviceSessions);
+//        for (ServiceSession ss : serviceSessionsAll) {
+//            ItemFee onc = new ItemFee();
+//            onc.setName("On-Call Fee");
+//            onc.setFeeType(FeeType.OwnInstitution);
+//            onc.setFee(0.0);
+//            onc.setFfee(0.0);
+//            onc.setInstitution(ss.getInstitution());
+//            onc.setServiceSession(ss);
+//            onc.setItem(ss);
+//            itemFeeFacade.create(onc);
+//        }
+    }
+
+    public List<ServiceSession> fetchSessionByFee(String feeName, FeeType feeType) {
+        List<ServiceSession> list = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
         sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
                 + " where f.retired=false "
                 + " and f.serviceSession is not null "
                 + " and f.feeType=:fType "
-                + " and f.name=:name "
+                + " and f.name='" + feeName + "'"
                 + " order by f.id";
-        m.put("name", "On-Call Fee");
-        m.put("fType", FeeType.OwnInstitution);
-        List<ServiceSession> serviceSessions = serviceSessionFacade.findBySQL(sql, m);
-        System.out.println("serviceSessions.size() = " + serviceSessions.size());
-        serviceSessionsAll.removeAll(serviceSessions);
-        for (ServiceSession ss : serviceSessionsAll) {
-            ItemFee onc = new ItemFee();
-            onc.setName("On-Call Fee");
-            onc.setFeeType(FeeType.OwnInstitution);
-            onc.setFee(0.0);
-            onc.setFfee(0.0);
-            onc.setInstitution(ss.getInstitution());
-            onc.setServiceSession(ss);
-            onc.setItem(ss);
-            itemFeeFacade.create(onc);
-        }
+        m.put("fType", feeType);
+        list = serviceSessionFacade.findBySQL(sql, m);
+        System.err.println("********");
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("list.size() = " + list.size());
+        System.err.println("********");
+        return list;
 
+    }
+
+    public void createFee(ServiceSession ss, String name, FeeType ft) {
+        ItemFee itemFee = new ItemFee();
+        itemFee.setName(name);
+        itemFee.setFeeType(ft);
+        itemFee.setFee(0.0);
+        itemFee.setFfee(0.0);
+        itemFee.setInstitution(getCurrent().getInstitution());
+        itemFee.setServiceSession(ss);
+        if (ft == FeeType.Staff) {
+            try {
+                if (ss.getStaff() != null && ss.getStaff().getSpeciality() != null) {
+                    itemFee.setSpeciality(ss.getStaff().getSpeciality());
+                    itemFee.setStaff(ss.getStaff());
+                } else {
+                    System.err.println("**** No Specility****");
+                    System.out.println("ss.getName() = " + ss.getName());
+                    System.out.println("ss.getStaff() = " + ss.getStaff());
+                    System.err.println("**** No Specility****");
+                    return;
+                }
+            } catch (Exception e) {
+                System.err.println("**** No Specility****");
+                System.out.println("ss.getName() = " + ss.getName());
+                System.out.println("ss.getStaff() = " + ss.getStaff());
+                System.err.println("**** No Specility****");
+                return;
+            }
+        }
+        itemFeeFacade.create(itemFee);
+    }
+
+    public void createFeesForServiceSessionList(List<ServiceSession> serviceSessions, String name, FeeType ft) {
+        for (ServiceSession ss : serviceSessions) {
+            System.err.println("*********");
+            System.out.println("s.getName() = " + ss.getName());
+            System.out.println("s.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName());
+            System.err.println("*********");
+            createFee(ss, name, ft);
+        }
     }
 
     private double calTot() {
@@ -692,7 +770,7 @@ public class SheduleController implements Serializable {
                 + " fc.retired=false "
                 + " and fc.validFrom=:ed ";
         if (feeChangeStaff) {
-            sql +=" and fc.fee.staff=:s "
+            sql += " and fc.fee.staff=:s "
                     + " and fc.fee.speciality=:sp ";
             m.put("s", currentStaff);
             m.put("sp", speciality);
@@ -707,7 +785,7 @@ public class SheduleController implements Serializable {
             fc.setValidFrom(effectiveDate);
             if (changes.size() > 0) {
                 for (FeeChange c : changes) {
-                    if ((fc.getFee().getFeeType() == c.getFee().getFeeType()) 
+                    if ((fc.getFee().getFeeType() == c.getFee().getFeeType())
                             && (fc.getFee().getName().equals(c.getFee().getName()))
                             && (fc.getFee().getStaff().equals(c.getFee().getStaff()))
                             && (fc.getFee().getSpeciality().equals(c.getFee().getSpeciality()))

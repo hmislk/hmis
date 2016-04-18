@@ -3667,6 +3667,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createCashCategoryWithoutProDay() {
+        Date startTime = new Date();
+        
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
@@ -3716,6 +3718,8 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category day end(/faces/reportInstitution/report_cash_category_without_pro_day.xhtml)");
     }
 
     public void createDoctorPaymentChannelling() {
@@ -4026,6 +4030,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createCashCategoryWithProDay() {
+        Date startTime = new Date();
+        
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
@@ -4087,6 +4093,8 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category day end(/faces/reportInstitution/report_cash_category_with_pro_day.xhtml)");
     }
 
     Institution creditCompany;
@@ -4100,6 +4108,8 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void processCreditItems() {
+        Date startTime = new Date();
+        
         header = " Invoice.";
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
@@ -4114,9 +4124,13 @@ public class BookKeepingSummery implements Serializable {
                 opdStaffTotal += b.getProFee();
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down(/faces/reportInstitution/report_credit_category.xhtml)");
     }
 
     public void processCreditPaidItems() {
+        Date startTime = new Date();
+        
         header = " Payment.";
         makeNull();
         createOPdListWithCreditPaid();
@@ -4130,9 +4144,12 @@ public class BookKeepingSummery implements Serializable {
                 opdStaffTotal += b.getProFee();
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down/Process Credit Items Paid(/faces/reportInstitution/report_credit_category.xhtml)");
     }
 
     public void createCashCategoryWithoutProMonth() {
+        Date startTime = new Date();
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
@@ -4171,9 +4188,12 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category montj end(/faces/reportInstitution/report_cash_category_without_pro_month.xhtml)");
     }
 
     public void createCashCategoryWithProMonth() {
+        Date startTime = new Date();
         //System.out.println("creating cash category with pro month");
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
@@ -4217,6 +4237,8 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category month end(/faces/reportInstitution/report_cash_category_with_pro_month.xhtml)");
     }
 
     public void createCashCategoryWithProMonth2() {

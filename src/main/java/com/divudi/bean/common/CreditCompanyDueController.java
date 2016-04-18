@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -64,6 +65,8 @@ public class CreditCompanyDueController implements Serializable {
     private CommonFunctions commonFunctions;
     @EJB
     AdmissionFacade admissionFacade;
+    @Inject
+    CommonController commonController;
 
     double finalTotal;
     double finalPaidTotal;
@@ -89,6 +92,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createAgeTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         makeNull();
         System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
@@ -115,9 +122,12 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Due age(/faces/credit/credit_company_opd_due_age.xhtml)");
     }
 
     public void createAgeAccessTable() {
+        Date startTime = new Date();
+        
         makeNull();
         System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
@@ -143,10 +153,14 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/OPD Dues and Access/OPD credit excess/Excess age(/faces/credit/credit_company_opd_access_age.xhtml)");
 
     }
 
     public void createInwardAgeTable() {
+        Date startTime = new Date();
+
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -171,6 +185,8 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Dues/Due Age(/faces/credit/inward_due_age.xhtml)");
+
     }
 
     List<DealerDueDetailRow> dealerDueDetailRows;
@@ -184,6 +200,9 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardAgeDetailAnalysis() {
+        Date startTime = new Date();
+   
+
         dealerDueDetailRows = new ArrayList<>();
         createInwardAgeTable();
         Institution dealer = null;
@@ -233,7 +252,9 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         creditCompanyAge = new ArrayList<>();
-
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Dues/Due age detail(/faces/credit/inward_due_age_credit_company_detail.xhtml)");
     }
 
     public void createInwardCashAgeTable() {
@@ -264,6 +285,8 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardAgeTableAccess() {
+        Date startTime = new Date();
+        
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -289,9 +312,12 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess age (/faces/credit/credit_company_inward_access_age.xhtml)");
     }
 
     public void createInwardCashAgeTableAccess() {
+        Date startTime = new Date();
+        
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -316,6 +342,8 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess age (/faces/credit/cash_inward_access_age.xhtml)");
 
     }
 
@@ -452,6 +480,8 @@ public class CreditCompanyDueController implements Serializable {
     private CreditBean creditBean;
 
     public void createOpdCreditDue() {
+        Date startTime = new Date();
+
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), true);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -468,9 +498,13 @@ public class CreditCompanyDueController implements Serializable {
             items.add(newIns);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Due search(/faces/credit/credit_company_opd_due.xhtml)");
+
     }
 
     public void createOpdCreditDueBillItem() {
+        Date startTime = new Date();
+        
         List<Institution> setIns = new ArrayList<>();
         if (creditCompany != null) {
             setIns.add(creditCompany);
@@ -490,10 +524,14 @@ public class CreditCompanyDueController implements Serializable {
 
             items.add(newIns);
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/OPD Dues and Access/OPD Dues and Access/Due Search(Bill item)(/faces/credit/credit_company_opd_due_by_bill_item.xhtml)");
 
     }
 
     public void createOpdCreditAccess() {
+        Date startTime = new Date();
+        
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), false);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -510,9 +548,12 @@ public class CreditCompanyDueController implements Serializable {
             items.add(newIns);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/OPD Dues and Access/OPD credit excess/Excess search(/faces/credit/credit_company_opd_access.xhtml)");
     }
 
     public void createInwardCreditDue() {
+        Date startTime = new Date();
+
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, true);
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
@@ -544,6 +585,8 @@ public class CreditCompanyDueController implements Serializable {
 
             institutionEncounters.add(newIns);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Inward Dues And Access/Due search(Credit company)(/faces/credit/inward_due_search_credit_company.xhtml)");
 
     }
 
@@ -621,6 +664,8 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCashDue() {
+        Date startTime = new Date();
+
         HashMap m = new HashMap();
         String sql = " Select b from PatientEncounter b"
                 + " where b.retired=false "
@@ -661,6 +706,7 @@ public class CreditCompanyDueController implements Serializable {
 
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Dues/Due search(/faces/credit/inward_due_search.xhtml)");
     }
 
     double billed;
@@ -692,6 +738,8 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditAccess() {
+        Date startTime = new Date();
+        
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, false);
 
         institutionEncounters = new ArrayList<>();
@@ -708,10 +756,13 @@ public class CreditCompanyDueController implements Serializable {
 
             institutionEncounters.add(newIns);
         }
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess Search(/faces/credit/credit_company_inward_access.xhtml)");
 
     }
 
     public void createInwardCashAccess() {
+        Date startTime = new Date();
+        
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Cash, false);
 
         institutionEncounters = new ArrayList<>();
@@ -729,6 +780,8 @@ public class CreditCompanyDueController implements Serializable {
             institutionEncounters.add(newIns);
         }
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess Search(/faces/credit/cash_inward_access.xhtml)");
     }
 
     public List<InstitutionBills> getItems() {
@@ -927,6 +980,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setFinalTransPaidTotalPatient(double finalTransPaidTotalPatient) {
         this.finalTransPaidTotalPatient = finalTransPaidTotalPatient;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
@@ -64,6 +65,8 @@ public class StaffBasicController implements Serializable {
     private Date toDate;
     private ReportKeyWord reportKeyWord;
     Institution staffInstitution;
+    @Inject
+    CommonController commonController;
 
     public void removeAll() {
         for (StaffPaysheetComponent spc : getSelectedStaffComponent()) {
@@ -259,9 +262,9 @@ public class StaffBasicController implements Serializable {
             sql += " and ss.staff.roster=:rs ";
             hm.put("rs", getReportKeyWord().getRoster());
         }
-        
-        sql+=" order by ss.staff.codeInterger ";
-        
+
+        sql += " order by ss.staff.codeInterger ";
+
         hm.put("tp", PaysheetComponentType.BasicSalary);
 
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
@@ -306,6 +309,10 @@ public class StaffBasicController implements Serializable {
     double totalStaffPaySheetComponentValue = 0.0;
 
     public void createTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql = "Select s"
                 + " from StaffPaysheetComponent s"
                 + " where s.retired=false"
@@ -369,6 +376,9 @@ public class StaffBasicController implements Serializable {
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
         calTotal(items);
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
 
     }
 
@@ -579,4 +589,14 @@ public class StaffBasicController implements Serializable {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

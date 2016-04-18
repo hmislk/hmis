@@ -39,7 +39,7 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class AgentPaymentRecieveBillController implements Serializable {
-    
+
     private Bill current;
     private boolean printPreview = false;
     @EJB
@@ -48,6 +48,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     InstitutionController institutionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -56,14 +58,14 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
-    
+
     private PatientEncounter patientEncounter;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
     private int index;
     private PaymentMethodData paymentMethodData;
     String comment;
-    
+
     public void addToBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
         getCurrentBillItem().setGrossValue(getCurrent().getNetTotal());
@@ -75,94 +77,107 @@ public class AgentPaymentRecieveBillController implements Serializable {
         getBillItems().add(getCurrentBillItem());
         currentBillItem = null;
     }
-    
+
     public AgentPaymentRecieveBillController() {
     }
-    
+
     @Inject
     private PaymentSchemeController paymentSchemeController;
-    
+
     private boolean errorCheck() {
         if (getCurrent().getFromInstitution() == null) {
             UtilityController.addErrorMessage("Select Agency");
             return true;
         }
-        
+
         if (getCurrent().getPaymentMethod() == null) {
             return true;
         }
-        
+
         if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix) {
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
         getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getCurrent().setBillType(billType);
-        
+
         getCurrent().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getCurrent().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        
+
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
-        
+
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
-        
+
         getCurrent().setNetTotal(getCurrent().getNetTotal());
-        
+
         current.setComments(comment);
-        
+
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
         }
     }
-    
+
     @Inject
     private BillBeanController billBean;
     @EJB
     CashTransactionBean cashTransactionBean;
-    
+
     public CashTransactionBean getCashTransactionBean() {
         return cashTransactionBean;
     }
-    
+
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
     }
-    
+
     public String getComment() {
         return comment;
     }
-    
+
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
-    public void collectingCentrePaymentRecieveSettleBill(){
+
+    public void collectingCentrePaymentRecieveSettleBill() {
+        Date startTime = new Date();
+	Date fromDate = null;
+	Date toDate = null;
+
+        
         settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Collecting center/Collecting center payment(/faces/lab/collecting_centre_bill.xhtml)");
     }
-    
-    public void channellAgencyPaymentRecieveSettleBill(){
+
+    public void channellAgencyPaymentRecieveSettleBill() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        
         settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment(/faces/agent_bill.xhtml)");
     }
-    
+
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
         addToBill();
         if (errorCheck()) {
             return;
         }
-        
+
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        
+
         getCurrent().setTotal(getCurrent().getNetTotal());
-        
+
         saveBill(billType, billNumberSuffix);
         saveBillItem();
         //for channel agencyHistory Update
@@ -170,7 +185,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         //for channel agencyHistory Update
 
         //Update Agent Max Credit Limit
-        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit()))&&(getCurrent().getFromInstitution().getMaxCreditLimit()!= getCurrent().getFromInstitution().getStandardCreditLimit())) {
+        if ((getCurrent().getNetTotal() > (getCurrent().getFromInstitution().getMaxCreditLimit() - getCurrent().getFromInstitution().getStandardCreditLimit())) && (getCurrent().getFromInstitution().getMaxCreditLimit() != getCurrent().getFromInstitution().getStandardCreditLimit())) {
             institutionController.createAgentCreditLimitUpdateHistory(getCurrent().getFromInstitution(), getCurrent().getFromInstitution().getAllowedCredit(), getCurrent().getFromInstitution().getStandardCreditLimit(), updatHistoryType, "Agent Payment Allowed Credit Limit Update");
             getCurrent().getFromInstitution().setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
             getInstitutionFacade().edit(getCurrent().getFromInstitution());
@@ -180,12 +195,12 @@ public class AgentPaymentRecieveBillController implements Serializable {
         ///////////////////
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        
+
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
-        
+
     }
-    
+
     private void saveBillItem() {
         for (BillItem tmp : getBillItems()) {
             tmp.setCreatedAt(new Date());
@@ -195,7 +210,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
             getBillItemFacade().create(tmp);
         }
     }
-    
+
     public void recreateModel() {
         current = null;
         printPreview = false;
@@ -204,9 +219,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         comment = null;
-        
+
     }
-    
+
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
         System.out.println("updating agency balance");
         System.out.println("ins.getName() = " + ins.getName());
@@ -220,146 +235,155 @@ public class AgentPaymentRecieveBillController implements Serializable {
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
-        
+
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
-        
+
     }
-    
+
     public String prepareNewBill() {
         recreateModel();
         return "";
     }
-    
+
     public Bill getCurrent() {
         if (current == null) {
             current = new BilledBill();
         }
         return current;
     }
-    
+
     public void setCurrent(Bill current) {
         this.current = current;
     }
-    
+
     public boolean isPrintPreview() {
         return printPreview;
     }
-    
+
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
-    
+
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
     }
-    
+
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-    
+
     public SessionController getSessionController() {
         return sessionController;
     }
-    
+
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
-    
+
     public BillFacade getBillFacade() {
         return billFacade;
     }
-    
+
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
     }
-    
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
-    
+
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
     }
-    
+
     public PatientEncounter getPatientEncounter() {
         return patientEncounter;
     }
-    
+
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
     }
-    
+
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
         }
         return currentBillItem;
     }
-    
+
     public void setCurrentBillItem(BillItem currentBillItem) {
         this.currentBillItem = currentBillItem;
     }
-    
+
     public List<BillItem> getBillItems() {
         if (billItems == null) {
             billItems = new ArrayList<BillItem>();
         }
         return billItems;
     }
-    
+
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
     }
-    
+
     public int getIndex() {
         return index;
     }
-    
+
     public void setIndex(int index) {
         this.index = index;
     }
-    
+
     public InstitutionFacade getInstitutionFacade() {
         return institutionFacade;
     }
-    
+
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
     }
-    
+
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
         return paymentMethodData;
     }
-    
+
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-    
+
     public BillBeanController getBillBean() {
         return billBean;
     }
-    
+
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
     }
-    
+
     public PaymentSchemeController getPaymentSchemeController() {
         return paymentSchemeController;
     }
-    
+
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
-    
+
     public AgentHistoryFacade getAgentHistoryFacade() {
         return agentHistoryFacade;
     }
-    
+
     public void setAgentHistoryFacade(AgentHistoryFacade agentHistoryFacade) {
         this.agentHistoryFacade = agentHistoryFacade;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

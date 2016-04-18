@@ -1093,6 +1093,8 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     }
 
     public void createLabServiceWithCountByMachine() {
+        
+        Date startTime = new Date();
         //System.out.println("createLabServiceWithCountByMachine");
         investigationCountWithMachines = new ArrayList<>();
         totalCount = 0;
@@ -1117,10 +1119,15 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             }
 
         }
+        
+        
+commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count(/faces/reportLab/count_by_machine.xhtml)");
 
     }
 
     public void createLabServiceWithCountByMachineAndBillType() {
+        
+        Date startTime = new Date();
         //System.out.println("createLabServiceWithCountByMachine");
         investigationCountWithMachines = new ArrayList<>();
         totalCount = 0;
@@ -1203,6 +1210,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml)");
     }
 
     public List<Item> getInvestigationItems() {

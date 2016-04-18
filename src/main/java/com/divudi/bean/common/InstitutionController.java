@@ -38,6 +38,8 @@ public class InstitutionController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     /**
      * EJBs
      */
@@ -137,11 +139,17 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getAgencies() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectText.trim().equals("")) {
             agencies = completeInstitution(null, InstitutionType.Agency);
         } else {
             agencies = completeInstitution(selectText, InstitutionType.Agency);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent details(/faces/channel/channel_report_agent_details.xhtml)");
 
         return agencies;
     }
@@ -249,7 +257,7 @@ public class InstitutionController implements Serializable {
         }
         return false;
     }
-    
+
     private Boolean checkCodeExistAgency() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
         List<Institution> ins = getEjbFacade().findBySQL(sql);
@@ -330,7 +338,7 @@ public class InstitutionController implements Serializable {
         recreateModel();
         getItems();
     }
-    
+
     public void saveSelectedAgency() {
         if (getAgency().getInstitutionType() == null) {
             UtilityController.addErrorMessage("Select Instituion Type");
@@ -563,8 +571,8 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getAgency() {
-        if (agency==null) {
-            agency=new Institution();
+        if (agency == null) {
+            agency = new Institution();
             agency.setInstitutionType(InstitutionType.Agency);
         }
         return agency;
@@ -656,4 +664,13 @@ public class InstitutionController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

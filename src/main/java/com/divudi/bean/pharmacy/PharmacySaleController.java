@@ -493,6 +493,8 @@ public class PharmacySaleController implements Serializable {
     }
 
     public void resetAll() {
+        
+        
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
