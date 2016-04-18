@@ -7,7 +7,7 @@
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>coop</name>
+    <name>Ruhunu</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.oracle</artifactId>
+            <artifactId>org.eclipse.persistence.antlr</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -76,13 +76,13 @@
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
+            <artifactId>org.eclipse.persistence.jpa</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.jpa</artifactId>
+            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -94,7 +94,7 @@
         </dependency>
         <dependency>
             <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.antlr</artifactId>
+            <artifactId>org.eclipse.persistence.oracle</artifactId>
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>

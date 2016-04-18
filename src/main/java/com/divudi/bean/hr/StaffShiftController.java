@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.ReportKeyWord;
@@ -50,6 +51,8 @@ public class StaffShiftController implements Serializable {
     ShiftController shiftController;
     @Inject
     StaffController staffController;
+    @Inject
+    CommonController commonController;
     List<StaffShift> staffShifts;
     Staff staff;
     StaffShift staffshift;
@@ -202,6 +205,8 @@ public class StaffShiftController implements Serializable {
     }
 
     public void createStaffShiftTablebyCreatedDate() {
+        Date startTime = new Date();
+
         String sql;
         Map m = new HashMap();
 
@@ -238,6 +243,8 @@ public class StaffShiftController implements Serializable {
 
         staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
+
     }
 
 //    public void createStaffShiftTablebyShiftDate() {
@@ -259,6 +266,8 @@ public class StaffShiftController implements Serializable {
 //
 //    }
     public void createStaffShiftTablebyShiftDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -294,6 +303,8 @@ public class StaffShiftController implements Serializable {
         m.put("td", toDate);
 
         staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
     }
 
@@ -492,6 +503,14 @@ public class StaffShiftController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + StaffShiftController.class.getName());
             }
         }
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

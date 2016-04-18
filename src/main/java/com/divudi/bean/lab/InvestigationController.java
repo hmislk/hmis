@@ -600,6 +600,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void deleteSelectedItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Delete");
             return;
@@ -613,9 +617,15 @@ public class InvestigationController implements Serializable {
         }
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
 
     public void unDeleteSelectedItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Un-Delete");
             return;
@@ -629,9 +639,15 @@ public class InvestigationController implements Serializable {
         }
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
 
     public void markSelectedActive() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Active");
             return;
@@ -644,9 +660,16 @@ public class InvestigationController implements Serializable {
 
         UtilityController.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+
     }
 
     public void markSelectedInactive() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Inactive");
             return;
@@ -659,6 +682,8 @@ public class InvestigationController implements Serializable {
 
         UtilityController.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
 
     public Institution getInstitution() {
@@ -834,7 +859,7 @@ public class InvestigationController implements Serializable {
             }
             investigationWithInvestigationItemses.add(items);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
     }
 
@@ -1039,6 +1064,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void createInvestigationWithFees() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         itemWithFees = new ArrayList<>();
         List<Item> temp;
         String sql = "select distinct(c.item) from ItemFee c where c.retired = false "
@@ -1056,6 +1085,8 @@ public class InvestigationController implements Serializable {
             System.out.println("iwf.getItemFees().size() = " + iwf.getItemFees().size());
             itemWithFees.add(iwf);
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
     }
 
     public class ItemWithFee {

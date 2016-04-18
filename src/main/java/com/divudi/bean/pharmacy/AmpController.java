@@ -137,7 +137,7 @@ public class AmpController implements Serializable {
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with supplier and prices(Fill Suppliers For Items)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
@@ -278,19 +278,39 @@ public class AmpController implements Serializable {
     }
 
     public void pharmacyDeleteItem() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/pharmacy Item List(/faces/dataAdmin/pharmacy_item_list.xhtml)");
     }
 
     public void pharmacyNoDeleteItem() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/pharmacy Item List(/faces/dataAdmin/pharmacy_item_list.xhtml)");
     }
 
     public void storeDeleteItem() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(delete)(/faces/dataAdmin/store_item_list.xhtml)");
     }
 
     public void storeNoDeleteItem() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(no delete)(/faces/dataAdmin/store_item_list.xhtml)");
     }
 
     public void onTabChange(TabChangeEvent event) {

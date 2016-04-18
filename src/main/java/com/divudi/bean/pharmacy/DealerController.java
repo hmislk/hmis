@@ -7,6 +7,8 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InstitutionType;
@@ -39,16 +41,18 @@ public class DealerController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private InstitutionFacade ejbFacade;
     private Institution current;
     private List<Institution> items = null;
     List<Institution> dealor = null;
-    
+
     List<Institution> institutionList;
 
     public List<Institution> completeDealor(String query) {
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -84,7 +88,7 @@ public class DealerController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-   //     getItems();
+        //     getItems();
     }
 
     public InstitutionFacade getEjbFacade() {
@@ -129,21 +133,25 @@ public class DealerController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-  //      getItems();
+        //      getItems();
         current = null;
         getCurrent();
     }
-    
-    public void deletedDealorList(){
-    
+
+    public void deletedDealorList() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         Map m = new HashMap();
-        
+
         String sql = "SELECT i FROM Institution i where i.retired=true and i.institutionType =:tp"
-                + " order by i.name";                                                                           
-        m.put("tp",InstitutionType.Dealer);
+                + " order by i.name";
+        m.put("tp", InstitutionType.Dealer);
         dealor = getEjbFacade().findBySQL(sql, m);
         
-        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Check deleted data/Dealor list(/faces/dataAdmin/deleted_distributors.xhtml)");
+
     }
 
     private InstitutionFacade getFacade() {
@@ -157,12 +165,6 @@ public class DealerController implements Serializable {
     public void setDealor(List<Institution> dealor) {
         this.dealor = dealor;
     }
-
-    
-    
-    
-    
-    
 
     public List<Institution> getItems() {
         String sql = "SELECT i FROM Institution i "
@@ -219,4 +221,14 @@ public class DealerController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }
