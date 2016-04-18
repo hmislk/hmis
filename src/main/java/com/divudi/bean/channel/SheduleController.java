@@ -339,8 +339,8 @@ public class SheduleController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = null;
-        itemFees = null;
+        current = new ServiceSession();
+        itemFees = new ArrayList<>();
         createFees();
     }
 

@@ -58,7 +58,7 @@
                 
 
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i">   
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i" stickyHeader="true">   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
                         &#13;&nbsp;
@@ -190,8 +190,63 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>                      
                     </p:column>
-
-
+                    
+                    <p:column  styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Trasfer Issue Qty" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferInQty}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+<!--                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>-->
+                    </p:column>
+                    
+                    <p:column  styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Trasfer Issue value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferIn}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+<!--                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>-->
+                    </p:column>
+                    
+                    <p:column  styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Trasfer Receive Qty" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferOutQty}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+<!--                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>-->
+                    </p:column>
+                    
+                    <p:column  styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Trasfer Receive Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.transferOut}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+<!--                        <f:facet name="footer">
+                            <h:outputLabel value="#{pharmacySaleReport.totalDepartmentIssue}" style="float:  right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>-->
+                    </p:column>
+                    
                     <p:column  styleClass="averageNumericColumn">
                         <f:facet name="header">
                             <h:outputLabel value="Stock Qty" />

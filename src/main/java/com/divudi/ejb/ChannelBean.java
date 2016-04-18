@@ -551,7 +551,6 @@ public class ChannelBean {
         while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounterLargestById(inputSessions)) {
             if (sessions.isEmpty()) {
                 for (Long s : inputSessions) {
-                    System.out.println("s = " + s);
                     ServiceSession ss = getServiceSessionFacade().find(s);
                     sessions.add(ss);
                     if (ss.getSessionDate() != null) {
@@ -577,7 +576,9 @@ public class ChannelBean {
                             newSs.setStaff(ss.getStaff());
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
+                            
                             createdSessions.add(newSs);
+                            bookingController.checkDoctorArival(newSs);
                             ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
@@ -602,6 +603,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
+                            bookingController.checkDoctorArival(newSs);
                             ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
@@ -639,6 +641,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
+                            bookingController.checkDoctorArival(newSs);
                             ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
@@ -663,6 +666,7 @@ public class ChannelBean {
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
+                            bookingController.checkDoctorArival(newSs);
                             ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
