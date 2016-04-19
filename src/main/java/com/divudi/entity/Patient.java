@@ -84,10 +84,13 @@ public class Patient implements Serializable {
     String phn;
 
     public String getPhn() {
+        
+        
         return phn;
     }
 
     public void setPhn(String phn) {
+        
         this.phn = phn;
     }
     
