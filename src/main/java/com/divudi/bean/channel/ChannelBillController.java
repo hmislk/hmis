@@ -1346,7 +1346,7 @@ public class ChannelBillController implements Serializable {
             }
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
+        if (getSs().getMaxNo() != 0.0 && (getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund()+getbookingController().getSelectedServiceSession().getStartingNo()) >= getSs().getMaxNo()) {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
             return true;
