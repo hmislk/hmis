@@ -63,7 +63,7 @@
                                                     value="CC Billing" 
                                                     rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
                                         </p:menuitem>
-                                        
+
                                         <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
                                                     actionListener="#{searchController.makeListNull}"
                                                     value="CC Bill Search" 
@@ -153,7 +153,7 @@
                                                     value="CC Billing" 
                                                     rendered="#{webUserController.hasPrivilege('LabCCBilling')}" >
                                         </p:menuitem>
-                                        
+
                                         <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
                                                     actionListener="#{searchController.makeListNull}"
                                                     value="CC Bill Search" 
@@ -506,18 +506,9 @@
                                     </p:submenu>  
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
-                                    <p:submenu label="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}">
-                                    <p:menuitem  ajax="false"  value="Agencies"  action="/channel/institutions" rendered="#{webUserController.hasPrivilege('ChannelAgencyAgencies')}"/>
-                                    <p:menuitem  ajax="false"  value="Agency Credit Limit Update"  action="/channel/institutions_udate_credit_limit" rendered="#{webUserController.hasPrivilege('ChannelAgencyCreditLimitUpdate')}"/>
-                                    <p:menuitem  ajax="false"  value="Agency Credit Limit Update(Bulk)"  action="/channel/channel_agent_credit_bulk_update" rendered="#{webUserController.hasPrivilege('ChannelAgencyCreditLimitUpdateBulk')}"/>
-                                    <p:menuitem  ajax="false"  value="Add Channel Book to Agency"  action="/channel/channel_agent_referece_book" rendered="#{webUserController.hasPrivilege('ChannelAddChannelBookToAgency')}"/>
-                                    <p:menuitem  ajax="false"  value="Manage Specialities"  action="/channel/maintanance/doctorSpeciality/List" rendered="#{webUserController.hasPrivilege('ChannelManageSpecialities')}"/>
-                                    <p:menuitem  ajax="false"  value="Manage Consultants"  action="/channel/maintanance/doctorSpeciality/List" rendered="#{webUserController.hasPrivilege('ChannelManageConsultants')}"/>
-                                    <p:menuitem  ajax="false"  value="Editing Appoinment Count"  action="/channel/channel_booking_editing_appoinment_count" rendered="#{webUserController.hasPrivilege('ChannelEditingAppoinmentCount')}"/>
-                                    <p:menuitem  ajax="false"  value="Add Channeling Consultants to Institutions"  action="/channel/person_institution" rendered="#{webUserController.hasPrivilege('ChannelAddChannelingConsultantToInstitutions')}"/>
-                                    <p:menuitem  ajax="false"  value="Channel Fee Update"  action="/channel/channel_fee_change" rendered="#{webUserController.hasPrivilege('ChannelFeeUpdate')}"/>
-                                    </p:submenu>
-                                    </p:submenu>
+                                    <p:menuitem ajax="false" action="/channel/management_index" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
+                                    
+                                </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Payments"  rendered="#{webUserController.hasPrivilege('Payment')}">  
 

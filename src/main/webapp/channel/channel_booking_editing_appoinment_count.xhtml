@@ -34,12 +34,8 @@
                                                             value="#{bookingController.speciality}" 
                                                             style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerClearSelectedServiceSession}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/>
+                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
+                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                                         </p:selectOneListbox>
                                     </h:panelGrid>
                                 </td>
@@ -62,7 +58,7 @@
                                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                                             <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
-                                                     listener="#{bookingController.generateSessions}"/>
+                                                     listener="#{bookingController.generateSessionsOnlyId()}"/>
                                         </p:selectOneListbox>
                                     </h:panelGrid>
                                 </td>

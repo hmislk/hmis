@@ -269,7 +269,7 @@
                                     <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                     <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2
                                             creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
-                                            lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessions}" />
+                                            lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessionsOnlyId}" />
                                 </p:selectOneMenu>
                                 <h:outputScript>
                                     $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {

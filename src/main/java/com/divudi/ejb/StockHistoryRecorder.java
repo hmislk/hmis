@@ -117,7 +117,7 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(hour = "23", minute = "50", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    @Schedule(hour = "4", minute = "30", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
@@ -479,8 +479,12 @@ public class StockHistoryRecorder {
                 + " and type(f.serviceSession)=:type "
                 + " and f.serviceSession.originatingSession is null "
                 + " and f.feeType=:ft "
-                + " and f.serviceSession.staff=:staff "
                 + " and f.name=:a ";
+
+        if (staff != null) {
+            sql += " and f.serviceSession.staff=:staff ";
+            m.put("staff", staff);
+        }
 
         if ((ft == FeeType.Service && s.equals("Scan Fee")) || (ft == FeeType.OwnInstitution && s.equals("Hospital Fee"))) {
             sql += " and (f.fee>0 or f.ffee>0) ";
@@ -490,7 +494,6 @@ public class StockHistoryRecorder {
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
         m.put("a", s);
-        m.put("staff", staff);
         List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
         System.out.println("itemFees.size() = " + itemFees.size());
         return itemFees;
