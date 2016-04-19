@@ -16,8 +16,6 @@
 
                 <h:form>
 
-                    <p:defaultCommand target="btnAddToQueueAndClear" ></p:defaultCommand>
-
                     <p:panel header="Manage Patients" styleClass="alignTop verticalAndHorizontalCenteringLarge"
                              style="height: 600px;">
                         <h:panelGrid columns="2" >
@@ -27,12 +25,6 @@
                                 <p:panel id="panelSearch" header="Search Patients" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Search Patients" />
-                                        <p:commandButton id="btnAddPt" 
-                                                         style="float: right;" 
-                                                         value="Add New Patient" process="btnAddPt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                         action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
-                                        </p:commandButton>
 
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
@@ -42,13 +34,13 @@
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
 
-                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
-                                        </p:commandButton>
+<!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
+                                        </p:commandButton>-->
 
                                     </f:facet>
 
                                     <h:panelGrid columns="1" >
-                                        <h:outputLabel value="Search by Name/Code/Phone/NIC" />
+                                        <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
                                                         value="#{patientController.current}" 
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
@@ -61,8 +53,14 @@
                                             <p:column headerText="Age">
                                                 <h:outputLabel value="#{apt.age}" />
                                             </p:column>
+                                            <p:column headerText="NIC">
+                                                <h:outputLabel value="#{apt.person.nic}"/>
+                                            </p:column>
                                             <p:column headerText="Code">
                                                 <h:outputLabel value="#{apt.code}" />
+                                            </p:column>
+                                            <p:column headerText="PHN">
+                                                <h:outputLabel value="#{apt.phn}"/>
                                             </p:column>
                                             <p:column headerText="Sex">
                                                 <h:outputLabel value="#{apt.person.sex}" />
@@ -75,7 +73,7 @@
                                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:component('panelDetails')} :#{p:component('panelQueue')} " 
+                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:component('panelDetails')}" 
                                                     listener="#{patientController.patientSelected}"/>
                                         </p:autoComplete>
 
@@ -83,81 +81,20 @@
 
                                 </p:panel>
 
-
-                                <p:panel  id="panelQueue" header="Queue" >
-                                    <h:panelGrid columns="2" >
-                                        <h:outputLabel value="Date" ></h:outputLabel>
-                                        <p:calendar value="#{practiceBookingController.sessionDate}" 
-                                                    pattern="dd MMMM yyyy" >
-                                            <f:ajax  event="dateSelect" execute="@this" render="bSession"  
-                                                     listener="#{practiceBookingController.listBillSessions}" />                                                
-                                        </p:calendar>
-
-                                        <h:outputLabel value="Speciality" ></h:outputLabel>
-                                        <p:autoComplete value="#{practiceBookingController.speciality}"
-                                                        id="acSpeciality" 
-                                                        completeMethod="#{specialityController.completeSpeciality}"
-                                                        var="dsp" itemLabel="#{dsp.name}" itemValue="#{dsp}"
-                                                        >
-                                            <f:ajax event="itemSelect" execute="acSpeciality" render="acStaff" ></f:ajax>
-                                        </p:autoComplete>
-
-                                        <h:outputLabel value="Doctor" ></h:outputLabel>
-                                        <p:autoComplete value="#{practiceBookingController.doctor}"
-                                                        id="acStaff" converter="conDoc"
-                                                        completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
-                                                        var="doc"
-                                                        itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
-                                                        >
-                                            <f:ajax  event="itemSelect" execute="@this" render="bSession"  listener="#{practiceBookingController.listBillSessions}" />                                                
-                                        </p:autoComplete>
-
-                                        <p:commandButton id="btnAddToQueue"   value="Add" ajax="false" style="float: right;" 
-                                                         onclick="if (!confirm('Are you sure you want to Add this record?'))
-                                                                     return false;" 
-                                                         action="#{practiceBookingController.addToQueue()}" >                        
-                                        </p:commandButton>
-
-                                        <p:commandButton id="btnAddToQueueAndClear"  value="Add and Clear For New Patient" ajax="false" style="float: right;" 
-                                                         onclick="if (!confirm('Are you sure you want to Add this record?'))
-                                                                     return false;" 
-                                                         action="#{practiceBookingController.addAndClear()}" >                        
-                                        </p:commandButton>
-
-                                    </h:panelGrid>
-                                    <p:dataTable id="bSession" value="#{practiceBookingController.billSessions}" var='bs'
-                                                 selectionMode="single" rowKey="#{bs.id}"
-                                                 selection="#{practiceBookingController.selectedBillSession}">
-                                        <!--<p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />-->  
-
-                                        <p:column headerText="No">#{bs.serialNo}</p:column>
-                                        <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                                        <p:column headerText="Actions">
-                                            <p:commandButton value="View Patient" process="bSession" update=":#{p:component('panelSearch')} :#{p:component('panelDetails')} " onclick="onSubmitButton();" >
-                                                <f:setPropertyActionListener value="#{bs.bill.patient}" target="#{patientController.current}" >
-                                                </f:setPropertyActionListener>
-                                            </p:commandButton>
-                                            <p:commandButton disabled="#{bs.absent}" value="Visit" 
-                                                             action="#{practiceBookingController.opdVisitFromQueue()}" 
-                                                             ajax="false" onclick="onSubmitButton();" >
-                                                <f:setPropertyActionListener value="#{bs}" 
-                                                                             target="#{practiceBookingController.billSession}" ></f:setPropertyActionListener>
-                                            </p:commandButton>
-                                        </p:column>
-                                    </p:dataTable>  
-
-                                </p:panel>
-
-
-
                             </h:panelGroup>
 
                             <p:panel id="panelDetails"   >
                                 <f:facet name="header" >
-                                    <h:outputLabel value="Details of Selected Patient" />
+                                    <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
                                     <p:commandButton  process="panelDetails" update="acPt" value="Save" 
                                                       action="#{patientController.saveSelected()}" ></p:commandButton>
+                                    <p:commandButton id="btnAddPt" 
+                                                     style="float: right;" 
+                                                     value="Add New Patient" process="btnAddPt" 
+                                                     update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
+                                                     action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
+                                    </p:commandButton>
                                 </f:facet>
 
 
@@ -184,8 +121,9 @@
                                                 <h:outputLabel value="Code"/>
                                                 <h:outputLabel value="#{patientController.current.code}" ></h:outputLabel>
 
-                                                <h:outputLabel value="PHN"/>
-                                                <h:outputLabel  value="#{patientController.current.phn}" ></h:outputLabel>
+                                                <h:outputLabel  value="PHN"/>
+                                                <p:inputText  id="phn"  autocomplete="off"  value="#{patientController.current.phn}"/>
+                                                <!--<h:outputLabel value="#{patientController.current.phn}" ></h:outputLabel>-->
 
                                                 <!--
                                                                                                 <h:outputLabel value="Membership"/>
@@ -239,8 +177,9 @@
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge"/>
                                                 </p:calendar>
-                                                <h:outputLabel value="NIC"/>
-                                                <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
+                                                <h:outputLabel value="NIC" />
+                                                <p:inputText maxlength="12" value="#{patientController.current.person.nic}"/>
+                                                <!--<p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />-->
                                                 <h:outputLabel value=""/>
 
                                                 <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>
@@ -249,15 +188,6 @@
 
                                         </h:panelGrid>
 
-                                    </p:tab>
-
-
-                                    <p:tab title="History" ></p:tab>
-
-                                    <p:tab title="Allergies" >
-                                        <p:dataTable value="" var="all" >
-
-                                        </p:dataTable>
                                     </p:tab>
 
                                     <p:tab title="Photo" >

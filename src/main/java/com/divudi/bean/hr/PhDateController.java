@@ -102,7 +102,7 @@ public class PhDateController implements Serializable {
 
         phDates = getFacade().findBySQL(sql, m);
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR holidays/Holiday report(/faces/hr/hr_report_ph_date.xhtml)");
+        commonController.printReportDetails(frDate, toDate, startTime, "HR/Reports/HR holidays/Holiday report(/faces/hr/hr_report_ph_date.xhtml)");
 
     }
 
