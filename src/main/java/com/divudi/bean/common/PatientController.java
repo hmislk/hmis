@@ -232,8 +232,8 @@ public class PatientController implements Serializable {
                 + " or upper(p.person.nic) like :q "
                 + " or upper(p.person.mobile) like :q "
                 + " or upper(p.person.phone) like :q "
-                + " or upper(p.person.address) like :q )"
-                + " or upper(p.phn) like :q"
+                + " or upper(p.person.address) like :q "
+                + " or upper(p.phn) like :q)"
                 + " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
