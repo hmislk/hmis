@@ -358,6 +358,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode node230102 = new PrivilageNode("Edit Patient Details", node23010, Privileges.ChannellingEditPatientDetails);
         TreeNode node230103 = new PrivilageNode("Delete Shedule", node23010, Privileges.ChannellingChannelShedulRemove);
         TreeNode node230104 = new PrivilageNode("Edit Session Name", node23010, Privileges.ChannellingChannelShedulName);
+        TreeNode node230105 = new PrivilageNode("Edit Credit Limit User Level", node23010, Privileges.ChannellingEditCreditLimitUserLevel);
+        TreeNode node230106 = new PrivilageNode("Edit Credit Limit Administrator Level", node23010, Privileges.ChannellingEditCreditLimitAdminLevel);
 
         return tmproot;
     }

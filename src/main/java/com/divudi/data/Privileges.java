@@ -272,6 +272,8 @@ public enum Privileges {
     ChannellingEditSerialNo,
     ChannellingEditPatientDetails,
     ChannellingPrintInPastBooking,
+    ChannellingEditCreditLimitUserLevel,
+    ChannellingEditCreditLimitAdminLevel,
     
     MemberShip,
     MembershipSchemes,
