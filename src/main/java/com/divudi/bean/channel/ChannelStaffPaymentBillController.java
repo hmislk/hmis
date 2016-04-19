@@ -301,6 +301,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Select Doctor");
             return;
         }
+        if (considerDate) {
+            if (getToDate().getTime()>commonFunctions.getEndOfDay().getTime()) {
+                JsfUtil.addErrorMessage("You Can't search after current Date");
+                return;
+            }
+        }
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -320,6 +326,9 @@ public class ChannelStaffPaymentBillController implements Serializable {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
             hm.put("to", getToDate());
+        }else{
+            sql += " and b.bill.appointmentAt <= :nd";
+            hm.put("nd", commonFunctions.getEndOfDay());
         }
 
         if (getSelectedServiceSession() != null) {
