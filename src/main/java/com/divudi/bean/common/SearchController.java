@@ -592,7 +592,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select b from BilledBill b where "
-                + " b.billType = :billType "
+                + " b.billType in :billTypes "
                 + " and b.institution=:ins "
                 + " and b.department=:dep "
                 + " and b.createdAt between :fromDate and :toDate "
@@ -617,7 +617,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacyWholeSale);
+        temMap.put("billTypes", Arrays.asList(new BillType []{BillType.PharmacyWholeSale,BillType.PharmacySale}));
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());

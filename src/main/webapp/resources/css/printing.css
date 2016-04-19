@@ -493,6 +493,15 @@ root {
 
 }
 
+.itemsPrintingMid{
+
+    font-size: 11px;
+    position: absolute;
+    left: 35%;
+    top: 37%;
+
+}
+
 .itemsGSPrinting{
 
     font-size: 11px;

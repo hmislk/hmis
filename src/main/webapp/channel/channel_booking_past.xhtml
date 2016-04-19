@@ -438,9 +438,14 @@
                                         <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                     </h:panelGroup>
                                 </div>
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and (sessionController.institutionPreference.applicationInstitution eq 'Ruhunu')}" >
+                                        <ch:channelRecipt_ruhunu bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                    </h:panelGroup>
+                                </div>
                                 <div >
 
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
+                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and (sessionController.institutionPreference.applicationInstitution ne 'Ruhunu')}">
                                         <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" >
                                             <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
     <!--                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>-->

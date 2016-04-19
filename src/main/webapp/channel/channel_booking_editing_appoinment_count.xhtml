@@ -181,7 +181,7 @@
                                                 <f:convertDateTime pattern="dd MMM"/>
                                             </h:outputText>
                                         </p:column>
-                                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                                             <p:cellEditor>
                                                 <f:facet name="output" >
                                                     <h:outputText value="#{ses.startingTime}">

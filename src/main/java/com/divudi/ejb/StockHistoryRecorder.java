@@ -147,16 +147,16 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(hour = "10", minute = "36", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
+    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
     public void myTimerDailyChannelShedule() {
         Date startTime = new Date();
         System.out.println("Start Create Shedule " + startTime);
-        
+
         for (Staff s : staffs()) {
             generateSessions(s);
         }
-        
-       System.out.println("End Create Shedule " + new Date());
+
+        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
 
         //System.out.println("End writing stock history: " + new Date());
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
@@ -214,16 +214,16 @@ public class StockHistoryRecorder {
         System.out.println("sql = " + sql);
         consultants = staffFacade.findBySQL(sql, m);
         System.out.println("consultants.size() = " + consultants.size());
-        
+
         return consultants;
     }
-    
+
     public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessions, Date d) {
         int sessionDayCount = 0;
         List<ServiceSession> createdSessions = new ArrayList<>();
 
         if (inputSessions == null || inputSessions.isEmpty()) {
-            return ;
+            return;
         }
         Date nowDate;
         if (d == null) {
@@ -240,7 +240,7 @@ public class StockHistoryRecorder {
         int rowIndex = 0;
         System.err.println("Time 1 = " + new Date());
         List<ServiceSession> sessions = new ArrayList<>();
-        int finalSessionDayCount=finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
+        int finalSessionDayCount = finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
         while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
             if (sessions.isEmpty()) {
                 for (Long s : inputSessions) {
@@ -269,7 +269,7 @@ public class StockHistoryRecorder {
                             newSs.setStaff(ss.getStaff());
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
-                            
+
                             createdSessions.add(newSs);
                             checkDoctorArival(newSs);
                             ss.setServiceSessionCreateForOriginatingSession(true);
@@ -377,13 +377,13 @@ public class StockHistoryRecorder {
         }
 
     }
-    
+
     public void checkDoctorArival(ServiceSession s) {
         s.setArival(findArrivals(s));
     }
-    
+
     public Boolean findArrivals(ServiceSession ss) {
-        ArrivalRecord arrivalRecord=new ArrivalRecord();
+        ArrivalRecord arrivalRecord = new ArrivalRecord();
         String sql = "Select bs From ArrivalRecord bs "
                 + " where bs.retired=false"
                 + " and bs.serviceSession.id=:ss "
@@ -402,7 +402,6 @@ public class StockHistoryRecorder {
         }
         return null;
     }
-
 
     public List<Department> fetchStockDepartment() {
         String sql;
