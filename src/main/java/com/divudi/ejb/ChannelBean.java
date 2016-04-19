@@ -18,8 +18,10 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.ArrivalRecord;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
@@ -548,7 +550,8 @@ public class ChannelBean {
         int rowIndex = 0;
         System.err.println("Time 1 = " + new Date());
         List<ServiceSession> sessions = new ArrayList<>();
-        while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounterLargestById(inputSessions)) {
+        int finalSessionDayCount=getFinalVariables().getSessionSessionDayCounterLargestById(inputSessions);
+        while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
             if (sessions.isEmpty()) {
                 for (Long s : inputSessions) {
                     ServiceSession ss = getServiceSessionFacade().find(s);
@@ -730,7 +733,7 @@ public class ChannelBean {
         newSs.setStartingTime(ss.getStartingTime());
         newSs.setEndingTime(ss.getEndingTime());
         newSs.setCreatedAt(new Date());
-        newSs.setCreater(getSessionController().getLoggedUser());
+//        newSs.setCreater(getSessionController().getLoggedUser());
         newSs.setStaff(ss.getStaff());
         newSs.setRoomNo(ss.getRoomNo());
         newSs.setSessionNumberGenerator(saveSessionNumber(ss));

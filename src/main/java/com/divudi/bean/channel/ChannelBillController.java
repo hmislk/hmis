@@ -1415,6 +1415,10 @@ public class ChannelBillController implements Serializable {
         if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
             return true;
         }
+        
+        if (b.getPaymentMethod() ==  null) {
+            return true;
+        }
         return false;
     }
 
