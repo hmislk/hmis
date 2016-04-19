@@ -1,5 +1,6 @@
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -70,6 +71,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     //////////////////
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     /////////////////////
     private List<BillItem> billItems;
     List<Bill> selectedItems;
@@ -287,6 +290,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void calculateDueFees() {
+        Date startTime = new Date();
 
         if (getSpeciality() == null) {
             JsfUtil.addErrorMessage("Select Specility");
@@ -373,10 +377,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         System.out.println("sql = " + sql);
         dueBillFees.addAll(nonRefundableBillFees);
         System.out.println("dueBillFees.size() = " + dueBillFees.size());
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
 
     }
 
     public void calculateDueFeesAgency() {
+        Date startTime = new Date();
 
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "
@@ -411,6 +418,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("bt", BillType.ChannelAgent);
         dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Pay agent(/faces/channel/channel_payment_bill_search.xhtml)");
 
     }
 
@@ -978,4 +987,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

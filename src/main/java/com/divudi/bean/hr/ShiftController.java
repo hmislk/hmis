@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 package com.divudi.bean.hr;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.hr.Roster;
@@ -40,6 +42,8 @@ public class ShiftController implements Serializable {
     private RosterFacade rosterFacade;
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     boolean checked = false;
 
     private boolean errorCheck() {
@@ -247,6 +251,10 @@ public class ShiftController implements Serializable {
     }
 
     public void createShiftListReport() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql = "Select s From Shift s "
                 + " where s.retired=false ";
 
@@ -257,6 +265,8 @@ public class ShiftController implements Serializable {
         sql += " order by s.roster.name ";
 
         shiftList = getFacade().findBySQL(sql);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Entered shift report(/faces/hr/hr_shift_report.xhtml)");
     }
 
     public List<Shift> getShiftList() {
@@ -349,6 +359,14 @@ public class ShiftController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
             }
         }
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

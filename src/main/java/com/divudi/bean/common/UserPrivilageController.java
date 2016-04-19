@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.common;
+
 import com.divudi.data.Privileges;
 import com.divudi.data.dataStructure.PrivilageNode;
 import com.divudi.entity.WebUser;
@@ -22,7 +23,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -200,7 +202,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node3051a = new PrivilageNode("Purchase Wholesale", node305, Privileges.PharmacyPurchaseWh);
         TreeNode node3052 = new PrivilageNode("Purchase Cancel", node305, Privileges.PharmacyPurchaseCancellation);
         TreeNode node3053 = new PrivilageNode("Purchase Return", node305, Privileges.PharmacyPurchaseReturn);
-        TreeNode node3054 = new PrivilageNode("Pharmacy Return Without Traising", node305, Privileges.PharmacyReturnWithoutTraising);        
+        TreeNode node3054 = new PrivilageNode("Pharmacy Return Without Traising", node305, Privileges.PharmacyReturnWithoutTraising);
         ///////////////////
         TreeNode node308 = new PrivilageNode("Pharmacy Dealor Payment", node3, Privileges.PharmacyDealorPayment);
         TreeNode node309 = new PrivilageNode("Pharmacy Search", node3, Privileges.PharmacySearch);
@@ -344,7 +346,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node2305 = new PrivilageNode("Channel Sheduling", node23, Privileges.ChannellingChannelSheduling);
         TreeNode node2306 = new PrivilageNode("Channel Agent Fee", node23, Privileges.ChannellingChannelAgentFee);
         TreeNode node2309 = new PrivilageNode("Channel Booking Change", node23, Privileges.ChannelBookingChange);
-        TreeNode node2310=new PrivilageNode("Print Past Booking Recipt", node23, Privileges.ChannellingPrintInPastBooking);
+        TreeNode node2310 = new PrivilageNode("Print Past Booking Recipt", node23, Privileges.ChannellingPrintInPastBooking);
         TreeNode node2307 = new PrivilageNode("Payment", node23);
         TreeNode node23070 = new PrivilageNode("Payment Menu", node2307, Privileges.ChannellingPayment);
         TreeNode node23071 = new PrivilageNode("Pay Doctor", node2307, Privileges.ChannellingPaymentPayDoctor);
@@ -355,7 +357,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode node230101 = new PrivilageNode("Edit Appoinment Number", node23010, Privileges.ChannellingEditSerialNo);
         TreeNode node230102 = new PrivilageNode("Edit Patient Details", node23010, Privileges.ChannellingEditPatientDetails);
         TreeNode node230103 = new PrivilageNode("Delete Shedule", node23010, Privileges.ChannellingChannelShedulRemove);
-        
+        TreeNode node230104 = new PrivilageNode("Edit Session Name", node23010, Privileges.ChannellingChannelShedulName);
+        TreeNode node230105 = new PrivilageNode("Edit Credit Limit User Level", node23010, Privileges.ChannellingEditCreditLimitUserLevel);
+        TreeNode node230106 = new PrivilageNode("Edit Credit Limit Administrator Level", node23010, Privileges.ChannellingEditCreditLimitAdminLevel);
 
         return tmproot;
     }

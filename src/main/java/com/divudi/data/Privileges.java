@@ -261,6 +261,7 @@ public enum Privileges {
     ChannellingDoctorLeaveByServiceSession,
     ChannellingChannelSheduling,
     ChannellingChannelShedulRemove,
+    ChannellingChannelShedulName,
     ChannellingChannelAgentFee,
     ChannellingDoctorSessionView,
     ChannellingPayment,
@@ -271,6 +272,8 @@ public enum Privileges {
     ChannellingEditSerialNo,
     ChannellingEditPatientDetails,
     ChannellingPrintInPastBooking,
+    ChannellingEditCreditLimitUserLevel,
+    ChannellingEditCreditLimitAdminLevel,
     
     MemberShip,
     MembershipSchemes,

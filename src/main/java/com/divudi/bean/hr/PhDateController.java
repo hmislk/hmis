@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
@@ -42,6 +43,8 @@ public class PhDateController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private PhDateFacade ejbFacade;
     @EJB
@@ -84,6 +87,8 @@ public class PhDateController implements Serializable {
     }
 
     public void createHollydays() {
+        Date startTime = new Date();
+        
         String sql;
         HashMap m = new HashMap();
 
@@ -96,6 +101,8 @@ public class PhDateController implements Serializable {
         m.put("td", toDate);
 
         phDates = getFacade().findBySQL(sql, m);
+        
+        commonController.printReportDetails(frDate, toDate, startTime, "HR/Reports/HR holidays/Holiday report(/faces/hr/hr_report_ph_date.xhtml)");
 
     }
 
@@ -270,4 +277,14 @@ public class PhDateController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

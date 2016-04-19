@@ -41,7 +41,7 @@ import javax.persistence.TemporalType;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -52,6 +52,8 @@ public class ServiceController implements Serializable {
     SessionController sessionController;
     @Inject
     private ServiceSubCategoryController serviceSubCategoryController;
+    @Inject
+    CommonController commonController;
     @EJB
     private ServiceFacade ejbFacade;
     @EJB
@@ -67,7 +69,7 @@ public class ServiceController implements Serializable {
     List<Service> selectedItems;
     List<Service> selectedRetiredItems;
     private Service current;
-    Service currentInactiveService;    
+    Service currentInactiveService;
     private List<Service> items = null;
     private List<Service> filterItem;
     String selectText = "";
@@ -94,8 +96,8 @@ public class ServiceController implements Serializable {
             s.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(s);
         }
-        itemsToRemove=null;
-        items=null;
+        itemsToRemove = null;
+        items = null;
     }
 
     public List<Service> getSelectedRetiredItems() {
@@ -121,7 +123,6 @@ public class ServiceController implements Serializable {
     public void setCurrentInactiveService(Service currentInactiveService) {
         this.currentInactiveService = currentInactiveService;
     }
-          
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
@@ -259,8 +260,14 @@ public class ServiceController implements Serializable {
     }
 
     public void recreateModel() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         items = null;
         filterItem = null;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Service/Service list search(/faces/dataAdmin/opd_service_department_list.xhtml)");
     }
 
     private boolean errorCheck() {
@@ -392,7 +399,7 @@ public class ServiceController implements Serializable {
         getSelectedItems();
 
     }
-    
+
     public void activateService() {
 
         for (ItemFee it : getFees(currentInactiveService)) {
@@ -453,7 +460,7 @@ public class ServiceController implements Serializable {
 
         return temp;
     }
-    
+
     List<Service> deletedServices;
     List<Service> deletingServices;
 
@@ -473,7 +480,6 @@ public class ServiceController implements Serializable {
         this.deletingServices = deletingServices;
     }
 
-    
     public void listDeletedServices() {
         String sql = "select c from Service c where c.retired=true order by c.category.name,c.department.name";
         deletedServices = getFacade().findBySQL(sql);
@@ -482,8 +488,8 @@ public class ServiceController implements Serializable {
         }
     }
 
-    public void undeleteSelectedServices(){
-        for(Service s:deletingServices){
+    public void undeleteSelectedServices() {
+        for (Service s : deletingServices) {
             s.setRetired(false);
             s.setRetiredAt(null);
             s.setRetirer(null);
@@ -493,15 +499,14 @@ public class ServiceController implements Serializable {
         deletingServices = null;
         listDeletedServices();
     }
-    
 
     public List<Service> getItems() {
-        if(items==null){
+        if (items == null) {
             fillItems();
         }
         return items;
     }
-    
+
     public void fillItems() {
         String sql = "select c from Service c where c.retired=false order by c.category.name,c.department.name";
         items = getFacade().findBySQL(sql);
@@ -734,4 +739,14 @@ public class ServiceController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

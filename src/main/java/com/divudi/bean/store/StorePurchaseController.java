@@ -6,6 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.BillItemController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -73,6 +74,9 @@ public class StorePurchaseController implements Serializable {
     ApplicationController applicationController;
     @Inject
     BillItemController billItemController;
+    @Inject
+    CommonController commonController;
+    
 
     public BillItemController getBillItemController() {
         return billItemController;
@@ -262,6 +266,9 @@ public class StorePurchaseController implements Serializable {
     }
 
     public void settle() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         if (getBill().getFromInstitution() == null) {
             UtilityController.addErrorMessage("Select Dealor");
@@ -342,6 +349,8 @@ public class StorePurchaseController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Direct purchase(/faces/store/store_purchase.xhtml)");
     }
 
     private List<BillItem> billItems;
@@ -452,10 +461,10 @@ public class StorePurchaseController implements Serializable {
             getBillFacade().create(getBill());
         }
 
-        addBillItem();        
+        addBillItem();
         currentBillItem = null;
         calTotal();
-        
+
     }
 
     public void purchaseRateListener(PharmaceuticalBillItem pharmaceuticalBillItem) {
@@ -738,4 +747,12 @@ public class StorePurchaseController implements Serializable {
         return commonFunctions;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+ 
 }

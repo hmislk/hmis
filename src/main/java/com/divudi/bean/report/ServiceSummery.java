@@ -96,6 +96,8 @@ public class ServiceSummery implements Serializable {
     double reagentFeeTotalGT;
     double outSideFeeTotoalGT;
 
+    boolean onlyInwardBills;
+
     List<String1Value5> string1Value5;
 
     @EJB
@@ -131,6 +133,10 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createStaffWelfare() {
+        Date startTime = new Date();
+        Date fromDate  = null;
+        Date toDate  = null;
+
         String sql;
         sql = "select s from Staff s where "
                 + " s.retired=false "
@@ -138,6 +144,8 @@ public class ServiceSummery implements Serializable {
                 + " order by s.codeInterger ";
 
         staffs = getStaffFacade().findBySQL(sql);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/Staff welfare balance(/faces/reportInstitution/report_own.xhtml)");
 
     }
 
@@ -678,6 +686,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceSummery() {
+        Date startTime = new Date();
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.OpdBill, service, false)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -692,9 +702,13 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/Summery by service(/faces/reportInstitution/report_opd_service_summery.xhtml)");
+
     }
 
     public void createInvestigationSummery() {
+        Date startTime = new Date();
+        
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.OpdBill, service, false)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -709,6 +723,8 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false) + calServiceTot(BillType.OpdBill, FeeType.CollectingCentre, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by investigation OPD/Summery by investigation(/faces/reportInstitution/report_investigation_service_summery.xhtml)");
     }
 
     List<Bill> bills;
@@ -743,6 +759,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void opdPharmacyStaffWelfarebills() {
+        Date startTime = new Date();
+
         String sql;
         Map m = new HashMap();
 
@@ -762,6 +780,8 @@ public class ServiceSummery implements Serializable {
         //System.out.println("bills = " + bills);
 
         calTotal(bills);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Staff credit/Staff welfare(/faces/reportInstitution/report_opd_pharmacy_staff_welfare.xhtml)");
 
     }
 
@@ -791,18 +811,34 @@ public class ServiceSummery implements Serializable {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
         }
-
-        BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
-        List<BillType> bts = Arrays.asList(billType);
+        List<BillType> bts = new ArrayList<>();
+        if (onlyInwardBills) {
+            BillType billType[] = {BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        } else {
+            BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
+            bts = Arrays.asList(billType);
+        }
 
         serviceSummery = new ArrayList<>();
+        proFeeTotal = 0;
+        hosFeeTotal = 0;
+        outSideFeeTotoal = 0;
+        reagentFeeTotal = 0;
         for (BillItem i : getBillItem(bts, service, department, paymentMethod, false)) {
             BillItemWithFee bi = new BillItemWithFee();
             bi.setBillItem(i);
             bi.setReagentFee(calFee(i, FeeType.Chemical));
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
             //System.out.println("bi = " + bi);
+
+            proFeeTotal += bi.getProFee();
+            hosFeeTotal += bi.getHospitalFee();
+            outSideFeeTotoal += bi.getOutSideFee();
+            reagentFeeTotal += bi.getReagentFee();
+
             serviceSummery.add(bi);
         }
 
@@ -811,10 +847,10 @@ public class ServiceSummery implements Serializable {
 //        //System.out.println("hosFeeTotal = " + hosFeeTotal);
 //        //System.out.println("outSideFeeTotoal = " + outSideFeeTotoal);
 //        //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
-        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
-        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
-        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
-        reagentFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
+//        proFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
+//        hosFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.OwnInstitution, department, paymentMethod, false);
+//        outSideFeeTotoal = calServiceTot(BillType.OpdBill, service, FeeType.OtherInstitution, department, paymentMethod, false);
+//        reagentFeeTotal = calServiceTot(BillType.OpdBill, service, FeeType.Chemical, department, paymentMethod, false);
 //        List<BillFee> billfees =new ArrayList<>();
 //        billfees=createBillFees(BillType.OpdBill, service, FeeType.Staff, department, paymentMethod, false);
 //        for (BillFee bf : billfees) {
@@ -838,7 +874,6 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            //System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily Summery(/faces/reportLab/report_opd_service_summery.xhtml)");
 
     }
@@ -931,6 +966,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceSummeryInwardAdded() {
+        Date startTime = new Date();
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service, false)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -945,11 +982,12 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/ Summery by service - added date(/faces/reportInstitution/report_inward_service_detail_added.xhtml)");
     }
 
     public void createServiceSummeryInwardAddedDate() {
         Date startTime = new Date();
-        
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -968,12 +1006,14 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution);
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/lab summery inward/summery by added date(/faces/reportLab/report_inward_service_detail_added_lab.xhtml)");
 
     }
 
     public void createServiceSummeryInwardDischarged() {
+        Date startTime = new Date();
+
         serviceSummery = new ArrayList<>();
         for (BillItem i : getBillItem(BillType.InwardBill, service, true)) {
             BillItemWithFee bi = new BillItemWithFee();
@@ -987,6 +1027,8 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Staff, true);
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/ Summery by service - discharge date(/faces/reportInstitution/report_inward_service_detail_discharged.xhtml)");
     }
 
     List<BillItemWithFee> serviceSummery;
@@ -1143,6 +1185,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceCategorySummery() {
+        Date startTime = new Date();
+
         if (getCategory() == null) {
             return;
         }
@@ -1166,9 +1210,13 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/ Summery by service category(/faces/reportInstitution/report_opd_service_summery_by_category.xhtml)");
+
     }
 
     public void createInvestigationCategorySummery() {
+        Date startTime = new Date();
+        
         if (getCategory() == null) {
             return;
         }
@@ -1217,6 +1265,8 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by investigation OPD/Summery by investigation category(/faces/reportInstitution/report_opd_investigation_summery_by_category.xhtml)");
     }
 
     private void calServiceTot1(BillType billType, boolean discharged) {
@@ -1241,6 +1291,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceCategorySummeryInwardAdded() {
+        Date startTime = new Date();
+
         if (getCategory() == null) {
             return;
         }
@@ -1262,6 +1314,8 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/Summery by service category - added date(/faces/reportInstitution/report_inward_service_summery_by_category_added.xhtml)");
 
     }
 
@@ -1292,6 +1346,8 @@ public class ServiceSummery implements Serializable {
     }
 
     public void createServiceCategorySummeryInwardDischargedDetail() {
+        Date startTime = new Date();
+
         if (getCategory() == null) {
             return;
         }
@@ -1341,6 +1397,8 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service inward/Summery by service category - discharged date(/faces/reportInstitution/report_inward_service_summery_by_category_discharged.xhtml)");
 
     }
 
@@ -1918,6 +1976,14 @@ public class ServiceSummery implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public boolean isOnlyInwardBills() {
+        return onlyInwardBills;
+    }
+
+    public void setOnlyInwardBills(boolean onlyInwardBills) {
+        this.onlyInwardBills = onlyInwardBills;
     }
 
 }
