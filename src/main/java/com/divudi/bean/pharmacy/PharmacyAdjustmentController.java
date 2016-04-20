@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillClassType;
@@ -60,6 +61,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -506,6 +509,10 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void transferAllDepartmentStockAsAdjustment() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (fromDepartment == null) {
             JsfUtil.addErrorMessage("From ?");
             return;
@@ -642,11 +649,12 @@ public class PharmacyAdjustmentController implements Serializable {
 
             getPharmacyBean().resetStock(fromPbi, s, 0.0, fromDepartment);
             getPharmacyBean().addToStock(toPbi, s.getStock(), toDepartment);
-            
-            
+
             i++;
         }
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Tranfer all stock(/faces/pharmacy/pharmacy_adjustment_department_all.xhtml)");
     }
 
     public void tem() {
@@ -696,6 +704,10 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustDepartmentStock() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (errorCheck()) {
             return;
         }
@@ -708,9 +720,15 @@ public class PharmacyAdjustmentController implements Serializable {
         getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
 
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
 
     public void adjustPurchaseRate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         saveDeptAdjustmentBill();
         savePrAdjustmentBillItems();
         getStock().getItemBatch().setPurcahseRate(pr);
@@ -720,9 +738,15 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Purchase rate(/faces/pharmacy/pharmacy_adjustment_purchase_rate.xhtml)");
     }
 
     public void adjustExDate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         saveDeptAdjustmentBill();
         saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setDateOfExpire(exDate);
@@ -731,9 +755,15 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Expiry Rate(/faces/pharmacy/pharmacy_adjustment_expiry_date.xhtml)");
     }
 
     public void adjustRetailRate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         saveDeptAdjustmentBill();
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
@@ -742,15 +772,23 @@ public class PharmacyAdjustmentController implements Serializable {
 //        clearBill();
 //        clearBillItem();
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Sale rate(/faces/pharmacy/pharmacy_adjustment_retail_sale_rate.xhtml)");
     }
 
     public void adjustWholesaleRate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         saveDeptAdjustmentBill();
         saveWsrAdjustmentBillItems();
         getStock().getItemBatch().setWholesaleRate(wsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
         bill = billFacade.find(getDeptAdjustmentPreBill().getId());
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");
     }
 
     private void clearBill() {
@@ -962,6 +1000,14 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

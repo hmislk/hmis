@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.SystemTimeStamp;
@@ -56,6 +57,8 @@ public class StaffAdditionalFormController implements Serializable {
     private AdditionalFormFacade additionalFormFacade;
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     Date date;
     List<StaffShift> staffShifts;
     List<AditionalWithTime> aditionalWithTimes;
@@ -263,6 +266,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void searchByCreatedDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -278,6 +283,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
     }
 
     public void calTotals(List<AdditionalForm> list) {
@@ -297,6 +304,8 @@ public class StaffAdditionalFormController implements Serializable {
     HrFormFacade hrFormFacade;
 
     public void searchFormByCreatedDate() {
+        Date startTime = new Date();
+        
         String sql = "";
         Map m = new HashMap();
 
@@ -315,6 +324,8 @@ public class StaffAdditionalFormController implements Serializable {
         hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
     }
 
 //    public void searchFormByApprovedDate() {
@@ -337,6 +348,8 @@ public class StaffAdditionalFormController implements Serializable {
 ////        calMinitsAditional(additionalForms);
 //    }
     public void searchFormByShiftDate() {
+        Date startTime = new Date();
+        
         String sql = "";
         Map m = new HashMap();
 
@@ -353,6 +366,8 @@ public class StaffAdditionalFormController implements Serializable {
         hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Form report that not comes toanalys(/faces/hr/hr_form_staff_form_report.xhtml)");
     }
 
     public List<HrForm> getHrForms() {
@@ -364,6 +379,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void searchByShiftDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -379,9 +396,13 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
     }
 
     public void searchByApproveDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -397,9 +418,13 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
 //        calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report vertification(/faces/hr/hr_form_staff_additional_report.xhtml)");
     }
 
     public void createAmmendmentTable() {
+        Date startTime = new Date();
+
         String sql;
         Map m = new HashMap();
 
@@ -429,6 +454,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
 
     }
 
@@ -462,6 +489,8 @@ public class StaffAdditionalFormController implements Serializable {
     }
 
     public void createAmmendmentTableApprovedDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -489,10 +518,14 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Approved Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
 
     }
 
     public void createAmmendmentTableShiftDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -520,6 +553,8 @@ public class StaffAdditionalFormController implements Serializable {
         additionalForms = getAdditionalFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         calMinitsAditional(additionalForms);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Forms/Additional form report(Search Shift Date)(/faces/hr/hr_form_staff_additional_report_1.xhtml)");
 
     }
 
@@ -798,34 +833,33 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        if (fetchCurrentSalaryCycle(date) != null) {
-            SalaryCycle s = fetchCurrentSalaryCycle(date);
-            System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-            System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
-            System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
-            Date nowDate = CommonFunctions.getEndOfDay();
-            System.out.println("nowDate = " + nowDate);
-            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
-                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-                System.out.println("d = " + d);
-                if (d > 3) {
-                    JsfUtil.addErrorMessage("You Can't Add This Addional."
-                            + "because you can add only additionls within 3 days after Day off / PH To Date");
-                    return true;
-                }
-            }
-        }
-
-        if (fetchCurrentSalaryCycle(date) != null) {
-            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
-            if (s.getId() != null) {
-                JsfUtil.addErrorMessage("You Can't Add This Addional."
-                        + "because this salary was createed");
-                return true;
-            }
-        }
-
+//        if (fetchCurrentSalaryCycle(date) != null) {
+//            SalaryCycle s = fetchCurrentSalaryCycle(date);
+//            System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+//            System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
+//            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
+//            System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
+//            Date nowDate = CommonFunctions.getEndOfDay();
+//            System.out.println("nowDate = " + nowDate);
+//            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
+//                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+//                System.out.println("d = " + d);
+//                if (d > 3) {
+//                    JsfUtil.addErrorMessage("You Can't Add This Addional."
+//                            + "because you can add only additionls within 3 days after Day off / PH To Date");
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        if (fetchCurrentSalaryCycle(date) != null) {
+//            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
+//            if (s.getId() != null) {
+//                JsfUtil.addErrorMessage("You Can't Add This Addional."
+//                        + "because this salary was createed");
+//                return true;
+//            }
+//        }
         //NEED To Check StaffSHift  if not selected is there any shift time on that day
         return false;
     }
@@ -962,34 +996,33 @@ public class StaffAdditionalFormController implements Serializable {
             return true;
         }
 
-        if (fetchCurrentSalaryCycle(date) != null) {
-            SalaryCycle s = fetchCurrentSalaryCycle(date);
-            System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
-            System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
-            System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
-            Date nowDate = CommonFunctions.getEndOfDay();
-            System.out.println("nowDate = " + nowDate);
-            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
-                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-                System.out.println("d = " + d);
-                if (d > 3) {
-                    JsfUtil.addErrorMessage("You Can't Add This Addional."
-                            + "because you can add only additionls within 3 days after Day off / PH To Date");
-                    return true;
-                }
-            }
-        }
-
-        if (fetchCurrentSalaryCycle(date) != null) {
-            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
-            if (s.getId() != null) {
-                JsfUtil.addErrorMessage("You Can't Add This Addional."
-                        + "because this salary was createed");
-                return true;
-            }
-        }
-
+//        if (fetchCurrentSalaryCycle(date) != null) {
+//            SalaryCycle s = fetchCurrentSalaryCycle(date);
+//            System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+//            System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
+//            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
+//            System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
+//            Date nowDate = CommonFunctions.getEndOfDay();
+//            System.out.println("nowDate = " + nowDate);
+//            if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
+//                double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+//                System.out.println("d = " + d);
+//                if (d > 3) {
+//                    JsfUtil.addErrorMessage("You Can't Add This Addional."
+//                            + "because you can add only additionls within 3 days after Day off / PH To Date");
+//                    return true;
+//                }
+//            }
+//        }
+//
+//        if (fetchCurrentSalaryCycle(date) != null) {
+//            StaffSalary s = humanResourceBean.getStaffSalary(currentAdditionalForm.getStaff(), fetchCurrentSalaryCycle(date));
+//            if (s.getId() != null) {
+//                JsfUtil.addErrorMessage("You Can't Add This Addional."
+//                        + "because this salary was createed");
+//                return true;
+//            }
+//        }
 //        if (getCurrentAdditionalForm().getTimes() != Times.All && currentAdditionalForm.getStaffShift() == null) {
 //            JsfUtil.addErrorMessage("Please Select Staff Shiftt");
 //            return true;
@@ -1530,4 +1563,13 @@ public class StaffAdditionalFormController implements Serializable {
         this.totalAllTime = totalAllTime;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

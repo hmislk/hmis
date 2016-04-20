@@ -281,6 +281,10 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void fillNonMoving() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         Map allItems;
         List<Item> movedItems;
         Stock s = new Stock();
@@ -301,6 +305,8 @@ public class PharmacySaleReport implements Serializable {
 
         nonMovingItems = itemFacade.findBySQL(j, m);
         //System.out.println("nonMovingItems = " + nonMovingItems);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk category(/faces/pharmacy/pharmacy_report_non_moving_items.xhtml)");
     }
 
     public void setCategory(Category category) {
@@ -352,6 +358,8 @@ public class PharmacySaleReport implements Serializable {
 //
 //    }
     public void createGRNBillItemTable() {
+        Date startTime = new Date();
+
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
         Map m = new HashMap();
@@ -388,6 +396,8 @@ public class PharmacySaleReport implements Serializable {
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN bill item report(/faces/pharmacy/pharmacy_report_grn_billitem.xhtml)");
     }
 
     public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
@@ -2312,6 +2322,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSaleReportByDate() {
+        Date startTime = new Date();
+
         billedSummery = new PharmacySummery();
 
         List<Object[]> list = fetchSaleValueByDepartment();
@@ -2364,6 +2376,8 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalByDepartment();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by bill type(/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml)");
 
     }
 
@@ -2535,6 +2549,8 @@ public class PharmacySaleReport implements Serializable {
     double totalMargineValue;
 
     public void createCategoryMovementReport() {
+        Date startTime = new Date();
+
         String jpql;
         Map m = new HashMap();
         PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
@@ -2548,22 +2564,20 @@ public class PharmacySaleReport implements Serializable {
 //        pbi.getItemBatch().getPurcahseRate();
 //        pbi.getQty();
 
-        m
-                .put("bc", PreBill.class
-                );
-        m.put(
-                "fd", fromDate);
-        m.put(
-                "td", toDate);
-        m.put(
-                "cat", category);
+        m.put("bc", PreBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
         jpql = "select pbi.billItem.bill.billType, pbi.billItem.item, sum(pbi.billItem.netValue), sum(pbi.itemBatch.purcahseRate*pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
                 + " where type(pbi.billItem.bill)=:bc "
-                + " and pbi.billItem.bill.createdAt between :fd and :td "
-                + " and pbi.billItem.item.category=:cat ";
-        if (department
-                != null) {
+                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            jpql += " and pbi.billItem.item.category=:cat ";
+            m.put("cat", category);
+        }
+        if (department != null) {
             jpql = jpql + " and pbi.billItem.bill.department=:dept ";
             m.put("dept", department);
         }
@@ -2672,6 +2686,8 @@ public class PharmacySaleReport implements Serializable {
             totalTatalValue += r.getTotal();
             totalMargineValue += r.getMarginValue();
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement.xhtml)");
     }
 
     public void createCategoryMovementReportByItemBatch() {
@@ -2813,19 +2829,22 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createCategoryMovementReportByItemBatch2() {
+        Date startTime = new Date();
+
         String jpql;
         Map m = new HashMap();
 
         m.put("bc", PreBill.class);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("bts", Arrays.asList(new BillType[]{BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive}));
 
         jpql = "select pbi.billItem.bill.billType, "
                 + " pbi.itemBatch, "
                 + " pbi.billItem, "
                 + " stk "
                 + " from PharmaceuticalBillItem pbi,Stock stk "
-                + " where type(pbi.billItem.bill)=:bc "
+                + " where (type(pbi.billItem.bill)=:bc or (type(pbi.billItem.bill)!=:bc and pbi.billItem.bill.billType in :bts)) "
                 + " and stk.itemBatch=pbi.itemBatch "
                 + " and pbi.billItem.bill.createdAt between :fd and :td ";
 
@@ -2841,6 +2860,10 @@ public class PharmacySaleReport implements Serializable {
         jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch, pbi.billItem ";
         jpql = jpql + " order by pbi.itemBatch.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("objs = " + objs.size());
+//        List<Object[]> obj = fetchTransferIssueReciveBills();
+//        objs.addAll(obj);
+//        System.out.println("objs = " + objs.size());
         categoryMovementReportRows = new ArrayList<>();
         ItemBatch pi = null;
         BillItem bi = null;
@@ -2923,13 +2946,17 @@ public class PharmacySaleReport implements Serializable {
                     case PharmacyTransferIssue:
 //                        //System.out.println("tx issue ");
 //                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
-                        r.setTransferIn(r.getTransferIn() + netValue);
+                        System.out.println("qty IN = " + qty);
+                        r.setTransferInQty(r.getTransferInQty() + qty);
+                        r.setTransferIn(r.getTransferIn() + (r.getTransferOutQty() * itemBatch.getPurcahseRate()));
 //                        //System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
 //                        //System.out.println("tx issue ");
 //                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
-                        r.setTransferOut(r.getTransferOut() + netValue);
+                        System.out.println("qty OUT = " + qty);
+                        r.setTransferOutQty(r.getTransferOutQty() + qty);
+                        r.setTransferOut(r.getTransferOut() + (r.getTransferOutQty() * itemBatch.getPurcahseRate()));
 //                        //System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
@@ -2951,6 +2978,44 @@ public class PharmacySaleReport implements Serializable {
             totalTatalValue += r.getTotal();
             totalMargineValue += r.getMarginValue();
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date- by batch(/faces/pharmacy/pharmacy_report_category_vice_movement_item_batch.xhtml)");
+    }
+
+    public List<Object[]> fetchTransferIssueReciveBills() {
+        List<Object[]> objects = new ArrayList<>();
+        String jpql;
+        Map m = new HashMap();
+
+//        m.put("bc", PreBill.class);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bts", Arrays.asList(new BillType[]{BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive}));
+
+        jpql = "select pbi.billItem.bill.billType, "
+                + " pbi.itemBatch, "
+                + " pbi.billItem, "
+                + " stk "
+                + " from PharmaceuticalBillItem pbi,Stock stk "
+                + " where pbi.billItem.bill.billType in :bts"
+                //                + " and type(pbi.billItem.bill)=:bc "
+                + " and stk.itemBatch=pbi.itemBatch "
+                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+
+        if (category != null) {
+            jpql = jpql + " and pbi.billItem.item.category=:cat";
+            m.put("cat", category);
+        }
+
+        if (department != null) {
+            jpql = jpql + " and pbi.billItem.bill.department=:dept ";
+            m.put("dept", department);
+        }
+        jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch, pbi.billItem ";
+        jpql = jpql + " order by pbi.itemBatch.item.name ";
+        objects = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects = " + objects.size());
+        return objects;
     }
 
     public List<CategoryMovementReportRow> getCategoryMovementReportRows() {
@@ -2978,6 +3043,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createIssueReportByDate() {
+        Date startTime = new Date();
+
         billedSummery = new PharmacySummery();
 
         billedSummery.setBills(new ArrayList<String1Value3>());
@@ -3011,6 +3078,8 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalIssue(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalIssue();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery.xhtml)");
 
     }
 
@@ -3228,10 +3297,10 @@ public class PharmacySaleReport implements Serializable {
 
     public void createDailyOpdFeeSummeryWithCounts() {
         Date startTime = new Date();
-        
+
         BillType[] btps = new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery with counts(/faces/reportLab/report_lab_by_date_summery_cash_credit_only_total.xhtml)");
     }
 
@@ -3249,16 +3318,16 @@ public class PharmacySaleReport implements Serializable {
 
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithCounts(btps);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/OPD fee summery with count(/faces/reportLab/daily_inward_fee_summery_counts.xhtml)");
     }
 
     public void createDailyInwardFeeSummeryWithoutCounts() {
         Date startTime = new Date();
-        
+
         BillType[] btps = new BillType[]{BillType.InwardBill};
         createFeeSummeryWithoutCounts(btps);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Daily OPD fee summery(report_lab_by_date_summery_cash_credit.xhtml)");
     }
 
@@ -3766,6 +3835,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyReport() {
+        Date startTime = new Date();
+
         List<Department> departments = fetchDepartment(DepartmentType.Pharmacy);
 
         saleValuesCash = new ArrayList<>();
@@ -4106,6 +4177,8 @@ public class PharmacySaleReport implements Serializable {
             unitIssues.add(newRow);
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml)");
+
     }
 
     public void createSalePaymentMethod() {
@@ -4170,6 +4243,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalePaymentMethodByBill() {
+        Date startTime = new Date();
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethodByBill();
@@ -4228,6 +4303,8 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by paymentmethod(By bill)(/faces/pharmacy/pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml)");
+
     }
 
     @EJB
@@ -4254,6 +4331,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyIssueBHT() {
+        Date startTime = new Date();
+
         itemWithDepBHTIssues = new ArrayList<>();
         ItemWithDepBHTIssue depBHTIssue = null;
         totalBHTIssue = 0.0;
@@ -4298,6 +4377,8 @@ public class PharmacySaleReport implements Serializable {
                 itemWithDepBHTIssues.add(depBHTIssue);
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue with margin report(/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin.xhtml)");
 
     }
 
@@ -4401,6 +4482,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSaleReportByDateDetail() {
+        Date startTime = new Date();
+
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -4469,9 +4552,13 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartment();
         grantDiscount = calGrantDiscountByDepartmentByBill();
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail - by bill(/faces/pharmacy/pharmacy_report_sale_by_date_detail.xhtml)");
+
     }
 
     public void createSaleReportByDateDetailPaymentScheme() {
+        Date startTime = new Date();
+
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -4539,6 +4626,8 @@ public class PharmacySaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartmentPaymentScheme();
         grantDiscount = calGrantDiscountByDepartmentPaymentScheme();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail by discount schema(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml)");
 
     }
 
@@ -4619,6 +4708,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalereportByDateSummeryPaymentscheam() {
+        Date startTime = new Date();
+
         if (department == null) {
             UtilityController.addErrorMessage("Select Department");
             return;
@@ -4642,6 +4733,8 @@ public class PharmacySaleReport implements Serializable {
         billTotalWholeSale = w.getNetTotal();
         canTotalWholeSale = w.getCancelledTotal();
         refTotalWholeSale = w.getRefundTotal();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml)");
 
     }
 
@@ -4787,6 +4880,8 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalePaymentMethodDetailByBill() {
+        Date startTime = new Date();
+
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -4963,6 +5058,7 @@ public class PharmacySaleReport implements Serializable {
         grantCreditTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacyWholeSale);
         grantDiscountWholeSale = calGrantDiscountByDepartmentByBill(BillType.PharmacyWholeSale);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml)");
     }
 
     public void createSalePaymentMethodDetailBillItems() {
@@ -5063,6 +5159,10 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createItemListWithOutItemDistributer() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         List<Amp> allAmps = getAllPharmacyItems();
         //System.out.println("allAmps = " + allAmps.size());
         List<Amp> ampsWithDealor = getAllDealorItems();
@@ -5072,9 +5172,15 @@ public class PharmacySaleReport implements Serializable {
         amps = new ArrayList<>();
         amps.addAll(allAmps);
         //System.out.println("amps = " + amps.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Items without distributors(/faces/pharmacy/pharmacy_report_list_amps_with_out_distributor.xhtml)");
     }
 
     public void createItemsDistributersWithDistributer() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         distributerWithDestributorItems = new ArrayList<>();
         List<Institution> distributors = getAllDealors();
         System.out.println("distributors.size() = " + distributors.size());
@@ -5088,6 +5194,8 @@ public class PharmacySaleReport implements Serializable {
                 distributerWithDestributorItems.add(dwdi);
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/item with distributors(/faces/pharmacy/pharmacy_report_list_distributor_with_distributor_items.xhtml)");
     }
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
@@ -5113,6 +5221,10 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createItemListOneItemHasGreterThanOneDistributorOther() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         List<Amp> ampsWithDealor = getAllDealorItems();
         //System.out.println("ampsWithDealor = " + ampsWithDealor.size());
 
@@ -5134,9 +5246,14 @@ public class PharmacySaleReport implements Serializable {
         }
         //System.out.println("items = " + items.size());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/item with multiple ditributors(Items only)(/faces/pharmacy/pharmacy_report_list_grater_than_one_distributor.xhtml)");
     }
 
     public void createItemWithMultipleDistributor() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         createItemListOneItemHasGreterThanOneDistributorOther();
         itemsWithDistributers = new ArrayList<>();
         for (Item i : items) {
@@ -5150,6 +5267,8 @@ public class PharmacySaleReport implements Serializable {
             }
 
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item with multiple ditributors(/faces/pharmacy/pharmacy_report_list_item_with_multiple_dealor.xhtml)");
     }
 
     public List<Amp> getAllPharmacyItems() {

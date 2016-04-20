@@ -232,8 +232,9 @@ public class PatientController implements Serializable {
                 + " or upper(p.person.nic) like :q "
                 + " or upper(p.person.mobile) like :q "
                 + " or upper(p.person.phone) like :q "
-                + " or upper(p.person.address) like :q )"
-                + "order by p.person.name";
+                + " or upper(p.person.address) like :q "
+                + " or upper(p.phn) like :q)"
+                + " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
@@ -269,6 +270,10 @@ public class PatientController implements Serializable {
         }
         if(getCurrent().getPerson().getName().trim().equals("")){
             UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (getCurrent().getPhn().equals("")) {
+            UtilityController.addErrorMessage("Please Enter PHN number");
             return;
         }
         if (getCurrent().getPerson().getId() == null) {
@@ -330,6 +335,7 @@ public class PatientController implements Serializable {
             current = new Patient();
             current.setCode(getCountPatientCode());
             current.setPerson(p);
+           
         }
         return current;
     }

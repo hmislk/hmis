@@ -14,6 +14,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.IssueRateMargins;
 import com.divudi.facade.IssueRateMarginsFacade;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,8 @@ public class IssueRateMarginsController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private IssueRateMarginsFacade ejbFacade;
     private IssueRateMargins current;
@@ -88,6 +91,10 @@ public class IssueRateMarginsController implements Serializable {
     DepartmentController departmentController;
 
     public void addAllDep() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (fromDepartment == null) {
             return;
         }
@@ -105,6 +112,8 @@ public class IssueRateMarginsController implements Serializable {
         }
 
         createMargins();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Unit Issue/Unit issue margin(Add All)(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
 
     public void onEdit(IssueRateMargins tmp) {
@@ -177,11 +186,17 @@ public class IssueRateMarginsController implements Serializable {
     }
 
     public void createMargins() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql;
         sql = "select m from IssueRateMargins m "
                 + " where m.retired=false ";
 
         items = ejbFacade.findBySQL(sql);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
     }
 
     public IssueRateMargins getCurrent() {
@@ -307,6 +322,14 @@ public class IssueRateMarginsController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + IssueRateMarginsController.class.getName());
             }
         }
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

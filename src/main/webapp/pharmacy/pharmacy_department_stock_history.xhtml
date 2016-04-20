@@ -34,7 +34,7 @@
                                                 var="d" itemLabel="#{d.name}"
                                                 itemValue="#{d}"
                                                 value="#{stockHistoryController.department}"
-                                                converter="departmentConverter" >
+                                                 converter="departmentConverter" >
                                     <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
                                 </p:autoComplete>
 
@@ -59,7 +59,7 @@
                                              >
                                     <p:column headerText="History Availabe Days" >
                                         <p:outputLabel value="#{d}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
                                 </p:dataTable>

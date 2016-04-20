@@ -7,27 +7,34 @@ package com.divudi.ejb;
 
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
+import com.divudi.entity.channel.ArrivalRecord;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.StockHistory;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeChangeFacade;
+import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
+import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -57,6 +64,16 @@ public class StockHistoryRecorder {
     FeeChangeFacade feeChangeFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    ChannelBean channelBean;
+    @EJB
+    StaffFacade staffFacade;
+    @EJB
+    FingerPrintRecordFacade fingerPrintRecordFacade;
+    @EJB
+    FinalVariables finalVariables;
 
     @Inject
     CommonFunctions commonFunctions;
@@ -100,7 +117,7 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(hour = "23", minute = "59", second = "59", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    @Schedule(hour = "00", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);
@@ -128,7 +145,264 @@ public class StockHistoryRecorder {
         //System.out.println("End writing stock history: " + new Date());
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
-    
+
+    @SuppressWarnings("unused")
+    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
+    public void myTimerDailyChannelShedule() {
+        Date startTime = new Date();
+        System.out.println("Start Create Shedule " + startTime);
+
+        for (Staff s : staffs()) {
+            generateSessions(s);
+        }
+
+        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
+
+        //System.out.println("End writing stock history: " + new Date());
+//        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+    }
+
+    public void generateSessions(Staff staff) {
+        String sql;
+        Map m = new HashMap();
+        m.put("staff", staff);
+        m.put("class", ServiceSession.class);
+        System.err.println("Time stage 1 = " + new Date());
+        if (staff != null) {
+            sql = "Select s.id From ServiceSession s "
+                    + " where s.retired=false "
+                    + " and s.staff=:staff "
+                    + " and s.originatingSession is null "
+                    + " and type(s)=:class "
+                    + " order by s.sessionWeekday,s.startingTime ";
+            System.out.println("Consultant = " + staff.getPerson().getName());
+            System.out.println("m = " + m);
+            System.out.println("sql = " + sql);
+            List<Long> tmp = new ArrayList<>();
+            System.err.println("Time stage 2.1 = " + new Date());
+            tmp = serviceSessionFacade.findLongList(sql, m);
+            System.err.println("Time stage 2.2 = " + new Date());
+
+            System.err.println("Fetch Original Sessions = " + tmp.size());
+            System.err.println("Time stage 3.1 = " + new Date());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+            System.err.println("Time stage 3.2 = " + new Date());
+            if (tmp.isEmpty()) {
+                return;
+            }
+            System.err.println("Time stage 4.1 = " + new Date());
+            generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, null);
+            System.err.println("Time stage 4.2 = " + new Date());
+
+            System.err.println("Time stage 5 = " + new Date());
+//            generateSessionEvents(serviceSessions);
+            System.err.println("Time stage 6 = " + new Date());
+        }
+    }
+
+    public List<Staff> staffs() {
+        String sql;
+        Map m = new HashMap();
+        List<Staff> consultants = new ArrayList<>();
+        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                + " and pi.type=:typ "
+                + " order by pi.staff.person.name ";
+
+        m.put("typ", PersonInstitutionType.Channelling);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        consultants = staffFacade.findBySQL(sql, m);
+        System.out.println("consultants.size() = " + consultants.size());
+
+        return consultants;
+    }
+
+    public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessions, Date d) {
+        int sessionDayCount = 0;
+        List<ServiceSession> createdSessions = new ArrayList<>();
+
+        if (inputSessions == null || inputSessions.isEmpty()) {
+            return;
+        }
+        Date nowDate;
+        if (d == null) {
+            nowDate = Calendar.getInstance().getTime();
+        } else {
+            nowDate = d;
+        }
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(nowDate);
+        c.add(Calendar.MONTH, 2);
+        Date toDate = c.getTime();
+        Integer tmp = 0;
+        int rowIndex = 0;
+        System.err.println("Time 1 = " + new Date());
+        List<ServiceSession> sessions = new ArrayList<>();
+        int finalSessionDayCount = finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
+        while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
+            if (sessions.isEmpty()) {
+                for (Long s : inputSessions) {
+                    ServiceSession ss = serviceSessionFacade.find(s);
+                    sessions.add(ss);
+                    if (ss.getSessionDate() != null) {
+                        Calendar sessionDate = Calendar.getInstance();
+                        sessionDate.setTime(ss.getSessionDate());
+                        Calendar nDate = Calendar.getInstance();
+                        nDate.setTime(nowDate);
+                        System.out.println("ss.getId() = " + ss.getId());
+                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
+                        System.out.println("ss.getName() = " + ss.getName());
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                            ServiceSession newSs = new ServiceSession();
+                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            System.out.println("newSs 1 = " + newSs);
+                            if (newSs == null) {
+                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
+                            }
+                            System.out.println("newSs 2 = " + newSs);
+                            //Temprory
+                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
+                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
+                            newSs.setStaff(ss.getStaff());
+                            newSs.setTransRowNumber(rowIndex++);
+                            //add to list
+
+                            createdSessions.add(newSs);
+                            checkDoctorArival(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
+                            if (Objects.equals(tmp, ss.getSessionWeekday())) {
+                                sessionDayCount++;
+                            }
+                        }
+                    } else {
+                        Calendar wdc = Calendar.getInstance();
+                        wdc.setTime(nowDate);
+                        if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
+                            ServiceSession newSs = new ServiceSession();
+                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            if (newSs == null) {
+                                newSs = new ServiceSession();
+//                            System.err.println("Cretate New");
+                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
+                            }
+//                        System.out.println("newSs = " + newSs);
+                            //Temprory
+                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
+                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
+                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
+                            newSs.setTransRowNumber(rowIndex++);
+                            //add to list
+                            createdSessions.add(newSs);
+                            checkDoctorArival(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
+                            if (!Objects.equals(tmp, ss.getSessionWeekday())) {
+                                sessionDayCount++;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (ServiceSession ss : sessions) {
+//                    if (ss.isServiceSessionCreateForOriginatingSession()) {
+//                        System.err.println("******");
+//                        continue;
+//                    }
+                    if (ss.getSessionDate() != null) {
+                        Calendar sessionDate = Calendar.getInstance();
+                        sessionDate.setTime(ss.getSessionDate());
+                        Calendar nDate = Calendar.getInstance();
+                        nDate.setTime(nowDate);
+                        System.out.println("ss.getId() = " + ss.getId());
+                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
+                        System.out.println("ss.getName() = " + ss.getName());
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                            ServiceSession newSs = new ServiceSession();
+                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            System.out.println("newSs 1 = " + newSs);
+                            if (newSs == null) {
+                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
+                            }
+                            System.out.println("newSs 2 = " + newSs);
+                            //Temprory
+                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
+                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
+                            newSs.setStaff(ss.getStaff());
+                            newSs.setTransRowNumber(rowIndex++);
+                            //add to list
+                            createdSessions.add(newSs);
+                            checkDoctorArival(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
+                            if (Objects.equals(tmp, ss.getSessionWeekday())) {
+                                sessionDayCount++;
+                            }
+                        }
+                    } else {
+                        Calendar wdc = Calendar.getInstance();
+                        wdc.setTime(nowDate);
+                        if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
+                            ServiceSession newSs = new ServiceSession();
+                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            if (newSs == null) {
+                                newSs = new ServiceSession();
+//                            System.err.println("Cretate New");
+                                newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
+                            }
+//                        System.out.println("newSs = " + newSs);
+                            //Temprory
+                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
+                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
+                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
+                            newSs.setTransRowNumber(rowIndex++);
+                            //add to list
+                            createdSessions.add(newSs);
+                            checkDoctorArival(newSs);
+                            ss.setServiceSessionCreateForOriginatingSession(true);
+                            if (!Objects.equals(tmp, ss.getSessionWeekday())) {
+                                sessionDayCount++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Calendar nc = Calendar.getInstance();
+            nc.setTime(nowDate);
+            nc.add(Calendar.DATE, 1);
+            nowDate = nc.getTime();
+
+        }
+
+    }
+
+    public void checkDoctorArival(ServiceSession s) {
+        s.setArival(findArrivals(s));
+    }
+
+    public Boolean findArrivals(ServiceSession ss) {
+        ArrivalRecord arrivalRecord = new ArrivalRecord();
+        String sql = "Select bs From ArrivalRecord bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession.id=:ss "
+                + " and bs.sessionDate=:ssDate ";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", ss.getSessionDate());
+        hh.put("ss", ss.getId());
+        arrivalRecord = (ArrivalRecord) fingerPrintRecordFacade.findFirstBySQL(sql, hh);
+
+        if (arrivalRecord != null) {
+            if (arrivalRecord.isApproved()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return null;
+    }
+
     public List<Department> fetchStockDepartment() {
         String sql;
         Map m = new HashMap();
@@ -205,8 +479,12 @@ public class StockHistoryRecorder {
                 + " and type(f.serviceSession)=:type "
                 + " and f.serviceSession.originatingSession is null "
                 + " and f.feeType=:ft "
-                + " and f.serviceSession.staff=:staff "
                 + " and f.name=:a ";
+
+        if (staff != null) {
+            sql += " and f.serviceSession.staff=:staff ";
+            m.put("staff", staff);
+        }
 
         if ((ft == FeeType.Service && s.equals("Scan Fee")) || (ft == FeeType.OwnInstitution && s.equals("Hospital Fee"))) {
             sql += " and (f.fee>0 or f.ffee>0) ";
@@ -216,7 +494,6 @@ public class StockHistoryRecorder {
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
         m.put("a", s);
-        m.put("staff", staff);
         List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
         System.out.println("itemFees.size() = " + itemFees.size());
         return itemFees;

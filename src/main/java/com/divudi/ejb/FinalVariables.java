@@ -76,9 +76,9 @@ public class FinalVariables {
             }
         }
         if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
-            if (maxRowNumber!=0) {
+            if (maxRowNumber != 0) {
                 return maxRowNumber;
-            }else{
+            } else {
                 maxRowNumber = 14;
             }
         } else if (maxRowNumber < 14) {
@@ -87,11 +87,11 @@ public class FinalVariables {
 
         return maxRowNumber;
     }
-    
+
     public Integer getSessionSessionDayCounterLargestById(List<Long> inputSessions) {
         int maxRowNumber = 0;
         for (Long s : inputSessions) {
-            ServiceSession ss=serviceSessionFacade.find(s);
+            ServiceSession ss = serviceSessionFacade.find(s);
 //            System.out.println("maxRowNumber = " + maxRowNumber);
 //            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
             if (maxRowNumber < ss.getMaxTableRows()) {
@@ -99,17 +99,12 @@ public class FinalVariables {
 //                System.out.println("maxRowNumber = " + maxRowNumber);
             }
         }
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
-            if (maxRowNumber!=0) {
-                return maxRowNumber;
-            }else{
-                maxRowNumber = 14;
-            }
-        } else if (maxRowNumber < 14) {
+        if (maxRowNumber != 0) {
+            return maxRowNumber;
+        } else {
             maxRowNumber = 14;
+            return maxRowNumber;
         }
-
-        return maxRowNumber;
     }
 
     public double getCahnnelingDurationMinute() {

@@ -654,9 +654,9 @@ public class ChannelBillController implements Serializable {
     public void cancelAgentPaidBill() {
         System.out.println("getBillSession() = " + getBillSession());
         System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
-        if (getBillSessionTmp()!=null) {
+        if (getBillSessionTmp() != null) {
             setBillSession(getBillSessionTmp());
-        }else{
+        } else {
             setBillSession(getBillSession());
         }
         System.out.println("getBillSession() = " + getBillSession());
@@ -1203,12 +1203,11 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
-    
-    public void clearAll(){
+    public void clearAll() {
         makeNull();
         makeNullSearchData();
     }
-    
+
     public void makeNull() {
         System.err.println("make null");
         amount = 0.0;
@@ -1236,12 +1235,12 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
-        comment="";
-        commentR="";
-        
+        comment = "";
+        commentR = "";
+
     }
-    
-    public void makeNullSearchData(){
+
+    public void makeNullSearchData() {
         channelSearchController.setFromDate(null);
         channelSearchController.setToDate(null);
         channelSearchController.setTxtSearch("");
@@ -1258,7 +1257,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
-        
+
         removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
@@ -1346,7 +1345,7 @@ public class ChannelBillController implements Serializable {
             }
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
+        if (getSs().getMaxNo() != 0.0 && (getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund()+getbookingController().getSelectedServiceSession().getStartingNo()) >= getSs().getMaxNo()) {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
             return true;
@@ -1413,6 +1412,10 @@ public class ChannelBillController implements Serializable {
 
     private boolean errorCheckAfterSaveBill(Bill b) {
         if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+            return true;
+        }
+
+        if (b.getPaymentMethod() == null) {
             return true;
         }
         return false;
@@ -1996,19 +1999,31 @@ public class ChannelBillController implements Serializable {
                 }
                 insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), billType, billClassType, suffix);
             } else {
-                suffix += "CHANN";
+                if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                    suffix += "CH";
+                } else {
+                    suffix += "CHANN";
+                }
                 insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
             }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix += "CHANNCAN";
+            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                suffix += "CHCAN";
+            } else {
+                suffix += "CHANNCAN";
+            }
             billClassType = BillClassType.CancelledBill;
             insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix += "CHANNREF";
+            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                suffix += "CHREF";
+            } else {
+                suffix += "CHANNREF";
+            }
             billClassType = BillClassType.RefundBill;
             insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
@@ -2038,19 +2053,31 @@ public class ChannelBillController implements Serializable {
                 }
                 deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), billType, billClassType, suffix);
             } else {
-                suffix += "CHANN";
+                if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                    suffix += "CH";
+                } else {
+                    suffix += "CHANN";
+                }
                 deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
             }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix += "CHANNCAN";
+            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                suffix += "CHCAN";
+            } else {
+                suffix += "CHANNCAN";
+            }
             billClassType = BillClassType.CancelledBill;
             deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix += "CHANNREF";
+            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                suffix += "CHREF";
+            } else {
+                suffix += "CHANNREF";
+            }
             billClassType = BillClassType.RefundBill;
             deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
@@ -2083,8 +2110,8 @@ public class ChannelBillController implements Serializable {
         }
         return refundBillFee;
     }
-    
-    public void listnerSetBillSession(BillSession bs){
+
+    public void listnerSetBillSession(BillSession bs) {
         setBillSessionTmp(bs);
         setBillSession(bs);
     }

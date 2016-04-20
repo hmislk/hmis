@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
@@ -61,6 +62,8 @@ public class StoreController1 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     //////////
     @EJB
     AmppFacade AmppFacade;
@@ -882,6 +885,8 @@ public class StoreController1 implements Serializable {
     }
 
     public void createTable() {
+        Date startTime = new Date();
+        
         createGrnTable();
         createPoTable();
         createDirectPurchaseTable();
@@ -892,7 +897,7 @@ public class StoreController1 implements Serializable {
         createInstitutionTransferReceive();
         createInstitutionIssue();
         
-
+commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase/Purchase orders(view Details)(/faces/store/store_purhcase_order_request.xhtml)");
     }
 
     public void createGrnTable() {
@@ -1251,4 +1256,13 @@ public class StoreController1 implements Serializable {
         this.AmppFacade = AmppFacade;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

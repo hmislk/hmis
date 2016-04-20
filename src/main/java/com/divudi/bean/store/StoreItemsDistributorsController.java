@@ -7,6 +7,8 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.store;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.DealerController;
@@ -54,6 +56,8 @@ public class StoreItemsDistributorsController implements Serializable {
     private PackageFeeFacade packageFeeFacade;
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     private DealerController dealerController;
     private ItemsDistributors current;
@@ -219,7 +223,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         hm.put("ins", getCurrentInstituion());
 
-        items = getFacade().findBySQL(temSql,hm);
+        items = getFacade().findBySQL(temSql, hm);
 
         if (items == null) {
             items = new ArrayList<>();
@@ -228,6 +232,10 @@ public class StoreItemsDistributorsController implements Serializable {
     }
 
     public void createItemDistributorTable() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         searchItems = null;
         String sql;
         HashMap tmp = new HashMap();
@@ -258,6 +266,8 @@ public class StoreItemsDistributorsController implements Serializable {
         sql += " order by b.institution.name,b.item.name ";
 
         searchItems = getFacade().findBySQL(sql, tmp);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Check entered data/Item Distributor(/faces/store/store_item_by_distributor.xhtml)");
 
     }
 
@@ -471,4 +481,13 @@ public class StoreItemsDistributorsController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 }

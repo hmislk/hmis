@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -76,6 +77,9 @@ public class PharmacyDealorBill implements Serializable {
     //Inject
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    
 
     public void makeNull() {
         printPreview = false;
@@ -311,6 +315,10 @@ public class PharmacyDealorBill implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (errorCheck()) {
             return;
         }
@@ -327,9 +335,15 @@ public class PharmacyDealorBill implements Serializable {
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Payments(/faces/dealorPayment/bill_dealor.xhtml)");
     }
 
     public void settleBillAll() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (errorCheck()) {
             return;
         }
@@ -353,6 +367,8 @@ public class PharmacyDealorBill implements Serializable {
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Dealer Payments/Payments/By dealer(/faces/dealorPayment/bill_dealor_all.xhtml)");
     }
 
     private void saveBillItem() {
@@ -651,4 +667,13 @@ public class PharmacyDealorBill implements Serializable {
         this.paymentFacade = paymentFacade;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

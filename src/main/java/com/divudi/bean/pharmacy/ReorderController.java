@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
@@ -75,6 +76,8 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
+    @Inject
+    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -176,9 +179,7 @@ public class ReorderController implements Serializable {
             series5.set(df.format(r.getDate()), r.getQuantity());
         }
         dateModel.addSeries(series5);
-        
-        
-        
+
 //        dateModel.setTitle("Item Transactions");
 //        dateModel.setZoom(true);
 //        dateModel.setLegendPlacement(LegendPlacement.INSIDE);
@@ -188,7 +189,6 @@ public class ReorderController implements Serializable {
 //        axis.setTickAngle(-50);
 ////        axis.setMax("2014-02-01");
 //        axis.setTickFormat("%b %#d, %y");
-
 //        dateModel.getAxes().put(AxisType.X, axis);
     }
 
@@ -424,11 +424,20 @@ public class ReorderController implements Serializable {
     }
 
     public void fillReorders() {
+        Date startTime = new Date();
+
         generateReorders(false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill All Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+
     }
 
     public void fillReordersForRequiredItems() {
+        Date startTime = new Date();
+
         generateReorders(false, true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(Fill Required Items)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
     }
 
     public List<Reorder> getReorders() {
@@ -502,7 +511,12 @@ public class ReorderController implements Serializable {
     }
 
     public void generateReorders() {
+        Date startTime = new Date();
+
         generateReorders(true, false, departmentListMethod);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/By distributor(generate records)(/faces/pharmacy/auto_ordering_by_distributor.xhtml)");
+
     }
 
     public void generateReorders(boolean overWrite) {
@@ -592,6 +606,7 @@ public class ReorderController implements Serializable {
     }
 
     enum AutoOrderMethod {
+
         ByDistributor,
         ByRol,
         ByAll,
@@ -612,7 +627,7 @@ public class ReorderController implements Serializable {
         autoOrderMethod = AutoOrderMethod.ByAll;
         return "/pharmacy/auto_ordering_by_all_items";
     }
-    
+
     public String autoOrderByGenerics() {
         autoOrderMethod = AutoOrderMethod.ByGeneric;
         return "/pharmacy/auto_ordering_by_items_by_generic";
@@ -647,7 +662,7 @@ public class ReorderController implements Serializable {
     private void generateReorders(boolean overWrite, boolean requiredItemsOnly, DepartmentListMethod departmentListMethod) {
         List<Item> iss = null;
         System.out.println("generateReorders");
-        
+
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
             itemController.setInstituion(institution);
             iss = itemController.getDealorItem();
@@ -777,12 +792,19 @@ public class ReorderController implements Serializable {
     }
 
     public void saveReorders() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         for (ItemReorders ir : itemReorders) {
             for (Reorder r : ir.getReorders()) {
                 reorderFacade.edit(r);
             }
         }
         JsfUtil.addSuccessMessage("Saved.");
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Reports for ordering/Reorder analysis(/faces/pharmacy/ordering_data.xhtml)");
+
     }
 
     public void onEdit(RowEditEvent event) {
@@ -1321,6 +1343,14 @@ public class ReorderController implements Serializable {
             }
         }
 
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

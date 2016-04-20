@@ -6,6 +6,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -76,9 +77,11 @@ public class CreditSummeryController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private BillFacade billFacade;
-    
+
     @Inject
     BillController billController;
+    @Inject
+    CommonController commonController;
 
     /**
      * Creates a new instance of CreditSummery
@@ -86,9 +89,15 @@ public class CreditSummeryController implements Serializable {
      * @return
      */
     public void makeNull() {
+        Date startTime = new Date();
+        Date fromDate  = null;
+        Date toDate = null;
+
         dailyCash = null;
         dailyCredit = null;
         //   categoryWithItem = null;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(/faces/reportInstitution/report_opd_daily_summery_credit_department_by_bill.xhtml)");
     }
 
     public Item getItem() {
@@ -297,10 +306,14 @@ public class CreditSummeryController implements Serializable {
     }
 
     public void createDailyCashTable() {
+        Date startTime = new Date();
+
         dailyCashSummery = new ArrayList<>();
         if (!getDailyCredit().isEmpty()) {
             dailyCashSummery.addAll(getDailyCredit());
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by item(/faces/reportInstitution/report_opd_daily_summery_credit_department.xhtml)");
 
     }
 
@@ -448,13 +461,17 @@ public class CreditSummeryController implements Serializable {
     }
 
     public void createCreditDueTable() {
+        Date startTime = new Date();
+        
         creditBills = new ArrayList<>();
-        creditBills=billController.getCreditBills(institution, fromDate, toDate);
-        total=0.0;
+        creditBills = billController.getCreditBills(institution, fromDate, toDate);
+        total = 0.0;
         for (Bill b : creditBills) {
-            total+=b.getNetTotal();
+            total += b.getNetTotal();
         }
         
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(with letter)(/faces/reportInstitution/report_opd_credit_bill_by_credit_company_with_letter.xhtml)");
+
     }
 
     public CreditSummeryController() {
@@ -577,6 +594,14 @@ public class CreditSummeryController implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

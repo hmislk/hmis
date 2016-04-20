@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -59,8 +60,6 @@ import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
-
-
 @Named
 @SessionScoped
 public class PharmacySaleBhtController implements Serializable {
@@ -78,6 +77,8 @@ public class PharmacySaleBhtController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -124,10 +125,12 @@ public class PharmacySaleBhtController implements Serializable {
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
-    
-    
 
     public void settleSurgeryBhtIssue() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBatchBill() == null) {
             return;
         }
@@ -135,8 +138,8 @@ public class PharmacySaleBhtController implements Serializable {
         if (getBatchBill().getProcedure() == null) {
             return;
         }
-        
-        if(getBatchBill().getPatientEncounter().isDischarged()){
+
+        if (getBatchBill().getPatientEncounter().isDischarged()) {
             UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
         }
@@ -145,6 +148,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/BHT issue/pharmacy issue/Pharmacy BHT issue(/faces/theater/inward_bill_surgery_issue.xhtml)");
 
     }
 
@@ -526,10 +531,15 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void settlePharmacyBhtIssue() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
         if (errorCheck()) {
             return;
         }
         settleBhtIssue(BillType.PharmacyBhtPre, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUE);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/BHT Bills/Inward Billing(/faces/inward/pharmacy_bill_issue_bht.xhtml)");
     }
 
     public void settleStoreBhtIssue() {
@@ -554,8 +564,8 @@ public class PharmacySaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Please Set Room");
             return true;
         }
-        
-        if(getPatientEncounter().isDischarged()){
+
+        if (getPatientEncounter().isDischarged()) {
             UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
@@ -585,7 +595,7 @@ public class PharmacySaleBhtController implements Serializable {
         savePreBillItemsFinally(tmpBillItems);
 
         // Calculation Margin
-        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(),getPatientEncounter().getPaymentMethod());
+        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -595,7 +605,7 @@ public class PharmacySaleBhtController implements Serializable {
 
     }
 
-    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment,PaymentMethod paymentMethod) {
+    public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment, PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
         double marginTotal = 0;
@@ -604,7 +614,7 @@ public class PharmacySaleBhtController implements Serializable {
             double rate = Math.abs(bi.getRate());
             double margin = 0;
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment,paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
 
             if (priceMatrix != null) {
                 margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -1061,6 +1071,14 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

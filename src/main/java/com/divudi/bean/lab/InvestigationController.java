@@ -9,6 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -65,6 +66,8 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -250,13 +253,24 @@ public class InvestigationController implements Serializable {
     }
 
     public String listAllIxs() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql;
         sql = "Select i from Investigation i where i.retired=false order by i.name";
         allIxs = getFacade().findBySQL(sql);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Lists/Lab investigation list(/faces/lab/lab_investigation_list.xhtml)");
         return "/lab/lab_investigation_list";
+
     }
 
     public void prepareSelectedReportSamples() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         System.out.println("prepareSelectedReportSamples");
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
@@ -270,6 +284,8 @@ public class InvestigationController implements Serializable {
                 ixWithoutSamples.add(ix);
             }
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Setup/report samples(/faces/lab/report_samples.xhtml)");
     }
 
     public List<PatientReport> getSelectedPatientReports() {
@@ -584,6 +600,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void deleteSelectedItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Delete");
             return;
@@ -597,9 +617,15 @@ public class InvestigationController implements Serializable {
         }
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
 
     public void unDeleteSelectedItems() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Un-Delete");
             return;
@@ -613,9 +639,15 @@ public class InvestigationController implements Serializable {
         }
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
-    
+
     public void markSelectedActive() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Active");
             return;
@@ -625,12 +657,19 @@ public class InvestigationController implements Serializable {
             i.setInactive(false);
             getFacade().edit(i);
         }
-        
+
         UtilityController.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+
     }
-    
+
     public void markSelectedInactive() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (selectedInvestigations.isEmpty()) {
             UtilityController.addErrorMessage("Nothing to Inactive");
             return;
@@ -640,12 +679,12 @@ public class InvestigationController implements Serializable {
             i.setInactive(true);
             getFacade().edit(i);
         }
-        
+
         UtilityController.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
     }
-    
-    
 
     public Institution getInstitution() {
         return institution;
@@ -805,6 +844,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void createInvestigationWithDynamicLables() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         investigationWithInvestigationItemses = new ArrayList<>();
         for (Investigation in : fetchInvestigations()) {
             InvestigationWithInvestigationItems items = new InvestigationWithInvestigationItems();
@@ -816,6 +859,8 @@ public class InvestigationController implements Serializable {
             }
             investigationWithInvestigationItemses.add(items);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administration/Setup/report dynamic labels(/faces/lab/report_dynamic_lables.xhtml)");
     }
 
     public List<InvestigationItemWithInvestigationItemValueFlags> fetchFlags(Investigation i) {
@@ -1019,6 +1064,10 @@ public class InvestigationController implements Serializable {
     }
 
     public void createInvestigationWithFees() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         itemWithFees = new ArrayList<>();
         List<Item> temp;
         String sql = "select distinct(c.item) from ItemFee c where c.retired = false "
@@ -1036,6 +1085,8 @@ public class InvestigationController implements Serializable {
             System.out.println("iwf.getItemFees().size() = " + iwf.getItemFees().size());
             itemWithFees.add(iwf);
         }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
     }
 
     public class ItemWithFee {
@@ -1177,4 +1228,13 @@ public class InvestigationController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

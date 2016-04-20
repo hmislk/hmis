@@ -1078,6 +1078,8 @@ public class InwardReportController1 implements Serializable {
     }
 
     public void bhtCreditPayments() {
+        Date startTime = new Date();
+        
         HashMap hm = new HashMap();
         String sql = "Select b from BillItem b "
                 + " where b.retired=false "
@@ -1111,6 +1113,8 @@ public class InwardReportController1 implements Serializable {
 
         billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         totalBhtCreditPayments();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/BHT payment(/faces/credit/inward_bht_credit_payment_report.xhtml)");
 
     }
 
@@ -1152,6 +1156,8 @@ public class InwardReportController1 implements Serializable {
     }
 
     public void opdCreditPayments() {
+        Date startTime = new Date();
+        
         HashMap hm = new HashMap();
         String sql = "Select b.referenceBill.billItems"
                 + " from BillItem b "
@@ -1187,6 +1193,7 @@ public class InwardReportController1 implements Serializable {
         billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
         totalOfOpdCreditPayments();
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/OPD payment(/faces/credit/opd_credit_payment_report.xhtml)");
     }
 
     public Double totalOfOpdCreditPayments() {

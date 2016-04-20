@@ -176,6 +176,8 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierData() {
+        
+        
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
         webUserBillsTotals = new ArrayList<>();
         for (WebUser webUser : getCashiers()) {
