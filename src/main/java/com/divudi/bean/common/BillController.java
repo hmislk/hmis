@@ -1028,7 +1028,7 @@ public class BillController implements Serializable {
         printPreview = true;
         
         
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
+        commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
     }
 
     public boolean checkBillValues(Bill b) {
