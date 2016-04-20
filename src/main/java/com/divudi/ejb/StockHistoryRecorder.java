@@ -117,7 +117,7 @@ public class StockHistoryRecorder {
     }
 
     @SuppressWarnings("unused")
-    @Schedule(hour = "4", minute = "30", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
+    @Schedule(hour = "00", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
         System.out.println("Start writing stock history: " + startTime);

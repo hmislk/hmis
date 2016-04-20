@@ -1273,16 +1273,16 @@ public class BillController implements Serializable {
             return true;
         }
 
-        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
-            if (getNewPatient().getPerson().getPhone() == null ) {
-                UtilityController.addErrorMessage("Please Insert a Phone Number");
-                return true;
-            }
-            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
-                UtilityController.addErrorMessage("Please Insert a Phone Number");
-                return true;
-            }
-        }
+//        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+//            if (getNewPatient().getPerson().getPhone() == null ) {
+//                UtilityController.addErrorMessage("Please Insert a Phone Number");
+//                return true;
+//            }
+//            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
+//                UtilityController.addErrorMessage("Please Insert a Phone Number");
+//                return true;
+//            }
+//        } alredy chak in lab item settle
         if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             for (BillEntry be : getLstBillEntries()) {
                 System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
