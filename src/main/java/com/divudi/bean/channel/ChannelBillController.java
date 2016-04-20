@@ -1475,7 +1475,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
-        bookingController.generateSessions();
+        bookingController.generateSessionsOnlyId();
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
 

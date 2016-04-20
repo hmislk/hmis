@@ -2425,10 +2425,11 @@ public class CommonReport implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
 
     }
-
+    
+    String header="";
     public void createCashierTableByUser() {
         Date startTime = new Date();
-
+        header="Cashier Summery ";
         recreteModal();
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
@@ -2788,6 +2789,8 @@ public class CommonReport implements Serializable {
 
     public void createCashierTableByUserOnlyChannel() {
         Date startTime = new Date();
+        
+        header="Channel Summery";
 
         recreteModal();
 //        //Opd Billed Bills
@@ -5433,6 +5436,14 @@ public class CommonReport implements Serializable {
 
     public void setCashChequeCreditSummery(List<String1Value1> cashChequeCreditSummery) {
         this.cashChequeCreditSummery = cashChequeCreditSummery;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
     }
 
 }

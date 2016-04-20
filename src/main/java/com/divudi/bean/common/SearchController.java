@@ -5132,7 +5132,7 @@ public class SearchController implements Serializable {
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("bt", BillType.PaymentBill);
+        m.put("bt", BillType.ChannelProPayment);
         m.put("bts", bts);
         m.put("class", BilledBill.class);
 
