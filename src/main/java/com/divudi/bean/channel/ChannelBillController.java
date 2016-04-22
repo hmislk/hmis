@@ -1579,7 +1579,7 @@ public class ChannelBillController implements Serializable {
                 if (bs.getBill().getSingleBillItem() != null) {
                     bi = getBillItemFacade().find(bs.getBill().getSingleBillItem().getId());
                 } else {
-                    sql = " select bi from billItem bi where "
+                    sql = " select bi from BillItem bi where "
                             + " bi.bill=:b ";
                     bi = getBillItemFacade().findFirstBySQL(sql, m);
                 }

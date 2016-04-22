@@ -982,6 +982,8 @@
 
                                 <h:outputLabel id="settleBallance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                 <h:outputLabel id="settleBallance2" value="#{channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                <h:outputLabel id="settleBallance5" value=" Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                <h:outputLabel id="settleBallance6" value="#{channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                 <h:outputLabel id="settleBallance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                 <h:outputLabel id="settleBallance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.settlePaymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
 
@@ -1015,7 +1017,7 @@
                                             </div>
                                             <div>
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                                    <ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="true"/>
+                                                    <ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="false"/>
                                                 </h:panelGroup>
                                             </div>
 <!--                                            <div >
