@@ -363,6 +363,10 @@
                             <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
                                 <f:convertNumber  pattern="#,##0.00"/>
                             </h:outputLabel>
+                            <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                            <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                <f:convertNumber  pattern="#,##0.00"/>
+                            </h:outputLabel>
                             <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
                                 <f:convertNumber  pattern="#,##0.00"/>
@@ -589,7 +593,7 @@
                                     </div>
 
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Namesss"/>#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}
+                                        <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
                                         <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
                                         <p:outputLabel value="Consultant"/>
@@ -609,6 +613,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.startingTime}"> 
                                             <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:outputLabel value="Tel "/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment Method"/>

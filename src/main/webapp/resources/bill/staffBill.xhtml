@@ -92,26 +92,26 @@
 
                         </h:dataTable>
                         <p:spacer height="7px;"></p:spacer>
-                        <table style="min-width:100%;padding-left: 30px;">
+                        <table style="min-width:100%;padding-left: 20px;">
                             <tr>
                                 <td style="min-width: 3.5cm;text-align: left;">
                                     <h:outputLabel value="TOTAL"/>
                                 </td>
                                 <td>
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="font-size: 110%; font-weight: bold ; text-align: right;    ">
+                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}"  style="font-weight: bold ; text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
                         </table>
                         <p:spacer height="30px;"></p:spacer>
-                        <table style="min-width:100%;padding-left: 30px;">
+                        <table style="min-width:100%;padding-left: 20px;">
                             <tr>
-                                <td style="min-width: 5cm;text-align: left; text-decoration: overline;">
-                                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
+                                <td style="min-width: 3cm;text-align: left; text-decoration: overline;">
+                                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" style="font-size: 12px!important;"/>
                                 </td>
                                 <td style="text-align: left; text-decoration: overline;">
-                                    <h:outputLabel value="#{cc.attrs.bill.staff.person.name}"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.staff.person.name}" style="font-size: 12px!important;"/>
                                 </td>
                             </tr>
                         </table>

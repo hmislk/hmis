@@ -54,7 +54,7 @@
 
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
                                 <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
-                                <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
+<!--                                <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
                                     <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
                                     <p:submenu styleClass="rightBordrOnly" label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
@@ -479,7 +479,7 @@
                                     <p:menuitem  ajax="false" action="/store/store_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
                                     <p:menuitem  ajax="false" action="/store/store_summery_index"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
                                     <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
-                                </p:submenu>
+                                </p:submenu>-->
 
                                 <p:submenu styleClass="rightBordrOnly" label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
 
@@ -506,7 +506,7 @@
                                     </p:submenu>  
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/channel/management_index" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/channel/management_index" value="Management" ></p:menuitem>
                                     
                                 </p:submenu>
 
