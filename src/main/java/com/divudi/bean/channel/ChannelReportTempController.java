@@ -1608,7 +1608,7 @@ public class ChannelReportTempController implements Serializable {
         m.put("typ", InstitutionType.Agency);
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
-        
+        getChannelTotal().setNetTotal(0);
         for (Institution a : agencies) {
             getChannelTotal().setNetTotal(channelTotal.getNetTotal()+a.getBallance());
         }
