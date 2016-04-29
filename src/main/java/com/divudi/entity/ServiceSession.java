@@ -214,6 +214,9 @@ public class ServiceSession extends Item implements Serializable {
     }
 
     public String getDayString() {
+        if (sessionWeekday==null) {
+            return "";
+        }
         switch (sessionWeekday) {
             case 1:
                 dayString = "Sunday";

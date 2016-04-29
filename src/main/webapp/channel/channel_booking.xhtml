@@ -194,47 +194,41 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <table style="min-height: 250px;  padding: 2px; margin: auto;position:relative ;">
-                        <tr>
-                            <th>
-                                <p:outputLabel value="Bookings" ></p:outputLabel>
-                            </th>
-                        </tr>
-                        <tr>
-                            <td>
-                                <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
-                                             value="#{bookingController.billSessions}" var='bs'
-                                             selectionMode="single" rowKey="#{bs.id}"
-                                             rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
-                                             selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
-                                            listener="#{channelBillController.createBillfees}" />  
+                    <p:spacer height="30px" />
+                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
+                                 value="#{bookingController.billSessions}" var='bs'
+                                 selectionMode="single" rowKey="#{bs.id}" styleClass="noBorder" 
+                                 rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
+                                 selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                                listener="#{channelBillController.createBillfees}" />
+                        <f:facet name="header">
+                            <p:outputLabel value="Bookings" ></p:outputLabel>
+                        </f:facet>
 
-                                    <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                                    <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                                    <p:column headerText="Paid" style="width: 20px!important;">
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
-                                        <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
-                                    </p:column>
-                                    <p:column headerText="C/R" style="width: 10px!important;" >
-                                        <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                        <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                                    </p:column>   
-                                    <p:column headerText="Agent" style="width: 5px!important;">
-                                        <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
-                                    </p:column> 
-                                    <p:column headerText="P/A" style="width: 10px!important;">                           
-                                        <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                    </p:column> 
-                                </p:dataTable>    
-                            </td>
-                        </tr>
-                    </table>
+                        <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
+                        <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Paid" style="width: 20px!important;">
+                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
+                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
+                            <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
+                        </p:column>
+                        <p:column headerText="C/R" style="width: 10px!important;" >
+                            <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                            <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                        </p:column>   
+                        <p:column headerText="Agent" style="width: 5px!important;">
+                            <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                            <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
+                        </p:column> 
+                        <p:column headerText="P/A" style="width: 10px!important;">                           
+                            <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                        </p:column> 
+                    </p:dataTable>    
                 </h:panelGroup>
 
 
@@ -676,6 +670,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.startingTime}"> 
                                             <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:outputLabel value="Tel "/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
 
@@ -712,7 +708,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                 <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne 'null'}"/>
@@ -734,6 +730,8 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.startingTime}"> 
                                             <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:outputLabel value="Tel "/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment"/>
@@ -1026,14 +1024,14 @@
                                                     <ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="false"/>
                                                 </h:panelGroup>
                                             </div>
-<!--                                            <div >
-                                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
-                                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                                        <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                                    </h:panelGroup>
-                                                </h:panelGroup>
-                                            </div>-->
+                                            <!--                                            <div >
+                                                                                            <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper'}">
+                                                                                                <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                                                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                                                                    <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                                                                                </h:panelGroup>
+                                                                                            </h:panelGroup>
+                                                                                        </div>-->
                                             <div >
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
                                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
@@ -1116,10 +1114,11 @@
                                 </p:inputText>
                                 <p:inputText id="txtBsSearch2" value="#{channelSearchController.txtSearchRef}" placeholder="Agent Ref. No" >
                                 </p:inputText>
-
+                                <p:inputMask id="txtBsSearch3" value="#{channelSearchController.txtSearchPhone}" mask="999-9999999" />
+                                <h:outputLabel />
                                 <p:commandButton id="btnBsSearch" 
                                                  value="Search" action="#{channelSearchController.searchForBillSessions}" 
-                                                 process="txtBsSearch txtBsSearch2 calFrom calTo btnBsSearch" 
+                                                 process="txtBsSearch txtBsSearch2 txtBsSearch3 calFrom calTo btnBsSearch" 
                                                  update="bSessionSearch"></p:commandButton>
                             </h:panelGrid>
 
@@ -1128,8 +1127,23 @@
                                 <p:column>
                                     <p:commandButton value="view" action="#{bookingController.viewBill(bs)}" update=":#{p:component('panelSelectedBookinDetails')}" />
                                 </p:column>
+                                <p:column headerText="Patient Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column headerText="Phone" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{bs.bill.patient.person.phone}" />
+                                </p:column>
+                                <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{bs.billItem.agentRefNo}"/>
+                                </p:column>
                                 <p:column headerText="Booking Id" filterBy="#{bs.bill.bookingId}" filterMatchMode="contains">
                                     <p:outputLabel value="#{bs.bill.bookingId}" />
+                                </p:column>
+                                <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                </p:column> 
+                                <p:column headerText="App. No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{bs.serialNo}" />
                                 </p:column>
 <!--                                <p:column headerText="Sepeciality" filterBy="#{bs.serviceSession.staff.speciality.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{bs.serviceSession.staff.speciality.name}" />
@@ -1140,12 +1154,8 @@
                                 <p:column headerText="Session Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{bs.serviceSession.name}" />
                                 </p:column>
-                                <p:column headerText="No" filterBy="#{bs.serialNo}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{bs.serialNo}" />
-                                </p:column>
-                                <p:column headerText="Patient Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{bs.bill.patient.person.nameWithTitle}" />
-                                </p:column>
+                                
+                                
 <!--                                <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
                                     <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
                                     <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
@@ -1154,12 +1164,8 @@
                                     <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                     <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                 </p:column>   
-                                <p:column headerText="Agent" filterBy="#{bs.bill.fromInstitution.institutionCode}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                </p:column> 
-                                <p:column headerText="Agent Ref No" filterBy="#{bs.billItem.agentRefNo}" filterMatchMode="contains">
-                                    <p:outputLabel value="#{bs.billItem.agentRefNo}"/>
-                                </p:column> 
+                                
+                                 
 <!--                                <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">    
                                     <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>
                                 </p:column> -->
