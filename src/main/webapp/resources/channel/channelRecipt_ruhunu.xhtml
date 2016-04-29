@@ -283,6 +283,22 @@
                                     </td>
 
                                 </tr>
+                                
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="Debiter Code" rendered="#{cc.attrs.bill.creditCompany ne null or cc.attrs.bill.toStaff ne null}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <p:spacer width="10" rendered="#{cc.attrs.bill.creditCompany ne null or cc.attrs.bill.toStaff ne null}"></p:spacer>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.creditCompany ne null or cc.attrs.bill.toStaff ne null}"></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.institutionCode}" rendered="#{cc.attrs.bill.creditCompany ne null}"/>
+                                        <h:outputLabel value="(#{cc.attrs.bill.toStaff.code})" rendered="#{cc.attrs.bill.toStaff ne null}"/>
+                                    </td>
+                                </tr>
 
                                 <tr>
                                     <td>

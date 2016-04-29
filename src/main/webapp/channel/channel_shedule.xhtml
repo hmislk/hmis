@@ -56,8 +56,6 @@
                         <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                     return false;" action="#{sheduleController.delete()}"  value="Delete" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
                         </p:commandButton>
-
-
                     </h:panelGrid>
 
                 </p:panel>
@@ -161,7 +159,7 @@
                     <br/>
                     <p:tabView  >
                         <p:tab title="WeekDay"> 
-                            <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}">
+                            <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}" disabled="#{sheduleController.current.id ne null}">
                                 <f:selectItem itemLabel="Select Week Day"/>
                                 <f:selectItem itemValue="1" itemLabel="Sunday"/>
                                 <f:selectItem itemValue="2" itemLabel="Monday"/>
@@ -173,7 +171,7 @@
                             </p:selectOneMenu>
                         </p:tab>
                         <p:tab title="Other Day" >
-                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" >                              
+                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" disabled="#{sheduleController.current.id ne null}">                              
                             </p:calendar>
                         </p:tab>
                     </p:tabView>  
@@ -214,6 +212,7 @@
 
             </h:panelGrid>
             <p:commandButton value="Update Fees" action="#{sheduleController.createOnCallFeeOldSession()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
+            <p:commandButton value="Manually Create Seesion For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
         </h:form>
     </ui:define>
 

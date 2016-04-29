@@ -4234,6 +4234,9 @@ public class CommonReport implements Serializable {
         list2.add(channelBilled);
         list2.add(channelCancells);
         list2.add(channelRefunds);
+        list2.add(channelBilledProPayment);
+        list2.add(channelRefundsProPayment);
+        list2.add(channelCancellProPayment);
 
         double credit = 0.0;
         double slip = 0;
@@ -4394,7 +4397,8 @@ public class CommonReport implements Serializable {
 
         tmp1 = new String1Value1();
         tmp1.setString("Final Total");
-        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+//        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+        tmp1.setValue(creditCard + cheque + cash + credit);
 
         cashChequeCreditSummery.add(tmp1);
 

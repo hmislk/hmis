@@ -263,16 +263,16 @@ public class StockHistoryRecorder {
                             }
                             System.out.println("newSs 2 = " + newSs);
                             //Temprory
-                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
-                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
+//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
+//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
                             newSs.setStaff(ss.getStaff());
-                            newSs.setTransRowNumber(rowIndex++);
+//                            newSs.setTransRowNumber(rowIndex++);
                             //add to list
 
                             createdSessions.add(newSs);
-                            checkDoctorArival(newSs);
-                            ss.setServiceSessionCreateForOriginatingSession(true);
+//                            checkDoctorArival(newSs);
+//                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -290,14 +290,14 @@ public class StockHistoryRecorder {
                             }
 //                        System.out.println("newSs = " + newSs);
                             //Temprory
-                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
-                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
-                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
+//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
+//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
+//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
                             newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
-                            checkDoctorArival(newSs);
-                            ss.setServiceSessionCreateForOriginatingSession(true);
+//                            checkDoctorArival(newSs);
+//                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -306,10 +306,7 @@ public class StockHistoryRecorder {
                 }
             } else {
                 for (ServiceSession ss : sessions) {
-//                    if (ss.isServiceSessionCreateForOriginatingSession()) {
-//                        System.err.println("******");
-//                        continue;
-//                    }
+
                     if (ss.getSessionDate() != null) {
                         Calendar sessionDate = Calendar.getInstance();
                         sessionDate.setTime(ss.getSessionDate());
@@ -327,15 +324,15 @@ public class StockHistoryRecorder {
                             }
                             System.out.println("newSs 2 = " + newSs);
                             //Temprory
-                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
-                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
+//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
+//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, nowDate));
                             newSs.setStaff(ss.getStaff());
-                            newSs.setTransRowNumber(rowIndex++);
+//                            newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
-                            checkDoctorArival(newSs);
-                            ss.setServiceSessionCreateForOriginatingSession(true);
+//                            checkDoctorArival(newSs);
+//                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }
@@ -353,14 +350,14 @@ public class StockHistoryRecorder {
                             }
 //                        System.out.println("newSs = " + newSs);
                             //Temprory
-                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
-                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
-                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
-                            newSs.setTransRowNumber(rowIndex++);
+//                            newSs.setDisplayCount(channelBean.getBillSessionsCount(newSs, nowDate));
+//                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
+//                            newSs.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(newSs, nowDate));
+//                            newSs.setTransRowNumber(rowIndex++);
                             //add to list
                             createdSessions.add(newSs);
-                            checkDoctorArival(newSs);
-                            ss.setServiceSessionCreateForOriginatingSession(true);
+////                            checkDoctorArival(newSs);
+//                            ss.setServiceSessionCreateForOriginatingSession(true);
                             if (!Objects.equals(tmp, ss.getSessionWeekday())) {
                                 sessionDayCount++;
                             }

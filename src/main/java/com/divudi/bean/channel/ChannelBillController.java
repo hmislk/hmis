@@ -1345,10 +1345,18 @@ public class ChannelBillController implements Serializable {
             }
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
-        if (getSs().getMaxNo() != 0.0 && (getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund()+getbookingController().getSelectedServiceSession().getStartingNo()) >= getSs().getMaxNo()) {
-            errorText = "No Space to Book.";
-            UtilityController.addErrorMessage("No Space to Book");
-            return true;
+        if (getbookingController().getSelectedServiceSession().getStartingNo() > 0) {
+            if (getSs().getMaxNo() != 0.0 && (getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() + getbookingController().getSelectedServiceSession().getStartingNo() - 1) >= getSs().getMaxNo()) {
+                errorText = "No Space to Booking  This Channel.";
+                UtilityController.addErrorMessage("No Space to Booking  This Channel.");
+                return true;
+            }
+        } else {
+            if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
+                errorText = "No Space to Booking  This Channel.";
+                UtilityController.addErrorMessage("No Space to Booking  This Channel.");
+                return true;
+            }
         }
 
         if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
@@ -1475,7 +1483,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
-        bookingController.generateSessionsOnlyId();
+        bookingController.generateSessionsOnlyIdNew();
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
 

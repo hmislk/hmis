@@ -18,7 +18,12 @@
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                     <f:facet name="header">
 
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnly()}" />  
+                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
+                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnly()}" />  
+                        <p:commandButton id="btnRefresh1" ajax="false" value="Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
+                        <p:commandButton id="btnRefresh2" ajax="false" value="Cashier" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyCashier()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -30,7 +35,7 @@
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" subTable="true"/>
                         </p:commandButton>  
                         <br/>
-                        <h:outputLabel value="All Cashier Summary"/>
+                        <h:outputLabel value="All #{cashierReportController.header} Summary"/>
                         <br/>
                         <h:outputLabel value="From :"/>
                         <h:outputLabel value="#{cashierReportController.fromDate}">
