@@ -1909,6 +1909,11 @@ public class ChannelReportController implements Serializable {
 //            sql += " and bf.bill.refunded=true";
 //            System.err.println("Refund");
 //        }
+        
+        if (fts == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
 
         if (paid) {
             sql += " and bf.bill.paidBill is not null "
