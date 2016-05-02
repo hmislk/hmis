@@ -18,6 +18,7 @@ public class BillListWithTotals {
     Double grossTotal;
     Double netTotal;
     Double discount;
+    Double vat;
     Double cancelledTotal;
     Double refundTotal;
     Double saleValueTotal;
@@ -82,10 +83,21 @@ public class BillListWithTotals {
         this.discount = discount;
     }
 
+    public Double getVat() {
+        return vat;
+    }
+
+    public void setVat(Double vat) {
+        this.vat = vat;
+    }
+    
+    
+
     public BillListWithTotals() {
         discount=0.0;
         netTotal=0.0;
         grossTotal=0.0;
+        vat=0.0;
         bills = new ArrayList<>();
     }
     

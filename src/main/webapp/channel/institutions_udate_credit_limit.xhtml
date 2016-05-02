@@ -32,7 +32,7 @@
                                         </h:inputText>
 
                                         <p:selectOneListbox  id="lstSelect"   value="#{institutionController.current}" style="min-width: 223px; height: 300px;">
-                                            <f:selectItems  value="#{institutionController.agencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <f:selectItems  value="#{institutionController.agencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name} (#{myItem.institutionCode})" ></f:selectItems>
                                             <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                             </p:ajax>
                                         </p:selectOneListbox>
@@ -61,22 +61,25 @@
                                         
                                         <h:outputText value="Standerd Credit Limit" >                                        
                                         </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}"  >
+                                        <h:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}" 
+                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}"  >
                                         </h:inputText>
                                         
                                         <h:outputText value="Allowed Credit Limit" >                                        
                                         </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}"  >
+                                        <h:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}" 
+                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel') and !webUserController.hasPrivilege('ChannellingEditCreditLimitUserLevel')}" >
                                         </h:inputText>
                                         
                                         <h:outputText value="Allowed Maximum Credit Limit" >                                        
                                         </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}"  >
+                                        <h:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}" 
+                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}" >
                                         </h:inputText>
                                         
                                          <h:outputText value="Balance" >                                        
                                         </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.ballance}" >
+                                        <h:inputText autocomplete="off" value="#{institutionController.current.ballance}" disabled="true" >
                                         </h:inputText>
 
                                     </h:panelGrid>

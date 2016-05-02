@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -40,6 +41,8 @@ public class LabReportSearchByDepartmentController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     String txtSearch;
     Date fromDate;
     Date toDate;
@@ -107,8 +110,8 @@ public class LabReportSearchByDepartmentController implements Serializable {
     }
 
     public List<Bill> getBillsList() {
-        if(billsList==null){
-            billsList=new ArrayList<>();
+        if (billsList == null) {
+            billsList = new ArrayList<>();
         }
         return billsList;
     }
@@ -116,8 +119,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setBillsList(List<Bill> billsList) {
         this.billsList = billsList;
     }
-
-    
 
     public void searchAll() {
         String sql;
@@ -553,11 +554,15 @@ public class LabReportSearchByDepartmentController implements Serializable {
     }
 
     public void createWithCreditbyDepartment() {
+        Date startTime = new Date();
+
         if (department == null) {
             return;
         }
         billsList = getLabBillsOwn();
         calTotals();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By department(/faces/reportIncome/report_income_with_credit_by_department.xhtml)");
     }
 
     public List<Bill> getLabBillsOwn() {
@@ -916,4 +921,14 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

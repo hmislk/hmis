@@ -167,7 +167,7 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Patient" style="float: left;"/>
                                         </f:facet>
-                                        <h:outputLabel value="#{p.patient.person.name}"/>
+                                        <h:outputLabel value="#{p.patient.person.nameWithTitle}"/>
                                     </p:column>
                                     <p:column style="text-align: right;"> 
                                         <f:facet name="header">
@@ -242,7 +242,7 @@
                         <td colspan="3">
                             <p>
                                 * Please note that prevailing bank overdraft interest rate will be applied for all 
-                                overdue debts.
+                                overdue debts *
                             </p>
                         </td>
                     </tr>

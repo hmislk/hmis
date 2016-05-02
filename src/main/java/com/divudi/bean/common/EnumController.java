@@ -269,6 +269,31 @@ public class EnumController implements Serializable {
 
         return b;
     }
+    public BillType[] getCashFlowBillTypesCashier() {
+        BillType[] b = {
+            BillType.OpdBill,
+            BillType.PaymentBill,
+            BillType.PettyCash,
+            BillType.CashRecieveBill,
+            BillType.AgentPaymentReceiveBill,
+            BillType.InwardPaymentBill,
+            BillType.PharmacySale,
+            BillType.GrnPaymentPre,
+            BillType.CollectingCentrePaymentReceiveBill,
+        };
+
+        return b;
+    }
+    public BillType[] getCashFlowBillTypesChannel() {
+        BillType[] b = {
+            
+            BillType.ChannelCash,
+            BillType.ChannelPaid,
+            BillType.ChannelProPayment,
+        };
+
+        return b;
+    }
 
     public BillType[] getStoreBillTypes() {
 

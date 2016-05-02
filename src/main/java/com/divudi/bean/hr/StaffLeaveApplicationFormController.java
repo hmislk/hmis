@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.LeaveType;
@@ -57,6 +58,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
     SessionController sessionController;
     @Inject
     StaffAdditionalFormController staffAdditionalFormController;
+    @Inject
+    CommonController commonController;
 
     @EJB
     CommonFunctions commonFunctions;
@@ -630,6 +633,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public void createStaffleaveTable() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -675,6 +680,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Leave(/faces/hr/hr_staff_leave_edit_search.xhtml)");
 
     }
 
@@ -707,6 +714,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
 //
 //    }
     public void createStaffleaveTablebyLeaveDate() {
+        Date startTime = new Date();
+        
         String sql;
         Map m = new HashMap();
 
@@ -752,6 +761,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("td", toDate);
 
         staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
     }
 
@@ -1040,4 +1051,14 @@ public class StaffLeaveApplicationFormController implements Serializable {
     public void setWithOutretRierd(boolean withOutretRierd) {
         this.withOutretRierd = withOutretRierd;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

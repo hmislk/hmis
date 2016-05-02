@@ -139,6 +139,7 @@ public class BillController implements Serializable {
     Staff toStaff;
     private double total;
     private double discount;
+    private double vat;
     private double netTotal;
     private double cashPaid;
     private double cashBalance;
@@ -231,6 +232,7 @@ public class BillController implements Serializable {
         grosTotal = bt.getGrossTotal();
         netTotal = bt.getNetTotal();
         discount = bt.getDiscount();
+        vat = bt.getVat();
     }
 
     public void clear() {
@@ -635,7 +637,7 @@ public class BillController implements Serializable {
         m.put("fd", fd);
         m.put("td", td);
         List<Bill> bill = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
+
         if (bill == null) {
             bill = new ArrayList<>();
         }
@@ -664,7 +666,7 @@ public class BillController implements Serializable {
 
     public void getOpdBills() {
         Date startTime = new Date();
-        
+
         BillType[] billTypes = {BillType.OpdBill};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         if (r == null) {
@@ -673,6 +675,7 @@ public class BillController implements Serializable {
             netTotal = r.getNetTotal();
             discount = r.getDiscount();
             grosTotal = r.getGrossTotal();
+            vat = r.getVat();
             return;
         }
         if (r.getBills() != null) {
@@ -684,16 +687,19 @@ public class BillController implements Serializable {
         if (r.getDiscount() != null) {
             discount = r.getDiscount();
         }
+        if (r.getVat() != null) {
+            vat = r.getVat();
+        }
         if (r.getGrossTotal() != null) {
             grosTotal = r.getGrossTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
     }
 
     public void getPharmacySaleBills() {
         Date startTime = new Date();
-        
+
         BillType[] billTypes;
         if (billType == null) {
             billTypes = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
@@ -716,6 +722,7 @@ public class BillController implements Serializable {
             bills = r.getBills();
             netTotal = r.getNetTotal();
             discount = r.getDiscount();
+            vat = r.getVat();
             grosTotal = r.getGrossTotal();
             return;
         }
@@ -728,10 +735,13 @@ public class BillController implements Serializable {
         if (r.getDiscount() != null) {
             discount = r.getDiscount();
         }
+        if (r.getVat() != null) {
+            vat = r.getVat();
+        }
         if (r.getGrossTotal() != null) {
             grosTotal = r.getGrossTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Bill Lists/List of pharmacy bill(/faces/pharmacy/list_of_all_sale_bills.xhtml)");
     }
 
@@ -745,7 +755,7 @@ public class BillController implements Serializable {
 
     public void getPharamacyWholeSaleCreditBills() {
         Date startTime = new Date();
-        
+
         BillType[] billTypes = {BillType.PharmacyWholeSale};
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
@@ -753,33 +763,33 @@ public class BillController implements Serializable {
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
-        
+        vat = r.getVat();
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy wholesale report/Pharmacy wholeale credit bills(/faces/pharmacy_wholesale/pharmacy_report_credit.xhtml)");
     }
 
     public void getPharmacyBills() {
         Date startTime = new Date();
-        
+
         BillType[] billTypes = {BillType.PharmacySale};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
-        
+        vat = r.getVat();
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
     }
 
     public void getPharmacyWholeBills() {
         Date startTime = new Date();
-        
+
         BillType[] billTypes = {BillType.PharmacySale};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
         bills = r.getBills();
         netTotal = r.getNetTotal();
         discount = r.getDiscount();
         grosTotal = r.getGrossTotal();
-        
+        vat = r.getVat();
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy wholesale report(/faces/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml)");
     }
 
@@ -1026,9 +1036,8 @@ public class BillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
-        
-        
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
+
+        commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1039,8 +1048,10 @@ public class BillController implements Serializable {
         Double[] billItemValues = billBean.fetchBillItemValues(b);
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
-        double billItemNetTotal = billItemValues[2];
 
+        double billItemNetTotal = billItemValues[2];
+        double billItemVat = billItemValues[3];
+        
         if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
             return true;
         }
@@ -1267,22 +1278,22 @@ public class BillController implements Serializable {
     }
 
     private boolean errorCheck() {
-        
+
         if (getLstBillEntries().isEmpty()) {
             UtilityController.addErrorMessage("No investigations are added to the bill to settle");
             return true;
         }
 
-        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
-            if (getNewPatient().getPerson().getPhone() == null ) {
-                UtilityController.addErrorMessage("Please Insert a Phone Number");
-                return true;
-            }
-            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
-                UtilityController.addErrorMessage("Please Insert a Phone Number");
-                return true;
-            }
-        }
+//        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+//            if (getNewPatient().getPerson().getPhone() == null ) {
+//                UtilityController.addErrorMessage("Please Insert a Phone Number");
+//                return true;
+//            }
+//            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
+//                UtilityController.addErrorMessage("Please Insert a Phone Number");
+//                return true;
+//            }
+//        } alredy chak in lab item settle
         if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             for (BillEntry be : getLstBillEntries()) {
                 System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
@@ -1408,10 +1419,12 @@ public class BillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-         if (billSessions == null || !billSessions.isEmpty()) {
+        {
+            if (billSessions == null || !billSessions.isEmpty()) {
                 //System.out.println("new array");
                 billSessions = new ArrayList<>();
             }
+        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
@@ -2489,5 +2502,5 @@ public class BillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
 }

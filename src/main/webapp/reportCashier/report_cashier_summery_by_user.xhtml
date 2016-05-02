@@ -22,7 +22,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/>
                             <br/>
-                            <h:outputLabel value="Casheir Summary :"/>
+                            <h:outputLabel value="#{commonReport.header} :"/>
                             <h:outputLabel value="#{commonReport.webUser.webUserPerson.name}"/>
                             <h:outputLabel value="&emsp;&emsp;&emsp;&emsp;From :"/>
                             <h:outputLabel value="#{commonReport.fromDate}">
@@ -32,7 +32,15 @@
                             <h:outputLabel value="#{commonReport.toDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
+                                             styleClass="noPrintButton" style="float: right;"
+                                            action="#{commonReport.createCashierTableByUser()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                             styleClass="noPrintButton" style="float: right;"
+                                             action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
+                            <p:defaultCommand target="btnRefresh"/>
+                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
                                             action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
@@ -161,6 +169,42 @@
 
                         <p:spacer height="30"/>
                         <ca:inwrdRefundBill data="#{commonReport.inwardRefunds}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBillSummery id="ch_b" agent="false" data="#{commonReport.channelBilled}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBill id="ch_c" agent="false" data="#{commonReport.channelCancells}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBill id="ch_r" agent="false" data="#{commonReport.channelRefunds}"/>
+                        
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBillSummery id="cha_b" agent="true" data="#{commonReport.channelBilledAgent}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBill id="cha_c" agent="true" data="#{commonReport.channelCancellsAgent}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBill id="cha_r" agent="true" data="#{commonReport.channelRefundsAgent}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledBillProPay id="chpay_b" data="#{commonReport.channelBilledProPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelCancelBillProPay id="chpay_c" data="#{commonReport.channelCancellProPayment}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelRefundBillProPay id="chpay_r" data="#{commonReport.channelRefundsProPayment}"/>
 
                         <p:spacer height="30"/>
 

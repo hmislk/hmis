@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -102,6 +103,8 @@ public class ChannelReportTempController implements Serializable {
     InstitutionController institutionController;
     @Inject
     SheduleController sheduleController;
+    @Inject
+    CommonController commonController;
     //
     List<Bill> bills;
     List<AgentReferenceBook> agentReferenceBooks;
@@ -133,7 +136,7 @@ public class ChannelReportTempController implements Serializable {
     public ChannelReportTempController() {
     }
 
-    public List<Bill> fetchBills(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany) {
+    public List<Bill> fetchBills(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
 
         String sql;
         Map m = new HashMap();
@@ -156,6 +159,10 @@ public class ChannelReportTempController implements Serializable {
             sql += " and b.institution=:ins ";
             m.put("ins", billedInstitution);
         }
+        if (fromInstitution != null) {
+            sql += " and b.fromInstitution=:fins ";
+            m.put("fins", fromInstitution);
+        }
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             m.put("cc", creditCompany);
@@ -169,6 +176,49 @@ public class ChannelReportTempController implements Serializable {
         System.err.println("Sql " + sql);
         System.out.println("m = " + m);
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double  fetchBillsNetTotal(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select sum(b.netTotal) from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (billTypes != null) {
+            sql += " and b.billType in :bt ";
+            List<BillType> bts = Arrays.asList(billTypes);
+            m.put("bt", bts);
+        }
+        if (bills != null) {
+            sql += " and type(b) in :class ";
+            List<Class> cs = Arrays.asList(bills);
+            m.put("class", cs);
+        }
+        if (billedInstitution != null) {
+            sql += " and b.institution=:ins ";
+            m.put("ins", billedInstitution);
+        }
+        if (fromInstitution != null) {
+            sql += " and b.fromInstitution=:fins ";
+            m.put("fins", fromInstitution);
+        }
+        if (creditCompany != null) {
+            sql += " and b.creditCompany=:cc ";
+            m.put("cc", creditCompany);
+        }
+
+        sql += " order by b.createdAt ";
+
+        m.put("fromDate", fd);
+        m.put("toDate", td);
+
+        System.err.println("Sql " + sql);
+        System.out.println("m = " + m);
+        return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -527,29 +577,45 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createAgentPaymentTable() {
+        Date startTime = new Date();
+
         bills = new ArrayList<>();
         BillType[] bts = {BillType.AgentPaymentReceiveBill};
         Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
-        bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
+        bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null, getReportKeyWord().getInstitution());
+        channelTotal.setNetTotal(fetchBillsNetTotal(bts, classes, fromDate, toDate, getSessionController().getInstitution(), null, getReportKeyWord().getInstitution()));
         System.out.println("bills.size() = " + bills.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent Deposite(/faces/channel/channel_report_agent_payment_bill.xhtml)");
 
     }
 
     public void createCollectingCenterPaymentTable() {
+        Date startTime = new Date();
+
         bills = new ArrayList<>();
         BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
         Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
-        bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
+        bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null, getReportKeyWord().getInstitution());
+        channelTotal.setNetTotal(fetchBillsNetTotal(bts, classes, fromDate, toDate, getSessionController().getInstitution(), null, getReportKeyWord().getInstitution()));
         System.out.println("bills.size() = " + bills.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center deposists(/faces/reportLab/report_collecting_center_payment_bill.xhtml)");
 
     }
 
     public void createChannelAgentReferenceBooks() {
+        Date startTime = new Date();
         createAgentReferenceBooks(ReferenceBookEnum.ChannelBook);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent channel book report(/faces/channel/channel_report_agent_referece_book.xhtml)");
     }
 
     public void createCollectingCenterReferenceBooks() {
+        Date startTime = new Date();
+
         createAgentReferenceBooks(ReferenceBookEnum.LabBook);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/ Collecting center book report(/faces/reportLab/lab_report_collecting_center_referece_book.xhtml)");
     }
 
     public void createAgentReferenceBooks(ReferenceBookEnum bookEnum) {
@@ -737,6 +803,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createUsercollectionByDate() {
+        Date startTime = new Date();
+
         if (getReportKeyWord().getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select User.");
             return;
@@ -801,15 +869,19 @@ public class ChannelReportTempController implements Serializable {
             nowDate = cal.getTime();
             System.out.println("nowDate = " + nowDate);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Today all my booking summery(/faces/channel/channel_report_cashier_summery_date.xhtml)");
     }
 
     public void createUsercollectionByDateCreated() {
+        Date startTime = new Date();
+
         if (getReportKeyWord().getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select User.");
             return;
         }
-        Date todayLastBillDate=fetchTodaybill(Arrays.asList(new BillType[]{BillType.ChannelCash,BillType.ChannelAgent,BillType.ChannelPaid}), reportKeyWord.getWebUser(), false);
-        if (todayLastBillDate==null) {
+        Date todayLastBillDate = fetchTodaybill(Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelPaid}), reportKeyWord.getWebUser(), false);
+        if (todayLastBillDate == null) {
             JsfUtil.addErrorMessage("This User Has not Bill any Bill Selected Day");
             return;
         }
@@ -818,7 +890,7 @@ public class ChannelReportTempController implements Serializable {
         channelTotal = new ChannelTotal();
         Date nowDate = getFromDate();
 //        while (nowDate.before(getToDate())) {
-        while (nowDate.before(todayLastBillDate)||nowDate.equals(todayLastBillDate)) {
+        while (nowDate.before(todayLastBillDate) || nowDate.equals(todayLastBillDate)) {
             ChannelDateDetailRow row = new ChannelDateDetailRow();
             String formatedDate;
             Date fd;
@@ -877,6 +949,8 @@ public class ChannelReportTempController implements Serializable {
             nowDate = cal.getTime();
             System.out.println("nowDate = " + nowDate);
         }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Today all my booking summery(credit date)(/faces/channel/channel_report_cashier_summery_date_created.xhtml)");
     }
 
     public void updateDecactivateAgentBook(AgentReferenceBook a) {
@@ -919,6 +993,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createChannelCountByUserOrDate() {
+        Date startTime = new Date();
+
         channelSummeryDateRangeOrUserRows = new ArrayList<>();
         channelTotal = new ChannelTotal();
         BillType[] bts;
@@ -968,9 +1044,13 @@ public class ChannelReportTempController implements Serializable {
         }
         System.out.println("channelSummeryDateRangeOrUserRows.size() = " + channelSummeryDateRangeOrUserRows.size());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Channel count by users(/faces/channel/report_cashier_vise_count.xhtml)");
+
     }
 
     public void createChannelCountByUserOrDate2() {
+        Date startTime = new Date();
+
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
@@ -1023,6 +1103,8 @@ public class ChannelReportTempController implements Serializable {
             }
         }
         System.out.println("channelSummeryDateRangeOrUserRows.size() = " + channelSummeryDateRangeOrUserRows.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Channel count by users(by appoinment date)(/faces/channel/report_cashier_vise_count_1.xhtml)");
 
     }
 
@@ -1433,7 +1515,7 @@ public class ChannelReportTempController implements Serializable {
 
         return dateRangeRows;
     }
-    
+
     private Date fetchTodaybill(List<BillType> billTypes, WebUser wUser, boolean fristBill) {
         String sql;
         Map temMap = new HashMap();
@@ -1461,7 +1543,6 @@ public class ChannelReportTempController implements Serializable {
         temMap.put("btps", billTypes);
         temMap.put("ins", getSessionController().getInstitution());
 
-        
         System.out.println("temMap = " + temMap);
         System.out.println("sql = " + sql);
         return getBillFacade().findDateByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -1469,7 +1550,10 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createAgentWiseAppoinmentCount() {
+        Date startTime = new Date();
         fetchAgentWiseChannelTotal();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent vise channel appoinment  total and count(/faces/channel/channel_report_agent_wise_channel_total.xhtml)");
     }
 
     public void createAgentWiseAppoinmentTotal() {
@@ -1481,7 +1565,10 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createStaffWiseAppoinmentTotal() {
+        Date startTime = new Date();
         fetchStaffWiseChannelTotalOrCount();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Agent vise channel appoinment total and count(/faces/channel/channel_report_consultant_month_count.xhtml)");
     }
 
     public void createSpecilityWiseAppoinmentCount() {
@@ -1489,18 +1576,29 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createSpecilityWiseAppoinmentTotal() {
+        Date startTime = new Date();
         fetchSpecilityWiseChannelTotalOrCount();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Speciality vise channel appoinment total and count(/faces/channel/channel_report_specility_month_count.xhtml)");
     }
 
     public void createSpecilityWiseDoctorAppoinmentCount() {
+        Date startTime = new Date();
         fetchSpecilityWiseDoctorAppoinmentCount();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Channel and scan count(/faces/channel/channel_report_scan_channel_count.xhtml)");
     }
 
     public void createStaffShedules() {
+        Date startTime = new Date();
         itemFees = getSheduleController().fetchStaffServiceSessions();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Session report/Entered schedule report(/faces/channel/channel_report_channel_shedule.xhtml)");
     }
 
     public void createAgencyBalanceTable() {
+        Date startTime = new Date();
+
         String sql;
         HashMap m = new HashMap();
         sql = "select c from Institution c "
@@ -1510,9 +1608,17 @@ public class ChannelReportTempController implements Serializable {
         m.put("typ", InstitutionType.Agency);
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
+        getChannelTotal().setNetTotal(0);
+        for (Institution a : agencies) {
+            getChannelTotal().setNetTotal(channelTotal.getNetTotal()+a.getBallance());
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent balance(/faces/channel/channel_report_agent_balance.xhtml)");
     }
 
     public void createCollectingcenterBalanceTable() {
+        Date startTime = new Date();
+
         String sql;
         HashMap m = new HashMap();
         sql = "select c from Institution c "
@@ -1522,10 +1628,15 @@ public class ChannelReportTempController implements Serializable {
         m.put("typ", InstitutionType.CollectingCentre);
 
         agencies = getInstitutionFacade().findBySQL(sql, m);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center current balance(/faces/reportLab/report_collecting_center_balance.xhtml)");
     }
 
     public void createStaffWiseChannelBillTypeCountTable() {
+        Date startTime = new Date();
         fetchStaffWiseChannelBillTypeCount();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/Doctor vise payment count(/faces/channel/channel_report_staff_wise_patient_count.xhtml)");
     }
 
     public void clearAllReportData() {
@@ -1769,6 +1880,8 @@ public class ChannelReportTempController implements Serializable {
         double totalRefundCount;
         double totalHosFee;
         double totalDocFee;
+        
+        double netTotal;
 
         public double getCashTotal() {
             return cashTotal;
@@ -1864,6 +1977,14 @@ public class ChannelReportTempController implements Serializable {
 
         public void setTotalDocFee(double totalDocFee) {
             this.totalDocFee = totalDocFee;
+        }
+
+        public double getNetTotal() {
+            return netTotal;
+        }
+
+        public void setNetTotal(double netTotal) {
+            this.netTotal = netTotal;
         }
 
     }
@@ -2334,6 +2455,9 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public ChannelTotal getChannelTotal() {
+        if (channelTotal==null) {
+            channelTotal=new ChannelTotal();
+        }
         return channelTotal;
     }
 
@@ -2371,6 +2495,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setWithDocPayment(boolean withDocPayment) {
         this.withDocPayment = withDocPayment;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }
