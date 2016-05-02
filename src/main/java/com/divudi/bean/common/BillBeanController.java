@@ -718,7 +718,7 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Object[]> fetchDoctorPaymentBySpecility(Date fromDate, Date toDate, BillType refBillType, Institution i,
             List<PaymentMethod> paymentMethods, List<PaymentMethod> notPaymentMethods) {
         HashMap hm = new HashMap();
@@ -1586,8 +1586,8 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department,BillType bt) {
+
+    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department, BillType bt) {
         String sql;
         Map temMap = new HashMap();
 
@@ -3162,6 +3162,13 @@ public class BillBeanController implements Serializable {
                     }
                     f.setSpeciality(i.getSpeciality());
                     f.setStaff(i.getStaff());
+
+                    if (f.getBillItem().getItem().isVatable()) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
                     t.add(f);
 
                 }
@@ -3208,6 +3215,13 @@ public class BillBeanController implements Serializable {
                     f.setStaff(null);
                 }
                 f.setSpeciality(i.getSpeciality());
+
+                if (f.getBillItem().getItem().isVatable()) {
+                    f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                }
+
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
                 t.add(f);
             }
         }
