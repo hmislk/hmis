@@ -60,6 +60,7 @@ public class BillItem implements Serializable {
     double netRate;
     double grossValue;
     double discount;
+    double vat;
     double netValue;
     double marginValue;
     private double adjustedValue;
@@ -142,6 +143,16 @@ public class BillItem implements Serializable {
     @Transient
     boolean transRefund;
 
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    
+    
     public double getHospitalFee() {
         return hospitalFee;
     }

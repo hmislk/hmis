@@ -319,6 +319,7 @@ public class BillEjb implements Serializable {
             //System.out.println("bills not null");
             for (Bill b : r.getBills()) {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
+                r.setVat(r.getVat()+b.getVat());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
                 if (r.getSaleValueTotal() == null) {
@@ -331,6 +332,7 @@ public class BillEjb implements Serializable {
             r.setDiscount(null);
             r.setNetTotal(null);
             r.setGrossTotal(null);
+            r.setVat(null);
         }
         return r;
     }
@@ -343,11 +345,13 @@ public class BillEjb implements Serializable {
         }
         bt.setGrossTotal(0.0);
         bt.setDiscount(0.0);
+        bt.setVat(0.0);
         bt.setNetTotal(0.0);
         for (Bill b : bills) {
             bt.setGrossTotal(bt.getGrossTotal() + b.getTotal());
             bt.setDiscount(bt.getDiscount() + b.getDiscount());
             bt.setNetTotal(bt.getNetTotal() + b.getNetTotal());
+            bt.setVat(bt.getVat() + b.getVat());
         }
         return bt;
     }

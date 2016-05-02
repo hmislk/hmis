@@ -2183,6 +2183,7 @@ public class BillBeanController implements Serializable {
                 + " bf.retired=false "
                 + " and bf.bill=:bill ";
         HashMap hm = new HashMap();
+        BillFee bf;
         hm.put("bill", b);
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
