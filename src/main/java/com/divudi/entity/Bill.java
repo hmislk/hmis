@@ -135,6 +135,7 @@ public class Bill implements Serializable {
     double total;
     double margin;
     double discount;
+    double vat;
     double discountPercent;
     double netTotal;
     double billTotal;
@@ -401,11 +402,22 @@ public class Bill implements Serializable {
         this.claimableTotal = claimableTotal;
     }
 
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    
+    
     public void invertValue(Bill bill) {
         staffFee = 0 - bill.getStaffFee();
         performInstitutionFee = 0 - bill.getPerformInstitutionFee();
         billerFee = 0 - bill.getBillerFee();
         discount = 0 - bill.getDiscount();
+        vat=0-bill.getVat();
         netTotal = 0 - bill.getNetTotal();
         total = 0 - bill.getTotal();
         discountPercent = 0 - bill.getDiscountPercent();
@@ -428,6 +440,7 @@ public class Bill implements Serializable {
         performInstitutionFee = 0 - getPerformInstitutionFee();
         billerFee = 0 - getBillerFee();
         discount = 0 - getDiscount();
+        vat=0-getVat();
         netTotal = 0 - getNetTotal();
         total = 0 - getTotal();
         discountPercent = 0 - getDiscountPercent();
@@ -472,6 +485,7 @@ public class Bill implements Serializable {
         appointmentAt = bill.getAppointmentAt();
         referredByInstitution = bill.getReferredByInstitution();
         invoiceNumber = bill.getInvoiceNumber();
+        vat=bill.getVat();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -483,7 +497,7 @@ public class Bill implements Serializable {
         this.staffFee = bill.getStaffFee();
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
-
+        this.vat=bill.getVat();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -530,7 +544,7 @@ public class Bill implements Serializable {
     }
 
     public double getTransSaleBillTotalMinusDiscount() {
-        return total - discount;
+        return total - discount + vat;
     }
 
     public void setTotal(double total) {
