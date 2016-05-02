@@ -117,6 +117,8 @@ public enum Privileges {
     LabCCBillingSearch,
     LabReportSearch,
     LabReporting,
+    //dont remove
+    LabSearchBillLoggedInstitution,
     
     PaymentBilling,
     PaymentBillSearch,
