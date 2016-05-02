@@ -1317,16 +1317,18 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Invaild Reference Number.");
                 return true;
             }
-            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
-                UtilityController.addErrorMessage("This Reference Number is alredy Given.");
-                setAgentRefNo("");
-                return true;
-            }
-            if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
-                UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-                return true;
+            if (!getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                    errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
+                    UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+                    setAgentRefNo("");
+                    return true;
+                }
+                if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                    errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
+                    UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                    return true;
+                }
             }
         }
         if (paymentMethod == PaymentMethod.Staff) {
