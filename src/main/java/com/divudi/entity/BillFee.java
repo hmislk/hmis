@@ -83,8 +83,12 @@ public class BillFee implements Serializable {
     Double feeGrossValue;
     double feeDiscount;
     double feeVat;
+    double feeVatPlusValue;
+    
     double feeMargin;
     double feeAdjusted;
+    
+    
     double paidValue = 0.0;
     double settleValue = 0.0;
 
@@ -149,11 +153,22 @@ public class BillFee implements Serializable {
         feeAdjusted = billFee.getFeeAdjusted();
         feeDiscount = billFee.getFeeDiscount();
         feeVat=billFee.getFeeVat();
+        feeVatPlusValue=billFee.getFeeVatPlusValue();
         feeMargin = billFee.getFeeMargin();
         paidValue = billFee.getPaidValue();
 
     }
 
+    public double getFeeVatPlusValue() {
+        return feeVatPlusValue;
+    }
+
+    public void setFeeVatPlusValue(double feeVatPlusValue) {
+        this.feeVatPlusValue = feeVatPlusValue;
+    }
+
+    
+    
     public void invertValue(BillFee billFee) {
         if (billFee == null) {
             return;
@@ -165,6 +180,7 @@ public class BillFee implements Serializable {
         }
         feeDiscount = 0 - billFee.getFeeDiscount();
         feeVat= 0 - billFee.getFeeVat();
+        feeVatPlusValue = 0 - billFee.getFeeVatPlusValue();
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
         paidValue = 0 - billFee.getPaidValue();
@@ -336,47 +352,6 @@ public class BillFee implements Serializable {
         }
     }
     
-    public void setVatValue(boolean foriegn, double discountPercent) {
-
-        if (tmpChangedValue == null) {
-            if (getFee().getFeeType() != FeeType.Staff) {
-                if (foriegn) {
-                    this.feeGrossValue = getFee().getFfee();
-                } else {
-                    this.feeGrossValue = getFee().getFee();
-                }
-
-                //SETTING DISCOUNT
-                this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
-                this.feeValue = this.feeGrossValue - this.feeDiscount;
-
-            } else {
-                if (foriegn) {
-                    this.feeGrossValue = getFee().getFfee();
-                    this.feeValue = getFee().getFfee();
-                } else {
-                    this.feeGrossValue = getFee().getFee();
-                    this.feeValue = getFee().getFee();
-                }
-            }
-        } else {
-            if (getFee().getFeeType() != FeeType.Staff) {
-                this.feeGrossValue = tmpChangedValue;
-                if (tmpChangedValue != 0) {
-                    this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
-                    this.feeValue = this.feeGrossValue - this.feeDiscount;
-                } else {
-                    this.feeValue = 0;
-                }
-            } else {
-                this.feeGrossValue = tmpChangedValue;
-                this.feeValue = tmpChangedValue;
-            }
-        }
-
-    }
-
-
     public void setFeeValue(boolean foriegn, double discountPercent) {
 
         if (tmpChangedValue == null) {
