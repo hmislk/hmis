@@ -1072,7 +1072,7 @@ public class BillController implements Serializable {
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
         System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);        System.out.println("billFeeVatPlusNetValue = " + billFeeVatPlusNetValue);
 
-        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()|| billFeeVatPlusNetValue != b.getVatPlusNetTotal()) {
+        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
         }
         
