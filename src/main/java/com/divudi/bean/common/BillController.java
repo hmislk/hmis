@@ -1053,11 +1053,13 @@ public class BillController implements Serializable {
         Double[] billItemValues = billBean.fetchBillItemValues(b);
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
-
         double billItemNetTotal = billItemValues[2];
-        double billItemVat = billItemValues[3];
+        double billItemVatPlusNetValue = billItemValues[3];
+        
+        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
+        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);
 
-        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
+        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()|| billItemVatPlusNetValue != b.getVatPlusNetTotal()) {
             return true;
         }
 
@@ -1065,10 +1067,18 @@ public class BillController implements Serializable {
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
+        double billFeeVatPlusNetValue = billFeeValues[3];
+        
+        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
+        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);        System.out.println("billFeeVatPlusNetValue = " + billFeeVatPlusNetValue);
 
-        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
+        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()|| billFeeVatPlusNetValue != b.getVatPlusNetTotal()) {
             return true;
         }
+        
+        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
+        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);
+        System.out.println("billFeeVatPlusNetValue = " + billFeeVatPlusNetValue);
 
         return false;
     }

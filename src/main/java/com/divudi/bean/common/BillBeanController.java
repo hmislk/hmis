@@ -2178,7 +2178,7 @@ public class BillBeanController implements Serializable {
     }
 
     public Double[] fetchBillItemValues(Bill b) {
-        String sql = "Select sum(bf.grossValue),sum(bf.discount),sum(bf.netValue) "
+        String sql = "Select sum(bf.grossValue),sum(bf.discount),sum(bf.netValue),sum(bf.vatPlusNetValue) "
                 + " from BillItem bf where "
                 + " bf.retired=false "
                 + " and bf.bill=:bill ";
@@ -2192,6 +2192,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
@@ -2201,7 +2202,7 @@ public class BillBeanController implements Serializable {
     }
 
     public Double[] fetchBillFeeValues(Bill b) {
-        String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
+        String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue),sum(bf.feeVatPlusValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
                 + " and bf.bill=:bill ";
@@ -2214,6 +2215,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
