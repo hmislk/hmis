@@ -22,4 +22,5 @@
     </jdbc-connection-pool>
     <jdbc-resource enabled="true" jndi-name="java:app/dsCoop" object-type="user" pool-name="mysql_coop_rootPool"/>
     <jdbc-resource enabled="true" jndi-name="java:app/dsR" object-type="user" pool-name="mysql_coop_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="java:app/dsR" object-type="user" pool-name="mysql_coop_rootPool"/>
 </resources>

@@ -249,6 +249,17 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
+                             <tr>
+                                <td style="text-align: left;">
+                                    <h1>#{cc.attrs.bill.vat}</h1>
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="VAT" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                </td>
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
 
 
                         </table>
