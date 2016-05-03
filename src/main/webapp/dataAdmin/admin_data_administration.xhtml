@@ -68,7 +68,7 @@
                                 <p:commandLink ajax="false" 
                                                action="/dataAdmin/update_staff_zonecode" rendered="true"
                                                value="16. Update Staff Zone Code"  
-                                                         />
+                                               />
 
                             </p:panelGrid>
 
@@ -76,7 +76,19 @@
                                 <p:commandLink ajax="false" action="#{agencyController.randomlySetAgencyBalances}" 
                                                value="1. Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
                                                onclick="if (!confirm('Really want to do that?'))
-                                            return false"/>
+                                                           return false"/>
+                                <h:panelGroup >
+                                    <p:selectOneMenu value="#{billController.billTypeForVat}" >
+                                        <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <p:inputText value="#{billController.startIdForVat}" ></p:inputText>
+                                    <p:commandLink ajax="false" action="#{billController.addVatToOldBills()}" 
+                                                   value="2. Add VAT For Previous Bills"  
+                                                   onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
+                                        <p:outputLabel value="#{billController.txtBillNoForVat}" ></p:outputLabel>
+                                </h:panelGroup>
+
 
                             </p:panelGrid>
 
