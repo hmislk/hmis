@@ -551,6 +551,10 @@
                                                 <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
+                                                 <h:outputLabel value="VAT" ></h:outputLabel>
+                                                 <h:outputLabel id="netTotal" value="#{billController.vat}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
                                                 <h:outputLabel value="Tendered" ></h:outputLabel>
                                                 <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
                                                     <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
