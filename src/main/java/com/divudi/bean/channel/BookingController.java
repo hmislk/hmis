@@ -13,6 +13,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
@@ -91,6 +92,8 @@ public class BookingController implements Serializable {
     private ChannelBean channelBean;
     @EJB
     FingerPrintRecordFacade fpFacade;
+    @EJB
+    FinalVariables finalVariables;
     /**
      * Controllers
      */
@@ -805,6 +808,7 @@ public class BookingController implements Serializable {
             ss.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, ss.getSessionDate()));
             ss.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, ss.getSessionDate()));
             ss.setTransRowNumber(rowIndex++);
+            checkDoctorArival(ss);
             
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
@@ -827,12 +831,12 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
-            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
+            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
         }

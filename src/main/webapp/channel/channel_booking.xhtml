@@ -261,7 +261,7 @@
                                 <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                     <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                     <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2
+                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2 :#{p:component('lblSessionTotal')} 
                                             creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
                                             lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessionsOnlyIdNew}" />
                                 </p:selectOneMenu>
