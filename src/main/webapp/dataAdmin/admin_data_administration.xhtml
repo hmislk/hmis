@@ -78,15 +78,20 @@
                                                onclick="if (!confirm('Really want to do that?'))
                                                            return false"/>
                                 <h:panelGroup >
+                                    <p:outputLabel value="#{billController.txtBillNoForVat}" ></p:outputLabel>
+                                    Bill Type
                                     <p:selectOneMenu value="#{billController.billTypeForVat}" >
                                         <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
+                                    <br/>
+                                    Start Id
                                     <p:inputText value="#{billController.startIdForVat}" ></p:inputText>
+                                    <br/>
                                     <p:commandLink ajax="false" action="#{billController.addVatToOldBills()}" 
                                                    value="2. Add VAT For Previous Bills"  
                                                    onclick="if (!confirm('Really want to do that?'))
-                                                           return false"/>
-                                        <p:outputLabel value="#{billController.txtBillNoForVat}" ></p:outputLabel>
+                                                               return false"/>
+                                    
                                 </h:panelGroup>
 
 

@@ -1754,7 +1754,7 @@ public class BillController implements Serializable {
         Map m = new HashMap();
         m.put("bt", billTypeForVat);
         m.put("id", startIdForVat);
-        List<Bill> bs = getFacade().findBySQL(j, m, 10000);
+        List<Bill> bs = getFacade().findBySQL(j, m, 1000);
         txtBillNoForVat = "";
         for(Bill b:bs){
             if(b.getVatPlusNetTotal()==0.00){
