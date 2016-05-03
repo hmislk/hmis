@@ -235,6 +235,11 @@
                                             <h:outputLabel id="dis" value="#{labBillCollectingController.discount}" ></h:outputLabel>
                                             <h:outputLabel value="Net Total" ></h:outputLabel>
                                             <h:outputLabel id="netTotal" value="#{labBillCollectingController.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="VAT" ></h:outputLabel>
+                                            <h:outputLabel id="netTotal" value="#{labBillCollectingController.vat}" ></h:outputLabel>
+                                            <h:outputLabel value="VAT Plus Nettotal" ></h:outputLabel>
+                                            <h:outputLabel id="netTotal" value="#{labBillCollectingController.vatPlusNetTotal}" ></h:outputLabel>
+                                            
                                             <h:outputLabel value="Tendered" ></h:outputLabel>
                                             <h:inputText autocomplete="off" id="paid" value="#{labBillCollectingController.cashPaid}" >
                                                 <p:ajax process="netTotal paid" update="balance" event="keyup"/>

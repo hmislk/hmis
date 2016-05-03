@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -88,6 +89,8 @@ public class LabBillCollectingController implements Serializable {
     private double total;
     private double discount;
     private double netTotal;
+    double vatPlusNetTotal;
+    double vat;
     private double cashPaid;
     private double cashBalance;
     private String creditCardRefNo;
@@ -554,12 +557,15 @@ public class LabBillCollectingController implements Serializable {
     public void calTotals() {
         double tot = 0.0;
         double dis = 0.0;
+        double v = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
             bi.setDiscount(0.0);
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
+            bi.setVat(0.0);
+            bi.setVatPlusNetValue(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 if (bf.getBillItem().getItem().isUserChangable() && bf.getBillItem().getItem().isDiscountAllowed() != true) {
@@ -570,8 +576,8 @@ public class LabBillCollectingController implements Serializable {
                     bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFeeValue());
                     bf.getBillItem().setGrossValue(bf.getBillItem().getGrossValue() + bf.getFeeValue());
 
-                } else {
-                    ////System.out.println("12");
+                } else ////System.out.println("12");
+                {
                     if (bf.getBillItem().getItem().isDiscountAllowed() != null && bf.getBillItem().getItem().isDiscountAllowed() == true) {
                         if (getPaymentScheme() == null) {
                             bf.setFeeValue(bf.getFee().getFee());
@@ -594,11 +600,16 @@ public class LabBillCollectingController implements Serializable {
                         bf.getBillItem().setNetValue(bf.getBillItem().getNetValue() + bf.getFee().getFee());
                     }
                 }
+
+                bf.getBillItem().setVat(bf.getBillItem().getVat() + bf.getFeeVat());
+                v=v+bf.getFeeVat();
             }
         }
         setDiscount(dis);
         setTotal(tot);
         setNetTotal(tot - dis);
+        setVat(v);
+        setVatPlusNetTotal(v+netTotal);
 
     }
 
@@ -974,6 +985,24 @@ public class LabBillCollectingController implements Serializable {
         this.yearMonthDay = yearMonthDay;
     }
 
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    
+    
     /**
      *
      */
