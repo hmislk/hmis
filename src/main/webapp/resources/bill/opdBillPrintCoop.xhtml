@@ -176,8 +176,11 @@
                         <f:facet name="footer" class="totallabel">
                             <br/>
                             <h:outputLabel value="Total" styleClass="totallabel">
-
                             </h:outputLabel>
+                            <br/>
+                            <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="VAT" styleClass="totallabel"/>
+                            <br/>
+                            <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="Total with VAT" styleClass="totallabel"/>
                         </f:facet>
                     </h:dataTable>
 
@@ -193,22 +196,25 @@
 
                                 <f:facet name="footer" class="totalCoop">
                                     <br/>
-
                                     <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalCoop">
-
-
-
-                                        <h:outputLabel value="#{cc.attrs.bill.vat}" styleClass="totalCoop"/>
-
-
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}"  styleClass="totalCoop">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vatPlusNetTotal}"  styleClass="totalCoop">
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
+
                             </h:column>
                         </h:dataTable>
                     </div>
 
-                    <div class="totalsPrinting">
-                        <table>
+                    <div class="totalsPrinting" >
+                        <table >
                             <tr>
                                 <td>
                                     <br/>
@@ -219,16 +225,6 @@
                                     <br/>
                                 </td>
                             </tr>
-                            <!--                            <tr>
-                                                            <td style="text-align: left; min-width: 3cm;">
-                                                                <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
-                                                            </td>
-                                                            <td style="text-align: right!important;">
-                                                                <h:outputLabel value="#{cc.attrs.bill.total}"  style=" text-decoration: underline!important; text-decoration-style: double!important; font-weight: bold ; text-align: right!important; font-size: 15px!important; margin-left: 115px;">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-                                                            </td>
-                                                        </tr>-->
                             <tr>
                                 <td style="text-align: left;">
                                     <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
@@ -249,19 +245,6 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
-                             <tr>
-                                <td style="text-align: left;">
-                                    <h1>#{cc.attrs.bill.vat}</h1>
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="VAT" style=" text-align: right!important;  font-size: 15px!important;   "/>
-                                </td>
-                                <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-
-
                         </table>
                     </div>
 

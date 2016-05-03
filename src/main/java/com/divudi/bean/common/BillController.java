@@ -1713,6 +1713,58 @@ public class BillController implements Serializable {
         setForeigner(false);
         calTotals();
     }
+    
+    long startIdForVat;
+    BillType billTypeForVat;
+    String txtBillNoForVat;
+
+    public long getStartIdForVat() {
+        return startIdForVat;
+    }
+
+    public void setStartIdForVat(long startIdForVat) {
+        this.startIdForVat = startIdForVat;
+    }
+
+    
+
+    public BillType getBillTypeForVat() {
+        return billTypeForVat;
+    }
+
+    public void setBillTypeForVat(BillType billTypeForVat) {
+        this.billTypeForVat = billTypeForVat;
+    }
+
+    public String getTxtBillNoForVat() {
+        return txtBillNoForVat;
+    }
+
+    public void setTxtBillNoForVat(String txtBillNoForVat) {
+        this.txtBillNoForVat = txtBillNoForVat;
+    }
+
+
+    
+    
+    public void addVatToOldBills(){
+        String j = "select b from Bill b "
+                + "where b.billType=:bt "
+                + " and b.id > :id ";
+        Map m = new HashMap();
+        m.put("bt", billTypeForVat);
+        m.put("id", startIdForVat);
+        List<Bill> bs = getFacade().findBySQL(j, m, 1000);
+        txtBillNoForVat = "";
+        for(Bill b:bs){
+            if(b.getVatPlusNetTotal()==0.00){
+                b.setVatPlusNetTotal(b.getNetTotal());
+                getFacade().edit(b);
+                startIdForVat = b.getId();
+                txtBillNoForVat= txtBillNoForVat + "\n" + "Ind Id = " + b.getInsId();
+            }
+        }
+    }
 
     public void prepareNewBill() {
         clearBillItemValues();

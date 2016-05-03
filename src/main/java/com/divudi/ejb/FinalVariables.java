@@ -127,6 +127,16 @@ public class FinalVariables {
         return 1.5;
     }
 
+    public double getVATPercentage() {
+        //VAT 15% Only Vat Value
+        return 0.15;
+    }
+    
+    public double getVATPercentageWithAmount() {
+        //VAT 15% With Total
+        return 1.15;
+    }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public SheduleController getSheduleController() {
