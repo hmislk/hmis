@@ -625,8 +625,10 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                                    
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -646,6 +648,7 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="fiveFivePaperWithHeadings">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:five_five_paper_with_headings bill="#{b}"/>                        
                                 </ui:repeat>
@@ -667,6 +670,7 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewRmh">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:opdBillPrintRmh bill="#{b}" dup="false"/>                        
                                 </ui:repeat>
@@ -675,6 +679,8 @@
 
                     </h:panelGroup>
 
+                    
+                    
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
                         <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
                             <div class="nonPrintBlock">
@@ -682,6 +688,8 @@
                                     <p:printer target="gpPosBill" ></p:printer>
                                 </p:commandButton>
 
+                                
+                                
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
 
@@ -691,12 +699,14 @@
                             </div>
                             <h:panelGroup id="gpPosBill">
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
                                 </div>
                                 <div></div>
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
@@ -722,6 +732,7 @@
                             </div>
                             <h:panelGroup id="gpPosBillWithoutLogo">
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
