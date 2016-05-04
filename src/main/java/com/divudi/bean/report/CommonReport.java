@@ -1698,7 +1698,7 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp "
                 + " and (b.paymentMethod=:pm or b.paymentMethod=:pm)"
@@ -1717,7 +1717,7 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Department department) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false  "
                 + " and b.billType=:btp "
                 + " and (b.paymentMethod=:pm )"
@@ -1748,9 +1748,42 @@ public class CommonReport implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+//    private double calValueWithVAT(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Department department) {
+//        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
+//                + " type(b)=:bill and b.retired=false  "
+//                + " and b.billType=:btp "
+//                + " and (b.paymentMethod=:pm )"
+//                + " and b.institution=:ins"
+//                + " and b.createdAt between :fromDate and :toDate";
+//        Map temMap = new HashMap();
+//
+//        if (department != null) {
+//            sql += " and b.department=:dep ";
+//            temMap.put("dep", department);
+//        }
+//
+//        if (webUser != null) {
+//            sql += " and b.creater=:w";
+//            temMap.put("w", wUser);
+//        }
+//
+//        temMap.put("fromDate", getFromDate());
+//        temMap.put("toDate", getToDate());
+//        temMap.put("btp", billType);
+//        temMap.put("pm", paymentMethod);
+//
+//        temMap.put("ins", getSessionController().getInstitution());
+//        temMap.put("bill", billClass.getClass());
+//
+//        sql += " order by b.insId ";
+//
+//        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+//
+//    }
 
     private double calValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, WebUser wUser, Department department) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false  "
                 + " and b.billType in :btps "
                 + " and (b.paymentMethod=:pm )"

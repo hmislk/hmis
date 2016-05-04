@@ -1909,6 +1909,11 @@ public class ChannelReportController implements Serializable {
 //            sql += " and bf.bill.refunded=true";
 //            System.err.println("Refund");
 //        }
+        
+        if (fts == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
 
         if (paid) {
             sql += " and bf.bill.paidBill is not null "
@@ -1933,7 +1938,7 @@ public class ChannelReportController implements Serializable {
         for (Bill b1 : b) {
             for (BillFee bf : b1.getBillFees()) {
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
-                    d += bf.getFeeValue();
+                    d += (bf.getFeeValue()+bf.getFeeVat());
                 }
             }
         }

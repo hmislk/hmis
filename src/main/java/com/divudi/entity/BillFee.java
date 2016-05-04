@@ -82,8 +82,13 @@ public class BillFee implements Serializable {
     double feeValue = 0.0;
     Double feeGrossValue;
     double feeDiscount;
+    double feeVat;
+    double feeVatPlusValue;
+    
     double feeMargin;
     double feeAdjusted;
+    
+    
     double paidValue = 0.0;
     double settleValue = 0.0;
 
@@ -123,7 +128,7 @@ public class BillFee implements Serializable {
     }
 
     public double getTransNetValue() {
-        transNetValue = (feeValue + feeMargin) - feeDiscount;
+        transNetValue = (feeValue + feeMargin) - feeDiscount + feeVat;
         return transNetValue;
     }
 
@@ -147,11 +152,23 @@ public class BillFee implements Serializable {
         feeGrossValue = billFee.getFeeGrossValue();
         feeAdjusted = billFee.getFeeAdjusted();
         feeDiscount = billFee.getFeeDiscount();
+        feeVat=billFee.getFeeVat();
+        feeVatPlusValue=billFee.getFeeVatPlusValue();
         feeMargin = billFee.getFeeMargin();
         paidValue = billFee.getPaidValue();
 
     }
 
+    public double getFeeVatPlusValue() {
+        return feeVatPlusValue;
+    }
+
+    public void setFeeVatPlusValue(double feeVatPlusValue) {
+        this.feeVatPlusValue = feeVatPlusValue;
+    }
+
+    
+    
     public void invertValue(BillFee billFee) {
         if (billFee == null) {
             return;
@@ -162,6 +179,8 @@ public class BillFee implements Serializable {
             feeGrossValue = 0 - billFee.getFeeGrossValue();
         }
         feeDiscount = 0 - billFee.getFeeDiscount();
+        feeVat= 0 - billFee.getFeeVat();
+        feeVatPlusValue = 0 - billFee.getFeeVatPlusValue();
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
         paidValue = 0 - billFee.getPaidValue();
@@ -332,7 +351,7 @@ public class BillFee implements Serializable {
             }
         }
     }
-
+    
     public void setFeeValue(boolean foriegn, double discountPercent) {
 
         if (tmpChangedValue == null) {
@@ -628,5 +647,15 @@ public class BillFee implements Serializable {
     public void setSettleValue(double settleValue) {
         this.settleValue = settleValue;
     }
+
+    public double getFeeVat() {
+        return feeVat;
+    }
+
+    public void setFeeVat(double feeVat) {
+        this.feeVat = feeVat;
+    }
+    
+    
 
 }

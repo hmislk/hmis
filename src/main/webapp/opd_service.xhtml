@@ -46,7 +46,7 @@
 
                                 </h:panelGrid>
                             </p:panel>
-                            
+
                             <p:panel header="Search Inactive Service(Can't Edit Properties)" >
                                 <h:panelGrid id="gpSelectTextAct" >
 
@@ -69,7 +69,7 @@
                                     </h:commandButton>
                                 </h:panelGrid>
                             </p:panel>
-                            
+
                         </h:panelGrid  >
 
                         <p:panel header="Edit Details">
@@ -77,7 +77,7 @@
 
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{serviceController.saveSelected()}" styleClass="buttons"
-                                               ajax="false" >
+                                                 ajax="false" >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
 
@@ -86,7 +86,7 @@
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <p:calendar   value="#{serviceController.current.createdAt}" pattern="hh mm ss a" />
                                     <p:calendar   value="#{serviceController.current.createdAt}" pattern="dd MMMM yyyy " />
-                                    
+
                                     <h:outputText id="lblid" value="Name" ></h:outputText>
                                     <h:outputText id="lblidName" value="#{serviceController.current.id}" ></h:outputText>
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
@@ -97,7 +97,14 @@
                                     <h:inputText autocomplete="off" id="txtFullName"   value="#{serviceController.current.fullName}"  ></h:inputText>
                                     <p:outputLabel value="Item Code"/>
                                     <p:inputText autocomplete="off" value="#{serviceController.current.code}"/>
+                                    <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>
+                                    <p:inputText styleClass="longText pdInputText" autocomplete="off"   
+                                                 value="#{serviceController.current.vatPercentage}"  ></p:inputText>
 
+
+                                    <h:outputText value="VATable" ></h:outputText>
+                                    <p:selectBooleanCheckbox  value="#{serviceController.current.vatable}" >
+                                    </p:selectBooleanCheckbox>
                                     <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                     <p:autoComplete converter="categoryConverter" 
                                                     completeMethod="#{categoryController.completeServiceCategory}" 
@@ -150,7 +157,7 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{serviceController.current.marginNotAllowed}" itemLabel="Margin Not Allowed"/>
-                                    
+
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{serviceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
 
@@ -168,12 +175,12 @@
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
-                
+
                 <p:panel >
                     <p:media value="http://www.youtube.com/v/KZnUr8lcqjo" width="420" height="315" player="flash"/>
 
                 </p:panel>
-                
+
             </h:form>
 
         </h:panelGroup>

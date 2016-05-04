@@ -89,7 +89,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Remarks"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.netTotal}"  >
+                                    <h:outputLabel value="#{-i.netTotal}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -103,9 +103,9 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column style="text-align: right;"  footerText="#{reportsTransfer.netTotalValues}" >
+                                        <p:column style="text-align: right;"  footerText="#{-reportsTransfer.netTotalValues}" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.netTotalValues}" >
+                                                <h:outputLabel value="#{-reportsTransfer.netTotalValues}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>

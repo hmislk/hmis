@@ -718,7 +718,7 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Object[]> fetchDoctorPaymentBySpecility(Date fromDate, Date toDate, BillType refBillType, Institution i,
             List<PaymentMethod> paymentMethods, List<PaymentMethod> notPaymentMethods) {
         HashMap hm = new HashMap();
@@ -1586,8 +1586,8 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department,BillType bt) {
+
+    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department, BillType bt) {
         String sql;
         Map temMap = new HashMap();
 
@@ -2178,11 +2178,12 @@ public class BillBeanController implements Serializable {
     }
 
     public Double[] fetchBillItemValues(Bill b) {
-        String sql = "Select sum(bf.grossValue),sum(bf.discount),sum(bf.netValue) "
+        String sql = "Select sum(bf.grossValue),sum(bf.discount),sum(bf.netValue),sum(bf.vatPlusNetValue) "
                 + " from BillItem bf where "
                 + " bf.retired=false "
                 + " and bf.bill=:bill ";
         HashMap hm = new HashMap();
+        BillFee bf;
         hm.put("bill", b);
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
@@ -2191,6 +2192,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
@@ -2200,7 +2202,7 @@ public class BillBeanController implements Serializable {
     }
 
     public Double[] fetchBillFeeValues(Bill b) {
-        String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue) "
+        String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue),sum(bf.feeVatPlusValue) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
                 + " and bf.bill=:bill ";
@@ -2213,6 +2215,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
+            dbl[3] = 0.0;
             return dbl;
         }
 
@@ -2629,12 +2632,15 @@ public class BillBeanController implements Serializable {
         double tot = 0.0;
         double dis = 0;
         double net = 0;
+        double vat =0.0;
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
+                vat+= bf.getFeeVat();
+                
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
                     ins += bf.getFeeValue();
                 } else {
@@ -2650,7 +2656,9 @@ public class BillBeanController implements Serializable {
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
-
+        
+        
+        
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
 //        bill.setDiscount(dis);
@@ -2689,6 +2697,10 @@ public class BillBeanController implements Serializable {
             bill.setNetTotal(net);
             bill.setDiscount(dis);
         }
+        
+        bill.setVat(vat);
+        bill.setVatPlusNetTotal(vat+bill.getNetTotal());
+        
         getBillFacade().edit(bill);
     }
 
@@ -3161,6 +3173,13 @@ public class BillBeanController implements Serializable {
                     }
                     f.setSpeciality(i.getSpeciality());
                     f.setStaff(i.getStaff());
+
+                    if (f.getBillItem().getItem().isVatable()) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
                     t.add(f);
 
                 }
@@ -3207,6 +3226,13 @@ public class BillBeanController implements Serializable {
                     f.setStaff(null);
                 }
                 f.setSpeciality(i.getSpeciality());
+
+                if (f.getBillItem().getItem().isVatable()) {
+                    f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                }
+
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+
                 t.add(f);
             }
         }
