@@ -2153,7 +2153,7 @@ public class BillController implements Serializable {
     }
 
     public double getCashBalance() {
-        cashBalance = cashPaid - netTotal;
+        cashBalance = cashPaid - (netTotal+vat);
         return cashBalance;
     }
 
