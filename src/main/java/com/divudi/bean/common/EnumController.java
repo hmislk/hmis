@@ -130,6 +130,10 @@ public class EnumController implements Serializable {
 
     }
 
+    public BillType[] getBillTypes(){
+        return BillType.values();
+    }
+    
     public CalculationType[] getCalculationTypes() {
         return CalculationType.values();
     }
