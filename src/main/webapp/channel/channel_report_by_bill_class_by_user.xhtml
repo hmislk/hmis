@@ -164,6 +164,14 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
+                                    <p:outputLabel value="VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
@@ -174,6 +182,14 @@
                                         <f:convertNumber pattern="#,###,##0.00" /> 
                                     </p:outputLabel>
                                 </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Fee With Vat" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >
@@ -297,6 +313,14 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
+                                    <p:outputLabel value="VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
@@ -307,6 +331,14 @@
                                         <f:convertNumber pattern="#,###,##0.00" />
                                     </p:outputLabel>
                                 </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Fee With Vat" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >
@@ -424,6 +456,14 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
+                                    <p:outputLabel value="VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
@@ -433,6 +473,14 @@
                                         <f:convertNumber pattern="#,###,##0.00" />
                                     </p:outputLabel>
                                 </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Fee With Vat" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
                                 <f:facet name="header" >

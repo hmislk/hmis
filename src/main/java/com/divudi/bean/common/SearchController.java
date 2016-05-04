@@ -592,7 +592,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select b from BilledBill b where "
-                + " b.billType = :billType "
+                + " b.billType in :billTypes "
                 + " and b.institution=:ins "
                 + " and b.department=:dep "
                 + " and b.createdAt between :fromDate and :toDate "
@@ -617,7 +617,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 //    
-        temMap.put("billType", BillType.PharmacyWholeSale);
+        temMap.put("billTypes", Arrays.asList(new BillType []{BillType.PharmacyWholeSale,BillType.PharmacySale}));
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -5133,6 +5133,71 @@ public class SearchController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.PaymentBill);
+        m.put("bts", bts);
+        m.put("class", BilledBill.class);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Payment done search(/faces/channel/channel_payment_bill_search.xhtml)");
+
+    }
+    
+    public void channelPaymentBillsNew() {
+        Date startTime = new Date();
+        
+        String sql;
+        Map m = new HashMap();
+
+        BillType[] bt = {
+            BillType.ChannelOnCall,
+            BillType.ChannelCash,
+            BillType.ChannelAgent,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,};
+
+        List<BillType> bts = Arrays.asList(bt);
+
+        sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
+                + " and bi.bill.billType=:bt "
+                + " and type(bi.bill)=:class "
+                + " and bi.paidForBillFee.bill.billType in :bts "
+                + " and bi.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.bill.patientEncounter.patient.person.name) like :patientName )";
+            m.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.bill.insId) like :billNo or upper(bi.paidForBillFee.bill.deptId) like :billNo )";
+            m.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getInsId() != null && !getSearchKeyword().getInsId().trim().equals("")) {
+            sql += " and  (upper(bi.bill.insId) like :insId )";
+            m.put("insId", "%" + getSearchKeyword().getInsId().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.staff.speciality.name) like :special )";
+            m.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.staff.person.name) like :staff )";
+            m.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  (upper(bi.paidForBillFee.feeValue) like :total )";
+            m.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bi.bill.createdAt desc  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.ChannelProPayment);
         m.put("bts", bts);
         m.put("class", BilledBill.class);
 

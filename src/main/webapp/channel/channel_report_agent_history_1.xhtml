@@ -71,6 +71,7 @@
                                 <p:column headerText="Status" />
                                 <p:column headerText="Hos. Fee" />
                                 <p:column headerText="Doc. Fee" />
+                                <p:column headerText="VAT" />
                                 <p:column headerText="Total" />
                                 <p:column headerText="Bef.Bal" />
                                 <p:column headerText="Trans val." />
@@ -121,7 +122,12 @@
                                 <p:outputLabel value="-" rendered="#{a.historyType eq 'ChannelDeposit'}" />
                             </p:column>
                             <p:column styleClass="numberCol" >
-                                <p:outputLabel value="#{a.bill.netTotal}" >
+                                <p:outputLabel value="#{a.bill.vat}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <p:outputLabel value="#{a.bill.vatPlusNetTotal}" >
                                     <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>
                             </p:column>

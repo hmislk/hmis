@@ -37,7 +37,8 @@
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                                    <p:commandButton ajax="false" value="Search" action="#{searchController.channelPaymentBills()}"/>
+                                    <p:commandButton ajax="false" value="Search(Before 2016 04 22)" action="#{searchController.channelPaymentBills()}"/>
+                                    <p:commandButton ajax="false" value="Search" action="#{searchController.channelPaymentBillsNew()}"/>
                                 </h:panelGrid>
                             </h:panelGroup>
                         </f:facet>

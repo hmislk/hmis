@@ -85,7 +85,7 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
-    @Deprecated
+    //    @Deprecated need to payment bills for separately
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
@@ -214,6 +214,8 @@ public enum BillType {
                 return "OPD Accepet Payment";
             case CollectingCentrePaymentReceiveBill:
                 return "Collecting Centre Payment";
+            case ChannelProPayment:
+                return "Channel Professional Payment Bill";
 
         }
 

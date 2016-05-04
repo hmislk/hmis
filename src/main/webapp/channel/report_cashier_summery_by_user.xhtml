@@ -51,7 +51,7 @@
                     <p:panel id="reportPrint">
                         <p:dataTable id="sum3" value="#{channelReportController.channelSummary}"  var="i" >
                             <f:facet name="header">
-                                <h:outputLabel value="Cashier Summary &emsp;:&emsp; #{channelReportController.webUser.webUserPerson.name}"/>
+                                <h:outputLabel value="#{commonReport.header}  &emsp;:&emsp; #{channelReportController.webUser.webUserPerson.name}"/>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{channelReportController.fromDate}" >
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>

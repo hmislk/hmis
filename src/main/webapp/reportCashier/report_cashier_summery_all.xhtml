@@ -19,9 +19,19 @@
 
                         <p:commandButton id="btnRefresh" ajax="false" 
                                          value="Process" 
-                                         styleClass="noPrintButton" 
+                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
                                          style="float: right;" 
                                          actionListener="#{cashierReportController.calCashierData()}" />  
+                        <p:commandButton id="btnRefresh1" ajax="false" 
+                                         value="Channel" 
+                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         style="float: right;" 
+                                         actionListener="#{cashierReportController.calCashierDataChannel()}" />  
+                        <p:commandButton id="btnRefresh2" ajax="false" 
+                                         value="Cashier" 
+                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         style="float: right;" 
+                                         actionListener="#{cashierReportController.calCashierDataCashier()}" />  
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -32,7 +42,7 @@
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" subTable="true"/>
                         </p:commandButton>  
 
-                        <h:outputLabel value="All Cashier Report"/><br/>
+                        <h:outputLabel value="All #{cashierReportController.header} Report"/><br/>
 <!--                        <h:outputLabel value="#{sessionController.loggedUser.institution.name}"/> -->
                         
 

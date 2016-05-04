@@ -99,6 +99,7 @@ public class ChannelSearchController implements Serializable {
     String comment;
     String txtSearch;
     String txtSearchRef;
+    String txtSearchPhone;
     boolean printPreview = false;
 
     /**
@@ -124,8 +125,13 @@ public class ChannelSearchController implements Serializable {
         System.out.println("getFromDate() = " + getFromDate());
         System.out.println("getToDate() = " + getToDate());
         System.out.println("txtSearch = " + txtSearch);
-        if (getFromDate() == null && getToDate() == null && (txtSearch == null || txtSearch.trim().equals("")) && (txtSearchRef == null || txtSearchRef.trim().equals(""))) {
-            JsfUtil.addErrorMessage("Please Select From To Dates or BillNo Or Agent Referane No.");
+        System.out.println("txtSearchRef = " + txtSearchRef);
+        System.out.println("txtSearchPhone = " + txtSearchPhone);
+        if (getFromDate() == null && getToDate() == null 
+                && (txtSearch == null || txtSearch.trim().equals("")) 
+                && (txtSearchRef == null || txtSearchRef.trim().equals("")) 
+                && (txtSearchPhone == null || txtSearchPhone.trim().equals(""))) {
+            JsfUtil.addErrorMessage("Please Select From To Dates or BillNo Or Agent Referane No. or Telephone No");
             return;
         }
         if ((getFromDate() == null && getToDate() != null) || (getFromDate() != null && getToDate() == null)) {
@@ -157,6 +163,11 @@ public class ChannelSearchController implements Serializable {
         if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
             sql += " and upper(bs.billItem.agentRefNo) like :ts2 ";
             m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
+        }
+        
+        if (txtSearchPhone != null && !txtSearchPhone.trim().equals("")) {
+            sql += " and upper(bs.bill.patient.person.phone) like :ts3";
+            m.put("ts3", "%" + txtSearchPhone.trim().toUpperCase() + "%");
         }
 
         if (getFromDate() != null && getToDate() != null) {
@@ -622,6 +633,14 @@ public class ChannelSearchController implements Serializable {
 
     public void setTxtSearchRef(String txtSearchRef) {
         this.txtSearchRef = txtSearchRef;
+    }
+
+    public String getTxtSearchPhone() {
+        return txtSearchPhone;
+    }
+
+    public void setTxtSearchPhone(String txtSearchPhone) {
+        this.txtSearchPhone = txtSearchPhone;
     }
 
 }

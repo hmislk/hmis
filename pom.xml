@@ -56,7 +56,6 @@
             <version>5.5.6</version>
             <type>jar</type>
         </dependency>
-        
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>

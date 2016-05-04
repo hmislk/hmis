@@ -23,7 +23,7 @@
                             
                             <br/>
 
-                            <h:outputLabel value="Cashier  Report : #{commonReport.webUser.webUserPerson.name}"/>
+                            <h:outputLabel value="#{commonReport.header} (Detail) : #{commonReport.webUser.webUserPerson.name}"/>
                             <h:outputLabel value="&emsp;From :"/>
                             <h:outputLabel value="#{commonReport.fromDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
@@ -33,7 +33,11 @@
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
-                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" />
+                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" />
+                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" styleClass="noPrintButton" 
+                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUserOnlyChannel()}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" />
+                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" styleClass="noPrintButton" 
+                                             style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" />
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >

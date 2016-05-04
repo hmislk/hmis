@@ -63,7 +63,7 @@
                             <p:outputLabel value="#{a.name}" >
                             </p:outputLabel>
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column styleClass="numberCol" sortBy="#{a.maxCreditLimit}">
                             <f:facet name="header">
                                 <p:outputLabel value="Allowed Max C.L." />
                             </f:facet>
@@ -71,7 +71,7 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column styleClass="numberCol" sortBy="#{a.standardCreditLimit}">
                             <f:facet name="header">
                                 <p:outputLabel value="Standerd C.L." />
                             </f:facet>
@@ -79,7 +79,7 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column styleClass="numberCol" sortBy="#{a.allowedCredit}">
                             <f:facet name="header">
                                 <p:outputLabel value="Allowed C.L." />
                             </f:facet>
@@ -87,13 +87,18 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
-                        <p:column styleClass="numberCol" >
+                        <p:column styleClass="numberCol" sortBy="#{a.ballance}">
                             <f:facet name="header">
                                 <p:outputLabel value="Balance" />
                             </f:facet>
                             <p:outputLabel value="#{a.ballance}" >
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportTempController.channelTotal.netTotal}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
                         </p:column>
 
                     </p:dataTable>
