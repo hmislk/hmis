@@ -1938,7 +1938,7 @@ public class ChannelReportController implements Serializable {
         for (Bill b1 : b) {
             for (BillFee bf : b1.getBillFees()) {
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
-                    d += bf.getFeeValue();
+                    d += (bf.getFeeValue()+bf.getFeeVat());
                 }
             }
         }
