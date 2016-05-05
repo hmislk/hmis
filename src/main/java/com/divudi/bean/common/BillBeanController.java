@@ -3174,7 +3174,7 @@ public class BillBeanController implements Serializable {
                     f.setSpeciality(i.getSpeciality());
                     f.setStaff(i.getStaff());
 
-                    if (f.getBillItem().getItem().isVatable()) {
+                    if (f.getBillItem().getItem().isVatable() && f.getFee().getFeeType()!=FeeType.CollectingCentre ) {
                         f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
                     }
 
@@ -3227,7 +3227,7 @@ public class BillBeanController implements Serializable {
                 }
                 f.setSpeciality(i.getSpeciality());
 
-                if (f.getBillItem().getItem().isVatable()) {
+                if (f.getBillItem().getItem().isVatable() && f.getFee().getFeeType()!=FeeType.CollectingCentre) {
                     f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
                 }
 
