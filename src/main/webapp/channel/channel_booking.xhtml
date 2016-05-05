@@ -708,7 +708,7 @@
                                     </h:panelGrid>                            
                                 </p:panel>
 
-                                 <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
+                                <p:panel header="Booking" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Name"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne 'null'}"/>
@@ -912,8 +912,10 @@
 
                                 </h:panelGrid>
                                 <h:panelGrid columns="2">
-                                    <h:outputLabel value="Refundable Total : "/>
-                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal}"/>
+                                    <h:outputLabel value="Refundable Total : " style="font-weight: bold;color: red;"/>
+                                    <h:outputLabel id="tot" value="#{channelBillController.refundableTotal * 1.15}" style="font-weight: bold;color: red;">
+                                        <f:convertNumber pattern="#,###0.00"  />
+                                    </h:outputLabel>
                                 </h:panelGrid>
                                 <p:dataTable value="#{channelBillController.billSession.bill.billFees}" var="bi">
                                     <p:column headerText="Fee Name">
@@ -922,8 +924,20 @@
                                     <p:column headerText="Fee Type">
                                         <p:outputLabel value="#{bi.fee.feeType}"/>
                                     </p:column>
-                                    <p:column headerText="Fee Value">
-                                        <p:outputLabel value="#{bi.feeValue}"/> 
+                                    <p:column headerText="Fee Value" styleClass="numberCol">
+                                        <p:outputLabel value="#{bi.feeValue}">
+                                            <f:convertNumber pattern="#,###0.00"  />
+                                        </p:outputLabel> 
+                                    </p:column>
+                                    <p:column headerText="Vat" styleClass="numberCol">
+                                        <p:outputLabel value="#{bi.feeVat}" >
+                                            <f:convertNumber pattern="#,###0.00"  />
+                                        </p:outputLabel> 
+                                    </p:column>
+                                    <p:column headerText="Fee Total" styleClass="numberCol">
+                                        <p:outputLabel value="#{bi.feeVatPlusValue}" >
+                                            <f:convertNumber pattern="#,###0.00"  />
+                                        </p:outputLabel> 
                                     </p:column>
                                     <p:column headerText="Return Value">
                                         <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
@@ -1154,21 +1168,21 @@
                                 <p:column headerText="Session Name" style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" filterBy="#{bs.serviceSession.name}" filterMatchMode="contains">
                                     <p:outputLabel value="#{bs.serviceSession.name}" />
                                 </p:column>
-                                
-                                
+
+
 <!--                                <p:column headerText="Paid or Not" filterBy="#{bs.bill.billType}" filterMatchMode="contains">
-                                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
-                                    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
-                                </p:column>-->
+    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelCredit'}" value="Credit" style="color: red;"/>
+    <p:outputLabel rendered="#{bs.bill.billType eq 'ChannelPaid'}" value="Paid"/>
+</p:column>-->
                                 <p:column headerText="C/R" filterBy="#{bs.bill.billClass}" filterMatchMode="contains">
                                     <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                                     <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                                 </p:column>   
-                                
-                                 
+
+
 <!--                                <p:column headerText="P/A" filterBy="#{bs.absent}" filterMatchMode="contains">    
-                                    <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>
-                                </p:column> -->
+   <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>
+</p:column> -->
                             </p:dataTable> 
                         </p:tab>
 

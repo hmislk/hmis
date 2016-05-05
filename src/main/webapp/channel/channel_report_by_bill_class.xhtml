@@ -104,9 +104,23 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
+                                    <p:outputLabel value="VAT(15%)" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Wit VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -198,11 +212,25 @@
                                 <p:outputLabel value="#{b.staffFee}" >
                                 </p:outputLabel>
                             </p:column>
+                           <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="VAT(15%)" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                </p:outputLabel>
+                            </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Wit VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -292,9 +320,23 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
+                                    <p:outputLabel value="VAT(15%)" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
                                     <p:outputLabel value="Total Fee" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.netTotal}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total Wit VAT" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.vatPlusNetTotal}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}" >
