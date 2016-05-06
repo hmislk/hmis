@@ -2632,15 +2632,15 @@ public class BillBeanController implements Serializable {
         double tot = 0.0;
         double dis = 0;
         double net = 0;
-        double vat =0.0;
+        double vat = 0.0;
 
         for (BillEntry e : billEntrys) {
             for (BillFee bf : e.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
                 net += bf.getFeeValue();
                 dis += bf.getFeeDiscount();
-                vat+= bf.getFeeVat();
-                
+                vat += bf.getFeeVat();
+
                 if (bf.getFee().getFeeType() != FeeType.Staff) {
                     ins += bf.getFeeValue();
                 } else {
@@ -2656,9 +2656,7 @@ public class BillBeanController implements Serializable {
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
-        
-        
-        
+
 //        bill.setTotal(tot);
 //        bill.setNetTotal(net);
 //        bill.setDiscount(dis);
@@ -2697,10 +2695,10 @@ public class BillBeanController implements Serializable {
             bill.setNetTotal(net);
             bill.setDiscount(dis);
         }
-        
+
         bill.setVat(vat);
-        bill.setVatPlusNetTotal(vat+bill.getNetTotal());
-        
+        bill.setVatPlusNetTotal(vat + bill.getNetTotal());
+
         getBillFacade().edit(bill);
     }
 
@@ -3174,8 +3172,12 @@ public class BillBeanController implements Serializable {
                     f.setSpeciality(i.getSpeciality());
                     f.setStaff(i.getStaff());
 
-                    if (f.getBillItem().getItem().isVatable() && f.getFee().getFeeType()!=FeeType.CollectingCentre ) {
-                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    if (f.getBillItem().getItem().isVatable()) {
+                        System.out.println("f.getFee().getFeeType() = " + f.getFee().getFeeType());
+                        System.out.println("collectingCentreBillController.getCollectingCentre() = " + collectingCentreBillController.getCollectingCentre());
+                        if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                            f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                        }
                     }
 
                     f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
@@ -3227,8 +3229,12 @@ public class BillBeanController implements Serializable {
                 }
                 f.setSpeciality(i.getSpeciality());
 
-                if (f.getBillItem().getItem().isVatable() && f.getFee().getFeeType()!=FeeType.CollectingCentre) {
-                    f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                if (f.getBillItem().getItem().isVatable()) {
+                    System.out.println("f.getFee().getFeeType() = " + f.getFee().getFeeType());
+                    System.out.println("collectingCentreBillController.getCollectingCentre() = " + collectingCentreBillController.getCollectingCentre());
+                    if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
                 }
 
                 f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
