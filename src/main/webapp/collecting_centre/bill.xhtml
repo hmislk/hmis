@@ -138,7 +138,7 @@
                                                             <!--<p:inputMask placeholder="NIC" mask="999999999V" value="#{collectingCentreBillController.newPatient.person.nic}" />-->
                                                             <p:inputText placeholder="NIC" maxlength="12" value="#{collectingCentreBillController.newPatient.person.nic}"/>
 
-                                                        
+
                                                         </td>
 
                                                     </tr>
@@ -349,13 +349,13 @@
                                                 <f:convertNumber  pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <h:outputLabel id="ballance3" value="Max Credit Limit"/>                                          
-                                                <h:outputLabel id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
-                                                    <f:convertNumber  pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                                <h:outputLabel id="ballance5" value="Credit Limit"   />
-                                                <h:outputLabel id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
-                                                    <f:convertNumber  pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                            <h:outputLabel id="ballance4" value="#{collectingCentreBillController.collectingCentre.maxCreditLimit}">
+                                                <f:convertNumber  pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel id="ballance5" value="Credit Limit"   />
+                                            <h:outputLabel id="ballance6" value="#{collectingCentreBillController.collectingCentre.allowedCredit}">
+                                                <f:convertNumber  pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </h:panelGrid>
 
                                     </p:panel>
@@ -507,6 +507,14 @@
                                                     </h:outputLabel>
                                                     <h:outputLabel value="Net Total" ></h:outputLabel>
                                                     <h:outputLabel id="netTotal" value="#{collectingCentreBillController.netTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="VAT" ></h:outputLabel>
+                                                    <h:outputLabel id="vat" value="#{collectingCentreBillController.vat}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel value="VAT &amp; Net Total" ></h:outputLabel>
+                                                    <h:outputLabel id="vatPlusNetTotal" value="#{collectingCentreBillController.vatPlusNetTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:panelGrid>
