@@ -58,14 +58,13 @@ public class BillItem implements Serializable {
     double discountRate;
     double marginRate;
     double netRate;
-    
+
     double grossValue;
     double discount;
     double vat;
     double netValue;
     double vatPlusNetValue;
-    
-    
+
     double marginValue;
     private double adjustedValue;
     double hospitalFee;
@@ -155,8 +154,6 @@ public class BillItem implements Serializable {
         this.vat = vat;
     }
 
-    
-    
     public double getHospitalFee() {
         return hospitalFee;
     }
@@ -232,8 +229,8 @@ public class BillItem implements Serializable {
         netRate = 0.0;
         tmpQty = 0.0;
         marginValue = 0.0;
-        vat=0.0;
-        vatPlusNetValue=0.0;
+        vat = 0.0;
+        vatPlusNetValue = 0.0;
     }
 
     public BillItem() {
@@ -252,7 +249,7 @@ public class BillItem implements Serializable {
         adjustedValue = 0 - billItem.getAdjustedValue();
         staffFee = 0 - billItem.getStaffFee();
         hospitalFee = 0 - billItem.getHospitalFee();
-        vat=0-billItem.getVat();
+        vat = 0 - billItem.getVat();
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
     }
 
@@ -269,7 +266,7 @@ public class BillItem implements Serializable {
         adjustedValue = 0 - getAdjustedValue();
         staffFee = 0 - getStaffFee();
         hospitalFee = 0 - getHospitalFee();
-        vat = 0-getVat();
+        vat = 0 - getVat();
         vatPlusNetValue = 0 - getVatPlusNetValue();
     }
 
@@ -797,5 +794,4 @@ public class BillItem implements Serializable {
         this.vatPlusNetValue = vatPlusNetValue;
     }
 
-    
 }

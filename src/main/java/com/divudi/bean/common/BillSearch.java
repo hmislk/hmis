@@ -18,6 +18,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.EjbApplication;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
@@ -351,7 +352,7 @@ public class BillSearch implements Serializable {
         tmp.setEditor(sessionController.getLoggedUser());
         getBillItemFacade().edit(tmp);
         //System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
-        if (tmp.getPaidForBillFee()!=null) {
+        if (tmp.getPaidForBillFee() != null) {
             getBillFeeFacade().edit(tmp.getPaidForBillFee());
         }
         //System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
@@ -388,12 +389,16 @@ public class BillSearch implements Serializable {
     private double refundTotal = 0;
     private double refundDiscount = 0;
     private double refundMargin = 0;
+    private double refundVat = 0;
+    private double refundVatPlusTotal = 0;
 
     public boolean calculateRefundTotal() {
         refundAmount = 0;
         refundDiscount = 0;
         refundTotal = 0;
         refundMargin = 0;
+        refundVat = 0;
+        refundVatPlusTotal = 0;
         //billItems=null;
         tempbillItems = null;
         for (BillItem i : getRefundingItems()) {
@@ -419,6 +424,8 @@ public class BillSearch implements Serializable {
             refundAmount += i.getNetValue();
             refundMargin += i.getMarginValue();
             refundDiscount += i.getDiscount();
+            refundVat += i.getVat();
+            refundVatPlusTotal += i.getVatPlusNetValue();
             getTempbillItems().add(i);
 //            }
 
@@ -429,7 +436,7 @@ public class BillSearch implements Serializable {
 
     public List<Bill> getUserBillsOwn() {
         Date startTime = new Date();
-       List<Bill> userBills;
+        List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
             ////System.out.println("user is null");
@@ -440,14 +447,11 @@ public class BillSearch implements Serializable {
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
-            
+
         }
-         commonController.printReportDetails(fromDate, toDate, startTime, "Bill list(/opd_search_user_bills.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Bill list(/opd_search_user_bills.xhtml)");
         return userBills;
-        
-       
-       
-        
+
     }
 
     public List<Bill> getBillsOwn() {
@@ -738,6 +742,8 @@ public class BillSearch implements Serializable {
         rb.setTotal(0 - refundTotal);
         rb.setDiscount(0 - refundDiscount);
         rb.setNetTotal(0 - refundAmount);
+        rb.setVat(0 - refundVat);
+        rb.setVatPlusNetTotal(0 - refundVatPlusTotal);
 
         getBillFacade().create(rb);
 
@@ -1447,11 +1453,13 @@ public class BillSearch implements Serializable {
             b.setNetValue(0 - nB.getNetValue());
             b.setGrossValue(0 - nB.getGrossValue());
             b.setRate(0 - nB.getRate());
+            b.setVat(0 - nB.getVat());
+            b.setVatPlusNetValue(0 - nB.getVatPlusNetValue());
 
             b.setCatId(nB.getCatId());
             b.setDeptId(nB.getDeptId());
             b.setInsId(nB.getInsId());
-            b.setDiscount(nB.getDiscount());
+            b.setDiscount(0 - nB.getDiscount());
             b.setQty(1.0);
             b.setRate(nB.getRate());
 
@@ -1495,7 +1503,11 @@ public class BillSearch implements Serializable {
             bf.setBill(can);
             bf.setBillItem(bt);
             bf.setFeeValue(0 - nB.getFeeValue());
+            bf.setFeeGrossValue(0 - nB.getFeeGrossValue());
+            bf.setFeeDiscount(0 - nB.getFeeDiscount());
             bf.setSettleValue(0 - nB.getSettleValue());
+            bf.setFeeVat(0 - nB.getFeeVat());
+            bf.setFeeVatPlusValue(0 - nB.getFeeVatPlusValue());
 
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
@@ -2149,11 +2161,11 @@ public class BillSearch implements Serializable {
             System.out.println("getBill().getRefundedBill().getBilledBill() = " + getBill().getRefundedBill().getBilledBill());
             bills = new ArrayList<>();
             String sql;
-            Map m=new HashMap();
+            Map m = new HashMap();
             sql = "Select b from Bill b where "
                     + " b.billedBill.id=:bid";
             m.put("bid", getBill().getId());
-            bills = getBillFacade().findBySQL(sql,m);
+            bills = getBillFacade().findBySQL(sql, m);
             for (Bill b : bills) {
                 createCollectingCenterfees(b);
             }
@@ -2252,7 +2264,7 @@ public class BillSearch implements Serializable {
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.id=" + b.getId();
         AgentHistory ah = agentHistoryFacade.findFirstBySQL(sql);
-        
+
         return ah;
     }
 
@@ -2337,12 +2349,10 @@ public class BillSearch implements Serializable {
         this.opdPreSettleController = opdPreSettleController;
     }
 
- 
     public CommonController getCommonController() {
         return commonController;
     }
 
-   
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }

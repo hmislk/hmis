@@ -161,20 +161,20 @@
                             </tr>
                             <tr>
                                 <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="TOTAL" />
+                                    <h:outputLabel value="TOTAL" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; min-width: 3cm;">
-                                    <h:outputLabel value="VAT" />
+                                    <h:outputLabel value="VAT (15%)" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                    <h:outputLabel value="#{cc.attrs.bill.vat}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -202,14 +202,15 @@
                             </tr>
                             <tr>
                                 <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;    ">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
+                            
 
 
                         </table>

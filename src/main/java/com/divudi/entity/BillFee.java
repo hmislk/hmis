@@ -17,8 +17,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
-
-
 /**
  *
  * @author www.divudi.com
@@ -84,11 +82,10 @@ public class BillFee implements Serializable {
     double feeDiscount;
     double feeVat;
     double feeVatPlusValue;
-    
+
     double feeMargin;
     double feeAdjusted;
-    
-    
+
     double paidValue = 0.0;
     double settleValue = 0.0;
 
@@ -152,8 +149,8 @@ public class BillFee implements Serializable {
         feeGrossValue = billFee.getFeeGrossValue();
         feeAdjusted = billFee.getFeeAdjusted();
         feeDiscount = billFee.getFeeDiscount();
-        feeVat=billFee.getFeeVat();
-        feeVatPlusValue=billFee.getFeeVatPlusValue();
+        feeVat = billFee.getFeeVat();
+        feeVatPlusValue = billFee.getFeeVatPlusValue();
         feeMargin = billFee.getFeeMargin();
         paidValue = billFee.getPaidValue();
 
@@ -167,19 +164,17 @@ public class BillFee implements Serializable {
         this.feeVatPlusValue = feeVatPlusValue;
     }
 
-    
-    
     public void invertValue(BillFee billFee) {
         if (billFee == null) {
             return;
         }
-       
+
         feeValue = 0 - billFee.getFeeValue();
         if (billFee.getFeeGrossValue() != null) {
             feeGrossValue = 0 - billFee.getFeeGrossValue();
         }
         feeDiscount = 0 - billFee.getFeeDiscount();
-        feeVat= 0 - billFee.getFeeVat();
+        feeVat = 0 - billFee.getFeeVat();
         feeVatPlusValue = 0 - billFee.getFeeVatPlusValue();
         feeMargin = 0 - billFee.getFeeMargin();
         feeAdjusted = 0 - billFee.getFeeAdjusted();
@@ -351,7 +346,7 @@ public class BillFee implements Serializable {
             }
         }
     }
-    
+
     public void setFeeValue(boolean foriegn, double discountPercent) {
 
         if (tmpChangedValue == null) {
@@ -365,6 +360,7 @@ public class BillFee implements Serializable {
                 //SETTING DISCOUNT
                 this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                 this.feeValue = this.feeGrossValue - this.feeDiscount;
+                this.feeVatPlusValue = this.feeVat + this.feeValue;
 
             } else {
                 if (foriegn) {
@@ -381,6 +377,7 @@ public class BillFee implements Serializable {
                 if (tmpChangedValue != 0) {
                     this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                     this.feeValue = this.feeGrossValue - this.feeDiscount;
+                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeValue = 0;
                 }
@@ -655,7 +652,5 @@ public class BillFee implements Serializable {
     public void setFeeVat(double feeVat) {
         this.feeVat = feeVat;
     }
-    
-    
 
 }

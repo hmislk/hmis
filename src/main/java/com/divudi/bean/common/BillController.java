@@ -1615,6 +1615,7 @@ public class BillController implements Serializable {
             double entryDis = 0.0;
             double entryNet = 0.0;
             double entryVat = 0.0;
+            double entryVatPlusNet = 0.0;
             
             BillItem bi = be.getBillItem();
 
@@ -1646,6 +1647,7 @@ public class BillController implements Serializable {
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
+                entryVatPlusNet += bf.getFeeVatPlusValue();
                 
                 ////System.out.println("fee net is " + bf.getFeeValue());
 
@@ -1655,11 +1657,15 @@ public class BillController implements Serializable {
             bi.setGrossValue(entryGross);
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
+            bi.setVatPlusNetValue(entryVatPlusNet);
+            
 
-            ////System.out.println("item is " + bi.getItem().getName());
-            ////System.out.println("item gross is " + bi.getGrossValue());
-            ////System.out.println("item net is " + bi.getNetValue());
-            ////System.out.println("item dis is " + bi.getDiscount());
+            System.out.println("item is " + bi.getItem().getName());
+            System.out.println("item gross is " + bi.getGrossValue());
+            System.out.println("item net is " + bi.getNetValue());
+            System.out.println("item dis is " + bi.getDiscount());
+            System.out.println("billVat = " + bi.getVat());
+            System.out.println("billVat = " + bi.getVatPlusNetValue());
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -1670,6 +1676,7 @@ public class BillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
         setVat(billVat);
+        setNetPlusVat(getVat()+getNetTotal());
         
                 
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
