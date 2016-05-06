@@ -685,7 +685,7 @@ public class CollectingCentreBillController implements Serializable {
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
             b.setBalance(0.0);
-            b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
+//            b.setNetTotal(b.getTransSaleBillTotalMinusDiscount());
             b.setReferralNumber(referralId);
 
             createPaymentsForBills(b, getLstBillEntries());
@@ -742,6 +742,14 @@ public class CollectingCentreBillController implements Serializable {
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
         double billItemNetTotal = billItemValues[2];
+        
+        System.out.println("b.getTotal() = " + b.getTotal());
+        System.out.println("billItemTotal = " + billItemTotal);
+        System.out.println("b.getDiscount() = " + b.getDiscount());
+        System.out.println("billItemDiscount = " + billItemDiscount);
+        System.out.println("b.getNetTotal() = " + b.getNetTotal());
+        System.out.println("billItemNetTotal = " + billItemNetTotal);
+        
 
         if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
             return true;
@@ -751,6 +759,13 @@ public class CollectingCentreBillController implements Serializable {
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
+        
+        System.out.println("b.getTotal() = " + b.getTotal());
+        System.out.println("billFeeTotal = " + billFeeTotal);
+        System.out.println("b.getDiscount() = " + b.getDiscount());
+        System.out.println("billFeeDiscount = " + billFeeDiscount);
+        System.out.println("b.getNetTotal() = " + b.getNetTotal());
+        System.out.println("billFeeNetTotal = " + billFeeNetTotal);
 
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
