@@ -1056,7 +1056,7 @@ public class BillController implements Serializable {
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
         double billItemNetTotal = billItemValues[2];
-        double billItemVatPlusNetValue = billItemValues[3];
+        double billItemVatPlusNetValue = billItemValues[3] + billItemValues[2];
 
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
         System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
@@ -1069,7 +1069,7 @@ public class BillController implements Serializable {
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
-        double billFeeVatPlusNetValue = billFeeValues[3];
+        double billFeeVatPlusNetValue = billFeeValues[3] + billFeeValues[2];
 
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
         System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
@@ -1655,14 +1655,13 @@ public class BillController implements Serializable {
                     }
                 }
                 bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-                
 
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
                 entryVatPlusNet += bf.getFeeVatPlusValue();
-                
+
                 ////System.out.println("fee net is " + bf.getFeeValue());
             }
 
