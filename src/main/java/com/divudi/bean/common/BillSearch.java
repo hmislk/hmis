@@ -684,7 +684,7 @@ public class BillSearch implements Serializable {
                     List<BillFee> rbf = getBillFeeFacade().findBySQL(sql);
                     for (BillFee bf : rbf) {
                         if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                            feeTotalExceptCcfs += bf.getFeeValue();
+                            feeTotalExceptCcfs += (bf.getFeeValue()+ bf.getFeeVat());
                         }
                     }
                 }
@@ -697,7 +697,7 @@ public class BillSearch implements Serializable {
                 //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
                     //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
-                    staffBean.updateStaffCredit(getBill().getToStaff(), 0 - feeTotalExceptCcfs);
+                    staffBean.updateStaffCredit(getBill().getToStaff(), (rb.getNetTotal()+rb.getVat()));
                     UtilityController.addSuccessMessage("Staff Credit Updated");
                 }
             }
@@ -1139,7 +1139,7 @@ public class BillSearch implements Serializable {
                     double feeTotalExceptCcfs = 0.0;
                     for (BillFee bf : lstBillFees) {
                         if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                            feeTotalExceptCcfs += bf.getFeeValue();
+                            feeTotalExceptCcfs += (bf.getFeeValue()+ bf.getFeeVat());
                         }
                     }
 
@@ -1151,7 +1151,7 @@ public class BillSearch implements Serializable {
                     //   //System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                     if (getBill().getToStaff() != null) {
                         //   //System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
-                        staffBean.updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                        staffBean.updateStaffCredit(getBill().getToStaff(), 0 - (getBill().getNetTotal()+getBill().getVat()));
                         UtilityController.addSuccessMessage("Staff Credit Updated");
                         cb.setFromStaff(getBill().getToStaff());
                         getBillFacade().edit(cb);

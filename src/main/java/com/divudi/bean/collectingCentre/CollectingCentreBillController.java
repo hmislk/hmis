@@ -251,7 +251,7 @@ public class CollectingCentreBillController implements Serializable {
         grosTotal = bt.getGrossTotal();
         netTotal = bt.getNetTotal();
         discount = bt.getDiscount();
-        vat=bt.getVat();
+        vat = bt.getVat();
         vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
     }
 
@@ -443,11 +443,11 @@ public class CollectingCentreBillController implements Serializable {
         calTotals();
     }
 
-     public void listnerSelectLabBooks(){
-         channelBillController.fetchRecentChannelBooks(collectingCentre);
-         
+    public void listnerSelectLabBooks() {
+        channelBillController.fetchRecentChannelBooks(collectingCentre);
+
     }
-    
+
     public String getStrTenderedValue() {
         return strTenderedValue;
     }
@@ -665,7 +665,7 @@ public class CollectingCentreBillController implements Serializable {
 
     public void settleBill() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -696,14 +696,14 @@ public class CollectingCentreBillController implements Serializable {
             double feeTotalExceptCcfs = 0.0;
             for (BillFee bf : lstBillFees) {
                 if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                    feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat() ) ;
+                    feeTotalExceptCcfs += (bf.getFeeValue() + bf.getFeeVat());
                 }
             }
 
             updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBilling, b, b.getReferralNumber());
-            AgentHistory ah=billSearch.fetchCCHistory(b);
+            AgentHistory ah = billSearch.fetchCCHistory(b);
             billSearch.createCollectingCenterfees(b);
-            b.setTransCurrentCCBalance(ah.getBeforeBallance()+ah.getTransactionValue());
+            b.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
         } else {
             boolean result = putToBills();
             if (result == false) {
@@ -718,7 +718,7 @@ public class CollectingCentreBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         printPreview = true;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/cc/cc billing(/faces/collecting_centre/bill.xhtml)");
     }
 
@@ -742,14 +742,13 @@ public class CollectingCentreBillController implements Serializable {
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
         double billItemNetTotal = billItemValues[2];
-        
+
         System.out.println("b.getTotal() = " + b.getTotal());
         System.out.println("billItemTotal = " + billItemTotal);
         System.out.println("b.getDiscount() = " + b.getDiscount());
         System.out.println("billItemDiscount = " + billItemDiscount);
         System.out.println("b.getNetTotal() = " + b.getNetTotal());
         System.out.println("billItemNetTotal = " + billItemNetTotal);
-        
 
         if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()) {
             return true;
@@ -759,7 +758,7 @@ public class CollectingCentreBillController implements Serializable {
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
-        
+
         System.out.println("b.getTotal() = " + b.getTotal());
         System.out.println("billFeeTotal = " + billFeeTotal);
         System.out.println("b.getDiscount() = " + b.getDiscount());
@@ -1208,7 +1207,7 @@ public class CollectingCentreBillController implements Serializable {
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
-            double entryVat =0.0;
+            double entryVat = 0.0;
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
@@ -1240,7 +1239,7 @@ public class CollectingCentreBillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
         setVat(billVat);
-        setVatPlusNetTotal(billVat+billNet);
+        setVatPlusNetTotal(billVat + billNet);
         System.out.println("bill tot is " + billGross);
     }
 
@@ -1637,8 +1636,6 @@ public class CollectingCentreBillController implements Serializable {
         this.vatPlusNetTotal = vatPlusNetTotal;
     }
 
-    
-    
     public double getNetTotal() {
         return netTotal;
     }
@@ -2034,6 +2031,5 @@ public class CollectingCentreBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }

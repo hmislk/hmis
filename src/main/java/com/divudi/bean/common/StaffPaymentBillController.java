@@ -244,12 +244,13 @@ public class StaffPaymentBillController implements Serializable {
             HashMap h = new HashMap();
             sql = "select b from BillFee b where "
                     + " b.retired=false"
-                    + " and b.bill.billType=:btp "
+                    + " and (b.bill.billType=:btp or b.bill.billType=:btpc) "
                     + " and b.bill.cancelled=false "
                     + " and b.bill.refunded=false "
                     + " and (b.feeValue - b.paidValue) > 0 "
                     + " and b.staff.id = " + currentStaff.getId();
             h.put("btp", BillType.OpdBill);
+            h.put("btpc", BillType.CollectingCentreBill);
 
             dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
