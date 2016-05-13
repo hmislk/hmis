@@ -68,7 +68,11 @@
                                 <p:commandLink ajax="false" 
                                                action="/dataAdmin/update_staff_zonecode" rendered="true"
                                                value="16. Update Staff Zone Code"  
-                                                         />
+                                               />
+                                
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.updateAllServiseAndInvestigationAsVatable()}" rendered="true"
+                                               value="17. Update All Service And Investigation To Vatabel And 15% percentage"  onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
 
                             </p:panelGrid>
 
@@ -76,7 +80,24 @@
                                 <p:commandLink ajax="false" action="#{agencyController.randomlySetAgencyBalances}" 
                                                value="1. Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
                                                onclick="if (!confirm('Really want to do that?'))
-                                            return false"/>
+                                                           return false"/>
+                                <h:panelGroup >
+                                    <p:outputLabel value="#{billController.txtBillNoForVat}" ></p:outputLabel>
+                                    Bill Type
+                                    <p:selectOneMenu value="#{billController.billTypeForVat}" >
+                                        <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <br/>
+                                    Start Id
+                                    <p:inputText value="#{billController.startIdForVat}" ></p:inputText>
+                                    <br/>
+                                    <p:commandLink ajax="false" action="#{billController.addVatToOldBills()}" 
+                                                   value="2. Add VAT For Previous Bills"  
+                                                   onclick="if (!confirm('Really want to do that?'))
+                                                               return false"/>
+                                    
+                                </h:panelGroup>
+
 
                             </p:panelGrid>
 

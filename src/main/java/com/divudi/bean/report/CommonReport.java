@@ -1698,7 +1698,7 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp "
                 + " and (b.paymentMethod=:pm or b.paymentMethod=:pm)"
@@ -1717,7 +1717,7 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Department department) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false  "
                 + " and b.billType=:btp "
                 + " and (b.paymentMethod=:pm )"
@@ -1748,9 +1748,42 @@ public class CommonReport implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+//    private double calValueWithVAT(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Department department) {
+//        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
+//                + " type(b)=:bill and b.retired=false  "
+//                + " and b.billType=:btp "
+//                + " and (b.paymentMethod=:pm )"
+//                + " and b.institution=:ins"
+//                + " and b.createdAt between :fromDate and :toDate";
+//        Map temMap = new HashMap();
+//
+//        if (department != null) {
+//            sql += " and b.department=:dep ";
+//            temMap.put("dep", department);
+//        }
+//
+//        if (webUser != null) {
+//            sql += " and b.creater=:w";
+//            temMap.put("w", wUser);
+//        }
+//
+//        temMap.put("fromDate", getFromDate());
+//        temMap.put("toDate", getToDate());
+//        temMap.put("btp", billType);
+//        temMap.put("pm", paymentMethod);
+//
+//        temMap.put("ins", getSessionController().getInstitution());
+//        temMap.put("bill", billClass.getClass());
+//
+//        sql += " order by b.insId ";
+//
+//        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+//
+//    }
 
     private double calValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, WebUser wUser, Department department) {
-        String sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false  "
                 + " and b.billType in :btps "
                 + " and (b.paymentMethod=:pm )"
@@ -2425,10 +2458,11 @@ public class CommonReport implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report summery department(/faces/reportLab/report_cashier_detailed_by_department.xhtml)");
 
     }
-
+    
+    String header="";
     public void createCashierTableByUser() {
         Date startTime = new Date();
-
+        header="Cashier Summery ";
         recreteModal();
         //Opd Billed Bills
         getBilledBills().setBills(userBillsOwn(new BilledBill(), BillType.OpdBill, getWebUser(), getDepartment()));
@@ -2788,6 +2822,8 @@ public class CommonReport implements Serializable {
 
     public void createCashierTableByUserOnlyChannel() {
         Date startTime = new Date();
+        
+        header="Channel Summery";
 
         recreteModal();
 //        //Opd Billed Bills
@@ -4231,6 +4267,9 @@ public class CommonReport implements Serializable {
         list2.add(channelBilled);
         list2.add(channelCancells);
         list2.add(channelRefunds);
+        list2.add(channelBilledProPayment);
+        list2.add(channelRefundsProPayment);
+        list2.add(channelCancellProPayment);
 
         double credit = 0.0;
         double slip = 0;
@@ -4391,7 +4430,8 @@ public class CommonReport implements Serializable {
 
         tmp1 = new String1Value1();
         tmp1.setString("Final Total");
-        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+//        tmp1.setValue(creditCard + cheque + cash + slip + credit);
+        tmp1.setValue(creditCard + cheque + cash + credit);
 
         cashChequeCreditSummery.add(tmp1);
 
@@ -5433,6 +5473,14 @@ public class CommonReport implements Serializable {
 
     public void setCashChequeCreditSummery(List<String1Value1> cashChequeCreditSummery) {
         this.cashChequeCreditSummery = cashChequeCreditSummery;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
     }
 
 }

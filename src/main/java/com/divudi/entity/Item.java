@@ -119,6 +119,7 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     Category reportFormat;
     boolean billable;
+    boolean vatable;
     boolean formatable;
     boolean patientNotRequired;
     boolean chargesVisibleForInward;
@@ -135,6 +136,7 @@ public class Item implements Serializable, Comparable<Item> {
     String descreption;
     @Lob
     String comments;
+    double vatPercentage;
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
@@ -166,6 +168,19 @@ public class Item implements Serializable, Comparable<Item> {
     String reserveNumbers;
     int maxTableRows;
 
+    public double getVatPercentage() {
+        if(vatable && vatPercentage==0.0){
+            vatPercentage=15;
+        }
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(double vatPercentage) {
+        this.vatPercentage = vatPercentage;
+    }
+
+    
+    
     public String getCreditNumbers() {
         return creditNumbers;
     }
@@ -770,7 +785,17 @@ public class Item implements Serializable, Comparable<Item> {
         this.profitMargin = profitMargin;
     }
 
+    public boolean isVatable() {
+        return vatable;
+    }
 
+    public void setVatable(boolean vatable) {
+        this.vatable = vatable;
+    }
+
+
+    
+    
     public double getTransBillItemCount() {
         return transBillItemCount;
     }

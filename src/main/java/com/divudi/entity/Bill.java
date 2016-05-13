@@ -132,11 +132,16 @@ public class Bill implements Serializable {
     String referralNumber;
 
     //Values
-    double total;
     double margin;
-    double discount;
-    double discountPercent;
+
+    double total;
     double netTotal;
+    double discount;
+    double vat;
+    double vatPlusNetTotal;
+
+    double discountPercent;
+
     double billTotal;
     double paidAmount;
     double balance;
@@ -288,7 +293,7 @@ public class Bill implements Serializable {
     double qty;
     @Transient
     double transTotalSaleValue;
-    
+
     //Sms Info
     private Boolean smsed = false;
     @ManyToOne
@@ -297,14 +302,14 @@ public class Bill implements Serializable {
     private Date smsedAt;
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
-    
+
     @Transient
-    double  transTotalCCFee;
+    double transTotalCCFee;
     @Transient
-    double  transTotalWithOutCCFee;
+    double transTotalWithOutCCFee;
     @Transient
-    double  transCurrentCCBalance;
-    
+    double transCurrentCCBalance;
+
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
     }
@@ -312,7 +317,7 @@ public class Bill implements Serializable {
     public void setTransTotalSaleValue(double transTotalSaleValue) {
         this.transTotalSaleValue = transTotalSaleValue;
     }
-    
+
     public double getQty() {
         return qty;
     }
@@ -340,8 +345,6 @@ public class Bill implements Serializable {
     public void setBillTotal(double billTotal) {
         this.billTotal = billTotal;
     }
-    
-    
 
     private boolean paid;
 
@@ -401,11 +404,21 @@ public class Bill implements Serializable {
         this.claimableTotal = claimableTotal;
     }
 
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
     public void invertValue(Bill bill) {
         staffFee = 0 - bill.getStaffFee();
         performInstitutionFee = 0 - bill.getPerformInstitutionFee();
         billerFee = 0 - bill.getBillerFee();
         discount = 0 - bill.getDiscount();
+        vat = 0 - bill.getVat();
+        vatPlusNetTotal =0-bill.getVatPlusNetTotal();
         netTotal = 0 - bill.getNetTotal();
         total = 0 - bill.getTotal();
         discountPercent = 0 - bill.getDiscountPercent();
@@ -428,6 +441,7 @@ public class Bill implements Serializable {
         performInstitutionFee = 0 - getPerformInstitutionFee();
         billerFee = 0 - getBillerFee();
         discount = 0 - getDiscount();
+        vat = 0 - getVat();
         netTotal = 0 - getNetTotal();
         total = 0 - getTotal();
         discountPercent = 0 - getDiscountPercent();
@@ -441,6 +455,7 @@ public class Bill implements Serializable {
         staffFee = 0 - getStaffFee();
         hospitalFee = 0 - getHospitalFee();
         grnNetTotal = 0 - getGrnNetTotal();
+        vatPlusNetTotal = 0 - getVatPlusNetTotal();
     }
 
     public void copy(Bill bill) {
@@ -472,6 +487,8 @@ public class Bill implements Serializable {
         appointmentAt = bill.getAppointmentAt();
         referredByInstitution = bill.getReferredByInstitution();
         invoiceNumber = bill.getInvoiceNumber();
+        vat = bill.getVat();
+        vatPlusNetTotal = bill.getVatPlusNetTotal();
         //      referenceBill=bill.getReferenceBill();
     }
 
@@ -483,7 +500,8 @@ public class Bill implements Serializable {
         this.staffFee = bill.getStaffFee();
         this.hospitalFee = bill.getHospitalFee();
         this.margin = bill.getMargin();
-
+        this.vat = bill.getVat();
+        this.vatPlusNetTotal = bill.getVatPlusNetTotal();
     }
 
     public List<BillComponent> getBillComponents() {
@@ -530,7 +548,7 @@ public class Bill implements Serializable {
     }
 
     public double getTransSaleBillTotalMinusDiscount() {
-        return total - discount;
+        return total - discount + vat;
     }
 
     public void setTotal(double total) {
@@ -1660,4 +1678,14 @@ public class Bill implements Serializable {
         this.transCurrentCCBalance = transCurrentCCBalance;
     }
 
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    
+    
 }

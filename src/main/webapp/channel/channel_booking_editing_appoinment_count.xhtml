@@ -156,7 +156,16 @@
                                             </h:outputText>
                                             <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                                         </p:column>
-
+                                        <p:column headerText="Remove" rendered="#{webUserController.hasPrivilege('Developers')}" style="width: 40px!important; text-align: center;" >
+                                            <p:cellEditor>
+                                                <f:facet name="output" >
+                                                    <h:outputText value="#{ses.retired}"/>
+                                                </f:facet>
+                                                <f:facet name="input" >
+                                                    <p:selectBooleanCheckbox value="#{ses.retired}" rendered="#{webUserController.hasPrivilege('Developers')}" />
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
                                         <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                             <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                             <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>

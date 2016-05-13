@@ -13,6 +13,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BillSession;
@@ -91,6 +92,8 @@ public class BookingController implements Serializable {
     private ChannelBean channelBean;
     @EJB
     FingerPrintRecordFacade fpFacade;
+    @EJB
+    FinalVariables finalVariables;
     /**
      * Controllers
      */
@@ -465,7 +468,6 @@ public class BookingController implements Serializable {
 //
 //            setStaff(null);
 //        }
-
         return consultants;
     }
 
@@ -799,6 +801,47 @@ public class BookingController implements Serializable {
         }
     }
 
+    public void calculateFeeBookingNew(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
+        int rowIndex=0;
+        for (ServiceSession ss : lstSs) {
+            ss.setDisplayCount(channelBean.getBillSessionsCount(ss, ss.getSessionDate()));
+            ss.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, ss.getSessionDate()));
+            ss.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, ss.getSessionDate()));
+            ss.setTransRowNumber(rowIndex++);
+            checkDoctorArival(ss);
+            
+            Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
+            ss.setHospitalFee(dbl[0]);
+            ss.setHospitalFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setHospitalFee(dbl[0]);
+            ss.getOriginatingSession().setHospitalFfee(dbl[1]);
+            //For Settle bill
+            dbl = fetchFee(ss.getOriginatingSession(), FeeType.Staff);
+            ss.setProfessionalFee(dbl[0]);
+            ss.setProfessionalFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setProfessionalFee(dbl[0]);
+            ss.getOriginatingSession().setProfessionalFfee(dbl[1]);
+            //For Settle bill
+            dbl = fetchFee(ss.getOriginatingSession(), FeeType.Tax);
+            ss.setTaxFee(dbl[0]);
+            ss.setTaxFfee(dbl[1]);
+            //For Settle bill
+            ss.getOriginatingSession().setTaxFee(dbl[0]);
+            ss.getOriginatingSession().setTaxFfee(dbl[1]);
+            //For Settle bill
+            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.setItemFees(fetchFee(ss.getOriginatingSession()));
+            //For Settle bill
+            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
+            //For Settle bill
+        }
+    }
+
     public void generateSessions() {
         serviceSessions = new ArrayList<>();
         String sql;
@@ -845,12 +888,14 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
+        m.put("nd", new Date());
         System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
             sql = "Select s.id From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
-                    + " and s.originatingSession is null "
+                    + " and s.originatingSession is null"
+                    + " and ((s.sessionWeekday is null and s.sessionDate >=:nd)or(s.sessionWeekday is not null and s.sessionDate is null)) "
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             System.out.println("Consultant = " + getStaff().getPerson().getName());
@@ -858,7 +903,7 @@ public class BookingController implements Serializable {
             System.out.println("sql = " + sql);
             List<Long> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
-            tmp = getServiceSessionFacade().findLongList(sql, m);
+            tmp = getServiceSessionFacade().findLongList(sql, m, TemporalType.DATE);
             System.err.println("Time stage 2.2 = " + new Date());
 
             System.err.println("Fetch Original Sessions = " + tmp.size());
@@ -874,6 +919,22 @@ public class BookingController implements Serializable {
             System.err.println("Time stage 5 = " + new Date());
 //            generateSessionEvents(serviceSessions);
             System.err.println("Time stage 6 = " + new Date());
+        }
+    }
+    public void generateSessionsOnlyIdNew() {
+        System.err.println("Time in = " + new Date());
+        serviceSessions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+        m.put("staff", getStaff());
+        m.put("class", ServiceSession.class);
+        m.put("nd", new Date());
+        System.err.println("Time stage 1 = " + new Date());
+        if (staff != null) {
+            System.err.println("Time stage 4.1 = " + new Date());
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
+            System.err.println("Fetch Created Sessions " + serviceSessions.size());
+            System.err.println("Time stage 4.2 = " + new Date());
         }
     }
 
@@ -1136,6 +1197,7 @@ public class BookingController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff");
             return "";
         }
+        channelStaffPaymentBillController.makenull();
         channelStaffPaymentBillController.setSpeciality(getSpeciality());
         channelStaffPaymentBillController.setCurrentStaff(getStaff());
         channelStaffPaymentBillController.fillSessions();
@@ -1161,17 +1223,18 @@ public class BookingController implements Serializable {
     }
 
     public void listnerStaffListForRowSelectNew() {
-        serviceSessions=new ArrayList<>();
+        serviceSessions = new ArrayList<>();
         listnerStaffListForRowSelect();
         listnerClearSelectedServiceSession();
     }
-    
-    public void  clearServiceSessions(){
-        serviceSessions=new ArrayList<>();
+
+    public void clearServiceSessions() {
+        serviceSessions = new ArrayList<>();
     }
 
     public void listnerServiceSessionListForRowSelectNew() {
-        generateSessionsOnlyId();
+        generateSessionsOnlyIdNew();
+//        generateSessionsOnlyId(); before Optimize
         listnerClearSelectedServiceSession();
     }
 

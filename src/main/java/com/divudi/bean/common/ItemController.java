@@ -803,6 +803,7 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
+        
 //        System.out.println(sql);
 //        System.out.println("m = " + m);
         mySuggestions = getFacade().findBySQL(sql, m, 20);

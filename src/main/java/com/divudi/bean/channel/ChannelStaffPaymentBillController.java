@@ -336,7 +336,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
             hm.put("ss", getSelectedServiceSession());
         }
         
-        sql += " and b.bill.singleBillSession.absent=false ";
+        sql += " and b.bill.singleBillSession.absent=false "
+                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+                + " b.bill.singleBillSession.serialNo ";
         
 
         hm.put("stf", getCurrentStaff());
@@ -373,7 +376,10 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
         
         sql += " and b.bill.singleBillSession.absent=true "
-                + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false ";
+                + " and b.bill.singleBillSession.serviceSession.originatingSession.refundable=false "
+                + " order by b.bill.singleBillSession.serviceSession.sessionDate,"
+                + " b.bill.singleBillSession.serviceSession.sessionTime,"
+                + " b.bill.singleBillSession.serialNo ";
         m.put("stf", getCurrentStaff());
         //hm.put("ins", sessionController.getInstitution());
         m.put("bt", bts);
@@ -545,13 +551,13 @@ public class ChannelStaffPaymentBillController implements Serializable {
         BilledBill tmp = new BilledBill();
         tmp.setBillDate(Calendar.getInstance().getTime());
         tmp.setBillTime(Calendar.getInstance().getTime());
-        tmp.setBillType(BillType.PaymentBill);
+        tmp.setBillType(BillType.ChannelProPayment);
         tmp.setCreatedAt(Calendar.getInstance().getTime());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
-        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PaymentBill, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
+        tmp.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.ChannelProPayment, BillClassType.BilledBill, BillNumberSuffix.CHNPROPAY));
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
@@ -682,6 +688,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
             saveBillItemForPaymentBill(b, bf);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
+            System.out.println("bf.getBill().getInsId() = " + bf.getBill().getInsId());
+            System.out.println("bf.getBill().getDeptId() = " + bf.getBill().getDeptId());
             getBillFeeFacade().edit(bf);
             ////System.out.println("marking as paid");
         }
@@ -914,14 +922,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
         this.selectedServiceSession = selectedServiceSession;
-        dueBillFees = new ArrayList<BillFee>();
-        payingBillFees = new ArrayList<BillFee>();
-        totalPaying = 0.0;
-        totalDue = 0.0;
-        printPreview = false;
-
-        calculateDueFees();
-        performCalculations();
+//        dueBillFees = new ArrayList<BillFee>();
+//        payingBillFees = new ArrayList<BillFee>();
+//        totalPaying = 0.0;
+//        totalDue = 0.0;
+//        printPreview = false;
+//
+//        calculateDueFees();
+//        performCalculations();
     }
 
     public List<BillFee> getFilteredBillFee() {

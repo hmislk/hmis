@@ -36,7 +36,7 @@
             <h:panelGroup >
                 <h:form>
                     <h:panelGroup >
-                        <p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;top:5px">  
+                        <p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;top:40px;">  
                             <f:facet name="start">  
                                 <p:graphicImage library="image" name="ajax-loader.gif" />  
                             </f:facet>  
@@ -506,7 +506,7 @@
                                     </p:submenu>  
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/channel/management_index" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/channel/management_index" value="Management" ></p:menuitem>
                                     
                                 </p:submenu>
 

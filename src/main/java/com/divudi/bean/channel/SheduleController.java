@@ -10,6 +10,7 @@ import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
@@ -58,6 +59,8 @@ public class SheduleController implements Serializable {
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    StockHistoryRecorder stockHistoryRecorder;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -525,6 +528,7 @@ public class SheduleController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            stockHistoryRecorder.generateSessions(currentStaff);
             System.err.println("cre Ses");
             UtilityController.addSuccessMessage("Saved Successfully");
         }
@@ -538,6 +542,14 @@ public class SheduleController implements Serializable {
         updateCreatedServicesesions(getCurrent());
         prepareAdd();
         getItems();
+    }
+    
+    public void createFutureSessionsManually(){
+        if (currentStaff==null) {
+            JsfUtil.addErrorMessage("Pease Select Doctor");
+            return;
+        }
+        stockHistoryRecorder.generateSessions(currentStaff);
     }
 
     public void updateCreatedServicesesions(ServiceSession ss) {
