@@ -121,7 +121,26 @@ root {
 
     }
 
+    .receiptnoPrintingLabel{
+        position: absolute;
+        left: 10%!important;
+        top: 7%!important;
+        font-size: 15px;
+    }
 
+    .receiptnoPrintingLabelCol{
+        position: absolute;
+        left: 27%;
+        top: 7%;
+        font-size:15px;
+    }
+
+    .receiptnoPrinting2{
+        position: absolute;
+        left: 29%!important;
+        top: 7%!important;
+        font-size: 16px!important;
+    }
 
 
 
@@ -932,8 +951,8 @@ root {
 .totalsPrintingRuhunu{
     position: absolute;
     left: 30%!important;
-   bottom:10%!important;
-/*top: 13.8cm;*/
+    bottom:10%!important;
+    /*top: 13.8cm;*/
     font-size: 20px;
     font-weight: bolder;
     text-align: right;

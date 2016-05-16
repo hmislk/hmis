@@ -1698,7 +1698,7 @@ public class CommonReport implements Serializable {
     }
 
     private double calValue(Bill billClass, BillType billType, PaymentMethod paymentMethod) {
-        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
+        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
                 + " type(b)=:bill and b.retired=false and "
                 + " b.billType=:btp "
                 + " and (b.paymentMethod=:pm or b.paymentMethod=:pm)"
@@ -1750,7 +1750,7 @@ public class CommonReport implements Serializable {
     }
     
 //    private double calValueWithVAT(Bill billClass, BillType billType, PaymentMethod paymentMethod, WebUser wUser, Department department) {
-//        String sql = "SELECT sum(b.vatPlusNetTotal) FROM Bill b WHERE"
+//        String sql = "SELECT sum(b.netTotal+b.vat) FROM Bill b WHERE"
 //                + " type(b)=:bill and b.retired=false  "
 //                + " and b.billType=:btp "
 //                + " and (b.paymentMethod=:pm )"
@@ -2206,6 +2206,7 @@ public class CommonReport implements Serializable {
         getRefundedBills().setCheque(calValue(new RefundBill(), billType, PaymentMethod.Cheque));
         getRefundedBills().setCredit(calValue(new RefundBill(), billType, PaymentMethod.Credit));
         getRefundedBills().setSlip(calValue(new RefundBill(), billType, PaymentMethod.Slip));
+        createSum();
 
         commonController.printReportDetails(fromDate, toDate, startTime, " Summery by bill type(/reportCashier/report_cashier_detailed_user_by_billType.xhtml)");
 

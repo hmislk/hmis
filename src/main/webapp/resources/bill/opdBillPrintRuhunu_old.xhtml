@@ -24,10 +24,7 @@
             <div class="fiveinchbillBreakRuhunu">
                 <h:panelGroup id="gpBillPreview" >
 
-                    <div style="position: absolute!important;left: 50%!important; font-weight: bold!important;
-                         top: 3%!important;font-size: 15px!important; text-decoration: underline!important;">
-                        <h:outputLabel value="Receipt "/>
-                    </div>
+
                     <div class="errorMessage" >
                         <h:outputLabel rendered="#{cc.attrs.bill.transError}"
                                        style="font-size: 15px!important; 
@@ -37,13 +34,8 @@
                                        top: 2.0%!important;"
                                        value=" THIS BILL IS NOT VALID PLEASE CANCEL"/>
                     </div>
-                    <div class="receiptnoPrintingLabel">
-                        <h:outputLabel value="Receipt No"/>
-                    </div>
-                    <div class="receiptnoPrintingLabelCol">
-                        <h:outputLabel value=":"/>
-                    </div>
-                    <div  class="receiptnoPrinting2">
+                    <div class="receiptnoPrintingRuhunu"
+                         style="font-size: 14px!important; position: absolute!important; left: 36%!important; top: 6.5%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.dup eq false}"/>
 
 
