@@ -16,6 +16,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -66,6 +67,7 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -234,6 +236,7 @@ public class BillController implements Serializable {
         netTotal = bt.getNetTotal();
         discount = bt.getDiscount();
         vat = bt.getVat();
+        netPlusVat = vat + netTotal;
     }
 
     public void clear() {
@@ -998,8 +1001,7 @@ public class BillController implements Serializable {
 
             b.setBillItems(list);
             b.setBillTotal(b.getNetTotal());
-            
-            
+
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 
@@ -1013,9 +1015,9 @@ public class BillController implements Serializable {
                     b.setNetTotal(b.getCashPaid());
                 }
             }
-            
+
             b.setVat(b.getVat());
-            b.setVatPlusNetTotal(b.getNetTotal()+b.getVat());
+            b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
 
             createPaymentsForBills(b, getLstBillEntries());
 
@@ -1033,7 +1035,7 @@ public class BillController implements Serializable {
         saveBillItemSessions();
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
-            staffBean.updateStaffCredit(toStaff, netTotal);
+            staffBean.updateStaffCredit(toStaff, netPlusVat);
             UtilityController.addSuccessMessage("User Credit Updated");
         }
 
@@ -1054,12 +1056,12 @@ public class BillController implements Serializable {
         double billItemTotal = billItemValues[0];
         double billItemDiscount = billItemValues[1];
         double billItemNetTotal = billItemValues[2];
-        double billItemVatPlusNetValue = billItemValues[3];
-        
-        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
-        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);
+        double billItemVatPlusNetValue = billItemValues[3] + billItemValues[2];
 
-        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal()|| billItemVatPlusNetValue != b.getVatPlusNetTotal()) {
+        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
+        System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
+
+        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != b.getVatPlusNetTotal()) {
             return true;
         }
 
@@ -1067,18 +1069,19 @@ public class BillController implements Serializable {
         double billFeeTotal = billFeeValues[0];
         double billFeeDiscount = billFeeValues[1];
         double billFeeNetTotal = billFeeValues[2];
-        double billFeeVatPlusNetValue = billFeeValues[3];
-        
-        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
-        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);        System.out.println("billFeeVatPlusNetValue = " + billFeeVatPlusNetValue);
+        double billFeeVatPlusNetValue = billFeeValues[3] + billFeeValues[2];
 
-        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
+        System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
+        System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
+        System.out.println("billFeeVatPlusNetValue = " + roundOff(billFeeVatPlusNetValue));
+
+        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != b.getVatPlusNetTotal()) {
             return true;
         }
-        
+
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
-        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);
-        System.out.println("billFeeVatPlusNetValue = " + billFeeVatPlusNetValue);
+        System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
+        System.out.println("billFeeVatPlusNetValue = " + roundOff(billFeeVatPlusNetValue));
 
         return false;
     }
@@ -1434,10 +1437,10 @@ public class BillController implements Serializable {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
             //System.out.println("billSessions = " + billSessions);
         } else //System.out.println("billSessions = " + billSessions);
-         if (billSessions == null || !billSessions.isEmpty()) {
-                //System.out.println("new array");
-                billSessions = new ArrayList<>();
-            }
+        if (billSessions == null || !billSessions.isEmpty()) {
+            //System.out.println("new array");
+            billSessions = new ArrayList<>();
+        }
     }
 
     public ServiceSessionFunctions getServiceSessionBean() {
@@ -1461,7 +1464,7 @@ public class BillController implements Serializable {
     }
 
     public void addToBill() {
-        
+
         System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
             System.out.println("noting to add");
@@ -1510,8 +1513,8 @@ public class BillController implements Serializable {
         if (getCurrentBillItem().getItem().isVatable()) {
             getCurrentBillItem().setVat(getCurrentBillItem().getNetValue() * getCurrentBillItem().getItem().getVatPercentage() / 100);
         }
-        
-        getCurrentBillItem().setVatPlusNetValue(getCurrentBillItem().getNetValue()+getCurrentBillItem().getVat());
+
+        getCurrentBillItem().setVatPlusNetValue(getCurrentBillItem().getNetValue() + getCurrentBillItem().getVat());
 
         System.out.println("to cal totals");
         calTotals();
@@ -1606,7 +1609,7 @@ public class BillController implements Serializable {
         double billGross = 0.0;
         double billNet = 0.0;
         double billVat = 0.0;
-        
+
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
 
         for (BillEntry be : getLstBillEntries()) {
@@ -1616,7 +1619,7 @@ public class BillController implements Serializable {
             double entryNet = 0.0;
             double entryVat = 0.0;
             double entryVatPlusNet = 0.0;
-            
+
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
@@ -1643,29 +1646,38 @@ public class BillController implements Serializable {
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
                 }
 
+                if (bf.getBillItem().getItem().isVatable()) {
+                    System.out.println("f.getFee().getFeeType() = " + bf.getFee().getFeeType());
+                    System.out.println("collectingCentreBillController.getCollectingCentre() = " + collectingCentreBillController.getCollectingCentre());
+                    if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
+                        bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
+                        bf.setFeeVat(roundOff(bf.getFeeVat()));
+                    }
+                }
+                bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
                 entryGross += bf.getFeeGrossValue();
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
                 entryVatPlusNet += bf.getFeeVatPlusValue();
-                
-                ////System.out.println("fee net is " + bf.getFeeValue());
 
+                ////System.out.println("fee net is " + bf.getFeeValue());
             }
 
             bi.setDiscount(entryDis);
             bi.setGrossValue(entryGross);
             bi.setNetValue(entryNet);
             bi.setVat(entryVat);
-            bi.setVatPlusNetValue(entryVatPlusNet);
-            
+            bi.setVatPlusNetValue(roundOff(entryVatPlusNet));
 
-            System.out.println("item is " + bi.getItem().getName());
-            System.out.println("item gross is " + bi.getGrossValue());
-            System.out.println("item net is " + bi.getNetValue());
-            System.out.println("item dis is " + bi.getDiscount());
-            System.out.println("billVat = " + bi.getVat());
-            System.out.println("billVat = " + bi.getVatPlusNetValue());
+            System.out.println("item is = " + bi.getItem().getName());
+            System.out.println("item gross is = " + bi.getGrossValue());
+            System.out.println("item net is = " + bi.getNetValue());
+            System.out.println("item dis is = " + bi.getDiscount());
+            System.out.println("item billVat = " + bi.getVat());
+            System.out.println("item billVat Plus Net Value = " + bi.getVatPlusNetValue());
+
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -1676,9 +1688,8 @@ public class BillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
         setVat(billVat);
-        setNetPlusVat(getVat()+getNetTotal());
-        
-                
+        setNetPlusVat(getVat() + getNetTotal());
+
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
             //System.out.println("cashPaid = " + cashPaid);
             //System.out.println("billNet = " + billNet);
@@ -1687,14 +1698,14 @@ public class BillController implements Serializable {
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(billNet + billVat);
-                setCashBalance(cashPaid - (billNet + billVat )- billDiscount);
+                setCashBalance(cashPaid - (billNet + billVat) - billDiscount);
                 //System.out.println("cashBalance = " + cashBalance);
             } else {
                 //System.out.println("half paid = ");
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(cashPaid);
-                setCashBalance((billNet+billVat) - cashPaid - billDiscount);
+                setCashBalance((billNet + billVat) - cashPaid - billDiscount);
                 //System.out.println("cashBalance = " + cashBalance);
             }
             cashRemain = cashPaid;
@@ -1720,7 +1731,7 @@ public class BillController implements Serializable {
         setForeigner(false);
         calTotals();
     }
-    
+
     long startIdForVat;
     BillType billTypeForVat;
     String txtBillNoForVat;
@@ -1732,8 +1743,6 @@ public class BillController implements Serializable {
     public void setStartIdForVat(long startIdForVat) {
         this.startIdForVat = startIdForVat;
     }
-
-    
 
     public BillType getBillTypeForVat() {
         return billTypeForVat;
@@ -1751,10 +1760,7 @@ public class BillController implements Serializable {
         this.txtBillNoForVat = txtBillNoForVat;
     }
 
-
-    
-    
-    public void addVatToOldBills(){
+    public void addVatToOldBills() {
         String j = "select b from Bill b "
                 + "where b.billType=:bt "
                 + " and b.id > :id ";
@@ -1763,12 +1769,12 @@ public class BillController implements Serializable {
         m.put("id", startIdForVat);
         List<Bill> bs = getFacade().findBySQL(j, m, 1000);
         txtBillNoForVat = "";
-        for(Bill b:bs){
-            if(b.getVatPlusNetTotal()==0.00){
+        for (Bill b : bs) {
+            if (b.getVatPlusNetTotal() == 0.00) {
                 b.setVatPlusNetTotal(b.getNetTotal());
                 getFacade().edit(b);
                 startIdForVat = b.getId();
-                txtBillNoForVat= txtBillNoForVat + "\n" + "Ind Id = " + b.getInsId();
+                txtBillNoForVat = txtBillNoForVat + "\n" + "Ind Id = " + b.getInsId();
             }
         }
     }
@@ -1957,6 +1963,15 @@ public class BillController implements Serializable {
         return d;
     }
 
+    private double roundOff(double d) {
+        DecimalFormat newFormat = new DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public BillFacade getEjbFacade() {
         return billFacade;
     }
@@ -2136,8 +2151,6 @@ public class BillController implements Serializable {
         this.vat = vat;
     }
 
-    
-    
     public void setDiscount(double discount) {
         this.discount = discount;
     }
@@ -2160,7 +2173,7 @@ public class BillController implements Serializable {
     }
 
     public double getCashBalance() {
-        cashBalance = cashPaid - (netTotal+vat);
+        cashBalance = cashPaid - (netTotal + vat);
         return cashBalance;
     }
 
@@ -2610,6 +2623,4 @@ public class BillController implements Serializable {
         this.netPlusVat = netPlusVat;
     }
 
-    
-    
 }

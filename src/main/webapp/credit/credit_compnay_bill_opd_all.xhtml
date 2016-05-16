@@ -100,7 +100,7 @@
                                 <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               
                             </p:column>
                             <p:column headerText="Value">
-                                <p:outputLabel value="#{b.referenceBill.netTotal}">  
+                                <p:outputLabel value="#{b.referenceBill.netTotal+b.referenceBill.vat}">  
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>

@@ -178,8 +178,8 @@ public class ChannelReportTempController implements Serializable {
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public double  fetchBillsNetTotal(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
+
+    public double fetchBillsNetTotal(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
 
         String sql;
         Map m = new HashMap();
@@ -235,8 +235,17 @@ public class ChannelReportTempController implements Serializable {
         }
 
         sql += " from Bill b "
-                + " where b.retired=false "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " where b.retired=false ";
+        
+        if (b.getClass().equals(BilledBill.class)) {
+            sql += " and b.singleBillSession.sessionDate between :fromDate and :toDate ";
+        }
+        if (b.getClass().equals(CancelledBill.class)) {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
+        if (b.getClass().equals(RefundBill.class)) {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
 
         if (billTypes != null) {
             sql += " and b.billType in :bt ";
@@ -1190,7 +1199,9 @@ public class ChannelReportTempController implements Serializable {
             acsr.setBillTotal(d[0]);
             acsr.setTotalDocFee(d[1]);
             acsr.setTotalHosFee(d[2]);
-            acsrs.add(acsr);
+            if (acsr.getBillTotal() != 0.0 || acsr.getTotalDocFee() != 0.0 || acsr.getTotalHosFee() != 0.0) {
+                acsrs.add(acsr);
+            }
 
             totalCount += d[0];
             totalDocfee += d[1];
@@ -1560,6 +1571,26 @@ public class ChannelReportTempController implements Serializable {
         fetchAgentWiseChannelTotal();
     }
 
+    public void createAgentWiseAppoinmentCountSummery() {
+        channelSummeryDateRangeBillTotalTables = new ArrayList<>();
+        List<Institution> institutions = new ArrayList<>();
+        institutions.addAll(fetchBillsAgencys());
+        System.out.println("institutions.size() = " + institutions.size());
+        channelTotal = new ChannelTotal();
+        for (Institution a : institutions) {
+            ChannelSummeryDateRangeBillTotalTable aws = new ChannelSummeryDateRangeBillTotalTable();
+            aws.setAgency(a);
+            aws.setNetCount(fetchBillsTotal(null, BillType.ChannelAgent, null, null, new BilledBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)
+                    - (fetchBillsTotal(null, BillType.ChannelAgent, null, null, new CancelledBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)
+                    + fetchBillsTotal(null, BillType.ChannelAgent, null, null, new RefundBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)));
+            if (aws.getNetCount() > 0) {
+                channelSummeryDateRangeBillTotalTables.add(aws);
+                channelTotal.setNetTotal(channelTotal.getNetTotal() + aws.getNetCount());
+            }
+
+        }
+    }
+
     public void createStaffWiseAppoinmentCount() {
         fetchStaffWiseChannelTotalOrCount();
     }
@@ -1610,7 +1641,7 @@ public class ChannelReportTempController implements Serializable {
         agencies = getInstitutionFacade().findBySQL(sql, m);
         getChannelTotal().setNetTotal(0);
         for (Institution a : agencies) {
-            getChannelTotal().setNetTotal(channelTotal.getNetTotal()+a.getBallance());
+            getChannelTotal().setNetTotal(channelTotal.getNetTotal() + a.getBallance());
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent balance(/faces/channel/channel_report_agent_balance.xhtml)");
@@ -1663,6 +1694,8 @@ public class ChannelReportTempController implements Serializable {
         Staff staff;
         Speciality speciality;
         double[] count;
+        String[] dates;//for 2d 
+        double netCount;
 
         List<ChannelSummeryDateRangeBillTotalRow> channelSummeryDateRangeBillTotalRows;
 
@@ -1704,6 +1737,22 @@ public class ChannelReportTempController implements Serializable {
 
         public void setCount(double[] count) {
             this.count = count;
+        }
+
+        public double getNetCount() {
+            return netCount;
+        }
+
+        public void setNetCount(double netCount) {
+            this.netCount = netCount;
+        }
+
+        public String[] getDates() {
+            return dates;
+        }
+
+        public void setDates(String[] dates) {
+            this.dates = dates;
         }
 
     }
@@ -1880,7 +1929,7 @@ public class ChannelReportTempController implements Serializable {
         double totalRefundCount;
         double totalHosFee;
         double totalDocFee;
-        
+
         double netTotal;
 
         public double getCashTotal() {
@@ -2455,8 +2504,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public ChannelTotal getChannelTotal() {
-        if (channelTotal==null) {
-            channelTotal=new ChannelTotal();
+        if (channelTotal == null) {
+            channelTotal = new ChannelTotal();
         }
         return channelTotal;
     }

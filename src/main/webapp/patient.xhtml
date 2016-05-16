@@ -50,7 +50,9 @@
                         <h:outputLabel value="Address"/>
                         <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" 
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{patientController.current.person.area}" ></p:autoComplete>
-
+                        <h:outputLabel value="Please Enter Zero(0)"/>
+                        <p:inputText autocomplete="off"  id="txtNewPtName1" value="#{patientController.current.phn}" style="width: 200px;text-transform:uppercase;">
+                        </p:inputText>
                         <h:outputLabel value="Phone"/>
                         <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
                         </p:inputMask>

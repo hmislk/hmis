@@ -213,15 +213,18 @@ public class BillFee implements Serializable {
         if (tmpChangedValue != null) {
             this.feeGrossValue = tmpChangedValue;
             this.feeValue = tmpChangedValue;
+//            this.feeVatPlusValue = this.feeVat + this.feeValue;
             return;
         }
 
         if (foriegn) {
             this.feeGrossValue = getFee().getFfee();
             this.feeValue = getFee().getFfee();
+//            this.feeVatPlusValue = this.feeVat + this.feeValue;
         } else {
             this.feeGrossValue = getFee().getFee();
             this.feeValue = getFee().getFee();
+//            this.feeVatPlusValue = this.feeVat + this.feeValue;
         }
         //    ////System.out.println("Setting fee value as " + feeValue);
     }
@@ -316,19 +319,23 @@ public class BillFee implements Serializable {
                     this.feeGrossValue = getFee().getFfee();
                     this.feeDiscount = getFee().getFfee() / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee();
                     this.feeDiscount = getFee().getFee() / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
 
             } else {
                 if (foriegn) {
                     this.feeGrossValue = getFee().getFfee();
                     this.feeValue = getFee().getFfee();
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee();
                     this.feeValue = getFee().getFee();
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             }
         } else {
@@ -337,12 +344,15 @@ public class BillFee implements Serializable {
                 if (tmpChangedValue != 0) {
                     this.feeDiscount = feeGrossValue / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeValue = 0;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             } else {
                 this.feeGrossValue = tmpChangedValue;
                 this.feeValue = tmpChangedValue;
+//                this.feeVatPlusValue = this.feeVat + this.feeValue;
             }
         }
     }
@@ -360,15 +370,17 @@ public class BillFee implements Serializable {
                 //SETTING DISCOUNT
                 this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                 this.feeValue = this.feeGrossValue - this.feeDiscount;
-                this.feeVatPlusValue = this.feeVat + this.feeValue;
+//                this.feeVatPlusValue = this.feeVat + this.feeValue;
 
             } else {
                 if (foriegn) {
                     this.feeGrossValue = getFee().getFfee();
                     this.feeValue = getFee().getFfee();
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee();
                     this.feeValue = getFee().getFee();
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             }
         } else {
@@ -377,13 +389,15 @@ public class BillFee implements Serializable {
                 if (tmpChangedValue != 0) {
                     this.feeDiscount = this.feeGrossValue * (discountPercent / 100);
                     this.feeValue = this.feeGrossValue - this.feeDiscount;
-                    this.feeVatPlusValue = this.feeVat + this.feeValue;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeValue = 0;
+//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             } else {
                 this.feeGrossValue = tmpChangedValue;
                 this.feeValue = tmpChangedValue;
+//                this.feeVatPlusValue = this.feeVat + this.feeValue;
             }
         }
 
