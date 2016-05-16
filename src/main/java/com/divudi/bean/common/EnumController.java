@@ -246,6 +246,7 @@ public class EnumController implements Serializable {
             InwardChargeType.TheaterConsumbale,
             InwardChargeType.ExerciseECG,
             InwardChargeType.TheaterConsumbale,
+            InwardChargeType.VAT,
             InwardChargeType.OtherCharges};
 
         return b;
