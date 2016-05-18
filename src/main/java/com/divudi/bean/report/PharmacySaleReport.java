@@ -1604,13 +1604,15 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
+        m.put("tde", getToDepartment());
         m.put("btp", BillType.PharmacyTransferIssue);
 
         sql = "select sum(i.netTotal)"
-                + "  from Bill i where i.department=:d "
+                + " from Bill i where i.department=:d "
                 + " and i.retired=false "
+                + " and i.toDepartment=:tde "
                 + " and i.billType=:btp"
-                + "  and type(i)!=:cl "
+                + " and type(i)!=:cl "
                 + " and i.createdAt between :fd and :td ";
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
