@@ -16,7 +16,7 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-                <p:panel  header="All My Booking Details List">
+                <p:panel  header="All My Booking Details List(By Craeated Date)">
                     <h:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
@@ -50,7 +50,7 @@
                 </p:panel>
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" >
                     <p:panel id="reportPrint">
-                        <p:dataTable value="#{channelReportController.billedBills}" var="b" id="tbl1" >
+                        <p:dataTable value="#{channelReportController.billedBills}" var="b" id="tbl1" rowIndexVar="a" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Channel Bill Detail Summary" />
                                 <br></br>
@@ -66,6 +66,9 @@
                                     <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a"/>
                                 </h:outputLabel>
                             </f:facet>
+                            <p:column>
+                                <p:outputLabel value="#{a+1}" />
+                            </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Appoinment Date" />
@@ -74,7 +77,7 @@
                                     <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column style="text-align: left;" rendered="#{channelReportController.withDates}">
+                            <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Crteated Date" />
                                 </f:facet>
@@ -82,7 +85,7 @@
                                     <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
-                            <p:column>
+                            <p:column sortBy="#{b.insId}">
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Number" />
                                 </f:facet>
@@ -182,10 +185,13 @@
 
                         </p:dataTable>
 
-                        <p:dataTable value="#{channelReportController.cancelBills}" var="b" id="tbl2" >
+                        <p:dataTable value="#{channelReportController.cancelBills}" var="b" id="tbl2" rowIndexVar="a" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Cancel Bill List" />
                             </f:facet>
+                            <p:column>
+                                <p:outputLabel value="#{a+1}" />
+                            </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Appoinment Date" />
@@ -302,10 +308,13 @@
 
                         </p:dataTable>
 
-                        <p:dataTable value="#{channelReportController.refundBills}" var="b" id="tbl3" >
+                        <p:dataTable value="#{channelReportController.refundBills}" var="b" id="tbl3" rowIndexVar="a">
                             <f:facet name="header" >
                                 <p:outputLabel value="Refund Bill List" />
                             </f:facet>
+                            <p:column>
+                                <p:outputLabel value="#{a+1}" />
+                            </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Appoinment Date" />

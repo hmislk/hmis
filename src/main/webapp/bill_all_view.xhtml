@@ -57,7 +57,7 @@
 
                                         <h:outputLabel value="Billed bill No (Dept Id) :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.billedBill.deptId}" rendered="#{billSearch.billSearch.billedBill ne null}" />
-                                        
+
                                         <h:outputText value="Paid bill:" rendered="#{billSearch.billSearch.paidBill ne null}"></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.paidBill.id}" rendered="#{billSearch.billSearch.paidBill ne null}" />
 
@@ -70,8 +70,6 @@
                                         <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
-                                        <h:outputLabel value="Cancelled" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.cancelled}" ></h:outputLabel>
                                         <h:outputLabel value="Canceled :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
@@ -120,7 +118,7 @@
 
                                         <h:outputLabel value="Bill Type :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billType}" ></h:outputLabel>
-                                        
+
                                         <h:outputLabel value="Bill Class :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.billClass}" ></h:outputLabel>
 
@@ -224,16 +222,17 @@
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.netTotal}"/>
 
+                                        <h:outputLabel value="vat :" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.vat}"/>
+
+                                        <h:outputLabel value="VAT Plus Net Total :" ></h:outputLabel>
+                                        <h:inputText value="#{billSearch.billSearch.vatPlusNetTotal}"/>
+
                                         <h:outputLabel value="Paid Amount :" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.paidAmount}"/>
 
                                         <h:outputLabel value="Balance:" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.balance}"/>
-
-                                        <h:outputLabel value="Paid:" ></h:outputLabel>
-                                        <h:inputText value="#{billSearch.billSearch.paid}"/>
-
-
 
                                         <h:outputLabel value="PerformInstitutionFee" ></h:outputLabel>
                                         <h:inputText value="#{billSearch.billSearch.performInstitutionFee}" />
@@ -277,7 +276,7 @@
                                         <h:outputLabel value="#{bip.bill.deptId} - "/>
                                         <h:outputLabel value="#{bip.bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill Edit">
+                                    <p:column headerText="Bill Edit" rendered="false">
                                         <p:cellEditor>
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip.bill.deptId}" />
@@ -287,7 +286,7 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
-                                    <p:column>
+                                    <p:column rendered="false">
                                         <f:facet name="header">Bill paid</f:facet>
                                         <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.deptId} - "/>
                                         <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.id}"/>
@@ -347,7 +346,15 @@
                                                 <p:inputText value="#{bip.feeValue}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}"/>
                                             </f:facet>
                                         </p:cellEditor>
-                                    </p:column>                                    
+                                    </p:column> 
+                                    <p:column>
+                                        <f:facet name="header">Fee Vat</f:facet>
+                                        <h:outputLabel value="#{bip.feeVat}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Fee Vat Plus Value</f:facet>
+                                        <h:outputLabel value="#{bip.feeVatPlusValue}"/>
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Adjusted Value</f:facet>
                                         <p:cellEditor>
@@ -371,12 +378,12 @@
                                         <f:facet name="header">Speciality</f:facet>
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
                                     </p:column>
-                                    
+
                                     <p:column>
                                         <f:facet name="header">Paid Value</f:facet>
                                         <h:outputLabel value="#{bip.paidValue}"/>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Payee">
                                         <p:cellEditor>  
                                             <f:facet name="output"> 
@@ -391,7 +398,7 @@
                                         </p:cellEditor>  
 
                                     </p:column>
-                                    
+
                                     <p:column>
                                         <f:facet name="header">Retired</f:facet>
                                         <p:selectBooleanCheckbox value="#{bip.retired}" ></p:selectBooleanCheckbox>
@@ -502,6 +509,12 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
+                                    <p:column headerText="Vat">
+                                        <h:outputLabel value="#{bip21.vat}" />
+                                    </p:column>
+                                    <p:column headerText="Vat Plus Net Value">
+                                        <h:outputLabel value="#{bip21.vatPlusNetValue}" />
+                                    </p:column>
                                     <p:column headerText="Fee Adjusted" >
                                         <p:cellEditor>
                                             <f:facet name="output" >
@@ -512,7 +525,7 @@
                                             </f:facet>
                                         </p:cellEditor>
                                     </p:column>
-                                      
+
                                     <p:column>
                                         <f:facet name="header">Retired</f:facet>
                                         <p:selectBooleanCheckbox value="#{bip21.retired}" ></p:selectBooleanCheckbox>

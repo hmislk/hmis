@@ -78,7 +78,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{ix.netTotal+ix.paidAmount}" style="color: red;">
+                                    <h:outputLabel value="#{ix.netTotal+ix.vat +ix.paidAmount}" style="color: red;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -94,7 +94,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Full Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{ix.netTotal}">
+                                    <h:outputLabel value="#{ix.netTotal+ix.vat}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
