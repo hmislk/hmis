@@ -364,7 +364,7 @@ public class StaffSalaryController implements Serializable {
 
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             //#311
-            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
+            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
             System.out.println("1.workedDays = " + workedDays);
             if (getCurrent().getStaff().getDateJoined() != null) {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
