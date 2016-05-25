@@ -41,9 +41,15 @@
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
-            
-              <p:column headerText="Discount" styleClass="averageNumericColumn">
+
+            <p:column headerText="Discount" styleClass="averageNumericColumn">
                 <h:outputLabel value="#{b.discount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            
+            <p:column headerText="VAT" styleClass="averageNumericColumn">
+                <h:outputLabel value="#{b.vat}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
@@ -67,7 +73,7 @@
                 <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
 
             </p:column>
-            
+
             <p:column headerText="C Card" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="C Card"/>
@@ -100,7 +106,7 @@
 
             <p:columnGroup type="footer">  
                 <p:row>                                 
-                    <p:column colspan="4"/>
+                    <p:column colspan="5"/>
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">

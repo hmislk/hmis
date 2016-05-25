@@ -184,19 +184,33 @@
                     </f:facet>
                 </p:column>    
 
+                <p:column headerText="Vat Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <p:outputLabel value="Vat Fee"/>
+                    </f:facet>
+                    <p:outputLabel value="#{d.vatFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.vatFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
+                </p:column>    
+
                 <p:column headerText="Total Fee" style="text-align: right;">
                     <f:facet name="header">
                         <p:outputLabel value="Total Fee"/>
                     </f:facet>
-                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee}">
+                    <p:outputLabel value="#{d.proFee+d.hospitalFee+d.outSideFee+d.vatFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
                     <f:facet name="footer">
-                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal}">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal+serviceSummery.hosFeeTotal+serviceSummery.outSideFeeTotoal+serviceSummery.vatFeeTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </f:facet>
-                </p:column> 
+                </p:column>  
                 <f:facet name="footer" >
                     <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                 </f:facet>

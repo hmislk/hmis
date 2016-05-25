@@ -2588,7 +2588,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select b from BillFee b where b.retired=false and "
-                + " b.bill.billType=:btp "
+                + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 and"
                 + "  b.bill.createdAt between :fromDate"
@@ -2629,6 +2629,7 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.OpdBill);
+        temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         calTotal();

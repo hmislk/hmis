@@ -69,6 +69,10 @@
                                                action="/dataAdmin/update_staff_zonecode" rendered="true"
                                                value="16. Update Staff Zone Code"  
                                                />
+                                
+                                <p:commandLink ajax="false" action="#{dataAdministrationController.updateAllServiseAndInvestigationAsVatable()}" rendered="true"
+                                               value="17. Update All Service And Investigation To Vatabel And 15% percentage"  onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
 
                             </p:panelGrid>
 

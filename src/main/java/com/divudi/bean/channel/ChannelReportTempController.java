@@ -178,8 +178,8 @@ public class ChannelReportTempController implements Serializable {
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public double  fetchBillsNetTotal(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
+
+    public double fetchBillsNetTotal(BillType[] billTypes, Class[] bills, Date fd, Date td, Institution billedInstitution, Institution creditCompany, Institution fromInstitution) {
 
         String sql;
         Map m = new HashMap();
@@ -235,8 +235,17 @@ public class ChannelReportTempController implements Serializable {
         }
 
         sql += " from Bill b "
-                + " where b.retired=false "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " where b.retired=false ";
+
+        if (b.getClass().equals(BilledBill.class)) {
+            sql += " and b.singleBillSession.sessionDate between :fromDate and :toDate ";
+        }
+        if (b.getClass().equals(CancelledBill.class)) {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
+        if (b.getClass().equals(RefundBill.class)) {
+            sql += " and b.createdAt between :fromDate and :toDate ";
+        }
 
         if (billTypes != null) {
             sql += " and b.billType in :bt ";
@@ -521,25 +530,128 @@ public class ChannelReportTempController implements Serializable {
 
     public Double[] fetchDocCountAndfees(Speciality sp, List<BillType> bts, Staff s) {
 
+        List<Bill> bbills = new ArrayList<>();
+        List<Bill> cbills = new ArrayList<>();
+        List<Bill> rbills = new ArrayList<>();
+        List<Bill> crbills = new ArrayList<>();
+
+        if (scan) {
+            bbills = countBillByBillTypeAndFeeType(new BilledBill(), FeeType.Service, bts, sp, s);
+            cbills = countBillByBillTypeAndFeeType(new CancelledBill(), FeeType.Service, bts, sp, s);
+            rbills = countBillByBillTypeAndFeeType(new RefundBill(), FeeType.Service, bts, sp, s);
+        } else {
+            bbills = countBillByBillTypeAndFeeType(new BilledBill(), FeeType.OwnInstitution, bts, sp, s);
+            cbills = countBillByBillTypeAndFeeType(new CancelledBill(), FeeType.OwnInstitution, bts, sp, s);
+            rbills = countBillByBillTypeAndFeeType(new RefundBill(), FeeType.OwnInstitution, bts, sp, s);
+        }
+        crbills.addAll(cbills);
+        crbills.addAll(rbills);
+        System.out.println("bbills.size() = " + bbills.size());
+        System.out.println("cbills.size() = " + cbills.size());
+        System.out.println("rbills.size() = " + rbills.size());
+        System.out.println("crbills.size() = " + crbills.size());
+
+        Double[] d = new Double[3];
+        d[0] = 0.0;
+        d[1] = 0.0;
+        d[2] = 0.0;
+        if (!bbills.isEmpty() || !cbills.isEmpty() || !rbills.isEmpty()) {
+            d[0] = (double) (bbills.size() - (cbills.size() + rbills.size()));
+            for (Bill b : bbills) {
+                d[1] += b.getStaffFee();
+                d[2] += (b.getNetTotal() - b.getStaffFee());
+            }
+            for (Bill b : crbills) {
+                d[1] -= b.getStaffFee();
+                d[2] -= (b.getNetTotal() - b.getStaffFee());
+            }
+        }
+
+        return d;
+    }
+
+//    public Double[] fetchDocCountAndfees(Speciality sp, List<BillType> bts, Staff s) {
+//
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select distinct(bf.bill) from BillFee  bf where "
+//                + " bf.bill.retired=false"
+//                + " and bf.bill.refunded=false "
+//                + " and bf.bill.cancelled=false "
+//                + " and bf.bill.billType in :bt "
+//                + " and bf.bill.staff.speciality=:sp "
+//                + " and bf.bill.staff=:s "
+//                + " and type(bf.bill)=:class "
+//                + " and bf.feeValue>0 ";
+//
+//        if (scan) {
+//            sql += " and bf.fee.feeType =:fts ";
+//            m.put("fts", FeeType.Service);
+//        } else {
+//            sql += " and bf.fee.feeType =:fth ";
+//            m.put("fth", FeeType.OwnInstitution);
+//        }
+//
+//        if (paid) {
+//            sql += " and bf.bill.paidBill is not null "
+//                    + " and bf.bill.paidAmount!=0 ";
+//        }
+//        if (sessoinDate) {
+//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+//        } else {
+//            sql += " and bf.bill.createdAt between :fd and :td ";
+//        }
+//
+//        m.put("fd", getFromDate());
+//        m.put("td", getToDate());
+//        m.put("class", BilledBill.class);
+//        m.put("bt", bts);
+//        m.put("sp", sp);
+//        m.put("s", s);
+//
+//        List<Bill> bs = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+//        Double[] d = new Double[3];
+//        d[0] = 0.0;
+//        d[1] = 0.0;
+//        d[2] = 0.0;
+//        if (!bs.isEmpty()) {
+//            d[0] = (double) bs.size();
+//            for (Bill b : bs) {
+//                d[1] += b.getStaffFee();
+//                d[2] += (b.getNetTotal() - b.getStaffFee());
+//            }
+//        }
+//
+//        return d;
+//    }
+    public List<Bill> countBillByBillTypeAndFeeType(Bill bill, FeeType ft, List<BillType> bts, Speciality sp, Staff s) {
+
         String sql;
         Map m = new HashMap();
 
-        sql = " select distinct(bf.bill) from BillFee  bf where "
-                + " bf.bill.retired=false"
-                + " and bf.bill.refunded=false "
-                + " and bf.bill.cancelled=false "
-                + " and bf.bill.billType in :bt "
+        sql = " select distinct(bf.bill) from BillFee bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType in :bts "
                 + " and bf.bill.staff.speciality=:sp "
                 + " and bf.bill.staff=:s "
                 + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
 
-        if (scan) {
-            sql += " and bf.fee.feeType =:fts ";
-            m.put("fts", FeeType.Service);
-        } else {
-            sql += " and bf.fee.feeType =:fth ";
-            m.put("fth", FeeType.OwnInstitution);
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
+        }
+
+        if (ft == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
         }
 
         if (paid) {
@@ -547,33 +659,42 @@ public class ChannelReportTempController implements Serializable {
                     + " and bf.bill.paidAmount!=0 ";
         }
         if (sessoinDate) {
-            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
         } else {
-            sql += " and bf.bill.createdAt between :fd and :td ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+
         }
 
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("class", BilledBill.class);
-        m.put("bt", bts);
+        m.put("ft", ft);
+        m.put("bts", bts);
         m.put("sp", sp);
         m.put("s", s);
+//        m.put("fn", "Scan Fee");
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        List<Bill> bs = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-        Double[] d = new Double[3];
-        d[0] = 0.0;
-        d[1] = 0.0;
-        d[2] = 0.0;
-        if (!bs.isEmpty()) {
-            d[0] = (double) bs.size();
-            for (Bill b : bs) {
-                d[1] += b.getStaffFee();
-                d[2] += (b.getNetTotal() - b.getStaffFee());
-            }
-        }
-
-        return d;
+//        System.out.println("sql = " + sql);
+//        System.out.println("m = " + m);
+//        System.out.println("bills.size() = " + bills.size());
+        return bills;
     }
 
     public void createAgentPaymentTable() {
@@ -1190,7 +1311,9 @@ public class ChannelReportTempController implements Serializable {
             acsr.setBillTotal(d[0]);
             acsr.setTotalDocFee(d[1]);
             acsr.setTotalHosFee(d[2]);
-            acsrs.add(acsr);
+            if (acsr.getBillTotal() != 0.0 || acsr.getTotalDocFee() != 0.0 || acsr.getTotalHosFee() != 0.0) {
+                acsrs.add(acsr);
+            }
 
             totalCount += d[0];
             totalDocfee += d[1];
@@ -1560,6 +1683,26 @@ public class ChannelReportTempController implements Serializable {
         fetchAgentWiseChannelTotal();
     }
 
+    public void createAgentWiseAppoinmentCountSummery() {
+        channelSummeryDateRangeBillTotalTables = new ArrayList<>();
+        List<Institution> institutions = new ArrayList<>();
+        institutions.addAll(fetchBillsAgencys());
+        System.out.println("institutions.size() = " + institutions.size());
+        channelTotal = new ChannelTotal();
+        for (Institution a : institutions) {
+            ChannelSummeryDateRangeBillTotalTable aws = new ChannelSummeryDateRangeBillTotalTable();
+            aws.setAgency(a);
+            aws.setNetCount(fetchBillsTotal(null, BillType.ChannelAgent, null, null, new BilledBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)
+                    - (fetchBillsTotal(null, BillType.ChannelAgent, null, null, new CancelledBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)
+                    + fetchBillsTotal(null, BillType.ChannelAgent, null, null, new RefundBill(), getFromDate(), getToDate(), null, a, false, true, null, null, null)));
+            if (aws.getNetCount() > 0) {
+                channelSummeryDateRangeBillTotalTables.add(aws);
+                channelTotal.setNetTotal(channelTotal.getNetTotal() + aws.getNetCount());
+            }
+
+        }
+    }
+
     public void createStaffWiseAppoinmentCount() {
         fetchStaffWiseChannelTotalOrCount();
     }
@@ -1610,7 +1753,7 @@ public class ChannelReportTempController implements Serializable {
         agencies = getInstitutionFacade().findBySQL(sql, m);
         getChannelTotal().setNetTotal(0);
         for (Institution a : agencies) {
-            getChannelTotal().setNetTotal(channelTotal.getNetTotal()+a.getBallance());
+            getChannelTotal().setNetTotal(channelTotal.getNetTotal() + a.getBallance());
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent balance(/faces/channel/channel_report_agent_balance.xhtml)");
@@ -1663,6 +1806,8 @@ public class ChannelReportTempController implements Serializable {
         Staff staff;
         Speciality speciality;
         double[] count;
+        String[] dates;//for 2d 
+        double netCount;
 
         List<ChannelSummeryDateRangeBillTotalRow> channelSummeryDateRangeBillTotalRows;
 
@@ -1704,6 +1849,22 @@ public class ChannelReportTempController implements Serializable {
 
         public void setCount(double[] count) {
             this.count = count;
+        }
+
+        public double getNetCount() {
+            return netCount;
+        }
+
+        public void setNetCount(double netCount) {
+            this.netCount = netCount;
+        }
+
+        public String[] getDates() {
+            return dates;
+        }
+
+        public void setDates(String[] dates) {
+            this.dates = dates;
         }
 
     }
@@ -1880,7 +2041,7 @@ public class ChannelReportTempController implements Serializable {
         double totalRefundCount;
         double totalHosFee;
         double totalDocFee;
-        
+
         double netTotal;
 
         public double getCashTotal() {
@@ -2455,8 +2616,8 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public ChannelTotal getChannelTotal() {
-        if (channelTotal==null) {
-            channelTotal=new ChannelTotal();
+        if (channelTotal == null) {
+            channelTotal = new ChannelTotal();
         }
         return channelTotal;
     }

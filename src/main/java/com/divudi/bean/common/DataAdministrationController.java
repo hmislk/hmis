@@ -18,6 +18,7 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Service;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
@@ -43,6 +44,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -328,6 +330,36 @@ public class DataAdministrationController {
                 }
             }
         }
+    }
+
+    public void updateAllServiseAndInvestigationAsVatable() {
+        String sql;
+        Map m = new HashMap();
+        List<Item> items = new ArrayList<>();
+
+        sql = "select i from Item i "
+                + " where i.retired=false"
+                + " and i.vatable=false "
+                + " and type(i) in :tps ";
+
+        m.put("tps", Arrays.asList(new Class[]{Investigation.class, Service.class}));
+
+        items = itemFacade.findBySQL(sql, m);
+
+        System.out.println("items.size() = " + items.size());
+        int j = 1;
+        for (Item i : items) {
+            i.setVatable(true);
+            i.setVatPercentage(15.0);
+            itemFacade.edit(i);
+            System.err.println("**** " + j + " ****");
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getVatPercentage() = " + i.getVatPercentage());
+            System.out.println("i.isVatable() = " + i.isVatable());
+            System.err.println("*******");
+            j++;
+        }
+
     }
 
     public void saveBillFee(BillItem bi) {

@@ -174,7 +174,7 @@ public class CashRecieveBillController implements Serializable {
 
     private double getReferenceBallance(BillItem billItem) {
         double refBallance = 0;
-        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal());
+        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal()+billItem.getReferenceBill().getVat());
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
 
         refBallance = neTotal - (paidAmt);

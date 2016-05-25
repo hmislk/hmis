@@ -111,8 +111,16 @@
                     <p:outputLabel value="#{d.hospitalFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
-
-                </p:column>              
+                </p:column>     
+                
+                <p:column headerText="Vat Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Vat Fee" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.vatFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                </p:column>
 
                 <p:columnGroup type="footer">
                     <p:row>
