@@ -118,18 +118,18 @@
                                                     </tr>
 
                                                     <tr>
-                                                        <td >
+                                                        <td>
                                                             <h:outputLabel value="Phone,Area &amp; Nic"/>
                                                         </td>
                                                         <td> : </td>
-                                                        <td >
+                                                        <td>
                                                             <p:inputMask mask="999-9999999" id="txtNewPtPhone" placeholder="Phone Number"
                                                                          autocomplete="off" maxlength="11" 
                                                                          value="#{collectingCentreBillController.newPatient.person.phone}"
                                                                          style="width: 100px;">
                                                             </p:inputMask>
                                                         </td>
-                                                        <td  >
+                                                        <td>
                                                             <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Select Area"
                                                                             completeMethod="#{areaController.completeArea}" 
                                                                             var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
