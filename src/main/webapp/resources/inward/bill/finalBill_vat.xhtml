@@ -31,11 +31,12 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**DUPLICATE**" rendered="#{cc.attrs.duplicate eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="VAT Invoice" /></td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**HOSPITAL COPY**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="**DUPLICATE**" rendered="#{cc.attrs.duplicate eq true}"/></td>
                         </tr>
+                        
                         <tr>
                             <td colspan="2">&nbsp;</td>
                         </tr>
@@ -134,7 +135,65 @@
                             </td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.printRoomFacilityCharge.name}" />
-                            </td>                            
+                            </td>
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="Claim Company Name" />
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.chequePrintingName}" />
+                            </td>
+                        </tr>      
+                        <tr >
+                            <td>
+                                <h:outputLabel value="Our Vat Reg. No " />
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="1141034388-7000" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"/>
+                            </td>
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="Claim Company Address" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.address}" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
+                        </tr>      
+                        <tr >
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="Claim Company VAT Reg. No" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.accountNo}" rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}" />
+                            </td>
                         </tr>      
 
                     </table>

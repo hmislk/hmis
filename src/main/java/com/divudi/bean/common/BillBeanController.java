@@ -1464,6 +1464,29 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public double calBillTotalWithVat(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select sum(b.netTotal+b.vat) "
+                + " from Bill b "
+                + " where type(b)!=:type "
+                + " and b.institution=:ins "
+                + " and b.paymentMethod = :bTp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false"
+                + " order by b.id desc  ";
+
+        temMap.put("bTp", paymentMethod);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("type", PreBill.class);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
 
     public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
@@ -2188,7 +2211,7 @@ public class BillBeanController implements Serializable {
         Object[] obj = getBillFacade().findAggregateModified(sql, hm, TemporalType.TIMESTAMP);
 
         if (obj == null) {
-            Double[] dbl = new Double[3];
+            Double[] dbl = new Double[4];
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;

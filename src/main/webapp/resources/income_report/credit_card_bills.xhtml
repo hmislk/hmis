@@ -61,7 +61,7 @@
                 <f:facet name="header">              
                     <p:outputLabel value="Total"/>    
                 </f:facet>
-                <h:outputLabel value="#{0-ch.netTotal}">
+                <h:outputLabel value="#{0-(ch.netTotal+ch.vat)}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>      
             </p:column>
