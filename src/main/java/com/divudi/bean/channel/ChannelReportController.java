@@ -2956,7 +2956,7 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
-        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
+        sql += " order by b.createdAt ";
 
         hm.put("fDate", fd);
         hm.put("tDate", td);
@@ -2987,7 +2987,7 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
-        sql += " order by b.insId ";
+        sql += " order by b.toDepartment.name ,b.createdAt ";
 
         hm.put("fDate", fd);
         hm.put("tDate", td);
