@@ -6110,6 +6110,65 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Petty Cash/ Petty Cash Bill search(/faces/petty_cash_bill_search_own.xhtml)");
 
     }
+    
+    public void createIncomeBillTable(){
+        fetchBillTable(BillType.ChannelIncomeBill);
+    }
+    
+    public void createExpensesBillTable(){
+        fetchBillTable(BillType.ChannelExpenesBill);
+    }
+    
+    public void fetchBillTable(BillType billType) {
+        Date startTime = new Date();
+        
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from BilledBill b where b.billType =:billType "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
+            sql += " and  (upper(b.staff.person.name) like :stf )";
+            temMap.put("stf", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPersonName() != null && !getSearchKeyword().getPersonName().trim().equals("")) {
+            sql += " and  (upper(b.person.name) like :per )";
+            temMap.put("per", "%" + getSearchKeyword().getPersonName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (upper(b.invoiceNumber) like :num )";
+            temMap.put("num", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+
+        //System.err.println("Sql " + sql);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Petty Cash/ Petty Cash Bill search(/faces/petty_cash_bill_search_own.xhtml)");
+
+    }
 
 //     public List<Bill> getInstitutionPaymentBills() {
 //        if (bills == null) {

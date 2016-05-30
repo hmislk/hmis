@@ -207,6 +207,22 @@
                         <ca:channelRefundBillProPay id="chpay_r" data="#{commonReport.channelRefundsProPayment}"/>
 
                         <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_i" income="true" cancel="false" data="#{commonReport.channelBilledIncome}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_ic" income="true" cancel="true" data="#{commonReport.channelCancellIncome}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_e" income="false" cancel="false" data="#{commonReport.channelBilledExpenses}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_ec" income="false" cancel="true" data="#{commonReport.channelCancellExpenses}"/>
+                        
+                        <p:spacer height="30"/>
 
 
                         <p:dataTable id="sum1" value="#{commonReport.creditSlipSum}"  var="i" >
