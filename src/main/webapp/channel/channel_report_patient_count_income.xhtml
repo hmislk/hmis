@@ -93,7 +93,7 @@
                                         <p:outputLabel value="Total Channel" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.billedCount}" >
-                                        <f:convertNumber pattern="#,###0.00"  />
+                                        <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;">
@@ -101,7 +101,7 @@
                                         <p:outputLabel value="Cancel" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.cancelledCount}" >
-                                        <f:convertNumber pattern="#,###0.00"  />
+                                        <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;">
@@ -109,7 +109,7 @@
                                         <p:outputLabel value="Refund" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.refundCount}" >
-                                        <f:convertNumber pattern="#,###0.00"  />
+                                        <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;">
@@ -117,7 +117,7 @@
                                         <p:outputLabel value="Total" />
                                     </f:facet>
                                     <p:outputLabel value="#{b.billedCount-(b.cancelledCount+b.refundCount)}" >
-                                        <f:convertNumber pattern="#,###0.00"  />
+                                        <f:convertNumber pattern="#,###,##0.00"  />
                                     </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
