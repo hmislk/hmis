@@ -808,7 +808,9 @@ public class BookingController implements Serializable {
             ss.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, ss.getSessionDate()));
             ss.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, ss.getSessionDate()));
             ss.setTransRowNumber(rowIndex++);
-            checkDoctorArival(ss);
+//            System.err.println("Time D.A. in = " + new Date());
+//            checkDoctorArival(ss);
+//            System.err.println("Time D.A. Out = " + new Date());
             
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
