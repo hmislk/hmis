@@ -94,7 +94,12 @@ public enum BillNumberSuffix {
     ISSCAN,//Department Issue Cancel
     STTRQ,//transper request
     STTI,//transfer issue
-    STTR,;//transfer Recive
+    STTR,//transfer Recive
+    I,//Channel Income
+    E,//Channel Expenses
+    ICAN,//Channel Income Cancel
+    ECAN,//Channel Expenses Cancel
+    ;
 
     public String getSuffix() {
         if (this == BillNumberSuffix.NONE) {

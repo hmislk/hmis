@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:c="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel rendered="#{!incomeExpensessBillController.printPreview}" >
+                    <f:facet name="header" >
+                        <h:panelGrid columns="14"  >
+                            <h:outputLabel value="Cashier Transaction(Income)" />
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                            <p:selectOneMenu   id="cmbPs" value="#{incomeExpensessBillController.current.paymentMethod}">                                                                     
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
+                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup id="creditCard" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <pa:creditCard paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="cheque" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                <pa:cheque paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="slip" style="display: #{incomeExpensessBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                <pa:slip paymentMethodData="#{incomeExpensessBillController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+
+                            <p:commandButton  value="Settle" action="#{incomeExpensessBillController.settleIncomeBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            </p:commandButton>
+                            <p:commandButton value="New Bill" ajax="false" action="#{incomeExpensessBillController.prepareNewBill()}" >
+                            </p:commandButton>                            
+                        </h:panelGrid>
+                    </f:facet>
+
+
+
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="Income Amount" />
+                        <p:inputText autocomplete="off" value="#{incomeExpensessBillController.amount}"/>
+                        <p:outputLabel value="Description"/>
+                        <p:inputTextarea value="#{incomeExpensessBillController.current.comments}"/>                              
+                    </h:panelGrid>
+
+
+                </p:panel>
+
+                <p:panel rendered="#{incomeExpensessBillController.printPreview}" >
+                    <p:commandButton value="New Bill" ajax="false" action="#{incomeExpensessBillController.prepareNewBill()}" >
+                    </p:commandButton>
+                    <c:income bill="#{incomeExpensessBillController.current}" billController="#{incomeExpensessBillController}" dup="false"/>
+                </p:panel>  
+
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

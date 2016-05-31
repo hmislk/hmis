@@ -354,7 +354,7 @@ public class CommonReport1 implements Serializable {
     }
 
     public void listBillItemsByReferringDoctor() {
-        
+
         Date startTime = new Date();
 
         referralBillItems = new ArrayList<>();
@@ -386,14 +386,14 @@ public class CommonReport1 implements Serializable {
         //System.out.println("sql = " + sql);
         //System.out.println("temMap = " + temMap);
         referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
-        biledBillsTotal=0.0;
+
+        biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
-            biledBillsTotal+=bi.getNetValue();
+            biledBillsTotal += bi.getNetValue();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
-        
+
     }
 
     public List<Bill> getBillsByCollectingOwn() {
@@ -1469,18 +1469,18 @@ public class CommonReport1 implements Serializable {
 
     public void createOpdBillList() {
         Date startTime = new Date();
-        
-        if (paymentScheme == null) {
-            JsfUtil.addErrorMessage("Please Select Payment Scheme");
-            return;
-        }
+
+//        if (paymentScheme == null) {
+//            JsfUtil.addErrorMessage("Please Select Payment Scheme");
+//            return;
+//        }
         biledBills = fetchBills(new BilledBill(), BillType.OpdBill, paymentScheme);
         cancelBills = fetchBills(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBills = fetchBills(new RefundBill(), BillType.OpdBill, paymentScheme);
         biledBillsTotal = fetchBillsTotal(new BilledBill(), BillType.OpdBill, paymentScheme);
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml)");
     }
 
@@ -1493,15 +1493,23 @@ public class CommonReport1 implements Serializable {
                 + " and b.retired=false "
                 + " and b.billType=:btp "
                 + " and b.institution=:ins "
-                + " and b.paymentScheme=:ps "
                 + " and b.createdAt between :fromDate and :toDate";
+
+        if (ps != null) {
+            sql += " and b.paymentScheme=:ps ";
+            m.put("ps", ps);
+        } else {
+            sql += " and b.paymentScheme is not null ";
+        }
+        
+        sql += " order by b.paymentScheme.name ";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("btp", billType);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", b.getClass());
-        m.put("ps", ps);
+
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
@@ -1515,13 +1523,19 @@ public class CommonReport1 implements Serializable {
                 + " and b.institution=:ins "
                 + " and b.paymentScheme=:ps "
                 + " and b.createdAt between :fromDate and :toDate";
+        
+        if (ps != null) {
+            sql += " and b.paymentScheme=:ps ";
+            m.put("ps", ps);
+        } else {
+            sql += " and b.paymentScheme is not null ";
+        }
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("btp", billType);
         m.put("ins", getSessionController().getInstitution());
         m.put("class", b.getClass());
-        m.put("ps", ps);
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -1683,5 +1697,5 @@ public class CommonReport1 implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
 }

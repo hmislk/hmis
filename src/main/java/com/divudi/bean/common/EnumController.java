@@ -295,6 +295,8 @@ public class EnumController implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelPaid,
             BillType.ChannelProPayment,
+            BillType.ChannelIncomeBill,
+            BillType.ChannelExpenesBill,
         };
 
         return b;

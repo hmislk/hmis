@@ -338,7 +338,8 @@ public class DataAdministrationController {
         List<Item> items = new ArrayList<>();
 
         sql = "select i from Item i "
-                + " where i.retired=false "
+                + " where i.retired=false"
+                + " and i.vatable=false "
                 + " and type(i) in :tps ";
 
         m.put("tps", Arrays.asList(new Class[]{Investigation.class, Service.class}));
@@ -356,6 +357,7 @@ public class DataAdministrationController {
             System.out.println("i.getVatPercentage() = " + i.getVatPercentage());
             System.out.println("i.isVatable() = " + i.isVatable());
             System.err.println("*******");
+            j++;
         }
 
     }

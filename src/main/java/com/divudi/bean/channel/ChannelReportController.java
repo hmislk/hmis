@@ -2860,19 +2860,39 @@ public class ChannelReportController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         if (sessoinDate) {
-            channelBills.addAll(channelBillListByBillType(false, null, bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new BilledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new CancelledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new RefundBill(), bts, fromDate, toDate));
             channelTotal = new ChannelTotal();
-            channelTotal.setStaffFee(channelBillTotalByBillType(false, null, bts, fromDate, toDate, true, false, false, false));
-            channelTotal.setHosFee(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, true, false, false));
-            channelTotal.setNetTotal(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, false, true, false));
-            channelTotal.setVat(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, false, false, true));
+            channelTotal.setStaffFee(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, true, false, false, false));
+            channelTotal.setHosFee(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, true, false, false));
+            channelTotal.setNetTotal(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, false, true, false));
+            channelTotal.setVat(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, false, false, true));
         } else {
-            channelBills.addAll(channelBillListByBillType(true, null, bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new BilledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new CancelledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new RefundBill(), bts, fromDate, toDate));
             channelTotal = new ChannelTotal();
-            channelTotal.setStaffFee(channelBillTotalByBillType(true, null, bts, fromDate, toDate, true, false, false, false));
-            channelTotal.setHosFee(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, true, false, false));
-            channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, true, false));
-            channelTotal.setVat(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, false, true));
+            channelTotal.setStaffFee(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, true, false, false, false));
+            channelTotal.setHosFee(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, true, false, false));
+            channelTotal.setNetTotal(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, false, true, false));
+            channelTotal.setVat(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, false, false, true));
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml)");
@@ -2943,7 +2963,15 @@ public class ChannelReportController implements Serializable {
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
         } else {
-            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
         }
 
         if (!billTypes.isEmpty()) {
@@ -2956,7 +2984,7 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
-        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
+        sql += " order by b.createdAt ";
 
         hm.put("fDate", fd);
         hm.put("tDate", td);
@@ -2987,7 +3015,7 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
-        sql += " order by b.insId ";
+        sql += " order by b.toDepartment.name ,b.createdAt ";
 
         hm.put("fDate", fd);
         hm.put("tDate", td);
@@ -3021,7 +3049,15 @@ public class ChannelReportController implements Serializable {
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
         } else {
-            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
         }
 
         if (!billTypes.isEmpty()) {

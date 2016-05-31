@@ -81,6 +81,8 @@ public class BookKeepingSummery implements Serializable {
     private List<String1Value2> channelBills;
     List<String1Value2> collections2Hos;
     List<String1Value2> finalValues;
+    List<String1Value2> vatTableOpdCash;
+    List<String1Value2> vatTableOpdCredit;
     List<String3Value2> inwardCollections;
     private List<Bill> agentCollections;
     List<Bill> collectingCentreCollections;
@@ -104,6 +106,8 @@ public class BookKeepingSummery implements Serializable {
     double opdRegentTotal;
     double opdRegentTotalWithCredit;
     double opdRegentTotalByPayMethod;
+    double opdCashVatTotal;
+    double opdCreditVatTotal;
     double outSideFeeTotal;
     double pharmacyTotal;
     double pharmacyWholeSaleTotal;
@@ -964,7 +968,6 @@ public class BookKeepingSummery implements Serializable {
         opdStaffTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Staff, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/investigation summery fee type(/faces/reportLab/report_investigation_summery_by_feetype.xhtml)");
     }
 
@@ -1235,7 +1238,6 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalWithCredit = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery fee type with credit(/faces/reportLab/report_investigation_summery_by_feetype_with_credit.xhtml)");
     }
 
@@ -1357,7 +1359,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createInwardFee() {
         Date startTime = new Date();
-        
+
         Map hm = new HashMap();
         String sql;
         bookKeepingSummeryRows = new ArrayList<>();
@@ -1414,7 +1416,7 @@ public class BookKeepingSummery implements Serializable {
             }
 
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/Lab Summery Inward/Investigation Summery Inward(/faces/reportLab/report_investigation_summery_by_inward.xhtml)");
 
     }
@@ -1523,7 +1525,7 @@ public class BookKeepingSummery implements Serializable {
             nowDate = nc.getTime();
 
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD by date(/faces/reportLab/report_investigation_summery_by_date_inward_opd.xhtml)");
     }
 
@@ -1545,7 +1547,6 @@ public class BookKeepingSummery implements Serializable {
 //        bookKeepingSummeryRowsOpd.addAll(createFee(BillClassType.BilledBill, BillType.OpdBill, FeeType.Chemical, getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
 //        System.out.println("bookKeepingSummeryRows = " + bookKeepingSummeryRows.size());        
 //        totalRegentFee=getTotal(bookKeepingSummeryRowsOpd);
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD(/faces/reportLab/report_investigation_summery_by_inward_opd.xhtml)");
     }
 
@@ -1560,7 +1561,7 @@ public class BookKeepingSummery implements Serializable {
                 getSessionController().getDepartment(), institution, fromDate, toDate, true, true));
 
         countTotals = (long) getCountTotal(bookKeepingSummeryRowsInward);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD count(/faces/reportLab/report_investigation_summery_by_inward_opd_count.xhtml)");
 
     }
@@ -1655,7 +1656,7 @@ public class BookKeepingSummery implements Serializable {
             if (refunded) {
                 sql += " and bf.bill.refunded=false ";
             }
-            
+
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
             System.out.println("obj = " + obj);
@@ -1937,7 +1938,6 @@ public class BookKeepingSummery implements Serializable {
         opdRegentTotal = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), Arrays.asList(paymentMethods));
         opdRegentTotalByPayMethod = getBillBean().calFeeValue(getFromDate(), getToDate(), FeeType.Chemical, sessionController.getInstitution(), paymentMethod);
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab Investigation summeries with credit/Investigation summery regent fee  by payment method(/faces/reportLab/report_investigation_summery_by_regent_fee_by_pay_method.xhtml)");
     }
 
@@ -2648,6 +2648,39 @@ public class BookKeepingSummery implements Serializable {
         bookKeepingSummeryRowsCredit.addAll(t);
     }
 
+    public double createOPdListWithProDayEndTableTotal(List<PaymentMethod> paymentMethods) {
+        Map temMap = new HashMap();
+
+        String jpql = "select sum(bf.feeVat)"
+                + " from BillFee bf "
+                + " join bf.billItem bi "
+                + " join bi.item i "
+                + " join i.category c "
+                + " where bi.bill.institution=:ins "
+                + " and bf.department.institution=:ins "
+                + " and bi.bill.billType= :bTp  "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms";
+
+        if (creditCompany != null) {
+            jpql += " and bi.bill.creditCompany=:cd ";
+            temMap.put("cd", creditCompany);
+
+        }
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("ins", institution);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("pms", paymentMethods);
+        double d=getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("jpql = " + jpql);
+        System.out.println("temMap = " + temMap);
+        System.out.println("d = " + d);
+
+        return d;
+    }
+
     public void createOPdListWithProDayEndTableWithOutCheckDepIns(List<PaymentMethod> paymentMethods) {
         Map temMap = new HashMap();
         bookKeepingSummeryRows = new ArrayList<>();
@@ -2908,7 +2941,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createLabSummeryInward() {
         Date startTime = new Date();
-        
+
         bksr = new BookKeepingSummeryRow();
 
         bksr.setBills(new ArrayList<String1Value3>());
@@ -2959,7 +2992,7 @@ public class BookKeepingSummery implements Serializable {
         bksr.setHosFee(hospitalFeeTot);
         bksr.setProFee(profeTotal);
         bksr.setReagentFee(regentTot);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/summery inward/summery inward by date(/faces/reportLab/report_lab_by_date_summery_inward.xhtml)");
 
     }
@@ -3561,7 +3594,23 @@ public class BookKeepingSummery implements Serializable {
                 + collectingCentrePaymentTotal
                 + creditCompanyTotal
                 + creditCompanyTotalInward
-                + pettyCashTotal;
+                + pettyCashTotal
+                + opdCashVatTotal;
+
+    }
+
+    private void createVatTables() {
+        vatTableOpdCash = new ArrayList<>();
+        vatTableOpdCredit = new ArrayList<>();
+        String1Value2 dd = new String1Value2();
+        dd.setString("Cash VAT Collection");
+        dd.setValue1(opdCashVatTotal);
+        vatTableOpdCash.add(dd);
+        //////////////////////
+        dd = new String1Value2();
+        dd.setString("Credit VAT Collection");
+        dd.setValue1(opdCreditVatTotal);
+        vatTableOpdCredit.add(dd);
 
     }
 
@@ -3625,7 +3674,7 @@ public class BookKeepingSummery implements Serializable {
         collections2Hos.add(dd);
 
     }
-    
+
     private void createCollections2HosMonth2() {
         collections2Hos = new ArrayList<>();
         String1Value2 dd;
@@ -3668,7 +3717,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createCashCategoryWithoutProDay() {
         Date startTime = new Date();
-        
+
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
@@ -3678,7 +3727,11 @@ public class BookKeepingSummery implements Serializable {
 //        }
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
+        opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
+
         createOutSideFee();
         createPharmacySale();
         createInwardCollection();
@@ -3705,20 +3758,20 @@ public class BookKeepingSummery implements Serializable {
         createCollections2Hos();
 
 //        createDoctorPaymentInward();
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
 
         creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
-        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate, institution);
-        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal = getBillBean().calBillTotalWithVat(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category day end(/faces/reportInstitution/report_cash_category_without_pro_day.xhtml)");
     }
 
@@ -3772,10 +3825,10 @@ public class BookKeepingSummery implements Serializable {
         }
 
     }
-    
+
     public List<DepartmentPayment> createDoctorPaymentOpd(List<PaymentMethod> pms, List<PaymentMethod> npms) {
         List<DepartmentPayment> departmentPayments = new ArrayList<>();
-        List<Object[]> list = getBillBean().fetchDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,pms,npms);
+        List<Object[]> list = getBillBean().fetchDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, pms, npms);
 
         for (Object[] obj : list) {
             Department department = (Department) obj[0];
@@ -3790,14 +3843,14 @@ public class BookKeepingSummery implements Serializable {
             }
 
         }
-        
+
         return departmentPayments;
 
     }
-    
+
     public List<DepartmentPayment> createDoctorPaymentOpdBySpecility(List<PaymentMethod> pms, List<PaymentMethod> npms) {
         List<DepartmentPayment> departmentPayments = new ArrayList<>();
-        List<Object[]> list = getBillBean().fetchDoctorPaymentBySpecility(fromDate, toDate, BillType.OpdBill, institution,pms,npms);
+        List<Object[]> list = getBillBean().fetchDoctorPaymentBySpecility(fromDate, toDate, BillType.OpdBill, institution, pms, npms);
 
         for (Object[] obj : list) {
             String spec = (String) obj[0];
@@ -3812,7 +3865,7 @@ public class BookKeepingSummery implements Serializable {
             }
 
         }
-        
+
         return departmentPayments;
 
     }
@@ -4031,7 +4084,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createCashCategoryWithProDay() {
         Date startTime = new Date();
-        
+
         makeNull();
         long lng = getCommonFunctions().getDayCount(getFromDate(), getToDate());
 
@@ -4053,8 +4106,8 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         /////
-        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPayments = createDoctorPaymentOpdBySpecility(null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
@@ -4075,8 +4128,8 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2Hos();
-        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
 
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelCash);
@@ -4093,7 +4146,7 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category day end(/faces/reportInstitution/report_cash_category_with_pro_day.xhtml)");
     }
 
@@ -4109,7 +4162,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void processCreditItems() {
         Date startTime = new Date();
-        
+
         header = " Invoice.";
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
@@ -4124,13 +4177,13 @@ public class BookKeepingSummery implements Serializable {
                 opdStaffTotal += b.getProFee();
             }
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down(/faces/reportInstitution/report_credit_category.xhtml)");
     }
 
     public void processCreditPaidItems() {
         Date startTime = new Date();
-        
+
         header = " Payment.";
         makeNull();
         createOPdListWithCreditPaid();
@@ -4144,7 +4197,7 @@ public class BookKeepingSummery implements Serializable {
                 opdStaffTotal += b.getProFee();
             }
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Credit company break down/Process Credit Items Paid(/faces/reportInstitution/report_credit_category.xhtml)");
     }
 
@@ -4181,14 +4234,14 @@ public class BookKeepingSummery implements Serializable {
         createCollections2HosMonth();
         //createDoctorPaymentInward();
         /////////////////
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
-        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with out professional)/By category montj end(/faces/reportInstitution/report_cash_category_without_pro_month.xhtml)");
     }
 
@@ -4206,8 +4259,8 @@ public class BookKeepingSummery implements Serializable {
         createInwardCollectionMonth();
 //        agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
 //        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, fromDate, toDate, institution);
-        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPayments = createDoctorPaymentOpdBySpecility(null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         createDoctorPaymentChannelling();
         createDoctorPaymentInward();
         ///////////////////
@@ -4226,8 +4279,8 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2HosMonth2();
-        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
 //        creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
 //        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
@@ -4237,15 +4290,15 @@ public class BookKeepingSummery implements Serializable {
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Book keeping summery(with professional)/By category month end(/faces/reportInstitution/report_cash_category_with_pro_month.xhtml)");
     }
 
     public void createCashCategoryWithProMonth2() {
-        departmentProfessionalPayments=createDoctorPaymentOpdBySpecility(null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentsCredit=createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
-        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,null,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
-        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution,Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}),null);
+        departmentProfessionalPayments = createDoctorPaymentOpdBySpecility(null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
+        departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
+        departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
     }
 
     private void createFinalSummery() {
@@ -4646,7 +4699,37 @@ public class BookKeepingSummery implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
+    public List<String1Value2> getVatTableOpdCash() {
+        return vatTableOpdCash;
+    }
+
+    public void setVatTableOpdCash(List<String1Value2> vatTableOpdCash) {
+        this.vatTableOpdCash = vatTableOpdCash;
+    }
+
+    public List<String1Value2> getVatTableOpdCredit() {
+        return vatTableOpdCredit;
+    }
+
+    public void setVatTableOpdCredit(List<String1Value2> vatTableOpdCredit) {
+        this.vatTableOpdCredit = vatTableOpdCredit;
+    }
+
+    public double getOpdCashVatTotal() {
+        return opdCashVatTotal;
+    }
+
+    public void setOpdCashVatTotal(double opdCashVatTotal) {
+        this.opdCashVatTotal = opdCashVatTotal;
+    }
+
+    public double getOpdCreditVatTotal() {
+        return opdCreditVatTotal;
+    }
+
+    public void setOpdCreditVatTotal(double opdCreditVatTotal) {
+        this.opdCreditVatTotal = opdCreditVatTotal;
+    }
 
 }
