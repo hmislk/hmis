@@ -5363,6 +5363,18 @@ public class SearchController implements Serializable {
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment bill search(/faces/agent_bill_search_own.xhtml)");
     }
+    
+    public void createChannelAgencyCreditNoteTable() {
+        
+        createAgentPaymentTable(BillType.AgentCreditNoteBill);
+        
+    }
+    
+    public void createChannelAgencyDebitNoteTable() {
+        
+        createAgentPaymentTable(BillType.AgentDebitNoteBill);
+        
+    }
 
     public void createCollectingCentrePaymentTable() {
         Date startTime = new Date();

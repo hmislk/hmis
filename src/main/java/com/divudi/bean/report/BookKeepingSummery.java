@@ -133,6 +133,10 @@ public class BookKeepingSummery implements Serializable {
     @Inject
     CommonController commonController;
 
+    List<Bill> billedBills;
+    List<Bill> cans;
+    List<Bill> refs;
+
     public void makeNull() {
         //List
         opdList = null;
@@ -1478,6 +1482,61 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    private List<Bill> getBillTotalbyDateBill(Date fd,Date td, Institution ins, Department dep, List<BillType> btps,
+            BillClassType billClassType, boolean ref, boolean can) {
+
+        String sql;
+
+        sql = "select b "
+                + " from Bill b "
+                + " where b.retired=false "
+                + " and b.createdAt between :fd and :td ";
+
+
+        System.err.println("From " + fd);
+        System.err.println("To " + td);
+
+        Map m = new HashMap();
+        m.put("fd", fd);
+        m.put("td", td);
+
+        if (ins != null) {
+            sql += " and b.toInstitution=:ins ";
+            m.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and b.toDepartment=:dep ";
+            m.put("dep", dep);
+        }
+
+        if (!btps.isEmpty()) {
+            sql += " and b.billType in :billType ";
+            m.put("billType", btps);
+        }
+
+        if (billClassType != null) {
+            System.out.println("billClassType = " + billClassType);
+            sql += " and b.billClassType=:class ";
+            m.put("class", billClassType);
+        }
+
+        if (can) {
+            System.out.println("cancelled = " + can);
+            sql += " and b.cancelled=false ";
+        }
+
+        if (ref) {
+            System.out.println("refunded = " + ref);
+            sql += " and b.refunded=false ";
+        }
+
+        List<Bill> value = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        return value;
+
+    }
+
     public void createLabTotalAllReportByDate() {
         Date startTime = new Date();
 
@@ -1525,6 +1584,13 @@ public class BookKeepingSummery implements Serializable {
             nowDate = nc.getTime();
 
         }
+        
+        billedBills=new ArrayList<>();
+        cans=new ArrayList<>();
+        refs=new ArrayList<>();
+        billedBills=getBillTotalbyDateBill(getFromDate(),getToDate(), institution, department, btps, BillClassType.BilledBill, false, false);
+        cans=getBillTotalbyDateBill(getFromDate(),getToDate(), institution, department, btps, BillClassType.CancelledBill, false, false);
+        refs=getBillTotalbyDateBill(getFromDate(),getToDate(), institution, department, btps, BillClassType.RefundBill, false, false);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/ Lab summery/Daily summery inward and OPD by date(/faces/reportLab/report_investigation_summery_by_date_inward_opd.xhtml)");
     }
@@ -2673,7 +2739,7 @@ public class BookKeepingSummery implements Serializable {
         temMap.put("ins", institution);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pms", paymentMethods);
-        double d=getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        double d = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         System.out.println("jpql = " + jpql);
         System.out.println("temMap = " + temMap);
         System.out.println("d = " + d);
@@ -4730,6 +4796,30 @@ public class BookKeepingSummery implements Serializable {
 
     public void setOpdCreditVatTotal(double opdCreditVatTotal) {
         this.opdCreditVatTotal = opdCreditVatTotal;
+    }
+
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
+    public List<Bill> getCans() {
+        return cans;
+    }
+
+    public void setCans(List<Bill> cans) {
+        this.cans = cans;
+    }
+
+    public List<Bill> getRefs() {
+        return refs;
+    }
+
+    public void setRefs(List<Bill> refs) {
+        this.refs = refs;
     }
 
 }
