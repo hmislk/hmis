@@ -652,7 +652,7 @@ public class ServiceSummery implements Serializable {
         }
 
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.bill.toDepartment=:dep ";
             temMap.put("dep", department);
         }
 
