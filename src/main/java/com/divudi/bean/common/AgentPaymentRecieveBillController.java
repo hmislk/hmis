@@ -65,6 +65,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private int index;
     private PaymentMethodData paymentMethodData;
     String comment;
+    double amount;
 
     public void addToBill() {
         getCurrentBillItem().setNetValue(getCurrent().getNetTotal());
@@ -91,6 +92,28 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
 
         if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean errorCheckCreditNoteDebitNote() {
+        if (getCurrent().getFromInstitution() == null) {
+            UtilityController.addErrorMessage("Select Agency");
+            return true;
+        }
+
+        if (getCurrent().getPaymentMethod() == null) {
+            UtilityController.addErrorMessage("Select PaymentMethord");
+            return true;
+        }
+        if (getAmount() < 0.0) {
+            UtilityController.addErrorMessage("Please Enter Correct Value");
             return true;
         }
 
@@ -149,12 +172,11 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     public void collectingCentrePaymentRecieveSettleBill() {
         Date startTime = new Date();
-	Date fromDate = null;
-	Date toDate = null;
+        Date fromDate = null;
+        Date toDate = null;
 
-        
         settleBill(BillType.CollectingCentrePaymentReceiveBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCPAY);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Collecting center/Collecting center payment(/faces/lab/collecting_centre_bill.xhtml)");
     }
 
@@ -162,10 +184,34 @@ public class AgentPaymentRecieveBillController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         settleBill(BillType.AgentPaymentReceiveBill, HistoryType.ChannelDeposit, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNPAY);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Agent/Agent payment(/faces/agent_bill.xhtml)");
+    }
+
+    public void channelAgencyCreditNoteSettleBill() {
+        if (errorCheckCreditNoteDebitNote()) {
+            return;
+        }
+        getCurrent().setNetTotal(getAmount());
+        channelAgencyCreditDebitNote(BillType.AgentCreditNoteBill, HistoryType.ChannelCreditNote, BillNumberSuffix.AGNCN);
+
+    }
+
+    public void channelAgencyDebitNoteSettleBill() {
+        if (errorCheckCreditNoteDebitNote()) {
+            return;
+        }
+        getCurrent().setNetTotal(0 - getAmount());
+        channelAgencyCreditDebitNote(BillType.AgentDebitNoteBill, HistoryType.ChannelDebitNote, BillNumberSuffix.AGNDN);
+
+    }
+
+    private void channelAgencyCreditDebitNote(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix) {
+
+        settleBill(billType, historyType, HistoryType.AgentBalanceUpdateBill, billNumberSuffix);
+
     }
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
@@ -385,5 +431,13 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
 }

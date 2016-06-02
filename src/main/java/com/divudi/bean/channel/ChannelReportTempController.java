@@ -236,7 +236,7 @@ public class ChannelReportTempController implements Serializable {
 
         sql += " from Bill b "
                 + " where b.retired=false ";
-        
+
         if (b.getClass().equals(BilledBill.class)) {
             sql += " and b.singleBillSession.sessionDate between :fromDate and :toDate ";
         }
@@ -530,25 +530,128 @@ public class ChannelReportTempController implements Serializable {
 
     public Double[] fetchDocCountAndfees(Speciality sp, List<BillType> bts, Staff s) {
 
+        List<Bill> bbills = new ArrayList<>();
+        List<Bill> cbills = new ArrayList<>();
+        List<Bill> rbills = new ArrayList<>();
+        List<Bill> crbills = new ArrayList<>();
+
+        if (scan) {
+            bbills = countBillByBillTypeAndFeeType(new BilledBill(), FeeType.Service, bts, sp, s);
+            cbills = countBillByBillTypeAndFeeType(new CancelledBill(), FeeType.Service, bts, sp, s);
+            rbills = countBillByBillTypeAndFeeType(new RefundBill(), FeeType.Service, bts, sp, s);
+        } else {
+            bbills = countBillByBillTypeAndFeeType(new BilledBill(), FeeType.OwnInstitution, bts, sp, s);
+            cbills = countBillByBillTypeAndFeeType(new CancelledBill(), FeeType.OwnInstitution, bts, sp, s);
+            rbills = countBillByBillTypeAndFeeType(new RefundBill(), FeeType.OwnInstitution, bts, sp, s);
+        }
+        crbills.addAll(cbills);
+        crbills.addAll(rbills);
+        System.out.println("bbills.size() = " + bbills.size());
+        System.out.println("cbills.size() = " + cbills.size());
+        System.out.println("rbills.size() = " + rbills.size());
+        System.out.println("crbills.size() = " + crbills.size());
+
+        Double[] d = new Double[3];
+        d[0] = 0.0;
+        d[1] = 0.0;
+        d[2] = 0.0;
+        if (!bbills.isEmpty() || !cbills.isEmpty() || !rbills.isEmpty()) {
+            d[0] = (double) (bbills.size() - (cbills.size() + rbills.size()));
+            for (Bill b : bbills) {
+                d[1] += b.getStaffFee();
+                d[2] += (b.getNetTotal() - b.getStaffFee());
+            }
+            for (Bill b : crbills) {
+                d[1] -= b.getStaffFee();
+                d[2] -= (b.getNetTotal() - b.getStaffFee());
+            }
+        }
+
+        return d;
+    }
+
+//    public Double[] fetchDocCountAndfees(Speciality sp, List<BillType> bts, Staff s) {
+//
+//        String sql;
+//        Map m = new HashMap();
+//
+//        sql = " select distinct(bf.bill) from BillFee  bf where "
+//                + " bf.bill.retired=false"
+//                + " and bf.bill.refunded=false "
+//                + " and bf.bill.cancelled=false "
+//                + " and bf.bill.billType in :bt "
+//                + " and bf.bill.staff.speciality=:sp "
+//                + " and bf.bill.staff=:s "
+//                + " and type(bf.bill)=:class "
+//                + " and bf.feeValue>0 ";
+//
+//        if (scan) {
+//            sql += " and bf.fee.feeType =:fts ";
+//            m.put("fts", FeeType.Service);
+//        } else {
+//            sql += " and bf.fee.feeType =:fth ";
+//            m.put("fth", FeeType.OwnInstitution);
+//        }
+//
+//        if (paid) {
+//            sql += " and bf.bill.paidBill is not null "
+//                    + " and bf.bill.paidAmount!=0 ";
+//        }
+//        if (sessoinDate) {
+//            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+//        } else {
+//            sql += " and bf.bill.createdAt between :fd and :td ";
+//        }
+//
+//        m.put("fd", getFromDate());
+//        m.put("td", getToDate());
+//        m.put("class", BilledBill.class);
+//        m.put("bt", bts);
+//        m.put("sp", sp);
+//        m.put("s", s);
+//
+//        List<Bill> bs = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//
+//        Double[] d = new Double[3];
+//        d[0] = 0.0;
+//        d[1] = 0.0;
+//        d[2] = 0.0;
+//        if (!bs.isEmpty()) {
+//            d[0] = (double) bs.size();
+//            for (Bill b : bs) {
+//                d[1] += b.getStaffFee();
+//                d[2] += (b.getNetTotal() - b.getStaffFee());
+//            }
+//        }
+//
+//        return d;
+//    }
+    public List<Bill> countBillByBillTypeAndFeeType(Bill bill, FeeType ft, List<BillType> bts, Speciality sp, Staff s) {
+
         String sql;
         Map m = new HashMap();
 
-        sql = " select distinct(bf.bill) from BillFee  bf where "
-                + " bf.bill.retired=false"
-                + " and bf.bill.refunded=false "
-                + " and bf.bill.cancelled=false "
-                + " and bf.bill.billType in :bt "
+        sql = " select distinct(bf.bill) from BillFee bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType in :bts "
                 + " and bf.bill.staff.speciality=:sp "
                 + " and bf.bill.staff=:s "
                 + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
 
-        if (scan) {
-            sql += " and bf.fee.feeType =:fts ";
-            m.put("fts", FeeType.Service);
-        } else {
-            sql += " and bf.fee.feeType =:fth ";
-            m.put("fth", FeeType.OwnInstitution);
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
+        }
+
+        if (ft == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
         }
 
         if (paid) {
@@ -556,33 +659,42 @@ public class ChannelReportTempController implements Serializable {
                     + " and bf.bill.paidAmount!=0 ";
         }
         if (sessoinDate) {
-            sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
         } else {
-            sql += " and bf.bill.createdAt between :fd and :td ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+
         }
 
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("class", BilledBill.class);
-        m.put("bt", bts);
+        m.put("ft", ft);
+        m.put("bts", bts);
         m.put("sp", sp);
         m.put("s", s);
+//        m.put("fn", "Scan Fee");
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        List<Bill> bs = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-        Double[] d = new Double[3];
-        d[0] = 0.0;
-        d[1] = 0.0;
-        d[2] = 0.0;
-        if (!bs.isEmpty()) {
-            d[0] = (double) bs.size();
-            for (Bill b : bs) {
-                d[1] += b.getStaffFee();
-                d[2] += (b.getNetTotal() - b.getStaffFee());
-            }
-        }
-
-        return d;
+//        System.out.println("sql = " + sql);
+//        System.out.println("m = " + m);
+//        System.out.println("bills.size() = " + bills.size());
+        return bills;
     }
 
     public void createAgentPaymentTable() {

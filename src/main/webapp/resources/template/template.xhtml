@@ -90,6 +90,7 @@
                                     </p:submenu>
                                     <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab_report_for_opd_print" value="Lab Report print" rendered="true" />
                                     <p:submenu label="OPD Credit Bill" >
                                         <p:menuitem ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  value="Bills To Pay Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                                         <p:menuitem ajax="false" value="Credit paid Bills" action="/opd_search_bill_full_paid" actionListener="#{billController.clear()}" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
@@ -504,6 +505,12 @@
                                         <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
 
                                     </p:submenu>  
+                                    <p:submenu label="Cashier Transaction" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeave')}" >
+                                        <p:menuitem  ajax="false"  value="Income"  action="/channel/channel_income_bill" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Income Bill Search"  action="/channel/channel_income_bill_search_own" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByDate')}" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses"  action="/channel/channel_expenses_bill" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own" rendered="#{webUserController.hasPrivilege('ChannellingDoctorLeaveByServiceSession')}" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                    </p:submenu>
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/channel/management_index" value="Management" ></p:menuitem>

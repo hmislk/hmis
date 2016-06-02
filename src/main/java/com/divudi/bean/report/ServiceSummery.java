@@ -95,6 +95,8 @@ public class ServiceSummery implements Serializable {
     double hosFeeTotalGT;
     double reagentFeeTotalGT;
     double outSideFeeTotoalGT;
+    
+    double vatFeeTotal;
 
     boolean onlyInwardBills;
 
@@ -184,6 +186,43 @@ public class ServiceSummery implements Serializable {
         temMap.put("ftp", feeType);
         temMap.put("itm", getService());
         //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public double calServiceTotVat(BillType billType, boolean discharged) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(bi.feeVat) FROM BillFee bi "
+                + " where  bi.bill.institution=:ins"
+                + " and bi.bill.billType= :bTp "
+                + " and bi.billItem.item=:itm ";
+
+        if (discharged) {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        } else {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate ";
+        }
+
+        if (billType != BillType.InwardBill) {
+            sql += " and ( bi.bill.paymentMethod = :pm1 "
+                    + " or  bi.bill.paymentMethod = :pm2 "
+                    + " or  bi.bill.paymentMethod = :pm3"
+                    + " or  bi.bill.paymentMethod = :pm4) ";
+            temMap.put("pm1", PaymentMethod.Cash);
+            temMap.put("pm2", PaymentMethod.Card);
+            temMap.put("pm3", PaymentMethod.Cheque);
+            temMap.put("pm4", PaymentMethod.Slip);
+
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("bTp", billType);
+        temMap.put("itm", getService());
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -613,7 +652,7 @@ public class ServiceSummery implements Serializable {
         }
 
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.bill.toDepartment=:dep ";
             temMap.put("dep", department);
         }
 
@@ -694,6 +733,7 @@ public class ServiceSummery implements Serializable {
             bi.setBillItem(i);
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
+            bi.setVatFee(calFeeVat(i));
             serviceSummery.add(bi);
         }
 
@@ -701,7 +741,8 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.OpdBill, FeeType.Staff, false);
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
-
+        vatFeeTotal=calServiceTotVat(BillType.OpdBill, false);
+        
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/Summery by service(/faces/reportInstitution/report_opd_service_summery.xhtml)");
 
     }
@@ -715,6 +756,7 @@ public class ServiceSummery implements Serializable {
             bi.setBillItem(i);
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution) + calFee(i, FeeType.CollectingCentre));
+            bi.setVatFee(calFeeVat(i));
             serviceSummery.add(bi);
         }
 
@@ -722,7 +764,7 @@ public class ServiceSummery implements Serializable {
         proFeeTotal = calServiceTot(BillType.OpdBill, FeeType.Staff, false);
         hosFeeTotal = calServiceTot(BillType.OpdBill, FeeType.OwnInstitution, false) + calServiceTot(BillType.OpdBill, FeeType.CollectingCentre, false);
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
-
+        vatFeeTotal=calServiceTotVat(BillType.OpdBill, false);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by investigation OPD/Summery by investigation(/faces/reportInstitution/report_investigation_service_summery.xhtml)");
     }
@@ -1058,6 +1100,17 @@ public class ServiceSummery implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
+    private double calFeeVat(BillItem bi) {
+        HashMap hm = new HashMap();
+        String sql = "Select sum(f.feeVat) from "
+                + " BillFee f where "
+                + " f.retired=false "
+                + " and f.billItem=:b ";
+        hm.put("b", bi);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
 
     private String fetchStaffs(BillItem bi, FeeType feeType) {
         String name = "";
@@ -1204,11 +1257,13 @@ public class ServiceSummery implements Serializable {
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
             bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
+            bi.setVatFee(calFeeVat(i));
             billItemWithFees.add(bi);
         }
 
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
+        
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Summery by service OPD/ Summery by service category(/faces/reportInstitution/report_opd_service_summery_by_category.xhtml)");
 
@@ -1259,6 +1314,7 @@ public class ServiceSummery implements Serializable {
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution) + calFee(i, FeeType.CollectingCentre));
             bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
+            bi.setVatFee(calFeeVat(i));
             billItemWithFees.add(bi);
         }
 
@@ -1984,6 +2040,14 @@ public class ServiceSummery implements Serializable {
 
     public void setOnlyInwardBills(boolean onlyInwardBills) {
         this.onlyInwardBills = onlyInwardBills;
+    }
+
+    public double getVatFeeTotal() {
+        return vatFeeTotal;
+    }
+
+    public void setVatFeeTotal(double vatFeeTotal) {
+        this.vatFeeTotal = vatFeeTotal;
     }
 
 }

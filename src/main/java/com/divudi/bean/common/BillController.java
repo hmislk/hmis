@@ -1059,9 +1059,11 @@ public class BillController implements Serializable {
         double billItemVatPlusNetValue = billItemValues[3] + billItemValues[2];
 
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
-        System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
+        System.out.println("roundOff(b.getVatPlusNetTotal()) = " + roundOff(b.getVatPlusNetTotal()));
+        System.out.println("billItemVatPlusNetValue = " + billItemVatPlusNetValue);
+        System.out.println("roundOff(billItemVatPlusNetValue) = " + roundOff(billItemVatPlusNetValue));
 
-        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != b.getVatPlusNetTotal()) {
+        if (billItemTotal != b.getTotal() || billItemDiscount != b.getDiscount() || billItemNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != roundOff(b.getVatPlusNetTotal())) {
             return true;
         }
 
@@ -1075,7 +1077,7 @@ public class BillController implements Serializable {
         System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
         System.out.println("billFeeVatPlusNetValue = " + roundOff(billFeeVatPlusNetValue));
 
-        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != b.getVatPlusNetTotal()) {
+        if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal() || roundOff(billItemVatPlusNetValue) != roundOff(b.getVatPlusNetTotal())) {
             return true;
         }
 

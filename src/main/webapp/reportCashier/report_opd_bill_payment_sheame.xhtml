@@ -131,6 +131,8 @@
                                     </f:facet>
                                 </p:column>                         
                                 <p:column headerText="Comments" >
+                                    <h:outputLabel rendered="#{bill.refundedBill eq null and bill.cancelledBill eq null}" value="#{bill.comments}" >
+                                    </h:outputLabel>
                                     <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                     </h:outputLabel>
                                     <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
