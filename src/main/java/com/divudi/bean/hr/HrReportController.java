@@ -1131,11 +1131,12 @@ public class HrReportController implements Serializable {
         totalOverTime = 0.0;
         for (Institution b : getBanks()) {
             BankViseSalaryAndOt bvsao = new BankViseSalaryAndOt();
-            bvsao.setBank(b);
-            bvsao.setStringBank(b.getName());
+            
             if (b == null) {
                 continue;
             }
+            bvsao.setBank(b);
+            bvsao.setStringBank(b.getName());
             System.out.println("b = " + b);
             double nettotal = 0.0;
             double netot = 0.0;
