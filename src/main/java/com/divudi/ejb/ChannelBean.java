@@ -530,7 +530,7 @@ public class ChannelBean {
 
     public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(Staff s, Date d) {
         List<ServiceSession> createdSessions = new ArrayList<>();
-
+        Date start = new Date();
         Date nowDate;
         if (d == null) {
             nowDate = Calendar.getInstance().getTime();
@@ -545,7 +545,7 @@ public class ChannelBean {
         c.set(Calendar.MINUTE, 59);
         c.set(Calendar.SECOND, 59);
         Date toDate = c.getTime();
-        System.out.println("toDate = " + toDate);
+//        System.out.println("toDate = " + toDate);
         Integer tmp = 0;
         int rowIndex = 0;
         System.err.println("Time 1 = " + new Date());
@@ -555,6 +555,10 @@ public class ChannelBean {
         System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
         System.err.println("Time 3 = " + new Date());
+
+        Date end = new Date();
+        double time = (start.getTime() - end.getTime()) / 1000;
+        System.out.println("Doc = " + s.getPerson().getName() + " - Time = " + time);
 
         return createdSessions;
     }

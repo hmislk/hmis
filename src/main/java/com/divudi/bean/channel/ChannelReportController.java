@@ -114,6 +114,7 @@ public class ChannelReportController implements Serializable {
     ChannelBillTotals billTotals;
     Department department;
     boolean paid = false;
+    boolean summery = false;
     boolean sessoinDate = false;
     boolean withDates = false;
     boolean agncyOnCall = false;
@@ -124,6 +125,7 @@ public class ChannelReportController implements Serializable {
     List<AgentHistory> agentHistorys;
     List<AgentHistoryWithDate> agentHistoryWithDate;
     List<BookingCountSummryRow> bookingCountSummryRows;
+    List<BookingCountSummryRow> bookingCountSummryRowsScan;
     List<DoctorPaymentSummeryRow> doctorPaymentSummeryRows;
     List<Bill> channelBills;
     List<Bill> channelBillsCancelled;
@@ -176,6 +178,8 @@ public class ChannelReportController implements Serializable {
         sessoinDate = false;
         institution = null;
         date = null;
+        bookingCountSummryRows = new ArrayList<>();
+        bookingCountSummryRowsScan = new ArrayList<>();
     }
 
     public Institution getInstitution() {
@@ -2006,6 +2010,92 @@ public class ChannelReportController implements Serializable {
         return d;
     }
 
+    public double[] hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(Bill bill, FeeType fts, BillType bt, boolean sessoinDate, boolean paid) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select distinct(bf.bill) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType=:bt "
+                + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft "
+                + " and bf.feeValue>0 ";
+
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
+        }
+
+        if (fts == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
+
+        if (paid) {
+            sql += " and bf.bill.paidBill is not null "
+                    + " and bf.bill.paidAmount!=0 ";
+        }
+        if (sessoinDate) {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+        } else {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+
+        }
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("class", BilledBill.class);
+        m.put("ft", fts);
+        m.put("bt", bt);
+//        m.put("fn", "Scan Fee");
+
+        List<Bill> b = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        double[] d = new double[4];
+        d[0] = 0.0;
+        d[1] = 0.0;
+        d[2] = 0.0;
+        d[3] = 0.0;
+        for (Bill b1 : b) {
+            for (BillFee bf : b1.getBillFees()) {
+                if (bf.getFee().getFeeType() != FeeType.Staff) {
+                    if (!bill.getClass().equals(RefundBill.class)) {
+                        d[0] += bf.getFeeValue();
+                        d[1] += bf.getFeeVat();
+                    }
+                } else {
+                    d[2] += bf.getFeeValue();
+                    d[3] += bf.getFeeVat();
+                }
+            }
+        }
+        System.out.println("b.size() = " + b.size());
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
+        return d;
+    }
+
 //    public double hospitalTotalBillByBillTypeAndFeeType(Bill bill, List<String> ftps, BillType bt, boolean sessoinDate, boolean paid) {
 //
 //        String sql;
@@ -2860,19 +2950,39 @@ public class ChannelReportController implements Serializable {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
         if (sessoinDate) {
-            channelBills.addAll(channelBillListByBillType(false, null, bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new BilledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new CancelledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(false, new RefundBill(), bts, fromDate, toDate));
             channelTotal = new ChannelTotal();
-            channelTotal.setStaffFee(channelBillTotalByBillType(false, null, bts, fromDate, toDate, true, false, false, false));
-            channelTotal.setHosFee(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, true, false, false));
-            channelTotal.setNetTotal(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, false, true, false));
-            channelTotal.setVat(channelBillTotalByBillType(false, null, bts, fromDate, toDate, false, false, false, true));
+            channelTotal.setStaffFee(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, true, false, false, false));
+            channelTotal.setHosFee(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, true, false, false));
+            channelTotal.setNetTotal(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, false, true, false));
+            channelTotal.setVat(channelBillTotalByBillType(false, new BilledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(false, new CancelledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(false, new RefundBill(), bts, fromDate, toDate, false, false, false, true));
         } else {
-            channelBills.addAll(channelBillListByBillType(true, null, bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new BilledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new CancelledBill(), bts, fromDate, toDate));
+            channelBills.addAll(channelBillListByBillType(true, new RefundBill(), bts, fromDate, toDate));
             channelTotal = new ChannelTotal();
-            channelTotal.setStaffFee(channelBillTotalByBillType(true, null, bts, fromDate, toDate, true, false, false, false));
-            channelTotal.setHosFee(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, true, false, false));
-            channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, true, false));
-            channelTotal.setVat(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, false, true));
+            channelTotal.setStaffFee(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, true, false, false, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, true, false, false, false));
+            channelTotal.setHosFee(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, true, false, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, true, false, false));
+            channelTotal.setNetTotal(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, false, true, false)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, false, true, false));
+            channelTotal.setVat(channelBillTotalByBillType(true, new BilledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(true, new CancelledBill(), bts, fromDate, toDate, false, false, false, true)
+                    + channelBillTotalByBillType(true, new RefundBill(), bts, fromDate, toDate, false, false, false, true));
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml)");
@@ -2943,7 +3053,15 @@ public class ChannelReportController implements Serializable {
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
         } else {
-            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
         }
 
         if (!billTypes.isEmpty()) {
@@ -3021,7 +3139,15 @@ public class ChannelReportController implements Serializable {
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
         } else {
-            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.createdAt between :fDate and :tDate ";
+            }
         }
 
         if (!billTypes.isEmpty()) {
@@ -3150,6 +3276,20 @@ public class ChannelReportController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Session Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
     }
 
+    public void createChannelHospitalIncomeByCreatedDateWithDoc() {
+        Date startTime = new Date();
+        createChannelHospitalIncomeWithDoc(false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Created Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
+    }
+
+    public void createChannelHospitalIncomeBySessionDateWithDoc() {
+        Date startTime = new Date();
+        createChannelHospitalIncomeWithDoc(true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Session Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
+    }
+
     public void createChannelPatientCount(boolean sessionDate) {
         bookingCountSummryRows = new ArrayList<>();
         BillType[] billTypes = {BillType.ChannelCash,
@@ -3186,6 +3326,54 @@ public class ChannelReportController implements Serializable {
             row.setRefundCount(row.getRefundCount() + bc.getRefundCount());
         }
         bookingCountSummryRows.add(row);
+    }
+
+    public void createChannelHospitalIncomeWithDoc(boolean sessionDate) {
+        bookingCountSummryRows = new ArrayList<>();
+        bookingCountSummryRowsScan = new ArrayList<>();
+        BillType[] billTypes = {BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelAgent,};
+        List<BillType> bts = Arrays.asList(billTypes);
+        bookingCountSummryRows = createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.OwnInstitution);
+        BookingCountSummryRow row = new BookingCountSummryRow();
+        row.setBookingType("Total");
+        for (BookingCountSummryRow bc : bookingCountSummryRows) {
+            row.setBillHos(row.getBillHos() + bc.getBillHos());
+            row.setBillHosVat(row.getBillHosVat() + bc.getBillHosVat());
+            row.setbDoc(row.getbDoc() + bc.getbDoc());
+            row.setbDocVat(row.getbDocVat() + bc.getbDocVat());
+            row.setCanHos(row.getCanHos() + bc.getCanHos());
+            row.setCanHosVat(row.getCanHosVat() + bc.getCanHosVat());
+            row.setCanDoc(row.getCanDoc() + bc.getCanDoc());
+            row.setCanDocVat(row.getCanDocVat() + bc.getCanDocVat());
+            row.setRefHos(row.getRefHos() + bc.getRefHos());
+            row.setRefHosVat(row.getRefHosVat() + bc.getRefHosVat());
+            row.setRefDoc(row.getRefDoc() + bc.getRefDoc());
+            row.setRefDocVat(row.getRefDocVat() + bc.getRefDocVat());
+        }
+        bookingCountSummryRows.add(row);
+
+        bookingCountSummryRowsScan = createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.Service);
+
+        row = new BookingCountSummryRow();
+        row.setBookingType("Total");
+        for (BookingCountSummryRow bc : bookingCountSummryRowsScan) {
+            row.setBillHos(row.getBillHos() + bc.getBillHos());
+            row.setBillHosVat(row.getBillHosVat() + bc.getBillHosVat());
+            row.setbDoc(row.getbDoc() + bc.getbDoc());
+            row.setbDocVat(row.getbDocVat() + bc.getbDocVat());
+            row.setCanHos(row.getCanHos() + bc.getCanHos());
+            row.setCanHosVat(row.getCanHosVat() + bc.getCanHosVat());
+            row.setCanDoc(row.getCanDoc() + bc.getCanDoc());
+            row.setCanDocVat(row.getCanDocVat() + bc.getCanDocVat());
+            row.setRefHos(row.getRefHos() + bc.getRefHos());
+            row.setRefHosVat(row.getRefHosVat() + bc.getRefHosVat());
+            row.setRefDoc(row.getRefDoc() + bc.getRefDoc());
+            row.setRefDocVat(row.getRefDocVat() + bc.getRefDocVat());
+        }
+        bookingCountSummryRowsScan.add(row);
     }
 
     public void createSmmeryRows(List<BillType> bts, boolean sessionDate, FeeType ft) {
@@ -3234,6 +3422,56 @@ public class ChannelReportController implements Serializable {
             bookingCountSummryRows.add(row);
 
         }
+    }
+
+    public List<BookingCountSummryRow> createSmmeryRowsHospitalIncomeWithDoc(List<BillType> bts, boolean sessionDate, FeeType ft) {
+
+        List<BookingCountSummryRow> bcsrs = new ArrayList<>();
+
+        for (BillType bt : bts) {
+            BookingCountSummryRow row = new BookingCountSummryRow();
+            if (ft == FeeType.Service) {
+                row.setBookingType("Scan " + bt.getLabel());
+                double d[] = new double[4];
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new BilledBill(), FeeType.Service, bt, sessionDate, paid);
+                row.setBillHos(d[0]);
+                row.setBillHosVat(d[1]);
+                row.setbDoc(d[2]);
+                row.setbDocVat(d[3]);
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new CancelledBill(), FeeType.Service, bt, sessionDate, paid);
+                row.setCanHos(d[0]);
+                row.setCanHosVat(d[1]);
+                row.setCanDoc(d[2]);
+                row.setCanDocVat(d[3]);
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new RefundBill(), FeeType.Service, bt, sessionDate, paid);
+                row.setRefHos(d[0]);
+                row.setRefHosVat(d[1]);
+                row.setRefDoc(d[2]);
+                row.setRefDocVat(d[3]);
+            } else {
+                row.setBookingType(bt.getLabel());
+                double d[] = new double[4];
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new BilledBill(), FeeType.OwnInstitution, bt, sessionDate, paid);
+                row.setBillHos(d[0]);
+                row.setBillHosVat(d[1]);
+                row.setbDoc(d[2]);
+                row.setbDocVat(d[3]);
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new CancelledBill(), FeeType.OwnInstitution, bt, sessionDate, paid);
+                row.setCanHos(d[0]);
+                row.setCanHosVat(d[1]);
+                row.setCanDoc(d[2]);
+                row.setCanDocVat(d[3]);
+                d = hospitalTotalBillByBillTypeAndFeeTypeWithdocfee(new RefundBill(), FeeType.OwnInstitution, bt, sessionDate, paid);
+                row.setRefHos(d[0]);
+                row.setRefHosVat(d[1]);
+                row.setRefDoc(d[2]);
+                row.setRefDocVat(d[3]);
+            }
+
+            bcsrs.add(row);
+
+        }
+        return bcsrs;
     }
 
     public List<BillFee> getListBilledBillFees() {
@@ -4337,7 +4575,8 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
         }
-        HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel, HistoryType.ChannelDebitNote,
+            HistoryType.ChannelDebitNoteCancel, HistoryType.ChannelCreditNote, HistoryType.ChannelCreditNoteCancel};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -5308,6 +5547,19 @@ public class ChannelReportController implements Serializable {
         double staffCount;
         double bookingCount;
 
+        double billHos;
+        double billHosVat;
+        double billDoc;
+        double billDocVat;
+        double canHos;
+        double canHosVat;
+        double canDoc;
+        double canDocVat;
+        double refHos;
+        double refHosVat;
+        double refDoc;
+        double refDocVat;
+
         public String getBookingType() {
             return bookingType;
         }
@@ -5386,6 +5638,102 @@ public class ChannelReportController implements Serializable {
 
         public void setConsultant(Staff consultant) {
             this.consultant = consultant;
+        }
+
+        public double getBillHos() {
+            return billHos;
+        }
+
+        public void setBillHos(double billHos) {
+            this.billHos = billHos;
+        }
+
+        public double getBillHosVat() {
+            return billHosVat;
+        }
+
+        public void setBillHosVat(double billHosVat) {
+            this.billHosVat = billHosVat;
+        }
+
+        public double getbDoc() {
+            return billDoc;
+        }
+
+        public void setbDoc(double bDoc) {
+            this.billDoc = bDoc;
+        }
+
+        public double getbDocVat() {
+            return billDocVat;
+        }
+
+        public void setbDocVat(double bDocVat) {
+            this.billDocVat = bDocVat;
+        }
+
+        public double getCanHos() {
+            return canHos;
+        }
+
+        public void setCanHos(double canHos) {
+            this.canHos = canHos;
+        }
+
+        public double getCanHosVat() {
+            return canHosVat;
+        }
+
+        public void setCanHosVat(double canHosVat) {
+            this.canHosVat = canHosVat;
+        }
+
+        public double getCanDoc() {
+            return canDoc;
+        }
+
+        public void setCanDoc(double canDoc) {
+            this.canDoc = canDoc;
+        }
+
+        public double getCanDocVat() {
+            return canDocVat;
+        }
+
+        public void setCanDocVat(double canDocVat) {
+            this.canDocVat = canDocVat;
+        }
+
+        public double getRefHos() {
+            return refHos;
+        }
+
+        public void setRefHos(double refHos) {
+            this.refHos = refHos;
+        }
+
+        public double getRefHosVat() {
+            return refHosVat;
+        }
+
+        public void setRefHosVat(double refHosVat) {
+            this.refHosVat = refHosVat;
+        }
+
+        public double getRefDoc() {
+            return refDoc;
+        }
+
+        public void setRefDoc(double refDoc) {
+            this.refDoc = refDoc;
+        }
+
+        public double getRefDocVat() {
+            return refDocVat;
+        }
+
+        public void setRefDocVat(double refDocVat) {
+            this.refDocVat = refDocVat;
         }
 
     }
@@ -5600,6 +5948,22 @@ public class ChannelReportController implements Serializable {
 
     public void setChannelTotal(ChannelTotal channelTotal) {
         this.channelTotal = channelTotal;
+    }
+
+    public List<BookingCountSummryRow> getBookingCountSummryRowsScan() {
+        return bookingCountSummryRowsScan;
+    }
+
+    public void setBookingCountSummryRowsScan(List<BookingCountSummryRow> bookingCountSummryRowsScan) {
+        this.bookingCountSummryRowsScan = bookingCountSummryRowsScan;
+    }
+
+    public boolean isSummery() {
+        return summery;
+    }
+
+    public void setSummery(boolean summery) {
+        this.summery = summery;
     }
 
 }

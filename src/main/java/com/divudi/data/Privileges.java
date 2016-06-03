@@ -69,6 +69,7 @@ public enum Privileges {
     InwardReactivate,
     InwardCheck,
     InwardUnCheck,
+    InwardFinalBillCancel,
     ShowInwardFee,
     
     LabBilling,
@@ -298,6 +299,10 @@ public enum Privileges {
     ChannelEditingAppoinmentCount,
     ChannelAddChannelingConsultantToInstitutions,
     ChannelFeeUpdate,
+    ChannelCrdeitNote,
+    ChannelCrdeitNoteSearch,
+    ChannelDebitNote,
+    ChannelDebitNoteSearch,
     
     MemberShip,
     MembershipSchemes,

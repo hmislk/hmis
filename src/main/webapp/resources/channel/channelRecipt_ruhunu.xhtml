@@ -296,7 +296,7 @@
                                     </td>
                                     <td>
                                         <b>
-                                            <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}" >
+                                            <h:outputLabel value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </b>

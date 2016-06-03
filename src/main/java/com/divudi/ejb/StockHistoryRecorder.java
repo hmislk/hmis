@@ -254,7 +254,7 @@ public class StockHistoryRecorder {
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         System.out.println("ss.getName() = " + ss.getName());
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             System.out.println("newSs 1 = " + newSs);
@@ -315,7 +315,7 @@ public class StockHistoryRecorder {
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         System.out.println("ss.getName() = " + ss.getName());
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             System.out.println("newSs 1 = " + newSs);

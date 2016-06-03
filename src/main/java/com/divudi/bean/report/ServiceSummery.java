@@ -652,7 +652,7 @@ public class ServiceSummery implements Serializable {
         }
 
         if (department != null) {
-            sql += " and bi.bill.department=:dep ";
+            sql += " and bi.bill.toDepartment=:dep ";
             temMap.put("dep", department);
         }
 
@@ -874,6 +874,7 @@ public class ServiceSummery implements Serializable {
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
             bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
+            bi.setTotal(calFee(i));
             //System.out.println("bi = " + bi);
 
             proFeeTotal += bi.getProFee();
@@ -1096,6 +1097,18 @@ public class ServiceSummery implements Serializable {
                 + " f.fee.feeType=:ftp";
         hm.put("b", bi);
         hm.put("ftp", feeType);
+
+        return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double calFee(BillItem bi) {
+        HashMap hm = new HashMap();
+        String sql = "Select sum(f.feeValue) from "
+                + " BillFee f where "
+                + " f.retired=false "
+                + " and f.billItem=:b ";
+        hm.put("b", bi);
 
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
