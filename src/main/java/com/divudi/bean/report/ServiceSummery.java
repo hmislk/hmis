@@ -33,6 +33,7 @@ import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
@@ -110,6 +111,9 @@ public class ServiceSummery implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     ItemFeeFacade itemFeeFacade;
+    @EJB
+    FeeFacade feeFacade;
+    
     List<BillItem> billItems;
 
     List<Staff> staffs;
@@ -719,7 +723,8 @@ public class ServiceSummery implements Serializable {
                 System.out.println("itemFee.getFeeType() = " + itemFee.getFeeType());
                 System.err.println("**");
             }
-
+            bf.getFee().setFeeType(FeeType.OwnInstitution);
+            feeFacade.edit(bf.getFee());
         }
 
     }
