@@ -206,6 +206,11 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>              
+                    <p:column headerText="Total Fee(original)" styleClass="averageNumericColumn">
+                        <p:outputLabel value="#{d.total}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                    </p:column>              
 
                 </p:dataTable> 
 

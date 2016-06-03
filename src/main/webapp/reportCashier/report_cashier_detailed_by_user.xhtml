@@ -242,11 +242,27 @@
                         
                         <p:spacer height="30"/>
                         
-                        <ca:channelBilledIncome id="cha_e" income="false" cancel="false" data="#{commonReport.channelBilledExpenses}"/>
+                        <ca:channelBilledIncome id="cha_e" expenss="true" cancel="false" data="#{commonReport.channelBilledExpenses}"/>
                         
                         <p:spacer height="30"/>
                         
-                        <ca:channelBilledIncome id="cha_ec" income="false" cancel="true" data="#{commonReport.channelCancellExpenses}"/>
+                        <ca:channelBilledIncome id="cha_ec" expenss="true" cancel="true" data="#{commonReport.channelCancellExpenses}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_cn" credit="true" cancel="false" data="#{commonReport.channelBilledCredit}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_cnc" credit="true" cancel="true" data="#{commonReport.channelCancellCredit}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_dn" debit="true" cancel="false" data="#{commonReport.channelBilledDebit}"/>
+                        
+                        <p:spacer height="30"/>
+                        
+                        <ca:channelBilledIncome id="cha_dnc" debit="true" cancel="true" data="#{commonReport.channelCancellDebit}"/>
                         
                         <p:spacer height="30"/>
                         

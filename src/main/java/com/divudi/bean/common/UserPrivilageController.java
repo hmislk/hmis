@@ -114,6 +114,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node187 = new PrivilageNode("Show Inward Fee", node18, Privileges.ShowInwardFee);
         TreeNode node188 = new PrivilageNode("Inward Check", node18, Privileges.InwardCheck);
         TreeNode node189 = new PrivilageNode("Inward Uncheck", node18, Privileges.InwardUnCheck);
+        TreeNode node190 = new PrivilageNode("Inward Final Bill Cancel With Out Check Date Range", node18, Privileges.InwardFinalBillCancel);
 
         TreeNode node1a = new PrivilageNode("Theatre", tmproot);
         TreeNode node1a0 = new PrivilageNode("Theatre Menu", node1a, Privileges.Theatre);
@@ -163,9 +164,10 @@ public class UserPrivilageController implements Serializable {
         TreeNode node214a = new PrivilageNode("Report Reprint", node214, Privileges.LabReprinting);
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2);
-        TreeNode node216a = new PrivilageNode("Lab Summeries Level1", node216, Privileges.LabSummeriesLevel1);
-        TreeNode node216b = new PrivilageNode("Lab Summeries Level2", node216, Privileges.LabSummeriesLevel2);
-        TreeNode node216c = new PrivilageNode("Lab Summeries Level2", node216, Privileges.LabSummeriesLevel3);
+        TreeNode node216a = new PrivilageNode("Lab Summeries Menu", node216, Privileges.LabSummeries);
+        TreeNode node216b = new PrivilageNode("Lab Summeries Level1", node216, Privileges.LabSummeriesLevel1);
+        TreeNode node216c = new PrivilageNode("Lab Summeries Level2", node216, Privileges.LabSummeriesLevel2);
+        TreeNode node216d = new PrivilageNode("Lab Summeries Level3", node216, Privileges.LabSummeriesLevel3);
         TreeNode node221 = new PrivilageNode("Lab Investigation Fees", node2, Privileges.LabInvestigationFee);
         TreeNode node222 = new PrivilageNode("Lab Bill Cancell Special(after collecting sample can cancell)", node2, Privileges.LabBillCancelSpecial);
         TreeNode node223 = new PrivilageNode("Lab Bill Refund Special(after collecting sample can Refund)", node2, Privileges.LabBillRefundSpecial);
@@ -175,12 +177,10 @@ public class UserPrivilageController implements Serializable {
         TreeNode node228 = new PrivilageNode("Lab Inward Billing Menu", node2);
         TreeNode node228a = new PrivilageNode("Lab Inward Bill", node228, Privileges.LabInwardBilling);
         TreeNode node228b = new PrivilageNode("Lab Inward Bill Search", node228, Privileges.LabInwardSearchServiceBill);
-        TreeNode node229 = new PrivilageNode("Lab Collecting Center Menu", node2,Privileges.LabCollectingCentreBilling);
-        TreeNode node229a = new PrivilageNode("Lab Collecting center Billing", node229,Privileges.LabCCBilling);
-        TreeNode node229b = new PrivilageNode("Lab Collecting Center Bill search", node229,Privileges.LabCCBillingSearch);
+        TreeNode node229 = new PrivilageNode("Lab Collecting Center Menu", node2, Privileges.LabCollectingCentreBilling);
+        TreeNode node229a = new PrivilageNode("Lab Collecting center Billing", node229, Privileges.LabCCBilling);
+        TreeNode node229b = new PrivilageNode("Lab Collecting Center Bill search", node229, Privileges.LabCCBillingSearch);
         TreeNode node230 = new PrivilageNode("Lab Reporting", node2, Privileges.LabReporting);
-        
-        
 
         TreeNode node3 = new PrivilageNode("Pharmacy", tmproot);
         TreeNode node300 = new PrivilageNode("Pharmacy Menu", node3, Privileges.Pharmacy);
@@ -384,7 +384,11 @@ public class UserPrivilageController implements Serializable {
         TreeNode node230109f = new PrivilageNode("Channel Management Consultants", node230109, Privileges.ChannelManageConsultants);
         TreeNode node230109g = new PrivilageNode("Channel Editing Appoinment Count", node230109, Privileges.ChannelEditingAppoinmentCount);
         TreeNode node230109h = new PrivilageNode("Add Channelling Consultants To Institution ", node230109, Privileges.ChannelAddChannelingConsultantToInstitutions);
-        TreeNode node230109i = new PrivilageNode("Channel Fee Update ", node230109, Privileges.ChannelFeeUpdate);
+        TreeNode node230109i = new PrivilageNode("Channel Fee Update", node230109, Privileges.ChannelFeeUpdate);
+        TreeNode node230109j = new PrivilageNode("Channel Credit Note", node230109, Privileges.ChannelCrdeitNote);
+        TreeNode node230109k = new PrivilageNode("Channel Credit Note Search", node230109, Privileges.ChannelCrdeitNoteSearch);
+        TreeNode node230109l = new PrivilageNode("Channel Debit Note", node230109, Privileges.ChannelDebitNote);
+        TreeNode node230109m = new PrivilageNode("Channel Debit Note Search", node230109, Privileges.ChannelDebitNoteSearch);
 
         return tmproot;
     }
