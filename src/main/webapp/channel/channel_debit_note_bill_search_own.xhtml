@@ -40,13 +40,13 @@
 
                         <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                             <p:column headerText="Bill No" >
-                                <h:commandLink action="agent_bill_reprint" value="#{bill.insId}">
+                                <h:commandLink action="channel_debit_note_bill_reprint" value="#{bill.insId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                 </h:commandLink>
                             </p:column>                                            
                             <p:column headerText="Billed at"  >
-                                <h:commandLink action="agent_bill_reprint" >
+                                <h:commandLink action="channel_debit_note_bill_reprint" >
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
@@ -62,7 +62,7 @@
                             
                             </p:column>  
                             <p:column headerText="Billed by" >
-                                <h:commandLink action="agent_bill_reprint" >
+                                <h:commandLink action="channel_debit_note_bill_reprint" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
@@ -75,21 +75,21 @@
                                 </h:panelGroup>                               
                             </p:column>    
                             <p:column headerText="Agent Code" >
-                                <h:commandLink action="agent_bill_reprint" >
+                                <h:commandLink action="channel_debit_note_bill_reprint" >
                                     <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                 </h:commandLink>
                             </p:column>  
 
                             <p:column headerText="Agent Name" >
-                                <h:commandLink action="agent_bill_reprint" >
+                                <h:commandLink action="channel_debit_note_bill_reprint" >
                                     <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
                                 </h:commandLink>
                             </p:column>  
 
                             <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                <h:commandLink action="agent_bill_reprint" >
+                                <h:commandLink action="channel_debit_note_bill_reprint" >
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>

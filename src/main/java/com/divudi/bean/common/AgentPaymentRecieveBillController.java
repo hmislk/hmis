@@ -9,6 +9,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.HistoryType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -108,16 +109,8 @@ public class AgentPaymentRecieveBillController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getPaymentMethod() == null) {
-            UtilityController.addErrorMessage("Select PaymentMethord");
-            return true;
-        }
         if (getAmount() < 0.0) {
             UtilityController.addErrorMessage("Please Enter Correct Value");
-            return true;
-        }
-
-        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), paymentMethodData)) {
             return true;
         }
 
@@ -194,6 +187,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         if (errorCheckCreditNoteDebitNote()) {
             return;
         }
+        getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(getAmount());
         channelAgencyCreditDebitNote(BillType.AgentCreditNoteBill, HistoryType.ChannelCreditNote, BillNumberSuffix.AGNCN);
 
@@ -203,6 +197,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         if (errorCheckCreditNoteDebitNote()) {
             return;
         }
+        getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(0 - getAmount());
         channelAgencyCreditDebitNote(BillType.AgentDebitNoteBill, HistoryType.ChannelDebitNote, BillNumberSuffix.AGNDN);
 
@@ -216,11 +211,13 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
         addToBill();
-        if (errorCheck()) {
-            return;
+        if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)) {
+            System.out.println("billType = " + billType);
+            if (errorCheck()) {
+                return;
+            }
+            getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         }
-
-        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -265,7 +262,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         paymentMethodData = null;
         billItems = null;
         comment = null;
-
+        amount = 0.0;
     }
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {

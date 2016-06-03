@@ -178,8 +178,8 @@ public class ChannelReportController implements Serializable {
         sessoinDate = false;
         institution = null;
         date = null;
-        bookingCountSummryRows=new ArrayList<>();
-        bookingCountSummryRowsScan=new ArrayList<>();
+        bookingCountSummryRows = new ArrayList<>();
+        bookingCountSummryRowsScan = new ArrayList<>();
     }
 
     public Institution getInstitution() {
@@ -3275,7 +3275,7 @@ public class ChannelReportController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Channel patient count(By Session Date)(/faces/channel/channel_report_patient_count_income.xhtml)");
     }
-    
+
     public void createChannelHospitalIncomeByCreatedDateWithDoc() {
         Date startTime = new Date();
         createChannelHospitalIncomeWithDoc(false);
@@ -3336,7 +3336,7 @@ public class ChannelReportController implements Serializable {
             BillType.ChannelStaff,
             BillType.ChannelAgent,};
         List<BillType> bts = Arrays.asList(billTypes);
-        bookingCountSummryRows=createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.OwnInstitution);
+        bookingCountSummryRows = createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.OwnInstitution);
         BookingCountSummryRow row = new BookingCountSummryRow();
         row.setBookingType("Total");
         for (BookingCountSummryRow bc : bookingCountSummryRows) {
@@ -3354,9 +3354,9 @@ public class ChannelReportController implements Serializable {
             row.setRefDocVat(row.getRefDocVat() + bc.getRefDocVat());
         }
         bookingCountSummryRows.add(row);
-        
-        bookingCountSummryRowsScan=createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.Service);
-        
+
+        bookingCountSummryRowsScan = createSmmeryRowsHospitalIncomeWithDoc(bts, sessionDate, FeeType.Service);
+
         row = new BookingCountSummryRow();
         row.setBookingType("Total");
         for (BookingCountSummryRow bc : bookingCountSummryRowsScan) {
@@ -3426,7 +3426,7 @@ public class ChannelReportController implements Serializable {
 
     public List<BookingCountSummryRow> createSmmeryRowsHospitalIncomeWithDoc(List<BillType> bts, boolean sessionDate, FeeType ft) {
 
-        List<BookingCountSummryRow>bcsrs=new ArrayList<>();
+        List<BookingCountSummryRow> bcsrs = new ArrayList<>();
 
         for (BillType bt : bts) {
             BookingCountSummryRow row = new BookingCountSummryRow();
@@ -4575,7 +4575,8 @@ public class ChannelReportController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Agency.");
             return;
         }
-        HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel};
+        HistoryType[] ht = {HistoryType.ChannelBooking, HistoryType.ChannelDeposit, HistoryType.ChannelDepositCancel, HistoryType.ChannelDebitNote,
+            HistoryType.ChannelDebitNoteCancel, HistoryType.ChannelCreditNote, HistoryType.ChannelCreditNoteCancel};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();

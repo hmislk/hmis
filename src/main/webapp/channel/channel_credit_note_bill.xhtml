@@ -17,23 +17,6 @@
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Agent Credit Note" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{agentPaymentRecieveBillController.current.paymentMethod}">                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                <p:ajax process="cmbPs" update="creditCard cheque slip" event="change" />
-                            </p:selectOneMenu>
-                            
-                            <h:panelGroup id="creditCard" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{agentPaymentRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
-                            </h:panelGroup>
-
                             <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.channelAgencyCreditNoteSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>

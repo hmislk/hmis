@@ -10,6 +10,9 @@
     <cc:interface>
         <cc:attribute name="data" />
         <cc:attribute name="income" />
+        <cc:attribute name="expenss" />
+        <cc:attribute name="credit" />
+        <cc:attribute name="debit" />
         <cc:attribute name="cancel" />
     </cc:interface>
 
@@ -17,8 +20,10 @@
     <cc:implementation>
         <p:dataTable id="#{cc.id}" value="#{cc.attrs.data.bills}" var="b"   sortBy="#{b.billType}" rendered="#{cc.attrs.data.bills.size()>0}" >
             <f:facet name="header">  
-                <h:outputLabel value="Channel Income Bills" rendered="#{cc.attrs.income}"/>
-                <h:outputLabel value="Channel Expencess Bills" rendered="#{!cc.attrs.income}"/>
+                <h:outputLabel value="Channel Income Bills " rendered="#{cc.attrs.income}"/>
+                <h:outputLabel value="Channel Expencess Bills " rendered="#{cc.attrs.expenss}"/>
+                <h:outputLabel value="Channel Credit Note Bills " rendered="#{cc.attrs.credit}"/>
+                <h:outputLabel value="Channel Debit Note Bills " rendered="#{cc.attrs.debit}"/>
                 <h:outputLabel value="Cancell" rendered="#{cc.attrs.cancel}"/>
                 
             </f:facet> 
