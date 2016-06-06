@@ -36,7 +36,7 @@
                                                     value="#{billBhtController.patientEncounter}" 
                                                     completeMethod="#{admissionController.completePatient}"
                                                     var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                    itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;" required="true" requiredMessage="Please select the patient">
                                         <p:ajax event="itemSelect" process="acPt2" update="panSearch2"/>
                                         <p:column >
                                             <h:outputLabel value="#{apt2.bhtNo}"/> 

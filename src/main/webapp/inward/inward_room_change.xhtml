@@ -21,9 +21,11 @@
                                         completeMethod="#{admissionController.completePatient}" 
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" 
-                                        size="30"  style="width: 400px;" required="true"> 
+                                        size="30"  style="width: 400px;" required="true" requiredMessage="Please select the patient"> 
                             <f:ajax execute="acPt" render="@all" event="itemSelect"
                                     listener="#{roomChangeController.createPatientRoom()}"/>
+                            Model: Z-3100 (S03.06)U Ver:01.18 Date:10/24/2012
+                            
                             <p:column>
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>
@@ -32,7 +34,7 @@
                             </p:column>
                         </p:autoComplete>   
 
-                        <p:commandButton value="Clear"  
+                        <p:commandButton id="btnClr" value="Clear"  
                                          action="#{roomChangeController.recreate()}"
                                          ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
 

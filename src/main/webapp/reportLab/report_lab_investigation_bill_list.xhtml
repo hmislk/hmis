@@ -31,7 +31,6 @@
                                     <f:selectItem itemLabel="Select BillType" ></f:selectItem>
                                     <f:selectItems value="#{investigationMonthSummeryOwnControllerSession.billTypeByInvestigation}"/>
                                 </p:selectOneMenu>
-
                             </h:panelGroup>
 
                         </h:panelGrid>
@@ -103,7 +102,26 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
                         </p:column> 
+
+                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+                        </p:columnGroup>
+
                     </p:dataTable>
+
 
                     <p:dataTable value="#{investigationMonthSummeryOwnControllerSession.cancelledBills}" var="b" id="tbl2" >
                         <f:facet name="header" >
@@ -144,7 +162,26 @@
                             <p:outputLabel value="#{b.netTotal}" > 
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
-                        </p:column> 
+                        </p:column>
+
+<!--                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+
+                        </p:columnGroup>-->
+
                     </p:dataTable>
 
                     <p:dataTable value="#{investigationMonthSummeryOwnControllerSession.refundedBills}" var="b" id="tbl3" >
@@ -187,6 +224,25 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
                         </p:column> 
+
+<!--                        <p:columnGroup type="footer">
+                            <p:row>
+                                <p:column footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.billlistTotal.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+
+                        </p:columnGroup>-->
+
                     </p:dataTable>
 
                 </p:panel>        

@@ -44,6 +44,7 @@
                                 </p:commandButton>
                                 <p:commandButton value="New Bill" ajax="false" action="opd_bill_package_medical" actionListener="#{billPackageMedicalController.prepareNewBill()}" >
                                 </p:commandButton>
+                                <p:defaultCommand target="btnAddIx" />
                             </h:panelGrid>
                         </f:facet>
 
@@ -66,8 +67,8 @@
                                                                 value="#{billPackageMedicalController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatient}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;">
-                                                    <p:ajax event="itemSelect" process="acPt" update="panSearch"/>
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;" required="true" requiredMessage="Please Enter the patient">
+                                                    <f:ajax event="itemSelect" execute="acPt" render="panSearch" />
                                                 </p:autoComplete>   
 
                                                 <h:panelGrid id="panSearch" columns="2" >
