@@ -426,9 +426,13 @@ public class SheduleController implements Serializable {
         Map m = new HashMap();
         sql = " select bs.serviceSession from BillSession bs where "
                 + " bs.retired=false "
-                + " and bs.serviceSession.originatingSession=:ss ";
+                + " and bs.serviceSession.originatingSession=:ss "
+                + " and bs.serviceSession.sessionDate>=:nd";
         m.put("ss", ss);
-        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        m.put("nd", new Date());
+        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         System.out.println("1.sss.size() = " + sss.size());
         return sss.size() > 0;
@@ -440,7 +444,7 @@ public class SheduleController implements Serializable {
         sql = "Select s From ServiceSession s "
                 + " where s.retired=false "
                 + " and type(s)=:class "
-                + " and s.sessionNumberGenerator=:sg"
+                + " and s.sessionNumberGenerator=:sg "
                 + " and s!=:ss "
                 + " and s.originatingSession is null "
                 + " order by s.sessionWeekday,s.startingTime ";

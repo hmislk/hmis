@@ -27,6 +27,9 @@
                                             <p:commandButton value="Print Patient Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
                                             </p:commandButton>   
+                                            <p:commandButton value="Print Patient Copy(VAT Invoice)" ajax="false"  rendered="false" >
+                                                <p:printer target="claimablePatientCopy2" ></p:printer>
+                                            </p:commandButton>   
                                             <p:commandButton value="Print Patient Detailed Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientDetailCopy" ></p:printer>
                                             </p:commandButton>   
@@ -161,8 +164,9 @@
                         <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
                             <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
-
-
+                        <h:panelGroup id="claimablePatientCopy2" styleClass="noBorder" rendered="false" >                  
+                            <bi:finalBill_vat   bill="#{inwardSearch.bill}"   showProfessional="true"/>
+                        </h:panelGroup>
 
                         <h:panelGroup id="letter">
                             <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 

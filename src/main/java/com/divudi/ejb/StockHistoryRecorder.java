@@ -146,21 +146,21 @@ public class StockHistoryRecorder {
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
 
-    @SuppressWarnings("unused")
-    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
-    public void myTimerDailyChannelShedule() {
-        Date startTime = new Date();
-        System.out.println("Start Create Shedule " + startTime);
-
-        for (Staff s : staffs()) {
-            generateSessions(s);
-        }
-
-        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
-
-        //System.out.println("End writing stock history: " + new Date());
-//        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
-    }
+//    @SuppressWarnings("unused")
+//    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
+//    public void myTimerDailyChannelShedule() {
+//        Date startTime = new Date();
+//        System.out.println("Start Create Shedule " + startTime);
+//
+//        for (Staff s : staffs()) {
+//            generateSessions(s);
+//        }
+//
+//        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
+//
+//        //System.out.println("End writing stock history: " + new Date());
+////        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+//    }
 
     public void generateSessions(Staff staff) {
         String sql;
@@ -254,7 +254,7 @@ public class StockHistoryRecorder {
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         System.out.println("ss.getName() = " + ss.getName());
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             System.out.println("newSs 1 = " + newSs);
@@ -315,7 +315,7 @@ public class StockHistoryRecorder {
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         System.out.println("ss.getName() = " + ss.getName());
-                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
+                        if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             System.out.println("newSs 1 = " + newSs);

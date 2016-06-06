@@ -34,7 +34,7 @@
                             </h:outputLabel>
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
-                                            action="#{commonReport.createCashierTableByUser()}" />  
+                                             action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
                             <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
@@ -42,7 +42,7 @@
                             <p:defaultCommand target="btnRefresh"/>
                             <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
-                                            action="#{commonReport.createCashierTableByUser()}" />  
+                                             action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
 
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
@@ -50,8 +50,8 @@
                             </p:commandButton>
                         </f:facet>
                         <f:facet name="footer">
-                        <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
-                    </f:facet>
+                            <h:outputLabel style="float: right" value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                        </f:facet>
 
 
                         <h:panelGrid columns="6" styleClass="noPrintButton" >
@@ -91,20 +91,20 @@
                         <p:spacer height="30"/>
 
                         <ca:phrmacyRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+
+                        <!--                        <p:spacer height="30"/>
                         
-<!--                        <p:spacer height="30"/>
-
-                        <ca:pharmacyWholeBilled data="#{commonReport.userBillsOwnPh}"/>                        
-
-                        <p:spacer height="30"/>
-
-                        <ca:pharmacyWholeCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
-
-                        <p:spacer height="30"/>
-
-                        <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+                                                <ca:pharmacyWholeBilled data="#{commonReport.userBillsOwnPh}"/>                        
                         
-                        <p:spacer height="30"/>-->
+                                                <p:spacer height="30"/>
+                        
+                                                <ca:pharmacyWholeCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
+                        
+                                                <p:spacer height="30"/>
+                        
+                                                <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
+                                                
+                                                <p:spacer height="30"/>-->
 
                         <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
 
@@ -150,8 +150,8 @@
                         <ca:agentCancel  data="#{commonReport.userAgentRecieveBillCancel}" />
 
                         <p:spacer height="30"/>
-                        
-                        
+
+
                         <ca:collecting_centre_bill data="#{commonReport.collectingCentreRecieves}"/>
 
                         <p:spacer height="30"/>
@@ -159,7 +159,7 @@
                         <ca:collecting_centre_cancel data="#{commonReport.collectingCentreCancelBill}" />
 
                         <p:spacer height="30"/>
-                        
+
 
                         <ca:inwrdPaymentBill data="#{commonReport.userInwardPaymentBillsOwn}"/>
 
@@ -169,7 +169,7 @@
 
                         <p:spacer height="30"/>
                         <ca:inwrdRefundBill data="#{commonReport.inwardRefunds}"/>
-                        
+
                         <p:spacer height="30"/>
 
                         <ca:channelBilledBillSummery id="ch_b" agent="false" data="#{commonReport.channelBilled}"/>
@@ -181,7 +181,7 @@
                         <p:spacer height="30"/>
 
                         <ca:channelRefundBill id="ch_r" agent="false" data="#{commonReport.channelRefunds}"/>
-                        
+
                         <p:spacer height="30"/>
 
                         <ca:channelBilledBillSummery id="cha_b" agent="true" data="#{commonReport.channelBilledAgent}"/>
@@ -208,6 +208,37 @@
 
                         <p:spacer height="30"/>
 
+                        <ca:channelBilledIncome id="cha_i" income="true" cancel="false" data="#{commonReport.channelBilledIncome}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_ic" income="true" cancel="true" data="#{commonReport.channelCancellIncome}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_e" income="false" cancel="false" data="#{commonReport.channelBilledExpenses}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_ec" income="false" cancel="true" data="#{commonReport.channelCancellExpenses}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_cn" credit="true" cancel="false" data="#{commonReport.channelBilledCredit}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_cnc" credit="true" cancel="true" data="#{commonReport.channelCancellCredit}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_dn" debit="true" cancel="false" data="#{commonReport.channelBilledDebit}"/>
+
+                        <p:spacer height="30"/>
+
+                        <ca:channelBilledIncome id="cha_dnc" debit="true" cancel="true" data="#{commonReport.channelCancellDebit}"/>
+
+                        <p:spacer height="30"/>
 
                         <p:dataTable id="sum1" value="#{commonReport.creditSlipSum}"  var="i" >
                             <f:facet name="header">
@@ -576,9 +607,9 @@
                                 </h:outputLabel>
                             </p:column>
                         </p:dataTable>
-                        
+
                         <p:spacer height="30"/>
-                        
+
                         <p:dataTable id="sum22" value="#{commonReport.cashChequeCreditSummery}"  var="i" >
                             <f:facet name="header">
                                 <h:outputLabel value="Summary"/>

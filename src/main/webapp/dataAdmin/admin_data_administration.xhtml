@@ -73,6 +73,9 @@
                                 <p:commandLink ajax="false" action="#{dataAdministrationController.updateAllServiseAndInvestigationAsVatable()}" rendered="true"
                                                value="17. Update All Service And Investigation To Vatabel And 15% percentage"  onclick="if (!confirm('Really want to do that?'))
                                                            return false"/>
+                                <p:commandLink ajax="false" action="#{serviceSummery.findFeeTypeLessBillFees}" rendered="true"
+                                               value="18. Check BillFees Without Fee Type"  onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
 
                             </p:panelGrid>
 

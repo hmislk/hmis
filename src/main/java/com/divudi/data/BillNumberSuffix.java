@@ -70,6 +70,10 @@ public enum BillNumberSuffix {
     //Agent
     AGNPAY,//Payment 
     AGNCAN,//Payment Cancel
+    AGNCN,//Credit Note 
+    AGNCNCAN,//Credit Note Cancel
+    AGNDN,//Debit Note 
+    AGNDNCAN,//Debit Note Cancel
     //Collecting Centre
     CCPAY,//Payment 
     CCCAN,//Payment Cancel
@@ -94,7 +98,12 @@ public enum BillNumberSuffix {
     ISSCAN,//Department Issue Cancel
     STTRQ,//transper request
     STTI,//transfer issue
-    STTR,;//transfer Recive
+    STTR,//transfer Recive
+    I,//Channel Income
+    E,//Channel Expenses
+    ICAN,//Channel Income Cancel
+    ECAN,//Channel Expenses Cancel
+    ;
 
     public String getSuffix() {
         if (this == BillNumberSuffix.NONE) {
