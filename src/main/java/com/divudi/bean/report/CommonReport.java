@@ -1215,6 +1215,138 @@ public class CommonReport implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    private List<BillItem> getBillItems(Bill billClass, BillType billType, Department dep) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT bi FROM BillItem bi join bi.expenseBill b WHERE type(b)=:bill "
+                + " and b is not null "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.department=:d "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            m.put("ins", getReferenceInstitution());
+        }
+        if (referenceItem!=null) {
+            sql+= " and bi.item=:i ";
+            m.put("i", referenceItem);
+        }
+
+        sql += " order by b.id  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", billClass.getClass());
+        m.put("btp", billType);
+        m.put("d", dep);
+        
+
+        return getBillItemFac().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double getBillItemsGrnNetTotal(Bill billClass, BillType billType, Department dep) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT sum(b.grnNetTotal) FROM BillItem bi join bi.expenseBill b WHERE type(b)=:bill "
+                + " and b is not null "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.department=:d "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            m.put("ins", getReferenceInstitution());
+        }
+        if (referenceItem!=null) {
+            sql+= " and bi.item=:i ";
+            m.put("i", referenceItem);
+        }
+
+        sql += " order by b.id  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", billClass.getClass());
+        m.put("btp", billType);
+        m.put("d", dep);
+        
+
+        return getBillItemFac().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double getBillItemsNetTotal(Bill billClass, BillType billType, Department dep) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT sum(b.netTotal) FROM BillItem bi join bi.expenseBill b WHERE type(b)=:bill "
+                + " and b is not null "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.department=:d "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            m.put("ins", getReferenceInstitution());
+        }
+        if (referenceItem!=null) {
+            sql+= " and bi.item=:i ";
+            m.put("i", referenceItem);
+        }
+
+        sql += " order by b.id  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", billClass.getClass());
+        m.put("btp", billType);
+        m.put("d", dep);
+        
+
+        return getBillItemFac().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
+    
+    private double getBillItemsExpensesTotal(Bill billClass, BillType billType, Department dep) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "SELECT sum(bi.netValue) FROM BillItem bi join bi.expenseBill b WHERE type(b)=:bill "
+                + " and b is not null "
+                + " and b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.department=:d "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            m.put("ins", getReferenceInstitution());
+        }
+        if (referenceItem!=null) {
+            sql+= " and bi.item=:i ";
+            m.put("i", referenceItem);
+        }
+
+        sql += " order by b.id  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", billClass.getClass());
+        m.put("btp", billType);
+        m.put("d", dep);
+        
+
+        return getBillItemFac().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     private List<Bill> grnBills(Bill billClass, BillType billType, Department dep, Institution ins) {
         String sql;
@@ -3349,6 +3481,49 @@ public class CommonReport implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
     }
+    public void createGrnExpensTableStore() {
+        Date startTime = new Date();
+
+        recreteModal();
+
+        grnBilled = new BillsTotals();
+        grnCancelled = new BillsTotals();
+        grnReturn = new BillsTotals();
+        grnReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        //GRN Billed Bills
+        getGrnBilled().setBillItems(getBillItems(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnBilled().setCash(getBillItemsGrnNetTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnBilled().setExpense(getBillItemsExpensesTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnBilled().setGrnNetTotalWithExpenses(getBillItemsNetTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+
+        //GRN Cancelled Bill
+        getGrnCancelled().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnCancelled().setCash(getBillItemsGrnNetTotal(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnCancelled().setExpense(getBillItemsExpensesTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnCancelled().setGrnNetTotalWithExpenses(getBillItemsNetTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+
+//        //GRN Refunded Bill GRN Total
+//        getGrnReturn().setBillItems(getBillItems(new BilledBill(), BillType.StoreGrnReturn, getDepartment()));
+////        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
+////        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
+//
+////        //GRN Refunded Bill Net Total
+////        getGrnReturn().setBills(getBills(new BilledBill(), BillType.StoreGrnReturn, getDepartment()));
+////        getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
+////        getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
+//        //GRN Refunded Bill Cancel
+//        getGrnReturnCancel().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnReturn, getDepartment()));
+////        getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Cash, getDepartment()));
+////        getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.StoreGrnReturn, PaymentMethod.Credit, getDepartment()));
+        
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/GRN/GRN summery(/faces/store/store_report_grn_detail.xhtml)");
+    }
 
 //    public void createGrnDetailTableStore() {
 //        recreteModal();
@@ -4133,6 +4308,17 @@ public class CommonReport implements Serializable {
 
         return tmp;
     }
+    public double getFinalExpenses(List<BillsTotals> list) {
+
+        double tmp = 0.0;
+        for (BillsTotals bt : list) {
+            if (bt != null) {
+                tmp += bt.getExpense();
+            }
+        }
+
+        return tmp;
+    }
 
     public double getFinalSaleCashTotal(List<BillsTotals> list) {
 
@@ -4614,6 +4800,30 @@ public class CommonReport implements Serializable {
         tmp6.setString("Final Credit & Cash Total");
         tmp6.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
         tmp6.setValue2(getFinalSaleCashTotal(list) + getFinalSaleCreditTotal(list));
+
+        dataTableData.add(tmp1);
+        dataTableData.add(tmp5);
+        dataTableData.add(tmp6);
+
+        return dataTableData;
+    }
+    public List<String1Value1> getGrnTotalExpenses() {
+        List<BillsTotals> list = new ArrayList<>();
+        list.add(getGrnBilled());
+        list.add(getGrnCancelled());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp1 = new String1Value1();
+        tmp1.setString("Total");
+        tmp1.setValue(getFinalCashTotal(list));
+
+        String1Value1 tmp5 = new String1Value1();
+        tmp5.setString("Expenses Total");
+        tmp5.setValue(getFinalExpenses(list));
+
+        String1Value1 tmp6 = new String1Value1();
+        tmp6.setString("Final Total");
+        tmp6.setValue(getFinalCashTotal(list)+getFinalExpenses(list));
 
         dataTableData.add(tmp1);
         dataTableData.add(tmp5);
