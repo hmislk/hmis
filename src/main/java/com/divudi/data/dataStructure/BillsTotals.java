@@ -6,6 +6,7 @@ package com.divudi.data.dataStructure;
 
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import java.util.List;
 
 /**
@@ -15,6 +16,7 @@ import java.util.List;
 public class BillsTotals {
     private String name;
     private List<Bill> bills;
+    private List<BillItem> billItems;
     private double cash;
     private double credit;
     private double card;
@@ -166,10 +168,13 @@ public class BillsTotals {
     public void setSaleCredit(double saleCredit) {
         this.saleCredit = saleCredit;
     }
-    
-    
 
-   
-   
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
+    }
 
 }

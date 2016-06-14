@@ -467,11 +467,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("running the sending sms.");
         if (bill == null) {
         }
-        String url = "http://www.textit.biz/sendmsg/index.php";
-        HttpResponse<String> stringResponse;
-        String messageBody;
-        String id = "94715812399";
-        String pw = "5672";
 
         if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
             return;
@@ -490,41 +485,79 @@ public class PatientInvestigationController implements Serializable {
         sendingNo = sb.toString();
 
         if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            messageBody = "Dear Sir/Madam,\n"
+            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
+            HttpResponse<String> stringResponse;
+            String pw = "&q=14488825498722";
+            String messageBody = "Dear Sir/Madam,\n"
                     + "Thank you for using RHD services. Report number " + bill.getInsId() + " is ready for collection\n"
                     + "\"RHD your trusted diagnostics partner\"";
+            
+            final StringBuilder request = new StringBuilder(url);
+            request.append(sendingNo.substring(1, 10));
+            request.append(pw);
+//            request.append(messageBody);
+//            System.out.println("request.toString().charAt(105) = " + request.toString().charAt(105));
+//            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
+//            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
+            try {
+                System.out.println("pw = " + pw);
+                System.out.println("sendingNo = " + sendingNo);
+                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
+                System.out.println("text = " + messageBody);
+
+                stringResponse = Unirest.post(request.toString()).field("message", messageBody).asString();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return;
+            }
+            sms = new Sms();
+//            sms.setUserId(id);
+            sms.setPassword(pw);
+            sms.setCreatedAt(new Date());
+            sms.setCreater(getSessionController().getLoggedUser());
+            sms.setBill(bill);
+            sms.setSendingUrl(url);
+            sms.setSendingMessage(messageBody);
         } else {
+            String url = "http://www.textit.biz/sendmsg/index.php";
+            HttpResponse<String> stringResponse;
+            String messageBody;
+            String id = "94715812399";
+            String pw = "5672";
+
             messageBody = "Reports ready. ";
             messageBody = messageBody + bill.getInstitution().getName() + ". ";
             messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
             messageBody = messageBody + bill.getInstitution().getWeb();
+
+            try {
+                System.out.println("id = " + id);
+                System.out.println("pw = " + pw);
+                System.out.println("sendingNo = " + sendingNo);
+                System.out.println("text = " + messageBody);
+
+                stringResponse = Unirest.post(url)
+                        .field("id", id)
+                        .field("pw", pw)
+                        .field("to", sendingNo)
+                        .field("text", messageBody)
+                        .asString();
+
+                System.out.println("stringResponse = " + stringResponse);
+
+            } catch (Exception ex) {
+                return;
+            }
+            sms = new Sms();
+            sms.setUserId(id);
+            sms.setPassword(pw);
+            sms.setCreatedAt(new Date());
+            sms.setCreater(getSessionController().getLoggedUser());
+            sms.setBill(bill);
+            sms.setSendingUrl(url);
+            sms.setSendingMessage(messageBody);
         }
-
-        try {
-            System.out.println("id = " + id);
-            System.out.println("pw = " + pw);
-            System.out.println("sendingNo = " + sendingNo);
-            System.out.println("text = " + messageBody);
-
-            stringResponse = Unirest.post(url)
-                    .field("id", id)
-                    .field("pw", pw)
-                    .field("to", sendingNo)
-                    .field("text", messageBody)
-                    .asString();
-
-        } catch (Exception ex) {
-            return;
-        }
-
-        sms = new Sms();
-        sms.setUserId(id);
-        sms.setPassword(pw);
-        sms.setCreatedAt(new Date());
-        sms.setCreater(getSessionController().getLoggedUser());
-        sms.setBill(bill);
-        sms.setSendingUrl(url);
-        sms.setSendingMessage(messageBody);
 
         System.out.println("Updating current PtIx = " + getCurrent());
 
@@ -548,7 +581,7 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-    
+
     public void markAsSampled() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to sample");
@@ -661,7 +694,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void prepareToSample() {
         Date startTime = new Date();
-        
+
         String temSql;
         getCurrent().getSampledAt();
         Map temMap = new HashMap();
@@ -669,7 +702,7 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/sampling(/faces/lab_sample.xhtml)");
     }
 
@@ -681,7 +714,7 @@ public class PatientInvestigationController implements Serializable {
 
     public void toPrintWorksheets() {
         Date startTime = new Date();
-        
+
         String temSql;
         Map temMap = new HashMap();
         temSql = "SELECT i FROM PatientInvestigation i where "
@@ -952,6 +985,5 @@ public class PatientInvestigationController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }
