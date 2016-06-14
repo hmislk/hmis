@@ -1319,6 +1319,7 @@ public class ServiceSummery implements Serializable {
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
             bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
             bi.setVatFee(calFeeVat(i));
+            bi.setStaffFee(calFee(i, FeeType.Staff));
             billItemWithFees.add(bi);
         }
 

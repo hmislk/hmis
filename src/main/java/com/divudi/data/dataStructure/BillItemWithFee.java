@@ -27,7 +27,7 @@ public class BillItemWithFee {
     private double vatFee;
     private double total;
     String staffsNames;
-
+    double staffFee;
  
 
     public double getHospitalFee() {
@@ -148,6 +148,14 @@ public class BillItemWithFee {
 
     public void setVatFee(double vatFee) {
         this.vatFee = vatFee;
+    }
+
+    public double getStaffFee() {
+        return staffFee;
+    }
+
+    public void setStaffFee(double staffFee) {
+        this.staffFee = staffFee;
     }
     
 }

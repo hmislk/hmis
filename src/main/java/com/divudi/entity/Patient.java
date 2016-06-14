@@ -68,6 +68,7 @@ public class Patient implements Serializable {
     String fileName;
     String fileType;
     String code;
+//    int code
     @Lob
     String comments;
     @Transient
