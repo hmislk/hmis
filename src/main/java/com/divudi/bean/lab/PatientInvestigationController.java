@@ -525,7 +525,7 @@ public class PatientInvestigationController implements Serializable {
             sms.setCreater(getSessionController().getLoggedUser());
             sms.setBill(bill);
             sms.setSendingUrl(url);
-            sms.setSendingMessage(messageBody);
+            sms.setSendingMessage(messageBody2);
         } else {
             String url = "http://www.textit.biz/sendmsg/index.php";
             HttpResponse<String> stringResponse;
