@@ -85,11 +85,37 @@
                         <f:facet name="header">
                             <p:outputLabel value="Value" />
                         </f:facet>
+                        <h:outputLabel value="#{b.vat}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{creditSummeryController.totalVat}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Value" />
+                        </f:facet>
                         <h:outputLabel value="#{b.netTotal}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{creditSummeryController.total}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{creditSummeryController.total+creditSummeryController.totalVat}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
@@ -102,8 +128,15 @@
                 <p:commandButton value="Print" ajax="false" action="#">
                     <p:printer target="gpBillPreviewPaysheet" ></p:printer>
                 </p:commandButton>
+                <p:commandButton value="Print(Tax Invoice)" ajax="false" action="#">
+                    <p:printer target="gpBillPreviewPaysheet2" ></p:printer>
+                </p:commandButton>
                 <p:panel   id="gpBillPreviewPaysheet"  styleClass="noBorder summeryBorder">
                     <cre:credit_letter bills="#{creditSummeryController.creditBills}" con="#{creditSummeryController}"/>
+                </p:panel>
+                <p:spacer height="500" />
+                <p:panel   id="gpBillPreviewPaysheet2"  styleClass="noBorder summeryBorder">
+                    <cre:credit_letter_vat_invoice bills="#{creditSummeryController.creditBills}" con="#{creditSummeryController}"/>
                 </p:panel>
             </p:panel>
         </h:form>

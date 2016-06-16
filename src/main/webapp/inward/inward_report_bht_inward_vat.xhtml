@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="BHT VAT Report" styleClass="alignTop" >
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar  id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputText value="Admission Type" ></h:outputText>
+                            <p:selectOneMenu  id="lstSelect"   value="#{bhtSummeryFinalizedController.admissionType}" >
+                                <f:selectItem itemLabel="Select Admission Type"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton value="Search" ajax="false" action="#{bhtSummeryFinalizedController.createBhtInwardVatTable()}" />
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl" fileName="newly_added_report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+                        <p:dataTable value="#{bhtSummeryFinalizedController.bhtWithVats}" var="bwv" id="tbl" rowIndexVar="i">
+                            <f:facet name="header" >
+                                <p:outputLabel value="BHT VAT Report" />
+                                <h:outputLabel value="Admission Type : All Addmissions" rendered="#{bhtSummeryFinalizedController.admissionType eq null}" style=" white-space:pre-line;"/>
+                                <h:outputLabel value="Admission Type : #{bhtSummeryFinalizedController.admissionType}" rendered="#{bhtSummeryFinalizedController.admissionType ne null}" style=" white-space:pre-line;"/>
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{bhtSummeryFinalizedController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{bhtSummeryFinalizedController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{i+1}"/>
+                            </p:column>
+                            <p:column style="width: 50%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Date"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bwv.pe.dateOfDischarge}">
+                                    <f:convertDateTime pattern="yy MM dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bwv.pe.bhtNo}"/>
+                            </p:column>
+                            <p:column style="width: 80%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Patient Name"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bwv.pe.patient.person.name}"/>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Professional"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.doc}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalDoc}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Drugs"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.medicine}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalMed}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 1%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Hospital"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.hos}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalHos}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="VAT"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.vat}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalVat}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discount"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.pe.finalBill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalDiscount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Final Total"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.pe.finalBill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalNet}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

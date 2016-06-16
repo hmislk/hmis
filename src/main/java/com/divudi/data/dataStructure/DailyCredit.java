@@ -19,6 +19,7 @@ public class DailyCredit {
     private List<Bill> bills;
     private double discountTotal;
     private double netTotal;
+    private double vatTotal;
 
     public Department getDepartment() {
         return department;
@@ -51,6 +52,13 @@ public class DailyCredit {
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
-    
+
+    public double getVatTotal() {
+        return vatTotal;
+    }
+
+    public void setVatTotal(double vatTotal) {
+        this.vatTotal = vatTotal;
+    }
     
 }

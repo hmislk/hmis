@@ -1,0 +1,426 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel header="GRN Expenses Report">
+
+
+                    <h:panelGrid columns="2" style="noPrintButton">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel  value="Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{commonReport.department}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true"
+                                         requiredMessage="You must select a department" >
+                        </p:autoComplete>
+                        <h:outputLabel  value="Expenses Type"  ></h:outputLabel>
+                        <p:autoComplete id="acExpense"   value="#{commonReport.referenceItem}" 
+                                        forceSelection="true"
+                                        completeMethod="#{itemController.completeExpenseItem}" 
+                                        var="ex" itemLabel="#{ex.name}" itemValue="#{ex}" >
+                        </p:autoComplete>
+
+                        <p:defaultCommand target="btnRefresh"/>
+
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <h:panelGrid columns="4">
+                        <p:spacer width="80" height="1"/>
+                        <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
+                                         styleClass="noPrintButton" 
+                                         actionListener="#{commonReport.createGrnExpensTableStore()}"
+                                         style="float: right;" />  
+
+                        <p:commandButton actionListener="#{commonReport.createGrnExpensTableStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="billed,cancelled,sum" fileName="report_grn_detail_expenses"  />
+                        </p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
+                                         style="float: right;" >
+                            <p:printer target="reportPrint"/>
+                        </p:commandButton>  
+                    </h:panelGrid>
+                    <p:dataTable id="billed"  value="#{commonReport.grnBilled.billItems}" var="bi" 
+                                 rendered="#{commonReport.grnBilled.billItems.size()!=0}" >
+
+                        <f:facet name="header">  
+
+                            <h:outputLabel value="GRN Detailed Report "/>
+                            <h:outputLabel/><br></br>
+                            <h:outputLabel value="Institution - "/>
+                            <h:outputLabel value="#{commonReport.department.institution.name}"/><br></br>
+                            <h:outputLabel value="Department "/>
+                            <h:outputLabel value="#{commonReport.department.name}"/><br></br>
+                            <h:outputLabel value="#{commonReport.referenceItem.name}"/><br></br>
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                            </h:outputLabel>
+                        </f:facet>
+
+                        <p:column headerText="GRN No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="Invoice No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Invoice No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.invoiceNumber}"/>
+                        </p:column>
+
+                        <p:column headerText="Created At"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Created At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Suplier Name"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Suplier Name"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.fromInstitution.name}"/>
+
+                        </p:column>
+
+                        <p:column headerText="Po No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Po No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.referenceBill.deptId}"/>
+                        </p:column>
+
+
+
+                        <p:column headerText="Total" style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cash"/>
+                            </f:facet> 
+                            <h:outputLabel  value="#{bi.expenseBill.grnNetTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnBilled.cash}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.netValue}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnBilled.expense}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        
+                        <p:column headerText="Discription" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Discription"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.descreption}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
+                        </p:column>
+
+                        <p:column headerText="With Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>   
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnBilled.grnNetTotalWithExpenses}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <p:dataTable id="cancelled"  value="#{commonReport.grnCancelled.billItems}" var="bi"  
+                                 rendered="#{commonReport.grnCancelled.billItems.size()!=0}" >
+                        <f:facet name="header">  
+                            <h:outputLabel value="Cancelled GRN "/>
+                        </f:facet> 
+
+                        <p:column headerText="Cancelled NO" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled NO"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="GRN No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.billedBill.deptId}" >
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Cancelled At"   >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Total" style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cash"/>
+                            </f:facet> 
+                            <h:outputLabel  value="#{bi.expenseBill.grnNetTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnCancelled.cash}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.netValue}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnCancelled.expense}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        
+                        <p:column headerText="Discription" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Discription"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.descreption}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
+                        </p:column>
+
+                        <p:column headerText="With Expenses" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="With Expenses"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.netTotal}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>   
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{commonReport.grnCancelled.grnNetTotalWithExpenses}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+
+<!--                    <p:dataTable id="refunded"  value="#{commonReport.grnReturn.billItems}" var="bi" 
+                                 rendered="#{commonReport.grnReturn.billItems.size()!=0}" 
+                                 sortBy="#{b.billType}"  >
+
+                        <f:facet name="header">  
+                            <h:outputLabel value="GRN Return"/>
+                        </f:facet>
+
+                        <p:column headerText="GRN Return No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="GRN No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.referenceBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="GRN Invoice No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN Invoice No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.referenceBill.invoiceNumber}"/>
+                        </p:column>
+
+                        <p:column headerText="GRN Date" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN Date"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.referenceBill.createdAt}"/>
+                        </p:column>
+
+
+                        <p:column headerText="Return At"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Created At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Suplier Name"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Suplier Name"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.fromInstitution.name}"/>
+
+                        </p:column>
+                        <p:column headerText="Cash" style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cash"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>
+
+                    <p:dataTable id="returnCancelled"  value="#{commonReport.grnReturnCancel.billItems}" var="bi"  
+                                 rendered="#{commonReport.grnReturnCancel.billItems.size()!=0}" >
+                        <f:facet name="header">  
+                            <h:outputLabel value="Cancelled GRN Return "/>
+                        </f:facet> 
+
+                        <p:column headerText="Cancelled NO" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled NO"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.deptId}"/>
+                        </p:column>
+
+                        <p:column headerText="GRN Return No" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="GRN Return No"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.billedBill.deptId}" >
+                            </h:outputLabel>
+                        </p:column>
+
+
+                        <p:column headerText="Cancelled At"   >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cancelled At"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Comment" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Comment"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.comments}"/>
+
+                        </p:column>
+
+                                                <p:column headerText="Expenses" >
+                                                    <f:facet name="header">  
+                                                        <h:outputLabel value="Expenses"/>
+                                                    </f:facet> 
+                                                    <h:outputLabel value="#{b.referenceBill.expenseTotal}"/>
+                                                </p:column>
+
+                        <p:column headerText="Cash"  style=" text-align: right"  >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Cash"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.grnNetTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Credit"  style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Credit"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.grnNetTotal}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <p:spacer height="30"/>-->
+
+                    <p:dataTable id="sum" value="#{commonReport.grnTotalExpenses}"  var="i" >
+                        <f:facet name="header">
+                            Summary
+                        </f:facet>
+                        <p:column>
+                            <h:outputLabel value="#{i.string}"/>
+                        </p:column>
+                        <p:column style="font-weight: bold;text-align:right;" >
+                            <h:outputLabel value="#{i.value}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </p:column>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
+                    </p:dataTable>
+
+
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

@@ -108,7 +108,7 @@
                     <tr>
                         <td colspan="3">
                             <center>
-                                <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+                                <h:outputLabel value="TAX INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
                             </center>
                         </td>
                     </tr>
@@ -165,7 +165,23 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Value" />
                                         </f:facet>
-                                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                                        <h:outputLabel value="#{b.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Vat " />
+                                        </f:facet>
+                                        <h:outputLabel value="#{b.vat}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Net Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{b.vat+b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -196,8 +212,43 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    " style="font-weight: bold;"/>
-                                    <h:outputLabel value="#{cc.attrs.con.total+cc.attrs.con.totalVat}" style="font-weight: bold;">
+                                    <h:outputLabel value="#{cc.attrs.con.total}" style="font-weight: bold;float: right;" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Vat Total : 
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVat}" style="font-weight: bold; float: right;" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Net Total : 
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVat+cc.attrs.con.total}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>

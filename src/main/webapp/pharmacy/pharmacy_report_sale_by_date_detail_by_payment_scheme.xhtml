@@ -9,7 +9,7 @@
 
     <ui:define name="content">
         <h:form>
-            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail by Discount Scheme">
+            <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail by Discount Scheme - #{pharmacySaleReport.paymentScheme.name}">
                 <h:panelGrid columns="8" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  >
@@ -20,7 +20,8 @@
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
-                    <p:selectOneMenu   id="pay" value="#{pharmacySaleController.paymentMethod}">    
+                    <p:selectOneMenu   id="pay" value="#{pharmacySaleReport.paymentMethod}"> 
+                        <f:selectItem itemLabel="Payment Method"/>
                         <f:selectItems value="#{enumController.paymentMethods}"/>
                         <!--                        <p:ajax process="@this cmbPs " 
                                                         update="pBillDetails creditCard cheque slip tvPt" 
@@ -39,7 +40,7 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDateDetailPaymentScheme()}"/>
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDateDetailPaymentScheme()}" styleClass="noPrintButton"/>
                     <p:commandButton actionListener="#{pharmacySaleReport.createSaleReportByDateDetailPaymentScheme()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3" fileName="sale_report_by_date_detail_payment_scheme"  />
                     </p:commandButton>
@@ -53,16 +54,16 @@
 
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedDetail.datedBills}" var="i">
                     <f:facet name="header">                        
-                        <h:outputLabel value="BILLED"/>&#13;&nbsp;
-                        <h:outputLabel value=" From "/>
+                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                        <h:outputLabel value=" From - " style=" white-space:pre-line;"/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
                         </h:outputLabel>
-                        <h:outputLabel value=" To "/>
+                        <h:outputLabel value=" - To - " />
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy hh mm ss a" />
-                        </h:outputLabel>&#13;&nbsp;
-                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="BILLED" style=" white-space:pre-line;"/>
                     </f:facet>
 
                     <p:columnGroup type="header">
@@ -75,6 +76,11 @@
                             <p:column headerText="Billed Time">
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Time"/>
+                                </f:facet>
+                            </p:column>                           
+                            <p:column headerText="Payment Method">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Method"/>
                                 </f:facet>
                             </p:column>                           
                             <p:column headerText="Billed Person">
@@ -116,10 +122,15 @@
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
                         </p:column>
+                        
+                        <p:column>
+                            <h:outputLabel value="#{b.paymentMethod}"/>
+                        </p:column>
 
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                         </p:column>
+                        
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.total}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -137,7 +148,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="4" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -166,7 +177,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="4"/>
                             <p:column footerText="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}">
@@ -208,7 +219,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Time"/>
                                 </f:facet>
-                            </p:column>                            
+                            </p:column>  
+                            <p:column headerText="Payment Method">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Method"/>
+                                </f:facet>
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
@@ -247,7 +263,10 @@
                             <h:outputLabel value="#{b.createdAt}">
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
-                        </p:column>                        
+                        </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{b.paymentMethod}"/>
+                        </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                         </p:column>                       
@@ -268,7 +287,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="4" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -297,7 +316,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="4"/>
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
@@ -339,7 +358,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Time"/>
                                 </f:facet>
-                            </p:column>                            
+                            </p:column>  
+                            <p:column headerText="Payment Method">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Method"/>
+                                </f:facet>
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
@@ -378,7 +402,10 @@
                             <h:outputLabel value="#{b.createdAt}">
                                 <f:convertDateTime pattern="hh mm ss a" />
                             </h:outputLabel>
-                        </p:column>                        
+                        </p:column>         
+                        <p:column>
+                            <h:outputLabel value="#{b.paymentMethod}"/>
+                        </p:column>
                         <p:column>
                             <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                         </p:column>                       
@@ -399,7 +426,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="4" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -428,7 +455,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="4"/>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">

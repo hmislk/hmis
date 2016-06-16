@@ -54,7 +54,8 @@
                     </h:panelGrid>
                     <h:panelGrid columns="3" >
                         <p:spacer width="90" height="1"/>
-                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"  action="#{creditSummeryController.createDailyCashTable}"/>
+                        <p:commandButton id="btnRefresh" value="Refresh" ajax="false"  
+                                         styleClass="noPrintButton" style="float: right;"  action="#{creditSummeryController.createDailyCashTable}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>

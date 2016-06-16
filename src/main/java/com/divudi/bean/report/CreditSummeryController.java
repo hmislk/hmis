@@ -55,6 +55,7 @@ public class CreditSummeryController implements Serializable {
     Item item;
     boolean withFooter;
     double total;
+    private double totalVat;
     ///////////////
     private List<DailyCash> dailyCash;
     List<DailyCredit> dailyCredit;
@@ -296,6 +297,15 @@ public class CreditSummeryController implements Serializable {
 
         return tmp;
     }
+    
+    public double getDepartmentTotalByBillWithVat() {
+        double tmp = 0.0;
+        for (DailyCredit d : getDailyCreditByBill()) {
+            tmp += d.getVatTotal() + d.getNetTotal();
+        }
+
+        return tmp;
+    }
 
     public List<DailyCash> getDailyCashSummery() {
         return dailyCashSummery;
@@ -437,6 +447,29 @@ public class CreditSummeryController implements Serializable {
 
         //     return tmp;
     }
+    
+    private double getVatTotal(Department dep) {
+        String sql;
+        Map temMap = new HashMap();
+        if (dep == null) {
+            return 0;
+        }
+        sql = "select sum(bi.vat) FROM Bill bi where bi.toDepartment=:dep "
+                + " and  bi.billType= :bTp  "
+                + " and  bi.createdAt between :fromDate and :toDate "
+                + "and  bi.paymentMethod = :pm and bi.creditCompany=:credit ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        //     temMap.put("ins", getSessionController().getInstitution());
+        temMap.put("dep", dep);
+        // temMap.put("cat", d);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("pm", PaymentMethod.Credit);
+        temMap.put("credit", getInstitution());
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+        //     return tmp;
+    }
 
     public List<DailyCredit> getDailyCreditByBill() {
         // ////System.out.println("Starting : ");
@@ -453,6 +486,7 @@ public class CreditSummeryController implements Serializable {
                 d.setBills(findBills(d.getDepartment()));
                 d.setDiscountTotal(getDiscount(d.getDepartment()));
                 d.setNetTotal(getNetTotal((d.getDepartment())));
+                d.setVatTotal(getVatTotal((d.getDepartment())));
             }
 
         }
@@ -468,6 +502,7 @@ public class CreditSummeryController implements Serializable {
         total = 0.0;
         for (Bill b : creditBills) {
             total += b.getNetTotal();
+            totalVat += b.getVat();
         }
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(with letter)(/faces/reportInstitution/report_opd_credit_bill_by_credit_company_with_letter.xhtml)");
@@ -602,6 +637,14 @@ public class CreditSummeryController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public double getTotalVat() {
+        return totalVat;
+    }
+
+    public void setTotalVat(double totalVat) {
+        this.totalVat = totalVat;
     }
 
 }

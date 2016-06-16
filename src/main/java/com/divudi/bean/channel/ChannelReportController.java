@@ -2946,6 +2946,7 @@ public class ChannelReportController implements Serializable {
     public void createAllChannelBillReportForVat() {
         Date startTime = new Date();
         channelBills = new ArrayList<>();
+        institution=null;
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -3104,6 +3105,11 @@ public class ChannelReportController implements Serializable {
             sql += " and type(b)=:class";
             hm.put("class", bill.getClass());
         }
+        
+        if (institution!=null) {
+            sql+=" and  b.institution=:ins ";
+            hm.put("ins", institution);
+        }
 
         sql += " order by b.toDepartment.name ,b.createdAt ";
 
@@ -3158,6 +3164,11 @@ public class ChannelReportController implements Serializable {
         if (bill != null) {
             sql += " and type(b)=:class";
             hm.put("class", bill.getClass());
+        }
+        
+        if (institution!=null) {
+            sql+=" and b.institution=:ins ";
+            hm.put("ins", institution);
         }
 
         hm.put("fDate", fd);
