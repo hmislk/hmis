@@ -85,11 +85,37 @@
                         <f:facet name="header">
                             <p:outputLabel value="Value" />
                         </f:facet>
+                        <h:outputLabel value="#{b.vat}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{creditSummeryController.totalVat}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Value" />
+                        </f:facet>
                         <h:outputLabel value="#{b.netTotal}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel value="#{creditSummeryController.total}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="header">
+                            <p:outputLabel value="Value" />
+                        </f:facet>
+                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{creditSummeryController.total+creditSummeryController.totalVat}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

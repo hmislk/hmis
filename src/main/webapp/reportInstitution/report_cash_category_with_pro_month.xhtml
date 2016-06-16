@@ -48,7 +48,9 @@
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="opd_new:opd_new,
+                                         colCash,
                                          opd_new_credit:opd_new_credit,
+                                         colCredit,
                                          outside:outside,
                                          pharmacy:pharmacy,
                                          inward:inward,                                     
@@ -71,9 +73,43 @@
             <in:opd_new_with id="opd_new" />
 
             <p:spacer height="30"/>
+            
+            <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{sm.value1}" > 
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+            
+            <p:spacer height="30"/>
 
             <in:opd_new_with_1 id="opd_new_credit" />
 
+            <p:spacer height="30"/>
+            
+            <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{sm.value1}" > 
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
+            
             <p:spacer height="30"/>
 
             <in:outside_with id="outside" />

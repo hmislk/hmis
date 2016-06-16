@@ -61,6 +61,31 @@
                             <p:outputLabel value="#{b.insId}" />                                    
                             <p:outputLabel value="(#{b.billedBill.insId})" rendered="#{b.billedBill ne null}" />                                    
                         </p:column>
+                        
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.patient.person.name}" />                                    
+                        </p:column>
+                        
+                        <p:column style="text-align: left;" rendered="#{!channelReportController.sessoinDate}">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh:ss:mm a" />
+                            </p:outputLabel>                                    
+                        </p:column>
+                        
+                        <p:column style="text-align: left;" rendered="#{channelReportController.sessoinDate}" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Session Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh:ss:mm a" />
+                            </p:outputLabel>                                    
+                        </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
@@ -109,7 +134,7 @@
                         <p:columnGroup type="footer">
 
                             <p:row>
-                                <p:column footerText="Total" style=" text-align: left;">
+                                <p:column colspan="3" footerText="Total" style=" text-align: left;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="Total"/>
                                     </f:facet>
