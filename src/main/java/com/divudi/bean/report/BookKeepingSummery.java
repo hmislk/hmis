@@ -3643,7 +3643,8 @@ public class BookKeepingSummery implements Serializable {
                 + collectingCentrePaymentTotal
                 + creditCompanyTotal
                 + creditCompanyTotalInward
-                + pettyCashTotal;
+                + pettyCashTotal
+                + opdCashVatTotal;
 
     }
 
@@ -4282,6 +4283,9 @@ public class BookKeepingSummery implements Serializable {
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
         createOutSideFee();
         createPharmacySale();
         createPharmacyWholeSale();

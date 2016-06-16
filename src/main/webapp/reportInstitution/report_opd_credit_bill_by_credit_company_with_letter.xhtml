@@ -128,8 +128,15 @@
                 <p:commandButton value="Print" ajax="false" action="#">
                     <p:printer target="gpBillPreviewPaysheet" ></p:printer>
                 </p:commandButton>
+                <p:commandButton value="Print(Tax Invoice)" ajax="false" action="#">
+                    <p:printer target="gpBillPreviewPaysheet2" ></p:printer>
+                </p:commandButton>
                 <p:panel   id="gpBillPreviewPaysheet"  styleClass="noBorder summeryBorder">
                     <cre:credit_letter bills="#{creditSummeryController.creditBills}" con="#{creditSummeryController}"/>
+                </p:panel>
+                <p:spacer height="500" />
+                <p:panel   id="gpBillPreviewPaysheet2"  styleClass="noBorder summeryBorder">
+                    <cre:credit_letter_vat_invoice bills="#{creditSummeryController.creditBills}" con="#{creditSummeryController}"/>
                 </p:panel>
             </p:panel>
         </h:form>
