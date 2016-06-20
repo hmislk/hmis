@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.hr.StaffController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -118,6 +119,7 @@ public class ChannelReportController implements Serializable {
     boolean sessoinDate = false;
     boolean withDates = false;
     boolean agncyOnCall = false;
+    boolean agncy = false;
     boolean showPatient = false;
     PaymentMethod paymentMethod;
     ChannelTotal channelTotal;
@@ -2947,7 +2949,7 @@ public class ChannelReportController implements Serializable {
     public void createAllChannelBillReportForVat() {
         Date startTime = new Date();
         channelBills = new ArrayList<>();
-        institution=null;
+        institution = null;
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -3106,9 +3108,9 @@ public class ChannelReportController implements Serializable {
             sql += " and type(b)=:class";
             hm.put("class", bill.getClass());
         }
-        
-        if (institution!=null) {
-            sql+=" and  b.institution=:ins ";
+
+        if (institution != null) {
+            sql += " and  b.institution=:ins ";
             hm.put("ins", institution);
         }
 
@@ -3166,9 +3168,9 @@ public class ChannelReportController implements Serializable {
             sql += " and type(b)=:class";
             hm.put("class", bill.getClass());
         }
-        
-        if (institution!=null) {
-            sql+=" and b.institution=:ins ";
+
+        if (institution != null) {
+            sql += " and b.institution=:ins ";
             hm.put("ins", institution);
         }
 
@@ -4201,7 +4203,12 @@ public class ChannelReportController implements Serializable {
                 System.out.println("b = " + b.getStaff().getPerson().getName());
                 System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
-                    if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid) {
+                    if (b.getBillType() == BillType.ChannelCash
+                            || b.getBillType() == BillType.ChannelPaid
+                            || (b.getBillType() == BillType.ChannelAgent 
+                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            || (b.getBillType() == BillType.ChannelAgent 
+                            && agncy)) {
                         if (b instanceof BilledBill) {
                             cd.setBillCount(cd.getBillCount() + 1);
                             cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
@@ -5984,6 +5991,14 @@ public class ChannelReportController implements Serializable {
 
     public void setShowPatient(boolean showPatient) {
         this.showPatient = showPatient;
+    }
+
+    public boolean isAgncy() {
+        return agncy;
+    }
+
+    public void setAgncy(boolean agncy) {
+        this.agncy = agncy;
     }
 
 }
