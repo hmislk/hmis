@@ -802,7 +802,7 @@ public class BookingController implements Serializable {
     }
 
     public void calculateFeeBookingNew(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
-        int rowIndex=0;
+        int rowIndex = 0;
         for (ServiceSession ss : lstSs) {
             ss.setDisplayCount(channelBean.getBillSessionsCount(ss, ss.getSessionDate()));
             ss.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, ss.getSessionDate()));
@@ -811,7 +811,7 @@ public class BookingController implements Serializable {
 //            System.err.println("Time D.A. in = " + new Date());
 //            checkDoctorArival(ss);
 //            System.err.println("Time D.A. Out = " + new Date());
-            
+
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
             ss.setHospitalFfee(dbl[1]);
@@ -833,12 +833,12 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
-            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod)*finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
         }
@@ -923,6 +923,7 @@ public class BookingController implements Serializable {
             System.err.println("Time stage 6 = " + new Date());
         }
     }
+
     public void generateSessionsOnlyIdNew() {
         System.err.println("Time in = " + new Date());
         serviceSessions = new ArrayList<>();
@@ -1213,7 +1214,7 @@ public class BookingController implements Serializable {
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
         ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo() != tmp.getMaxNo()) {
+        if (ss.getMaxNo() != tmp.getMaxNo() || ss.getStartingNo() != tmp.getStartingNo()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
         }
