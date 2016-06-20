@@ -4260,7 +4260,12 @@ public class ChannelReportController implements Serializable {
                 System.out.println("b = " + b.getStaff().getPerson().getName());
                 System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
-                    if (b.getBillType() == BillType.ChannelCash || b.getBillType() == BillType.ChannelPaid) {
+                    if (b.getBillType() == BillType.ChannelCash 
+                            || b.getBillType() == BillType.ChannelPaid
+                            || (b.getBillType() == BillType.ChannelAgent 
+                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            || (b.getBillType() == BillType.ChannelAgent 
+                            && agncy)) {
                         if (b instanceof BilledBill) {
                             cd.setBillCount(cd.getBillCount() + 1);
                             cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
