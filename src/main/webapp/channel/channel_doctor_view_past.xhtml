@@ -13,10 +13,19 @@
         <h:form id="form">
             <p:panel id="pan1" styleClass="noBorder summeryBorder">
                 <f:facet name="header" >
-                    <p:commandButton value="Print" action="#" styleClass="noPrintButton">
-                        <p:printer target="pan1" />
-                    </p:commandButton>
+                    <p:outputLabel value="All Doctor View" />
                 </f:facet>
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <p:outputLabel value="With Agency" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
+                        <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}">
+                        </p:commandButton>
+                        <p:commandButton value="Print" action="#" styleClass="noPrintButton">
+                            <p:printer target="pan1" />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </p:panel>
                 <p:dataTable value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
                     <f:facet name="header">
                         <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
