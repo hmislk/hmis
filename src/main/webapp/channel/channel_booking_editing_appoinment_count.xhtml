@@ -58,7 +58,7 @@
                                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                                             <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
-                                                     listener="#{bookingController.generateSessionsOnlyId()}"/>
+                                                     listener="#{bookingController.generateSessionsOnlyIdNew}"/>
                                         </p:selectOneListbox>
                                     </h:panelGrid>
                                 </td>
@@ -81,7 +81,7 @@
                                         <p:ajax event="dateSelect" 
                                                 process="@this date" 
                                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} a"  
-                                                listener="#{bookingController.generateSessions}"
+                                                listener="#{bookingController.generateSessionsOnlyIdNew}"
                                                 />
                                     </p:calendar>
                                     <p:watermark for="date" value="Date" />
@@ -155,6 +155,10 @@
                                                 <f:convertDateTime pattern="MMM/dd/yyyy"/>
                                             </h:outputText>
                                             <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
+                                        </p:column>
+                                        <p:column headerText="Last Editor" style="width: 40px!important; text-align: center;" >
+                                            <h:outputText value="#{ses.editer.webUserPerson.name}">
+                                            </h:outputText>                                                            
                                         </p:column>
                                         <p:column headerText="Remove" rendered="#{webUserController.hasPrivilege('Developers')}" style="width: 40px!important; text-align: center;" >
                                             <p:cellEditor>

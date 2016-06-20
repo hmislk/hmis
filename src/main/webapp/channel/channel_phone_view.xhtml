@@ -24,7 +24,7 @@
                         <p:outputLabel value="Consultant : "/>
                         <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/><br></br>
                         <p:outputLabel value="Date : "/>
-                        <h:outputLabel value="#{channelReportController.serviceSession.sessionAt}" >
+                        <h:outputLabel value="#{channelReportController.serviceSession.sessionDate}" >
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel><br></br>
                         <p:outputLabel value="Session Name : "/>
@@ -32,8 +32,10 @@
                     </f:facet>
                     <p:column headerText="No">#{bs.serialNo}</p:column>
                     <p:column headerText="Booking Id">
-                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}"/>
-                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}"/>
+                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null and sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null and sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.insId}" rendered="#{bs.bill.paidBill eq null and sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.paidBill.insId}" rendered="#{bs.bill.paidBill ne null and sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                     </p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Phone No">#{bs.bill.patient.person.phone}</p:column>
