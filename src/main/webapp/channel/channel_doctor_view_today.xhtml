@@ -19,7 +19,7 @@
                     <h:panelGrid columns="2" >
                         <p:outputLabel value="With Agency" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
-                        <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}">
+                        <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
                         </p:commandButton>
                         <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />
