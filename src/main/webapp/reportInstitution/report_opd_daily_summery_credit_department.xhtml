@@ -70,7 +70,8 @@
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="5,10,15,20">  
                     <f:facet name="header">
-                        <h:outputLabel value="REPORT BY ITEM"/>
+                        <h:outputLabel value="REPORT BY ITEM - "/>
+                        <h:outputLabel value="#{d.department.name}"/>
                     </f:facet>
                     <p:columnGroup type="header">
                         <p:row>
@@ -161,7 +162,20 @@
                 
 
             </p:dataGrid>
-
+            <p:dataTable id="colCredit"  value="#{creditSummeryController.vatTableOpdCredit}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{sm.value1}" > 
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
 
         </h:form>
     </ui:define>

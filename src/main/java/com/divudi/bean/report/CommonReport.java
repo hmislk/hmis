@@ -1057,6 +1057,7 @@ public class CommonReport implements Serializable {
     private double total;
     private double totalHos;
     private double totalCC;
+    private double totalVat;
 
     public BillsTotals getUserRefundedBillsOwn() {
 
@@ -5043,6 +5044,7 @@ public class CommonReport implements Serializable {
             totalHos += b.getTransTotalWithOutCCFee();
             totalCC += b.getTransTotalCCFee();
             total += b.getNetTotal();
+            totalVat += b.getVat();
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc detail(/faces/reportLab/report_lab_collection_centre.xhtml)");
@@ -5063,6 +5065,7 @@ public class CommonReport implements Serializable {
             List<Bill> bs = new ArrayList<>();
             bs = getBillList(billTypes, i);
             double tot = 0.0;
+            double totVat = 0.0;
             double tothos = 0.0;
             double totcc = 0.0;
             for (Bill b : bs) {
@@ -5070,14 +5073,17 @@ public class CommonReport implements Serializable {
                 tothos += b.getTransTotalWithOutCCFee();
                 totcc += b.getTransTotalCCFee();
                 tot += b.getNetTotal();
+                totVat += b.getVat();
             }
             row.setTotalCC(totcc);
             row.setTotalHos(tothos);
             row.setTotal(tot);
+            row.setTotalVat(totVat);
             collectingCenteRows.add(row);
             totalHos += tothos;
             totalCC += totcc;
             total += tot;
+            totalVat += totVat;
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report by cc summeries(/faces/reportLab/report_lab_collection_centre_summery.xhtml)");
@@ -5158,6 +5164,7 @@ public class CommonReport implements Serializable {
         double total;
         double totalHos;
         double totalCC;
+        double totalVat;
 
         public Institution getI() {
             return i;
@@ -5189,6 +5196,14 @@ public class CommonReport implements Serializable {
 
         public void setTotalCC(double totalCC) {
             this.totalCC = totalCC;
+        }
+
+        public double getTotalVat() {
+            return totalVat;
+        }
+
+        public void setTotalVat(double totalVat) {
+            this.totalVat = totalVat;
         }
     }
 
@@ -5860,6 +5875,14 @@ public class CommonReport implements Serializable {
 
     public void setChannelCancellCredit(BillsTotals channelCancellCredit) {
         this.channelCancellCredit = channelCancellCredit;
+    }
+
+    public double getTotalVat() {
+        return totalVat;
+    }
+
+    public void setTotalVat(double totalVat) {
+        this.totalVat = totalVat;
     }
 
 }

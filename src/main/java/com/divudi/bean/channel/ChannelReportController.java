@@ -118,6 +118,7 @@ public class ChannelReportController implements Serializable {
     boolean sessoinDate = false;
     boolean withDates = false;
     boolean agncyOnCall = false;
+    boolean showPatient = false;
     PaymentMethod paymentMethod;
     ChannelTotal channelTotal;
     /////
@@ -5975,6 +5976,14 @@ public class ChannelReportController implements Serializable {
 
     public void setSummery(boolean summery) {
         this.summery = summery;
+    }
+
+    public boolean isShowPatient() {
+        return showPatient;
+    }
+
+    public void setShowPatient(boolean showPatient) {
+        this.showPatient = showPatient;
     }
 
 }
