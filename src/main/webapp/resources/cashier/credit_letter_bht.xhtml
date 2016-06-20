@@ -41,6 +41,20 @@
                 <table >
                     <tr>
                         <td>
+                            <h:outputLabel value="Invoice No - #{cc.attrs.con.invoceNo}" />
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>
                             <!--<h:outputLabel value="Date : " />-->
                             <h:outputLabel value="#{commonController.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />

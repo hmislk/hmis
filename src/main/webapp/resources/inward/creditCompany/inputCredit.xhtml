@@ -24,6 +24,8 @@
             </p:autoComplete>
             <h:outputLabel value="Credit Limit : " style="min-width: 100px;" />
             <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.creditLimit}" />
+            <h:outputLabel value="Credit Used : " style="min-width: 100px;" />
+            <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.creditUsedAmount}" />
             <h:outputLabel value="Description "  rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" />                            
             <h:outputText id="panelCompanyDesc"  
                           rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" 

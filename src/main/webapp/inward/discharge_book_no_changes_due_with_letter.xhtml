@@ -46,6 +46,10 @@
                                             itemValue="#{ix}" size="30" >  
                                 <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
                             </p:autoComplete>
+                            <h:outputLabel value="Vat Reg. No"/>
+                            <p:inputText value="#{inwardReportController.vatRegNo}" autocomplete="off" />
+                            <h:outputLabel value="Invoice No"/>
+                            <p:inputText value="#{inwardReportController.invoceNo}" autocomplete="off" />
                             <h:outputLabel value="With Footer"/>
                             <p:selectBooleanCheckbox value="#{inwardReportController.withFooter}" />
 
@@ -149,6 +153,33 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill Total"/>
                                     </f:facet>                                    
+                                    <h:outputLabel value="#{i.finalBill.vat}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.totalVat}"  >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Final Bill Total" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Final Bill Total"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.finalBill.vatCalulatedAmount}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportController.totalVatCalculatedValue}"  >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Final Bill Total" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Final Bill Total"/>
+                                    </f:facet>                                    
                                     <h:outputLabel value="#{i.finalBill.netTotal}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -207,8 +238,15 @@
                         <p:commandButton value="Print" ajax="false" action="#">
                             <p:printer target="gpBillPreviewPaysheet" ></p:printer>
                         </p:commandButton>
+                        <p:commandButton value="Print(Tax Invoice)" ajax="false" action="#">
+                            <p:printer target="gpBillPreviewPaysheet2" ></p:printer>
+                        </p:commandButton>
                         <p:panel   id="gpBillPreviewPaysheet"  styleClass="noBorder summeryBorder">
                             <cre:credit_letter_bht patientEncounters="#{inwardReportController.patientEncounters}" con="#{inwardReportController}"/>
+                        </p:panel>
+                        <p:spacer height="550" />
+                        <p:panel   id="gpBillPreviewPaysheet2"  styleClass="noBorder summeryBorder">
+                            <cre:credit_letter_bht_vat_invoice patientEncounters="#{inwardReportController.patientEncounters}" con="#{inwardReportController}"/>
                         </p:panel>
                     </p:panel>
                 </h:form>

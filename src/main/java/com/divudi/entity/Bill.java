@@ -309,6 +309,9 @@ public class Bill implements Serializable {
     double transTotalWithOutCCFee;
     @Transient
     double transCurrentCCBalance;
+    
+    @Transient
+    double vatCalulatedAmount;
 
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
@@ -1686,6 +1689,12 @@ public class Bill implements Serializable {
         this.vatPlusNetTotal = vatPlusNetTotal;
     }
 
-    
-    
+    public double getVatCalulatedAmount() {
+        return vatCalulatedAmount;
+    }
+
+    public void setVatCalulatedAmount(double vatCalulatedAmount) {
+        this.vatCalulatedAmount = vatCalulatedAmount;
+    }
+     
 }

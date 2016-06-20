@@ -23,6 +23,11 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}"  
+                                        forceSelection="true"
+                                        value="#{channelReportController.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
                     <h:panelGrid columns="3"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllOPDBillReportForVat()}">
@@ -58,6 +63,22 @@
                             </f:facet>
                             <p:outputLabel value="#{b.insId}" />                                    
                             <p:outputLabel value="(#{b.billedBill.insId})" rendered="#{b.billedBill ne null}" />                                    
+                        </p:column>
+                        
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.patient.person.name}" />                                    
+                        </p:column>
+                        
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.createdAt}" >
+                                <f:convertDateTime pattern="yyyy MM dd hh:ss:mm a" />
+                            </p:outputLabel>                                    
                         </p:column>
 
                         <p:column style="text-align: right;" >
@@ -107,7 +128,7 @@
                         <p:columnGroup type="footer">
 
                             <p:row>
-                                <p:column footerText="Total" style=" text-align: left;">
+                                <p:column colspan="3" footerText="Total" style=" text-align: left;">
                                     <f:facet name="footer">
                                         <h:outputLabel value="Total"/>
                                     </f:facet>

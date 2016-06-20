@@ -39,6 +39,80 @@
             <div style="font-size: 9px!important; font-family: Times New Roman!important;
                  letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 5%;">
                 <table >
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="TAX INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bills.get(0).institution.transAddress1},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bills.get(0).institution.transAddress2}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bills.get(0).institution.transAddress3 eq null or cc.attrs.bills.get(0).institution.transAddress3 eq ''}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bills.get(0).institution.transAddress3 ne null and cc.attrs.bills.get(0).institution.transAddress3 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bills.get(0).institution.transAddress3}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bills.get(0).institution.transAddress4 eq null or cc.attrs.bills.get(0).institution.transAddress4 eq '') and (cc.attrs.bills.get(0).institution.transAddress3 ne null and cc.attrs.bills.get(0).institution.transAddress3 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bills.get(0).institution.transAddress4 ne null and cc.attrs.bills.get(0).institution.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr><tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bills.get(0).institution.transAddress4}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bills.get(0).institution.transAddress4 ne null and cc.attrs.bills.get(0).institution.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="Company Reg. No - PV16123" />
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="VAT Reg. No - 114103438-7000" />
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
                     
                     <tr>
                         <td>
@@ -48,13 +122,13 @@
                         <td></td>
                         <td></td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
@@ -65,6 +139,8 @@
                         <td></td>
                         <td></td>
                     </tr>
+
+
 
                     <tr>
                         <td><p:spacer height="10" /></td>
@@ -96,7 +172,8 @@
                         </td>
                         <td></td>
                         <td></td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.con.institution.transAddress4}"/>
                             <h:outputLabel value="." rendered="#{cc.attrs.con.institution.transAddress4 ne null and cc.attrs.con.institution.transAddress4 ne ''}"/>
@@ -105,7 +182,14 @@
                         <td></td>
                     </tr>
 
-
+                    <tr>
+                        <td>
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="VAT Reg. No - #{cc.attrs.con.vatRegNo}" />
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
 
                     <tr>
                         <td>
@@ -121,20 +205,14 @@
                         <td><h:outputLabel value=" "/></td>
                     </tr>
 
-                    <tr>
-                        <td colspan="3">
-                            <center>
-                                <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
-                            </center>
-                        </td>
-                    </tr>
-                    
+
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="2">
                             <h:outputLabel value="Period : " />
@@ -179,9 +257,33 @@
                                     </p:column>
                                     <p:column style="text-align: right;"> 
                                         <f:facet name="header">
-                                            <p:outputLabel value="Value" />
+                                            <p:outputLabel value="Non-Taxable Value" />
                                         </f:facet>
-                                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                                        <h:outputLabel value="#{b.netTotal-b.vatCalulatedAmount}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Vat Liable Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{b.vatCalulatedAmount}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Vat " />
+                                        </f:facet>
+                                        <h:outputLabel value="#{b.vat}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Net Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{b.vat+b.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -203,17 +305,32 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Total : 
+                                                   Non-Taxabl Total : " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.total-cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Vat Liable Total : " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Vat Total : " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVat}" style="font-weight: bold; float: right;" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   " style="font-weight: bold;"/>
-                                    <h:outputLabel value="#{cc.attrs.con.total+cc.attrs.con.totalVat}" style="font-weight: bold;">
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Net Total : " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVat+cc.attrs.con.total}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -260,7 +377,7 @@
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="3">
                             <p>
@@ -269,7 +386,7 @@
                             </p>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>

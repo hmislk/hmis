@@ -3308,6 +3308,58 @@ public class BookKeepingSummery implements Serializable {
 
         bookKeepingSummeryRows.addAll(t);
     }
+    
+    
+    public double createOPdListWithCreditPaidVartTotal() {
+        Map temMap = new HashMap();
+        bookKeepingSummeryRows = new ArrayList<>();
+
+        List t = new ArrayList();
+
+        String jpql = "select sum(bf.feeValue) "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+                + " where bi.bill.billType= :bTp  "
+                + " and bi.bill.id in "
+                + " (select paidBillItem.referenceBill.id "
+                + " from BillItem paidBillItem"
+                + " where paidBillItem.retired=false "
+                + " and paidBillItem.bill.cancelled=false"
+                + " and type(paidBillItem.bill)=:class"
+                + " and  paidBillItem.createdAt between :fromDate and :toDate "
+                + " and paidBillItem.bill.billType=:paidBtp)  ";
+
+        temMap.put("class", BilledBill.class);
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+
+        if (incomeInstitution != null) {
+            jpql += " and bi.item.department.institution=:inIns ";
+            temMap.put("inIns", incomeInstitution);
+        }
+
+        temMap.put("class", BilledBill.class);
+
+        if (creditCompany != null) {
+            jpql += " and bi.bill.creditCompany=:cd ";
+            temMap.put("cd", creditCompany);
+
+        }
+
+        jpql += " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
+                + " order by c.name, i.name, bf.fee.feeType";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", BillType.OpdBill);
+        temMap.put("paidBtp", BillType.CashRecieveBill);
+//        temMap.put("pms", paymentMethods);
+
+
+        return getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public void createOPdListWithProDayEndTableOld() {
         opdList = new ArrayList<>();
@@ -3643,7 +3695,8 @@ public class BookKeepingSummery implements Serializable {
                 + collectingCentrePaymentTotal
                 + creditCompanyTotal
                 + creditCompanyTotalInward
-                + pettyCashTotal;
+                + pettyCashTotal
+                + opdCashVatTotal;
 
     }
 
@@ -4162,6 +4215,9 @@ public class BookKeepingSummery implements Serializable {
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
         createOutSideFeeWithPro();
         createPharmacySale();
         createPharmacyWholeSale();
@@ -4233,6 +4289,8 @@ public class BookKeepingSummery implements Serializable {
         makeNull();
         PaymentMethod[] paymentMethods = {PaymentMethod.Credit};
         createOPdListWithProDayEndTableWithOutCheckDepIns(Arrays.asList(paymentMethods));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
         opdHospitalTotal = 0.0;
         opdStaffTotal = 0.0;
         for (BookKeepingSummeryRow b : bookKeepingSummeryRows) {
@@ -4253,6 +4311,8 @@ public class BookKeepingSummery implements Serializable {
         header = " Payment.";
         makeNull();
         createOPdListWithCreditPaid();
+        opdCreditVatTotal = createOPdListWithCreditPaidVartTotal();
+        createVatTables();
         opdHospitalTotal = 0.0;
         opdStaffTotal = 0.0;
         for (BookKeepingSummeryRow b : bookKeepingSummeryRows) {
@@ -4279,6 +4339,9 @@ public class BookKeepingSummery implements Serializable {
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
         createOutSideFee();
         createPharmacySale();
         createPharmacyWholeSale();
@@ -4319,6 +4382,9 @@ public class BookKeepingSummery implements Serializable {
         PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
+        opdCreditVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));
+        createVatTables();
         createOutSideFeeWithPro();
         createPharmacySale();
         createPharmacyWholeSale();

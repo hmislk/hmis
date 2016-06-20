@@ -129,12 +129,20 @@ public class FinalVariables {
 
     public double getVATPercentage() {
         //VAT 15% Only Vat Value
-        return 0.15;
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+            return 0.15;
+        } else {
+            return 0;
+        }
     }
     
     public double getVATPercentageWithAmount() {
         //VAT 15% With Total
-        return 1.15;
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+            return 1.15;
+        } else {
+            return 1;
+        }
     }
 
     // Add business logic below. (Right-click in editor and choose

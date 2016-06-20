@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bills" />
+        <cc:attribute name="patientEncounters" />
         <cc:attribute name="con" />
     </cc:interface>
 
@@ -39,10 +39,80 @@
             <div style="font-size: 9px!important; font-family: Times New Roman!important;
                  letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 5%;">
                 <table >
-                    
+                    <tr>
+                        <td colspan="3">
+                            <h:outputLabel value="TAX INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
                     <tr>
                         <td>
+                            <h:outputLabel value="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress1},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress2}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 eq null or cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 eq ''}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 ne null and cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 eq null or cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 eq '') and (cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 ne null and cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress3 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 ne null and cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr><tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 ne null and cc.attrs.patientEncounters.get(0).finalBill.institution.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
                             <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="Company Reg. No - PV16123" />
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="VAT Reg. No - 114103438-7000" />
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    <tr>
+                        <td>
                             <h:outputLabel value="Invoice No - #{cc.attrs.con.invoceNo}" />
                         </td>
                         <td></td>
@@ -96,7 +166,8 @@
                         </td>
                         <td></td>
                         <td></td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td>
                             <h:outputLabel value="#{cc.attrs.con.institution.transAddress4}"/>
                             <h:outputLabel value="." rendered="#{cc.attrs.con.institution.transAddress4 ne null and cc.attrs.con.institution.transAddress4 ne ''}"/>
@@ -104,7 +175,18 @@
                         <td></td>
                         <td></td>
                     </tr>
-
+                    <tr>
+                        <td colspan="2">
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="VAT Reg. No - #{cc.attrs.con.vatRegNo}" />
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
 
 
                     <tr>
@@ -122,19 +204,11 @@
                     </tr>
 
                     <tr>
-                        <td colspan="3">
-                            <center>
-                                <h:outputLabel value="INVOICE" style="text-decoration: underline; font-size: 15px!important;"/>
-                            </center>
-                        </td>
-                    </tr>
-                    
-                    <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="2">
                             <h:outputLabel value="Period : " />
@@ -158,7 +232,7 @@
                     <tr>
                         <td colspan="3" width="100%">
                             <p:panel>
-                                <p:dataTable id="safrin" value="#{cc.attrs.bills}" var="b" rowIndexVar="i" >  
+                                <p:dataTable id="safrin" value="#{cc.attrs.patientEncounters}" var="p" rowIndexVar="i" >  
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="No" style="float: left;"/>
@@ -167,21 +241,45 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
-                                            <p:outputLabel value="Bill No" style="float: left;" />
+                                            <p:outputLabel value="BHT No" style="float: left;" />
                                         </f:facet>
-                                        <h:outputLabel value="#{b.insId}" />
+                                        <h:outputLabel value="#{p.bhtNo}"/>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="Patient" style="float: left;"/>
                                         </f:facet>
-                                        <h:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+                                        <h:outputLabel value="#{p.patient.person.nameWithTitle}"/>
                                     </p:column>
                                     <p:column style="text-align: right;"> 
                                         <f:facet name="header">
-                                            <p:outputLabel value="Value" />
+                                            <p:outputLabel value="Non-Taxable Value" />
                                         </f:facet>
-                                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                                        <h:outputLabel value="#{p.finalBill.netTotal-p.finalBill.vatCalulatedAmount-p.finalBill.vat}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Vat Liable Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.finalBill.vatCalulatedAmount}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Vat" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.finalBill.vat}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;"> 
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Net Value" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.finalBill.netTotal-(p.transPaidByPatient+p.transPaidByCompany)}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -203,17 +301,36 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Total : 
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Non-Taxable Total : 
                                                    " style="font-weight: bold;"/>
-                                    <h:outputLabel value="#{cc.attrs.con.total+cc.attrs.con.totalVat}" style="font-weight: bold;">
+                                    <h:outputLabel value="#{cc.attrs.con.total-cc.attrs.con.totalVatCalculatedValue-cc.attrs.con.totalVat}" style="font-weight: bold;float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Vat Liable Total : 
+                                                   " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Vat Total : 
+                                                   " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.totalVat}" style="font-weight: bold;float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel><br></br>
+                                    <h:outputLabel value="
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                   Net Total : 
+                                                   " style="font-weight: bold;"/>
+                                    <h:outputLabel value="#{cc.attrs.con.total-(cc.attrs.con.paid+cc.attrs.con.creditPaid)}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -234,7 +351,7 @@
                         <td colspan="3">
                             <p>
                                 You are kindly requested to remit this amount by cheque written in favour of "
-                                #{sessionController.loggedUser.institution.name} "
+                                #{sessionController.loggedUser.staff.workingDepartment.institution.name} "
                                 with the least Possible.
                             </p>
                         </td>
@@ -250,7 +367,7 @@
                         <td colspan="3">
                             <p>
                                 * Please note that prevailing bank overdraft interest rate will be applied for all 
-                                overdue debts.
+                                overdue debts *
                             </p>
                         </td>
                     </tr>
@@ -260,7 +377,7 @@
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td colspan="3">
                             <p>
@@ -269,7 +386,31 @@
                             </p>
                         </td>
                     </tr>
-                    
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    <tr >
+                        <td width="20%"><p:outputLabel value="Bank A/C Number  "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td align="left"> <h:outputLabel value=" - 013-1-001-7-1924550 "  rendered="#{cc.attrs.con.withFooter}" style="white-space:normal;" /></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="Bank"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td  valign="left"><h:outputLabel value=" - People's bank, Galle Fort, Sri Lanka. "  rendered="#{cc.attrs.con.withFooter}"  style="float: next;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="BIC Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td  valign="left">  <h:outputLabel value=" - 7135 "  rendered="#{cc.attrs.con.withFooter}"  style="float: outside;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
+                    <tr>
+                        <td><p:outputLabel value="SWIFT Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                        <td valign="left"><h:outputLabel value="  - PSBKLKLX "  rendered="#{cc.attrs.con.withFooter}"  style="float: left;"/></td>
+                        <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                    </tr>
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
@@ -307,120 +448,33 @@
                     </tr>
 
                     <tr>
+                        <td colspan="2">
+                            <h:outputLabel value="(B.A Lahiru Priyabandu)" style="text-decoration: overline;"  rendered="#{cc.attrs.con.withFooter}"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
                         <td>
-                            <!--<h:outputLabel value="#{sessionController.loggedUser.staff.speciality.name},"/>-->
-                            <h:outputLabel value="Accountanat,"/>
+                            <h:outputLabel value="Accountant,"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
 
                     <tr>
-                        <td>
+                        <td colspan="2">
                             <h:outputLabel value="#{sessionController.loggedUser.staff.workingDepartment.institution.name}."/>
                         </td>
                         <td></td>
-                        <td></td>
                     </tr>
+                    
                     <tr>
                         <td><p:spacer height="40" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
 
-                    <tr>
-                        <td><p:spacer height="40" /></td>
-                        <td colspan="2" >
-                            <table>
-                                <tr>
-                                    <td colspan="3">
-
-                                        <p:outputLabel value="Above all Requisition for CT Scan 
-                                                       Diagnostic Examination (2 F 6 S. &amp; E.)" rendered="#{cc.attrs.con.withFooter}"/>
-                                        <br></br>
-                                        <p:outputLabel value="8/64 with serial ( Serial No : 1 To " rendered="#{cc.attrs.con.withFooter}"/>
-                                        <p:outputLabel value="#{cc.attrs.bills.size()}" rendered="#{cc.attrs.con.withFooter}"/>
-                                        <p:outputLabel value=" )Received." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Name" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Signature" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Designation" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Date" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="...................................................." rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><p:spacer height="20" /></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                    <td><h:outputLabel value=" "/></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <h:outputLabel value="Stamp" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td><td>
-                                        <h:outputLabel value=":" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                    <td>
-                                        <h:outputLabel value="" rendered="#{cc.attrs.con.withFooter}"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+                    
 
                 </table>
 
