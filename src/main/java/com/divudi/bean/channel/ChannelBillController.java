@@ -9,6 +9,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -143,6 +144,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelSearchController channelSearchController;
+    @Inject
+    WebUserController webUserController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -625,6 +628,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;
         }
+        
         return false;
     }
 
@@ -632,7 +636,10 @@ public class ChannelBillController implements Serializable {
         if (errorCheckCancelling()) {
             return;
         }
-
+        if (webUserController.hasPrivilege("ChannelCashCancelRestriction") && getBillSession().getBill().getPaymentMethod() == PaymentMethod.Cash) {
+            UtilityController.addErrorMessage("You Are Restricted For Cash Cancellation...");
+            return ;
+        }
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
     }
@@ -749,6 +756,10 @@ public class ChannelBillController implements Serializable {
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
+        }
+        if (webUserController.hasPrivilege("ChannelCashCancelRestriction") && getBillSession().getBill().getPaymentMethod() == PaymentMethod.Cash) {
+            UtilityController.addErrorMessage("You Are Restricted For Cash Cancellation...");
+            return ;
         }
 
         cancel(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getPaidBillSession());
