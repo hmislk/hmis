@@ -9,6 +9,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
+import com.divudi.entity.Staff;
 import com.divudi.entity.hr.PaysheetComponent;
 import com.divudi.entity.hr.StaffPaysheetComponent;
 import com.divudi.facade.PaysheetComponentFacade;
@@ -160,9 +161,14 @@ public class StaffPaySheetComponentController implements Serializable {
         } else {
             getStaffPaysheetComponentFacade().edit(getCurrent());
         }
+        
+        Staff s = getCurrent().getStaff();
+        Date fd = getCurrent().getFromDate();
+        Date td = getCurrent().getToDate();
 
         UtilityController.addSuccessMessage("Succesfully Saved");
         makeItemNull();
+        getCurrent(s, fd, td);
     }
 
     public void makeNull() {
@@ -269,6 +275,15 @@ public class StaffPaySheetComponentController implements Serializable {
     public StaffPaysheetComponent getCurrent() {
         if (current == null) {
             current = new StaffPaysheetComponent();
+        }
+        return current;
+    }
+    public StaffPaysheetComponent getCurrent(Staff s,Date fd,Date td) {
+        if (current == null) {
+            current = new StaffPaysheetComponent();
+            current.setStaff(s);
+            current.setFromDate(fd);
+            current.setToDate(td);
         }
         return current;
     }

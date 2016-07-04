@@ -86,7 +86,11 @@
                                         </h:outputText>
                                         <p:outputLabel id="remain" value="#{institutionController.current.ballance+institutionController.current.maxCreditLimit}" style="color: green;" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>                                        
+                                        </p:outputLabel>
+                                        <h:outputText value="Memo" >                                        
+                                        </h:outputText>
+                                        <h:inputTextarea  value="#{institutionController.agency.descreption}"  >
+                                        </h:inputTextarea>
                                     </h:panelGrid>
                                     <h:panelGrid id="gpDetailButtons" columns="2">
                                         <h:commandButton id="btnSave" value="Update Credit" action="#{institutionController.updateAgentCreditLimit}" styleClass="buttons">

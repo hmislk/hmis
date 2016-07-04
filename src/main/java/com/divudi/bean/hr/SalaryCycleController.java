@@ -841,7 +841,7 @@ public class SalaryCycleController implements Serializable {
         Date toDate = null;
 
         fillStaffPayRoll(true, staffController.getSelectedList());
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff payrol (selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
     }
 
@@ -949,7 +949,34 @@ public class SalaryCycleController implements Serializable {
                     s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
                 }
             }
-
+            for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
+                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
+                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
+                System.out.println("p.getComponantValue() = " + p.getComponantValue());
+                System.out.println("p.getComponantValue() = " + p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                    s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                    System.err.println("s.getBasicVal() = " + s.getBasicVal());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.MerchantileAllowance) {
+                    s.setMerchantileVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.PoyaAllowance) {
+                    s.setPoyaVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.DayOffAllowance) {
+                    s.setDayOffVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowance) {
+                    s.setPerVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponentPercentage() != null) {
+                    if (p.getStaffPaysheetComponentPercentage().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowancePercentage) {
+                        s.setPerPercentage(p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
+                        System.out.println("p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue() = " + p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
+                    }
+                }
+            }
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {

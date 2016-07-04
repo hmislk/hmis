@@ -34,15 +34,11 @@
                                          forceSelection="true"
                                          completeMethod="#{itemController.completeStoreItem}" 
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <p:column headerText="Item" >
+                            <p:column headerText="Items" style="width: 10px!important;">
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Code" >
+                            <p:column headerText="Code" style="width: 5px!important;" >
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Pack Size" >
-                                <p:outputLabel value=" X #{vt.dblValue}" 
-                                               rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                             <f:ajax execute="@this" event="blur" render="#{p:component('tab')}" listener="#{storeTransferRequestController.onEdit()}"/>
                         </p:autoComplete>

@@ -12,6 +12,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.channel.ReferenceBookEnum;
@@ -19,6 +20,7 @@ import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -105,6 +107,8 @@ public class ChannelReportTempController implements Serializable {
     SheduleController sheduleController;
     @Inject
     CommonController commonController;
+    @Inject
+    ChannelReportController channelReportController;
     //
     List<Bill> bills;
     List<AgentReferenceBook> agentReferenceBooks;
@@ -114,6 +118,7 @@ public class ChannelReportTempController implements Serializable {
     List<Institution> agencies;
     List<ChannelDateDetailRow> channelDateDetailRows;
     List<ChannelSummeryDateRangeOrUserRow> channelSummeryDateRangeOrUserRows = new ArrayList<>();
+    List<AgentHistory> agentHistorys;
     //
     Date fromDate;
     Date toDate;
@@ -737,6 +742,61 @@ public class ChannelReportTempController implements Serializable {
         createAgentReferenceBooks(ReferenceBookEnum.LabBook);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/ Collecting center book report(/faces/reportLab/lab_report_collecting_center_referece_book.xhtml)");
+    }
+
+    public void createChannelAgentReferenceBookIssuedBillList() {
+        if (getSearchKeyword().getVal1() == null) {
+            JsfUtil.addErrorMessage("Please Enter Channel Book Number");
+            return;
+        }
+        createReferenceBookIssuedBillList(ReferenceBookEnum.ChannelBook);
+    }
+
+    private void createReferenceBookIssuedBillList(ReferenceBookEnum bookEnum) {
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select a from AgentReferenceBook a where a.referenceBookEnum=:rb ";
+//                + " a.createdAt between :fd and :td ";
+
+        if (!getSearchKeyword().isWithRetiered()) {
+            sql += " and a.retired=false ";
+        }
+
+        if (getSearchKeyword().getIns() != null) {
+            sql += " and a.institution=:ins ";
+            m.put("ins", getSearchKeyword().getIns());
+        }
+
+        if (getSearchKeyword().getVal1() != null && !getSearchKeyword().getVal1().trim().equals("")) {
+            Double dbl = null;
+            try {
+                dbl = Double.parseDouble(getSearchKeyword().getVal1());
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage("Please Enter A Number");
+                e.printStackTrace();
+            }
+            sql += " and a.bookNumber=:bn ";
+            m.put("bn", dbl);
+        }
+
+        sql += " order by a.bookNumber ";
+
+        m.put("rb", bookEnum);
+//        m.put("fd", fromDate);
+//        m.put("td", toDate);
+
+        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (agentReferenceBooks.isEmpty()) {
+            JsfUtil.addErrorMessage("This Book Is Not Issued");
+        } else {
+            int srn = (int) agentReferenceBooks.get(0).getStartingReferenceNumber();
+            int ern = (int) agentReferenceBooks.get(0).getEndingReferenceNumber();
+            searchKeyword.setIns(agentReferenceBooks.get(0).getInstitution());
+            searchKeyword.setNumber(" " + srn + " - " + ern);
+            agentHistorys = channelReportController.createAgentHistoryByBook(agentReferenceBooks.get(0).getCreatedAt(), new Date(), agentReferenceBooks.get(0).getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}),srn,ern);
+
+        }
     }
 
     public void createAgentReferenceBooks(ReferenceBookEnum bookEnum) {
@@ -2664,6 +2724,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public List<AgentHistory> getAgentHistorys() {
+        return agentHistorys;
+    }
+
+    public void setAgentHistorys(List<AgentHistory> agentHistorys) {
+        this.agentHistorys = agentHistorys;
     }
 
 }

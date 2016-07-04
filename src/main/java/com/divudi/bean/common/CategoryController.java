@@ -316,7 +316,7 @@ public class CategoryController implements Serializable {
                 + " and (type(c)= :parm ) and upper(c.name)"
                 + " like :q order by c.name";
 
-        temMap.put("parm", StoreItemCategory.class);
+        temMap.put("parm", ConsumableCategory.class);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);

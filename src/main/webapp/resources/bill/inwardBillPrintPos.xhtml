@@ -10,6 +10,7 @@
     <cc:interface>
         <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
+        <cc:attribute name="refunded" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -35,9 +36,10 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Issue Bill"   />    
+                <h:outputLabel value="INTERNAL SERVICE ORDER"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true or cc.attrs.bill.billClassType eq 'CancelledBill'}" /> 
+                <h:outputLabel value="**Refunded**"  rendered="#{cc.attrs.refunded eq true or cc.attrs.bill.billClassType eq 'RefundBill'}" /> 
             </div>
 
             <div class="billline">
@@ -54,7 +56,7 @@
                         <td style="width: 50%;text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
-                                <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd/MM/yy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -81,10 +83,10 @@
                         <td>:</td>
                         <td style="width: 30%;text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails" rendered="#{cc.attrs.bill.cancelled eq false}">
+                            <h:outputLabel value="#{cc.attrs.bill.insId}" class="billDetails" >
                             </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" class="billDetails" rendered="#{cc.attrs.bill.cancelled eq true}">
-                            </h:outputLabel>
+<!--                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}"  rendered="#{cc.attrs.bill.cancelled eq true}">
+                            </h:outputLabel>-->
                         </td>
                         <td style="width: 10%" >
 
@@ -105,7 +107,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 20% ;text-align: left;" >
-                                <h:outputLabel value="BHT" class="billDetails"></h:outputLabel>
+                                <h:outputLabel value="BHT" class="billDetails" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;text-align: left;" >
@@ -119,11 +121,27 @@
                             <td style="width: 30%" >
                             </td>
                         </tr>
+                        <tr>
+                            <td style="width: 20% ;text-align: left;" >
+                                <h:outputLabel value="Room No" class="billDetails" ></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;text-align: left;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" class="billDetails" >
+                                </h:outputLabel>
+                            </td>
+                            <td style="width: 10%" >
+                            </td>
+                            <td style="width: 15%" >
+                            </td>
+                            <td style="width: 30%" >
+                            </td>
+                        </tr>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Patient Name" class="billDetails"></h:outputLabel>
+                                <h:outputLabel value="Patient Name" class="billDetails" ></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;text-align: left;" colspan="4">
@@ -153,7 +171,7 @@
                             <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
                         </td>
                         <td  style="width:15%;text-align: right; padding-right: 30px;">
-                            <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
+                            <h:outputLabel value=" "  styleClass="itemHeadings" ></h:outputLabel>
                         </td>
 
 
@@ -193,9 +211,33 @@
 
 
                     </ui:repeat>
+                    
+                    <ui:repeat value="#{cc.attrs.bill.billedBill.billItems}" rendered="#{cc.attrs.bill.billItems.size() eq 0}" var="bip"   >
+
+                        <tr>
+                            <td colspan="3" style="overflow: visible;">
+<!--                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
+                                </h:outputLabel>
+                                -
+                                &nbsp;-->
+                                <h:outputLabel value="#{bip.searialNo+1}  -  #{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                </h:outputLabel>
+
+
+                            </td>
+                        
+                            <td>
+                                <h:outputLabel    value="#{bip.pharmaceuticalBillItem.qty}"    styleClass="itemsBlock"   style="text-align: right; padding-right: 30px;" >
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputLabel>
+                            </td>
+
+                        </tr>
 
 
 
+
+                    </ui:repeat>
 
                 </table>
 

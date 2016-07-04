@@ -274,9 +274,15 @@
 
                         <h:panelGroup id="gpBillPreview">
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                                 <ui:repeat value="#{billBhtController.bills}" var="bill">
-                                    <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                    <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                <ui:repeat value="#{billBhtController.bills}" var="bill">
+                                    <bi:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
 

@@ -1088,6 +1088,44 @@ public class InwardReportController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    public void listnerDeveloperCheckBox() {
+        if (developers) {
+            dischargeDate = false;
+            bhtNo = false;
+            paymentMethord = false;
+            creditCompany = false;
+            person = false;
+            guardian = false;
+            room = false;
+            refDoctor = false;
+            AddmitDetails = false;
+            billedBy = false;
+            finalBillTotal = false;
+            paidByPatient = false;
+            creditPaidAmount = false;
+            dueAmount = false;
+            calculatedAmount = false;
+            differentAmount = false;
+        } else {
+            dischargeDate = true;
+            bhtNo = true;
+            paymentMethord = true;
+            creditCompany = true;
+            person = true;
+            guardian = true;
+            room = true;
+            refDoctor = true;
+            AddmitDetails = true;
+            billedBy = true;
+            finalBillTotal = true;
+            paidByPatient = true;
+            creditPaidAmount = true;
+            dueAmount = true;
+            calculatedAmount = true;
+            differentAmount = true;
+        }
+    }
+
     public Institution getInstitution() {
         return institution;
     }

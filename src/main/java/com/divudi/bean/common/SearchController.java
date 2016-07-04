@@ -5431,6 +5431,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
         sql = "select (b.bill) from BillItem b where "
                 + " b.bill.billType = :billType "
+                + " and type(b.bill)=:class "
                 + " and b.bill.createdAt between :fromDate and :toDate"
                 + " and b.bill.retired=false  ";
 
@@ -5466,6 +5467,7 @@ public class SearchController implements Serializable {
 
         sql += " order by b.bill.insId desc ";
         temMap.put("billType", BillType.InwardBill);
+        temMap.put("class", BilledBill.class);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 

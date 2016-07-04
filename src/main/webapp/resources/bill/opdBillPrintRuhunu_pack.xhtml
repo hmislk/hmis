@@ -24,8 +24,8 @@
                 <h:panelGroup id="gpBillPreview" >
 
                     <div style="position: absolute!important;left: 70%!important; font-weight: bold!important;
-                         top: 0%!important;font-size: 15px!important; text-decoration: underline!important;">
-                        <h:outputLabel value="OPD Invoice"/>
+                         top: 0%!important;font-size: 10px!important; text-decoration: underline!important;">
+                        <h:outputLabel value="OPD Invoice-Package"/>
                     </div>
                     <div style="position: absolute!important;left: 50%!important; font-weight: bold!important;
                          top: 4%!important;font-size: 8px!important;">
@@ -203,7 +203,7 @@
                          font-size:12px!important;" >
                         <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" rendered="#{cc.attrs.bill.patient.person.phone ne null and cc.attrs.bill.patient.person.phone ne ''}" />
                     </div>
-
+                    
                     <div style="position: absolute;
                          left: 0%!important;
                          top: 23%!important;
@@ -255,6 +255,7 @@
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>
+                                    <br/>
                                     <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
                                         <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
                                         <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 12px!important; font-weight: bold;" >
@@ -271,16 +272,9 @@
                          font-size:12px!important;" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue+bip1.vat}"  style="font-size: 11px!important;float: right;" >
+<!--                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:panelGroup rendered="#{bip1.item.department.id eq cc.attrs.bill.toDepartment.id and bip1.billSession ne null }"  >
-                                    <br/>
-                                    <h:panelGroup rendered="#{bip1.item.sessionNumberType ne null}">
-                                        <h:outputLabel value="-" styleClass="nonPrintBlock" >
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                </h:outputLabel>-->
                             </h:column>
                         </h:dataTable>
                     </div>
@@ -309,7 +303,7 @@
                                     <h:outputLabel value="TOTAL" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total+cc.attrs.bill.vat}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -346,28 +340,24 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
-                            <!--                            <tr>
-                                                            <td style="text-align: left; min-width: 3cm;">
-                                                                <h:outputLabel value="VAT (15%)" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
-                                                            </td>
-                                                            <td style="text-align: right!important; ">
-                                                                <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-                                                            </td>
-                                                        </tr>-->
                             <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
-                                    <!--<h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>-->
+                                <td style="text-align: left; min-width: 3cm;">
+                                    <h:outputLabel value="VAT (15%)" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                    <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-<!--                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                </td>
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>-->
+                                    </h:outputLabel>
                                 </td>
                             </tr>
 

@@ -1735,6 +1735,17 @@ public class BillSearch implements Serializable {
                 + " and b.bill=:b";
         hm.put("b", getBillSearch());
         billItems = getBillItemFacede().findBySQL(sql, hm);
+        
+        for (BillItem bi : billItems) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                bi.setTransRefund(true);
+            }else{
+                bi.setTransRefund(false);
+            }
+        }
 
     }
 

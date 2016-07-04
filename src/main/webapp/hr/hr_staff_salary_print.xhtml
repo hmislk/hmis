@@ -218,10 +218,17 @@
                     </p:tab>
 
                     <p:tab id="printPaysheet" title="Paysheet">
-                        <p:commandButton value="Print" ajax="false" action="#"
-                                         disabled="#{staffSalaryController.current.blocked}">
-                            <p:printer target="gpBillPreviewPaysheet" ></p:printer>
-                        </p:commandButton>
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="Bank" />
+                            <p:inputText value="#{staffSalaryController.reportKeyWord.string}" autocomplete="off" />
+                            <p:outputLabel value="Adress" />
+                            <p:inputText value="#{staffSalaryController.reportKeyWord.address}" autocomplete="off" />
+                            <p:commandButton value="Refresh" ajax="false" action="#{staffSalaryController.reportKeyWord.split()}" />
+                            <p:commandButton value="Print" ajax="false" action="#"
+                                             disabled="#{staffSalaryController.current.blocked}">
+                                <p:printer target="gpBillPreviewPaysheet" ></p:printer>
+                            </p:commandButton>
+                        </h:panelGrid>
                         <h:panelGroup   id="gpBillPreviewPaysheet">
                             <salary:pay_sheet bill="#{staffSalaryController.current}"></salary:pay_sheet>
                         </h:panelGroup>
