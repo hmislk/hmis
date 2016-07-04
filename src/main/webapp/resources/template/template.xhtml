@@ -595,13 +595,13 @@
                                         </p:submenu>
 
                                         <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                                            <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/agent_bill_search_own"
                                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
                                         </p:submenu>
 
                                         <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment"  ></p:menuitem>
+                                            <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own"
                                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
                                         </p:submenu>

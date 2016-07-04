@@ -573,7 +573,8 @@ public class ChannelBillController implements Serializable {
         System.out.println("bs = " + bs);
         System.out.println("billSession = " + billSession);
         System.out.println("bookingController.getSelectedBillSession() = " + bookingController.getSelectedBillSession());
-
+        billSession.getBill().setVatPlusStaffFee(0.0);
+        billSession.getBill().setVatPlusHosFee(0.0);
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
                 bf.setTmpChangedValue(bf.getFeeValue());

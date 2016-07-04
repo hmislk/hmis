@@ -24,6 +24,7 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -210,6 +211,10 @@ public class AgentPaymentRecieveBillController implements Serializable {
     }
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+        if (getCurrent().getNetTotal()<=0.0) {
+            JsfUtil.addErrorMessage("Please Enter Correct Amount");
+            return;
+        }
         addToBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)) {
             System.out.println("billType = " + billType);

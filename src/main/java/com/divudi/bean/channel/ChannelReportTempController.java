@@ -745,7 +745,7 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createChannelAgentReferenceBookIssuedBillList() {
-        if (getSearchKeyword().getVal1() == null) {
+        if (getSearchKeyword().getVal1() == null || "".equals(getSearchKeyword().getVal1())) {
             JsfUtil.addErrorMessage("Please Enter Channel Book Number");
             return;
         }
@@ -789,12 +789,13 @@ public class ChannelReportTempController implements Serializable {
         agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         if (agentReferenceBooks.isEmpty()) {
             JsfUtil.addErrorMessage("This Book Is Not Issued");
+            agentHistorys = new ArrayList<>();
         } else {
             int srn = (int) agentReferenceBooks.get(0).getStartingReferenceNumber();
             int ern = (int) agentReferenceBooks.get(0).getEndingReferenceNumber();
             searchKeyword.setIns(agentReferenceBooks.get(0).getInstitution());
             searchKeyword.setNumber(" " + srn + " - " + ern);
-            agentHistorys = channelReportController.createAgentHistoryByBook(agentReferenceBooks.get(0).getCreatedAt(), new Date(), agentReferenceBooks.get(0).getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}),srn,ern);
+            agentHistorys = channelReportController.createAgentHistoryByBook(agentReferenceBooks.get(0).getCreatedAt(), new Date(), agentReferenceBooks.get(0).getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}), srn, ern);
 
         }
     }
