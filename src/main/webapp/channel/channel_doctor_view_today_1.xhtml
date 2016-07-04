@@ -56,7 +56,7 @@
                     </p:column>   
                     <p:column sortBy="#{bs.consultant.person.name}">
                         <f:facet name="header">
-                            <p:outputLabel value="Arrival Time" style="float: left;"/>
+                            <p:outputLabel value="Arrival Time" style="float: left;color: green;"/>
                         </f:facet>
                         <p:outputLabel value="#{a.recordTimeStamp}" >
                             <f:convertDateTime pattern="hh:mm:ss a" />
@@ -64,7 +64,7 @@
                     </p:column>   
                     <p:column sortBy="#{bs.consultant.person.name}">
                         <f:facet name="header">
-                            <p:outputLabel value="Departure Time" style="float: left;"/>
+                            <p:outputLabel value="Departure Time" style="float: left;color: red;"/>
                         </f:facet>
                         <p:outputLabel value="#{a.approvedAt}" >
                             <f:convertDateTime pattern="hh:mm:ss a" />
