@@ -9,6 +9,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -143,6 +144,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelSearchController channelSearchController;
+    @Inject
+    WebUserController webUserController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -363,6 +366,11 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return;
+        }
+
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
         UtilityController.addSuccessMessage("Sucesssfully Refunded.");
@@ -390,9 +398,13 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return;
+        }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
-
+        UtilityController.addSuccessMessage("Sucesssfully Refunded.");
         refundPaymentMethod = null;
         commentR = null;
     }
@@ -418,6 +430,11 @@ public class ChannelBillController implements Serializable {
         }
         if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
+
+        if (checkPaidForPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
             return;
         }
 
@@ -469,7 +486,7 @@ public class ChannelBillController implements Serializable {
 //        refund(getBillSession().getPaidBillSession().getBill(), getBillSession().getPaidBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession().getPaidBillSession());
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
         commentR = null;
-
+        UtilityController.addSuccessMessage("Sucesssfully Refunded.");
     }
 
     public void refund(Bill bill, BillItem billItem, List<BillFee> billFees, BillSession billSession) {
@@ -556,10 +573,16 @@ public class ChannelBillController implements Serializable {
         System.out.println("bs = " + bs);
         System.out.println("billSession = " + billSession);
         System.out.println("bookingController.getSelectedBillSession() = " + bookingController.getSelectedBillSession());
-
+        billSession.getBill().setVatPlusStaffFee(0.0);
+        billSession.getBill().setVatPlusHosFee(0.0);
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
                 bf.setTmpChangedValue(bf.getFeeValue());
+            }
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                billSession.getBill().setVatPlusStaffFee(billSession.getBill().getVatPlusStaffFee() + bf.getFeeValue() + bf.getFeeVat());
+            } else {
+                billSession.getBill().setVatPlusHosFee(billSession.getBill().getVatPlusHosFee() + bf.getFeeValue() + bf.getFeeVat());
             }
         }
         calRefundTotal();
@@ -602,6 +625,19 @@ public class ChannelBillController implements Serializable {
         return false;
     }
 
+    private boolean checkPaidForPaid() {
+        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getPaidBill().getId();
+        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+
+        for (BillFee f : tempFe) {
+            if (f.getPaidValue() != 0.0) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     private boolean errorCheckCancelling() {
         if (getBillSession() == null) {
             return true;
@@ -625,6 +661,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return true;
         }
+
         return false;
     }
 
@@ -632,7 +669,10 @@ public class ChannelBillController implements Serializable {
         if (errorCheckCancelling()) {
             return;
         }
-
+        if (webUserController.hasPrivilege("ChannelCashCancelRestriction") && getBillSession().getBill().getPaymentMethod() == PaymentMethod.Cash) {
+            UtilityController.addErrorMessage("You Are Restricted For Cash Cancellation...");
+            return;
+        }
         cancel(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession());
         comment = null;
     }
@@ -748,6 +788,14 @@ public class ChannelBillController implements Serializable {
         }
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
+        if (webUserController.hasPrivilege("ChannelCashCancelRestriction") && getBillSession().getBill().getPaymentMethod() == PaymentMethod.Cash) {
+            UtilityController.addErrorMessage("You Are Restricted For Cash Cancellation...");
+            return;
+        }
+        if (checkPaidForPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
             return;
         }
 
@@ -1067,7 +1115,7 @@ public class ChannelBillController implements Serializable {
         rb.setBillTime(bd);
         rb.setCreatedAt(bd);
         rb.setBilledBill(bill);
-        rb.setComments(comment);
+        rb.setComments(commentR);
         rb.setCreater(getSessionController().getLoggedUser());
         rb.setDepartment(getSessionController().getDepartment());
         rb.setInstitution(getSessionController().getInstitution());
@@ -1508,6 +1556,16 @@ public class ChannelBillController implements Serializable {
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessionsOnlyIdNew();
+        for (BillFee bf : printingBill.getBillFees()) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
+                bf.setTmpChangedValue(bf.getFeeValue());
+            }
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                printingBill.setVatPlusStaffFee(printingBill.getVatPlusStaffFee() + bf.getFeeValue() + bf.getFeeVat());
+            } else {
+                printingBill.setVatPlusHosFee(printingBill.getVatPlusHosFee() + bf.getFeeValue() + bf.getFeeVat());
+            }
+        }
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
 

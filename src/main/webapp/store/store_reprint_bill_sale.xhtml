@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:st="http://java.sun.com/jsf/composite/store"
+      xmlns:st="http://java.sun.com/jsf/composite/store/inward"
           >
 
     <h:body>
@@ -40,7 +40,7 @@
 
                    
                     <h:panelGroup id="gpBillPreview" >
-                        <st:saleBill  bill="#{storeBillSearch.bill}" duplicate="true" />
+                        <st:issueBill  bill="#{storeBillSearch.bill}" duplicate="true" />
                     </h:panelGroup>
 
 

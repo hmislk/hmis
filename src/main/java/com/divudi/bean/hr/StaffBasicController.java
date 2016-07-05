@@ -20,6 +20,7 @@ import com.divudi.facade.PaysheetComponentFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffPaysheetComponentFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -160,9 +161,13 @@ public class StaffBasicController implements Serializable {
 //        updateStaffEmployment();
 //        updateExistingSalary();
         Staff s = getCurrent().getStaff();
+        Date fd = getCurrent().getFromDate();
+        Date td = getCurrent().getToDate();
         current = null;
         items = null;
-        getCurrent(s);
+        getCurrent(s, fd, td);
+        JsfUtil.addSuccessMessage("Sucessfully Saved...");
+        JsfUtil.addSuccessMessage("Staff Name - " + s.getPerson().getName());
 
     }
 
@@ -376,9 +381,8 @@ public class StaffBasicController implements Serializable {
         sql += " order by s.staff.codeInterger,s.paysheetComponent.orderNo";
         items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
         calTotal(items);
-        
-        
-commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff paysheet component list(/faces/hr/hr_staff_paysheet_component_list.xhtml)");
 
     }
 
@@ -461,6 +465,17 @@ commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Sal
             current = new StaffPaysheetComponent();
             current.setPaysheetComponent(getBasicCompnent());
             current.setStaff(s);
+        }
+        return current;
+    }
+
+    public StaffPaysheetComponent getCurrent(Staff s, Date fd, Date td) {
+        if (current == null) {
+            current = new StaffPaysheetComponent();
+            current.setPaysheetComponent(getBasicCompnent());
+            current.setStaff(s);
+            current.setFromDate(fd);
+            current.setToDate(td);
         }
         return current;
     }
@@ -597,6 +612,5 @@ commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Sal
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }

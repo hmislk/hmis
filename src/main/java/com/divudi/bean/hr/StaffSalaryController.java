@@ -279,12 +279,12 @@ public class StaffSalaryController implements Serializable {
 //        System.err.println("Sub Size " + paysheetComponentsSubstraction.size());
         for (PaysheetComponent psc : paysheetComponentsAddition) {
             StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+//            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
 
         }
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
             StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
+//            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
 
         }
 

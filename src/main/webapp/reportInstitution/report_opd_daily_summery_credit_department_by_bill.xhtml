@@ -72,8 +72,9 @@
                         <p:column headerText="Ref. Bill"/>                      
                         <p:column headerText="Patient Name"/>
                         <p:column headerText="Discount"/>
+                        <p:column headerText="Vat"/>
                         <p:column headerText="Net Total"/>
-                        <p:column headerText="Total"/>
+                        <p:column headerText="Vat Plus Net Total"/>
 
                     </p:row>
                 </p:columnGroup>
@@ -101,12 +102,17 @@
                         </h:outputLabel>                                        
                     </p:column>
                     <p:column style="text-align: right;">                               
+                        <h:outputLabel value="#{b.vat}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: right;">                               
                         <h:outputLabel value="#{b.netTotal}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column style="text-align: right;">                               
-                        <h:outputLabel value="#{b.total}">
+                        <h:outputLabel value="#{b.netTotal+b.vat}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
@@ -128,15 +134,21 @@
                             </p:column>
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
+                                    <h:outputLabel value="#{d.vatTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;">
+                                <f:facet name="footer">
                                     <h:outputLabel value="#{d.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-
                             <p:column style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{d.discountTotal+d.netTotal}">
+                                    <h:outputLabel value="#{d.vatTotal+d.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>
@@ -149,10 +161,12 @@
 
                         <p:column footerText="Total Collection" style="font-weight: bold;" />   
 
-                        <p:column footerText="#{creditSummeryController.departmentTotalByBill}" colspan="5" style="text-align: right; font-weight: bold;">
-                            <h:outputLabel value="#{creditSummeryController.departmentTotalByBill}" style="float: right;">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
+                        <p:column footerText="#{creditSummeryController.departmentTotalByBillWithVat}" colspan="6" style="text-align: right; font-weight: bold;">
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{creditSummeryController.departmentTotalByBillWithVat}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                     </p:row>
                 </p:columnGroup>

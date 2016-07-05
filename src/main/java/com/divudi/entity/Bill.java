@@ -67,6 +67,8 @@ public class Bill implements Serializable {
     private List<Bill> cashBillsPre = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBill", fetch = FetchType.LAZY)
     private List<Bill> cashBillsOpdPre = new ArrayList<>();
+    @OneToMany(mappedBy = "billedBill", fetch = FetchType.LAZY)
+    private List<Bill> refundBills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
@@ -309,6 +311,14 @@ public class Bill implements Serializable {
     double transTotalWithOutCCFee;
     @Transient
     double transCurrentCCBalance;
+    @Transient
+    AgentHistory agentHistory;
+    @Transient
+    double vatCalulatedAmount;
+    @Transient
+    double vatPlusStaffFee;
+    @Transient
+    double vatPlusHosFee;
 
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
@@ -1686,6 +1696,44 @@ public class Bill implements Serializable {
         this.vatPlusNetTotal = vatPlusNetTotal;
     }
 
-    
-    
+    public double getVatCalulatedAmount() {
+        return vatCalulatedAmount;
+    }
+
+    public void setVatCalulatedAmount(double vatCalulatedAmount) {
+        this.vatCalulatedAmount = vatCalulatedAmount;
+    }
+
+    public List<Bill> getRefundBills() {
+        return refundBills;
+    }
+
+    public void setRefundBills(List<Bill> refundBills) {
+        this.refundBills = refundBills;
+    }
+
+    public AgentHistory getAgentHistory() {
+        return agentHistory;
+    }
+
+    public void setAgentHistory(AgentHistory agentHistory) {
+        this.agentHistory = agentHistory;
+    }
+
+    public double getVatPlusStaffFee() {
+        return vatPlusStaffFee;
+    }
+
+    public void setVatPlusStaffFee(double vatPlusStaffFee) {
+        this.vatPlusStaffFee = vatPlusStaffFee;
+    }
+
+    public double getVatPlusHosFee() {
+        return vatPlusHosFee;
+    }
+
+    public void setVatPlusHosFee(double vatPlusHosFee) {
+        this.vatPlusHosFee = vatPlusHosFee;
+    }
+
 }

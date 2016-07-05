@@ -96,9 +96,9 @@
                                         <h:outputLabel rendered="#{bi.editer ne null}"  value="."/>
                                     </p:column>
                                     <p:column headerText="Actions">
-                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}" style="width: 90px"/>
+                                        <p:commandButton ajax="false" value="Update" action="#{itemFeeController.edit(bi)}" style="width: 90px" rendered="#{webUserController.hasPrivilege('LabItemFeeUpadate')}"/>
                                         <p:commandButton id="remove" ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" action="#{itemFeeController.removeFee}" style="width: 90px">
+                                                return false;" action="#{itemFeeController.removeFee}" style="width: 90px" rendered="#{webUserController.hasPrivilege('LabItemFeeDelete')}">
                                             <f:setPropertyActionListener value="#{bi}" target="#{itemFeeController.removedItemFee}"/>
                                         </p:commandButton>
                                     </p:column>

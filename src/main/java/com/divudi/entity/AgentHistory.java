@@ -62,7 +62,7 @@ public class AgentHistory implements Serializable {
     public void setReferenceNo(String referenceNo) {
         this.referenceNo = referenceNo;
     }
-    
+
     public HistoryType getHistoryType() {
         return historyType;
     }
@@ -181,6 +181,20 @@ public class AgentHistory implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Integer getReferenceNoInteger() {
+        Integer referenceNoInterger = 0;
+        if (referenceNo == null || referenceNo.isEmpty()) {
+            return 0;
+        }
+        try {
+            referenceNoInterger = Integer.parseInt(referenceNo);
+        } catch (Exception e) {
+        }
+
+        return referenceNoInterger;
+
     }
 
     @Override

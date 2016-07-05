@@ -22,6 +22,7 @@ import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.inward.InwardPriceAdjustment;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.PriceMatrixFacade;
@@ -374,7 +375,7 @@ public class InwardPriceAdjustmntController implements Serializable {
                 + " where a.retired=false "
                 + " and type(a.category)=:cat  "
                 + " order by a.department.name,a.category.name,a.fromPrice";
-        hm.put("cat", StoreItemCategory.class);
+        hm.put("cat", ConsumableCategory.class);
 
         items = getFacade().findBySQL(sql, hm);
         

@@ -703,7 +703,8 @@ public class ItemController implements Serializable {
                 + " and type(c)!=:pac "
                 + " and (type(c)=:ser "
                 + " or type(c)=:inward "
-                + " or type(c)=:inv)  "
+                + " or type(c)=:inv) "
+                + " and (c.inactive=false or c.inactive is null) "
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         m.put("pac", Packege.class);
@@ -725,7 +726,8 @@ public class ItemController implements Serializable {
                 + " and type(c)!=:pac "
                 + " and (type(c)=:ser "
                 + " or type(c)=:inward "
-                + " or type(c)=:inv)  "
+                + " or type(c)=:inv) "
+                + " and (c.inactive=false or c.inactive is null) "
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         m.put("ct", cat);
