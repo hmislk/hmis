@@ -146,21 +146,21 @@ public class StockHistoryRecorder {
 //        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
 
-//    @SuppressWarnings("unused")
-//    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
-//    public void myTimerDailyChannelShedule() {
-//        Date startTime = new Date();
-//        System.out.println("Start Create Shedule " + startTime);
-//
-//        for (Staff s : staffs()) {
-//            generateSessions(s);
-//        }
-//
-//        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
-//
-//        //System.out.println("End writing stock history: " + new Date());
-////        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
-//    }
+    @SuppressWarnings("unused")
+    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
+    public void myTimerDailyChannelShedule() {
+        Date startTime = new Date();
+        System.out.println("Start Create Shedule " + startTime);
+
+        for (Staff s : staffs()) {
+            generateSessions(s);
+        }
+
+        System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
+
+        //System.out.println("End writing stock history: " + new Date());
+//        //System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+    }
 
     public void generateSessions(Staff staff) {
         String sql;

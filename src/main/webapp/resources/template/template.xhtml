@@ -54,7 +54,7 @@
 
                             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
                                 <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
-                                <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
+<!--                                <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
                                     <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
                                     <p:submenu styleClass="rightBordrOnly" label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}">
@@ -480,7 +480,7 @@
                                     <p:menuitem  ajax="false" action="/store/store_reports_index"  value="Reports" rendered="#{webUserController.hasPrivilege('StoreReports')}" ></p:menuitem>
                                     <p:menuitem  ajax="false" action="/store/store_summery_index"  value="Summery" rendered="#{webUserController.hasPrivilege('StoreSummery')}" ></p:menuitem>                                    
                                     <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
-                                </p:submenu>
+                                </p:submenu>-->
 
                                 <p:submenu styleClass="rightBordrOnly" label="Channeling" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
 
@@ -526,7 +526,7 @@
                                 <p:submenu styleClass="rightBordrOnly" label="Payments"  rendered="#{webUserController.hasPrivilege('Payment')}">  
 
                                     <p:submenu label="Pay"  rendered="#{webUserController.hasPrivilege('Payment')}">
-                                        <p:submenu label="OPD">
+<!--                                        <p:submenu label="OPD">
                                             <p:menuitem  ajax="false"  action="/payment_staff_bill" value="Pay Doctor/Staff" rendered="#{webUserController.hasPrivilege('PaymentBilling')}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/opd_search_professional_payment_due" actionListener="#{searchController.makeListNull}"  value="Payments-due Search" rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/opd_search_professional_payment_done" actionListener="#{searchController.makeListNull}"
@@ -538,7 +538,7 @@
                                                          actionListener="#{searchController.makeListNull}" />
                                             <p:menuitem  ajax="false" action="/inward/inward_search_professional_payment_done" value="Payment Done Search"  
                                                          actionListener="#{searchController.makeListNull}" />
-                                        </p:submenu>
+                                        </p:submenu>-->
 
                                         <p:submenu label="Channel" rendered="#{webUserController.hasPrivilege('ChannellingPayment')}" >
                                             <p:submenu label="Doctor/Staff">
@@ -547,20 +547,20 @@
                                                 <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_bill_search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>                                            
                                             </p:submenu>
 
-                                            <p:submenu label="Agency">
+<!--                                            <p:submenu label="Agency">
                                                 <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
                                                 <p:menuitem  ajax="false"  value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}" ></p:menuitem>
-                                            </p:submenu>                                        
+                                            </p:submenu>                                        -->
                                         </p:submenu> 
 
-                                        <p:submenu label="Petty Cash">
+<!--                                        <p:submenu label="Petty Cash">
                                             <p:menuitem  ajax="false"  action="/petty_cash_bill" value="Petty Cash Payment" actionListener="#{pettyCashBillController.prepareNewBill()}"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/petty_cash_bill_search_own" actionListener="#{searchController.makeListNull}"  value="Petty Cash Bill Search"  ></p:menuitem>
-                                        </p:submenu>
+                                        </p:submenu>-->
                                     </p:submenu>
 
                                     <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
-                                        <p:submenu label="Inward Deposit">
+<!--                                        <p:submenu label="Inward Deposit">
                                             <p:menuitem  ajax="false"  action="/inward/inward_bill_payment" value="Payment" actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/inward/inward_search_payment" value="Payment Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" ></p:menuitem>                                                                                
                                             <p:menuitem  ajax="false"  action="/inward/inward_bill_refund" value="Refund" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>                                         
@@ -592,7 +592,7 @@
                                             <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                             <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />
                                             <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search_billItems" actionListener="#{searchController.makeListNull}"  value="Payment done Search BillItem"  />
-                                        </p:submenu>
+                                        </p:submenu>-->
 
                                         <p:submenu label="Agent"  rendered="#{webUserController.hasPrivilege('Payment')}">
                                             <p:menuitem  ajax="false"  action="/agent_bill" value="Agent Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
@@ -600,15 +600,15 @@
                                                          actionListener="#{searchController.makeListNull}"  value="Agent Payment Bill Search"  ></p:menuitem>
                                         </p:submenu>
 
-                                        <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
+<!--                                        <p:submenu label="Collecting Centre"  rendered="#{webUserController.hasPrivilege('Payment')}">
                                             <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own"
                                                          actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
-                                        </p:submenu>
+                                        </p:submenu>-->
 
                                     </p:submenu>
 
-                                    <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
+<!--                                    <p:submenu label="Book Issuing" rendered="#{webUserController.hasPrivilege('Payment')}">
                                         <p:submenu label="Collecting Centre Book Issuing">
                                             <p:menuitem  ajax="false"  action="/lab/lab_agent_referece_book" value="Add Lab Book to Collecting Centre"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/reportLab/lab_report_collecting_center_referece_book" value="Collecting Centre Book Report"  ></p:menuitem>
@@ -623,7 +623,7 @@
 
                                         </p:submenu>
 
-                                    </p:submenu>
+                                    </p:submenu>-->
                                 </p:submenu>
 
 
