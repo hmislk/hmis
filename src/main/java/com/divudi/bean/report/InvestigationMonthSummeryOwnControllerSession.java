@@ -401,6 +401,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         refundedBills = fetchInvestigationBillList(new RefundBill());
         
        billlistTotal = new BillListTotal();
+       
+       
       
        
     }
