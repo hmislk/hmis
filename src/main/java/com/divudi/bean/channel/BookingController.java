@@ -13,6 +13,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -94,6 +95,8 @@ public class BookingController implements Serializable {
     FingerPrintRecordFacade fpFacade;
     @EJB
     FinalVariables finalVariables;
+    @EJB
+    CommonFunctions commonFunctions;
     /**
      * Controllers
      */
@@ -1104,6 +1107,10 @@ public class BookingController implements Serializable {
         }
         if (selectedServiceSession.getSessionDate() == null) {
             System.out.println("selectedServiceSession.date is null");
+            return;
+        }
+        if (commonFunctions.getEndOfDay(selectedServiceSession.getSessionDate()).getTime() != commonFunctions.getEndOfDay(new Date()).getTime()) {
+            JsfUtil.addErrorMessage("You Can Mark Only Today Arrivals Only");
             return;
         }
         if (arrivalRecord == null) {

@@ -14,9 +14,9 @@
                 <h:form>
                     <h:panelGroup rendered="#{!storeBillSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{storeBillSearch.bill.paymentMethod}" required="true"  >
+<!--                            <p:selectOneMenu   id="cmbPs" value="#{storeBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                            </p:selectOneMenu>
+                            </p:selectOneMenu>-->
                             <h:commandButton value="Cancel" action="#{storeBillSearch.storeRetailCancelBillWithStockBhtIssue()}" >
                             </h:commandButton>                            
                         </p:panel>

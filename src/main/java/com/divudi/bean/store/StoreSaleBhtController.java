@@ -573,6 +573,7 @@ public class StoreSaleBhtController implements Serializable {
                 double margin = (Math.abs(bi.getNetValue()) * priceMatrix.getMargin()) / 100;
                 issueFee.setFeeMargin(margin);
                 getBillFeeFacade().edit(issueFee);
+                bi.setMarginValue(margin);
             }
 
             bi.setAdjustedValue(Math.abs(issueFee.getTransNetValue()));

@@ -81,7 +81,7 @@
                                         <h:outputLabel value="#{b.netValue}"/>
                                     </p:column >
                                     <p:column headerText="Refunded" >
-                                        <h:outputLabel rendered="#{b.refunded}" value="Refunded" />
+                                        <h:outputLabel rendered="#{b.transRefund}" value="Refunded" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -98,8 +98,12 @@
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
 
+                                        <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                            <bi:inwardBillPrintPos bill="#{billSearch.bill}" duplicate="false" refunded="true"/>
+                                        </h:panelGroup>
 
-                                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+
+<!--                                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
                                         <div style="border: 1px solid;" >
                                             <h:panelGroup id="gpBillPreview" >
@@ -108,29 +112,29 @@
 
 
                                                     <div  class="receiptnoPrinting">
-                                                     
+
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.insId} **Refunded" /> 
 
                                                     </div>
 
                                                     <div  class="billdatePrinting">
-                                                        
+
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.billDate}">
                                                             <f:convertDateTime pattern="dd/MM/yy"/>
                                                         </h:outputLabel>
-                                                      
+
                                                     </div>
 
                                                     <div class="paymentPrinting">                                                     
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.paymentMethod}" />
-                                                        
+
                                                     </div>
 
                                                     <div class="billtimePrinting">                                                      
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
                                                         </h:outputLabel>
-                                                      
+
                                                     </div>
 
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.patient.person.nameWithTitle}" styleClass="ptnamePrinting" />
@@ -206,19 +210,19 @@
 
                                                     <div class="cashierPrinting" >                                                        
                                                         <h:outputLabel value="Cashier : #{billSearch.bill.refundedBill.creater.code}" />
-                                                      
+
 
 
                                                     </div>
 
-                                              
+
 
                                                 </div>
 
 
 
                                             </h:panelGroup>
-                                        </div>
+                                        </div>-->
                                     </div>
                                 </div>
                             </div>

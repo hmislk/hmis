@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
@@ -94,6 +95,8 @@ public class InwardSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
     @EJB
     PersonFacade personFacade;
     /**
@@ -542,6 +545,15 @@ public class InwardSearch implements Serializable {
             if (checkInvestigation()) {
                 UtilityController.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                 return;
+            }
+
+            if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+                //System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+                if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
+                    UtilityController.addErrorMessage("Sample Already collected can't cancel");
+                    return;
+                }
             }
 
             CancelledBill cb = createCancelBill();

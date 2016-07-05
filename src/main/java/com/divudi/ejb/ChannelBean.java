@@ -163,7 +163,9 @@ public class ChannelBean {
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionDate= :ssDate "
-                + " and bs.bill.paidAmount=:pa ";
+                + " and bs.bill.paidAmount=:pa "
+                + " and bs.bill.cancelled=false "
+                + " and bs.bill.refunded=false ";
         HashMap hh = new HashMap();
         hh.put("ssDate", date);
         hh.put("ser", ss);

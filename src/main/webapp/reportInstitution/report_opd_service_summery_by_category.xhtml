@@ -51,6 +51,7 @@
             <p:spacer height="30"/>
 
             <p:dataTable id="opd" rowIndexVar="i"  value="#{serviceSummery.billItemWithFees}" var="d" 
+                         rowStyleClass="#{d.billItem.bill.cancelled or d.billItem.bill.billedBill ne null?'crossLine':''}"
                          paginator="false"
                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                          rowsPerPageTemplate="5,10,15,20">                   
@@ -80,6 +81,13 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.insId}" />
                 </p:column>
+                
+                <p:column headerText="Billed Bill No">
+                    <f:facet name="header">
+                        <p:outputLabel value="Billed Bill No"/>
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
+                </p:column>
 
                 <p:column headerText="Date">
                     <f:facet name="header">
@@ -103,6 +111,20 @@
                         <h:outputLabel value="Doctor Fee" />
                     </f:facet>
                     <p:outputLabel value="#{d.staffsNames}" />
+                </p:column>
+                
+                <p:column headerText="Professional Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Professional Fee" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.proFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
+                    <f:facet name="footer">
+                        <h:outputLabel value="#{serviceSummery.proFeeTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </f:facet>
                 </p:column>
 
                 <p:column headerText="Hospital Fee" style="text-align: right;">

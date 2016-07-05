@@ -11,7 +11,6 @@
                 xmlns:poue="http://primefaces.org/ui/extensions">
 
     <ui:define name="content">
-       
 
         <h:form id="form">
 
@@ -271,7 +270,7 @@
                                     var keycode = (event.keyCode ? event.keyCode : event.which);
                                     alert("sdf");
                                     if (keycode == '13') {
-                                    document.getElementById("form:txthh3").focus();
+                                    document.getElementById("form:txtSearch3").focus();
                                     return false;
                                     }
 
@@ -447,7 +446,7 @@
                                             value="#{channelBillController.searchPatient}" 
                                             completeMethod="#{patientController.completePatientByNameOrCode}" 
                                             var="apt" itemLabel="#{apt.person.name}" 
-                                            itemValue="#{apt}" size="30"  styleClass="mediuminput"  onkeypress="if (event.keyCode == 10) {return false; }">
+                                            itemValue="#{apt}" size="30"  styleClass="mediuminput">
                                 <p:column headerText="Name">
                                     <h:outputLabel value="#{apt.person.nameWithTitle}" />
                                 </p:column>
@@ -497,21 +496,18 @@
                                            update="gpThisBookingDetails" style="float: right;" 
                                            action="#{channelBillController.add}" 
                                            oncomplete="PF('dlgAdd').show();">   
-                            <p:defaultCommand target="btnAdd"/>
                             <p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />
                         </p:commandButton>
-
                         <p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
                             <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
-
                         </p:confirmDialog>
+
                         <p:commandButton  action="#{channelBillController.clearAll}"  value="New Booking" ajax="false"/>
                     </h:panelGrid>
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600" closable="false">
-
                         <p:commandButton value="New Bill" action="#{channelBillController.clearAll}" ajax="false"
                                          ></p:commandButton>
 
@@ -535,7 +531,7 @@
                             </div>
                             <div>
                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                    <ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="false"/>
+                                    <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.printingBill}" dup="false"/>
                                 </h:panelGroup>
                             </div>
                             <div >
@@ -649,6 +645,8 @@
                                         <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.refunded==true}">
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel> 
+                                        <p:outputLabel style="color: red" value="Comment" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" />
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.cancelledBill.comments} #{bookingController.selectedBillSession.bill.refundedBill.comments}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -708,7 +706,8 @@
                                         <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.refundedBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.refunded==true}">
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel>
-
+                                        <p:outputLabel style="color: red" value="Comment" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" />
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.cancelledBill.comments} #{bookingController.selectedBillSession.bill.refundedBill.comments}" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}"/>
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -793,6 +792,8 @@
                                         <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.paidBill.refundedBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill.refunded==true}">
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel>
+                                        <p:outputLabel style="color: red" value="Comment" rendered="#{bookingController.selectedBillSession.bill.paidBill.cancelled==true or bookingController.selectedBillSession.bill.paidBill.refunded==true}" />
+                                        <p:outputLabel style="color: red" value="#{bookingController.selectedBillSession.bill.paidBill.cancelledBill.comments} #{bookingController.selectedBillSession.bill.paidBill.refundedBill.comments}" rendered="#{bookingController.selectedBillSession.bill.paidBill.cancelled==true or bookingController.selectedBillSession.bill.paidBill.refunded==true}"/>
                                     </h:panelGrid>                            
                                 </p:panel>
 
@@ -817,7 +818,7 @@
                                 </div>
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                        <ch:channelRecipt_ruhunu bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                     </h:panelGroup>
                                 </div>
                                 <div >
@@ -1039,7 +1040,7 @@
                                             </div>
                                             <div>
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                                    <ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="false"/>
+                                                    <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.printingBill}" dup="false"/>
                                                 </h:panelGroup>
                                             </div>
                                             <!--                                            <div >
@@ -1213,6 +1214,8 @@
                                         <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                         <p:commandButton value="All Doctor" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctor()}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="Doctor Arraival List" action="channel_doctor_view_today_1" actionListener="#{channelReportController.createDoctorArrival()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                         <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" onclick="onSubmitButton();">    
                                             <f:setPropertyActionListener value="#{null}" target="#{channelReportController.date}"/>

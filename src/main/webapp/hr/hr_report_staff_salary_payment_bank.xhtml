@@ -82,7 +82,7 @@
                         <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true" rowStyleClass="#{ss.hold ? 'greenText': ss.blocked ? 'redText' :''}">
                                 <f:facet name="header" >
-                                    
+
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
                                         <br/>
@@ -121,9 +121,9 @@
                                     <p:rowEditor />  
                                 </p:column>
 
-                                <p:column>
+                                <p:column rendered="#{!hrReportController.hold}" >
                                     <f:facet name="header">
-                                        
+
                                         <h:outputLabel value="Emp Name"/>
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
@@ -131,6 +131,14 @@
                                     </p:outputLabel>
                                     <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.hold) 
                                                                                                  or(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column rendered="#{hrReportController.hold}" >
+                                    <f:facet name="header">
+
+                                        <h:outputLabel value="Emp Name"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
                                     </p:outputLabel>
                                 </p:column>
 
@@ -184,7 +192,7 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column>
+                                <p:column rendered="#{!hrReportController.hold}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Account No"/>
                                     </f:facet>
@@ -197,6 +205,12 @@
                                         </f:facet>
                                     </p:cellEditor>
 
+                                </p:column>
+                                <p:column rendered="#{hrReportController.hold}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Account No"/>
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staff.accountNo}"  />
                                 </p:column>
 
                                 <p:column headerText="Block" styleClass="noPrintButton">
@@ -265,6 +279,13 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>  
                                     </f:facet>
+                                </p:column>
+                                
+                                <p:column rendered="#{hrReportController.hold}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Signature"/>
+                                    </f:facet>
+                                    <p:outputLabel value="........................"  />
                                 </p:column>
 
                                 <p:column rendered="false" >

@@ -130,15 +130,17 @@ public class StoreTransferRequestController implements Serializable {
 
         currentBillItem = null;
     }
+//    @Inject
+//    private PharmacyController pharmacyController;
     @Inject
-    private PharmacyController pharmacyController;
+    StoreController1 storeController1;
 
     public void onEdit(BillItem tmp) {
-        getPharmacyController().setPharmacyItem(tmp.getItem());
+        storeController1.setPharmacyItem(tmp.getItem());
     }
 
     public void onEdit() {
-        getPharmacyController().setPharmacyItem(getCurrentBillItem().getItem());
+        storeController1.setPharmacyItem(getCurrentBillItem().getItem());
     }
 
     public void saveBill() {
@@ -311,14 +313,6 @@ public class StoreTransferRequestController implements Serializable {
         this.itemsDistributorsFacade = itemsDistributorsFacade;
     }
 
-    public PharmacyController getPharmacyController() {
-        return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
-    }
-
 //    public boolean isPrintPreview() {
 //        return printPreview;
 //    }
@@ -340,7 +334,7 @@ public class StoreTransferRequestController implements Serializable {
 
         this.currentBillItem = currentBillItem;
         if (currentBillItem != null && currentBillItem.getItem() != null) {
-            getPharmacyController().setPharmacyItem(currentBillItem.getItem());
+            storeController1.setPharmacyItem(currentBillItem.getItem());
         }
     }
 
