@@ -4754,6 +4754,7 @@ public class ChannelReportController implements Serializable {
     public List<AgentHistory> createAgentHistoryByBook(Date fd, Date td, Institution i, List<HistoryType> hts, int sn, int en) {
         String sql;
         Map m = new HashMap();
+        List<AgentHistory>ahs;
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.retired=false "
@@ -4780,12 +4781,50 @@ public class ChannelReportController implements Serializable {
 //        m.put("en", en);
 
         sql += " order by ah.bill.billClassType, ah.createdAt ";
+        
+        ahs=getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
+        System.out.println("ahs = " + ahs.size());
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size() = " + getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size());
 
-        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return ahs;
+
+    }
+    
+    public double  createAgentHistoryByBookTotal(Date fd, Date td, Institution i, List<HistoryType> hts, int sn, int en) {
+        String sql;
+        Map m = new HashMap();
+        double d=0.0;
+
+        sql = " select sum(ah.bill.netTotal+ah.bill.vat) from AgentHistory ah where ah.retired=false "
+                + " and ah.bill.retired=false "
+                + " and ah.createdAt between :fd and :td "
+                + " and ah.referenceNo >=" + sn
+                + " and ah.referenceNo <=" + en;
+
+        if (i != null) {
+            sql += " and (ah.bill.fromInstitution=:ins"
+                    + " or ah.bill.creditCompany=:ins) ";
+            m.put("ins", i);
+        }
+
+        if (hts != null) {
+            sql += " and ah.historyType in :hts ";
+            m.put("hts", hts);
+        }
+
+        m.put("fd", fd);
+        m.put("td", td);
+
+        sql += " order by ah.bill.billClassType, ah.createdAt ";
+        d=getAgentHistoryFacade().findDoubleByJpql(sql, m);
+
+        System.out.println("d = " + d);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+
+        return d;
 
     }
 
