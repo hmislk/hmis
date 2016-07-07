@@ -628,6 +628,9 @@ body {
     width: 280px;
 }
 
+.dateTimePickerSmall input{
+    width: 100px;
+}
 
 .sevenCol1{
     width: 150px;
