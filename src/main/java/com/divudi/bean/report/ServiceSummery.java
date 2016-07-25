@@ -164,10 +164,11 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins"
-                + " and  bi.bill.billType= :bTp "
+                + " where bi.bill.institution=:ins "
+                + " and bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
-                + " and bi.billItem.item=:itm ";
+                + " and bi.billItem.item=:itm "
+                + " and bi.retired=false ";
 
         if (discharged) {
             sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
@@ -206,7 +207,8 @@ public class ServiceSummery implements Serializable {
         sql = "select sum(bi.feeVat) FROM BillFee bi "
                 + " where  bi.bill.institution=:ins"
                 + " and bi.bill.billType= :bTp "
-                + " and bi.billItem.item=:itm ";
+                + " and bi.billItem.item=:itm "
+                + " and bi.retired=false ";
 
         if (discharged) {
             sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
@@ -463,7 +465,9 @@ public class ServiceSummery implements Serializable {
                 + " where bi.bill.billType=:bType "
                 + " and bi.item=:itm "
                 + " and type(bi.bill)=:billClass "
-                + " and bi.bill.toInstitution=:ins ";
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.bill.retired=false "
+                + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
             sql += " and ( bi.bill.paymentMethod = :pm1 "
@@ -568,8 +572,10 @@ public class ServiceSummery implements Serializable {
 
         sql = "select bi FROM BillItem bi "
                 + " where  bi.bill.institution=:ins "
-                + " and  bi.bill.billType= :bTp  "
-                + " and bi.item=:itm ";
+                + " and bi.bill.billType= :bTp  "
+                + " and bi.item=:itm "
+                + " and bi.bill.retired=false "
+                + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
             sql += " and ( bi.bill.paymentMethod = :pm1 "

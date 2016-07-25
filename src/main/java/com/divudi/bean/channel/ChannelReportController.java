@@ -4330,6 +4330,8 @@ public class ChannelReportController implements Serializable {
 
         BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
 
+        total = 0.0;
+
         for (Staff s : staffs) {
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             ChannelDoctor cd = new ChannelDoctor();
@@ -4344,10 +4346,70 @@ public class ChannelReportController implements Serializable {
 
             channelDoctors.add(cd);
 
+            total += cd.getBillFee() + cd.getBillCanncelFee() + cd.getRefundFee();
+
         }
 
-        calTotal();
+//        calTotal();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/BTT(/faces/channel/channel_doctor_view_today_all.xhtml)");
 
+    }
+
+    public void createTotalDoctorAllBTT() {
+        Date startTime = new Date();
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select distinct(bs.bill.staff) From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :fd and :td "
+                + " order by bs.bill.staff.person.name ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<Staff> staffs = staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("staffs.size() = " + staffs.size());
+
+        BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
+
+        total = 0.0;
+
+        System.out.println("reportKeyWord.getFrom() = " + reportKeyWord.getFrom());
+
+        for (Staff s : staffs) {
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            ChannelDoctor cd = new ChannelDoctor();
+            cd.setConsultant(s);
+            double cb = fetchBillCount(s, fromDate, toDate, new BilledBill(), Arrays.asList(types));
+            System.out.println("cb = " + cb);
+            double cc = fetchBillCount(s, fromDate, toDate, new CancelledBill(), Arrays.asList(types));
+            System.out.println("cc = " + cc);
+            double cr = fetchBillCount(s, fromDate, toDate, new RefundBill(), Arrays.asList(types));
+            System.out.println("cr = " + cr);
+            int icb = (int) ((cb * reportKeyWord.getFrom()) / 100);
+            System.out.println("icb = " + icb);
+            int icc = (int) ((cc * reportKeyWord.getFrom()) / 100);
+            System.out.println("icc = " + icc);
+            int icr = (int) ((cr * reportKeyWord.getFrom()) / 100);
+            System.out.println("icr = " + icr);
+            cd.setBillCount(icb);
+            cd.setBillCanncelCount(icc);
+            cd.setRefundedCount(icr);
+
+            cd.setBillFee(fetchBillFeesBTT(new BilledBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types), icb));
+            cd.setBillCanncelFee(fetchBillFeesBTT(new CancelledBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types), icc));
+            cd.setRefundFee(fetchBillFeesBTT(new RefundBill(), FeeType.Staff, s, fromDate, toDate, Arrays.asList(types), icr));
+
+            channelDoctors.add(cd);
+
+            total += cd.getBillFee() + cd.getBillCanncelFee() + cd.getRefundFee();
+
+        }
+
+//        calTotal();
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Consultant report/BTT(/faces/channel/channel_doctor_view_today_all.xhtml)");
 
     }
@@ -4475,6 +4537,38 @@ public class ChannelReportController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         double d = getBillFeeFacade().findDoubleByJpql(sql, m);
+        System.out.println("d = " + d);
+
+        return d;
+    }
+
+    double fetchBillFeesBTT(Bill b, FeeType ft, Staff s, Date fd, Date td, List<BillType> billTypes, int max) {
+        Map m = new HashMap();
+        String sql;
+        List<BillFee> bfs=new ArrayList<>();
+
+        sql = "Select bf From BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.fee.feeType=:ft "
+                + " and type(bf.bill)=:class "
+                + " and bf.bill.staff=:s "
+                + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
+                + " and bf.bill.billType in :bts";
+
+        m.put("ft", ft);
+        m.put("class", b.getClass());
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("s", s);
+        m.put("bts", billTypes);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("max = " + max);
+        bfs= getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
+        double d=0.0;
+        for (BillFee bf : bfs) {
+            d+=bf.getFeeValue();
+        }
         System.out.println("d = " + d);
 
         return d;
@@ -4754,7 +4848,7 @@ public class ChannelReportController implements Serializable {
     public List<AgentHistory> createAgentHistoryByBook(Date fd, Date td, Institution i, List<HistoryType> hts, int sn, int en) {
         String sql;
         Map m = new HashMap();
-        List<AgentHistory>ahs;
+        List<AgentHistory> ahs;
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.retired=false "
@@ -4781,8 +4875,8 @@ public class ChannelReportController implements Serializable {
 //        m.put("en", en);
 
         sql += " order by ah.bill.billClassType, ah.createdAt ";
-        
-        ahs=getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        ahs = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         System.out.println("ahs = " + ahs.size());
         System.out.println("m = " + m);
@@ -4791,11 +4885,11 @@ public class ChannelReportController implements Serializable {
         return ahs;
 
     }
-    
-    public double  createAgentHistoryByBookTotal(Date fd, Date td, Institution i, List<HistoryType> hts, int sn, int en) {
+
+    public double createAgentHistoryByBookTotal(Date fd, Date td, Institution i, List<HistoryType> hts, int sn, int en) {
         String sql;
         Map m = new HashMap();
-        double d=0.0;
+        double d = 0.0;
 
         sql = " select sum(ah.bill.netTotal+ah.bill.vat) from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.retired=false "
@@ -4818,7 +4912,7 @@ public class ChannelReportController implements Serializable {
         m.put("td", td);
 
         sql += " order by ah.bill.billClassType, ah.createdAt ";
-        d=getAgentHistoryFacade().findDoubleByJpql(sql, m);
+        d = getAgentHistoryFacade().findDoubleByJpql(sql, m);
 
         System.out.println("d = " + d);
         System.out.println("m = " + m);
