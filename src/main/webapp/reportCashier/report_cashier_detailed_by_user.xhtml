@@ -32,6 +32,8 @@
                             <h:outputLabel value="#{commonReport.toDate}">
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
+                            <br/>
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" 
                                              style="float: right;" actionListener="#{commonReport.createCashierTableByUser()}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" />
                             <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" styleClass="noPrintButton" 
@@ -58,9 +60,6 @@
                                              pty_b:pty_b,pty_c:pty_c,
                                              sum1,sum2,sum3,sum4,sum5,sum6,sum7,sum8,sum9,sum10" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
-                        </f:facet>
-                        <f:facet name="footer">
-                            <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
                         </f:facet>
 
                         <h:panelGrid columns="8" styleClass="noPrintButton" >
@@ -674,11 +673,6 @@
                             <br/>
                             <h:outputLabel value="............................"/>
                         </h:panelGrid>
-
-
-                        <div style="page-break-after: always;">
-                            <br/>
-                        </div>
 
                         <ca:pettyBills id="pty_b" data="#{commonReport.userPettyPaymentBills}"/>
 

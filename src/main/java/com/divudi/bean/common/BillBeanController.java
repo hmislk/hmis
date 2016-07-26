@@ -391,7 +391,10 @@ public class BillBeanController implements Serializable {
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.toInstitution=:ins"
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and bf.bill.paymentMethod in :pms";
+                + " and bf.bill.paymentMethod in :pms "
+                + " and bf.billItem.retired=false "
+                + " and bf.bill.retired=false "
+                + " and bf.retired=false ";
 
         HashMap temMap = new HashMap();
         if (creditCompany != null) {

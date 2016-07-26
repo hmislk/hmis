@@ -279,12 +279,12 @@ public class StaffSalaryController implements Serializable {
 //        System.err.println("Sub Size " + paysheetComponentsSubstraction.size());
         for (PaysheetComponent psc : paysheetComponentsAddition) {
             StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
+//            getCurrent().getTransStaffSalaryComponantsAddition().add(c);
 
         }
         for (PaysheetComponent psc : paysheetComponentsSubstraction) {
             StaffSalaryComponant c = salaryCycleController.fetchSalaryComponents(getCurrent(), psc, false, getSalaryCycle());
-            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
+//            getCurrent().getTransStaffSalaryComponantsSubtraction().add(c);
 
         }
 
@@ -1257,7 +1257,7 @@ public class StaffSalaryController implements Serializable {
 
 //        System.err.println("Late In 10 " + stfCurrent);
         List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(stfCurrent, fromTime, toTime, shiftCount.intValue());
-
+        
         if (staffShiftEarlyIn == null) {
             return;
         }
@@ -1521,6 +1521,7 @@ public class StaffSalaryController implements Serializable {
         for (StaffShift ss : staffShifts) {
             System.out.println("ss.getLateInVarified() = " + ss.getLateInVarified());
             System.out.println("ss.getStaff().isAllowedLateInLeave() = " + ss.getStaff().isAllowedLateInLeave());
+            System.out.println("ss.isConsiderForLateIn() = " + ss.isConsiderForLateIn());
             if (ss.getStaff().isAllowedLateInLeave()
                     && !ss.isConsiderForLateIn()
                     && ss.getLateInVarified() > 0) {
@@ -1530,9 +1531,13 @@ public class StaffSalaryController implements Serializable {
                 System.out.println("ss.getLeavedTimeOther() = " + ss.getLeavedTimeOther());
             }
 
+            System.out.println("ss.getStaff().isAllowedEarlyOutLeave() = " + ss.getStaff().isAllowedEarlyOutLeave());
+            System.out.println("ss.getEarlyInVarified() = " + ss.getEarlyInVarified());
+            System.out.println("ss.isConsiderForEarlyOut() = " + ss.isConsiderForEarlyOut());
+            System.out.println("ss.getEarlyOutVarified() = " + ss.getEarlyOutVarified());
             if (ss.getStaff().isAllowedEarlyOutLeave()
                     && !ss.isConsiderForEarlyOut()
-                    && ss.getEarlyInVarified() > 0) {
+                    && ss.getEarlyOutVarified() > 0) {
                 System.err.println("******Automatic Early Out Leave (Out) half " + ss.getStaff().getCodeInterger());
                 calStaffLeaveFromEarlyOut(ss, 30 * 60, 90 * 60, 2.0);
                 System.out.println("ss.getLeavedTime() = " + ss.getLeavedTime());

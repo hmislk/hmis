@@ -383,8 +383,14 @@ public class StoreReportsTransfer implements Serializable {
         Date startTime = new Date();
         
         listz = new ArrayList<>();
-
-        List<Object[]> list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getSessionController().getDepartment());
+        List<Object[]> list ;
+        
+        if (department==null) {
+            list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getSessionController().getDepartment());
+        } else {
+            list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), department);
+        }
+        
         if (list == null) {
             return;
         }

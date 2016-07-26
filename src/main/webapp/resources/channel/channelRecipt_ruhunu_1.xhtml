@@ -223,6 +223,9 @@
                                         <h:outputLabel value="#{cc.attrs.bill.netTotal-cc.attrs.bill.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
+<!--                                        <h:outputLabel value="#{cc.attrs.bill.vatPlusHosFee}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>-->
                                     </td>
 
                                 </tr>
@@ -241,22 +244,25 @@
                                         <h:outputLabel value="#{cc.attrs.bill.staffFee}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
+<!--                                        <h:outputLabel value="#{cc.attrs.bill.vatPlusStaffFee}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>-->
                                     </td>
 
                                 </tr>
 
                                 <tr>
                                     <td>
-                                        <h:outputLabel value="Vat(15%)" ></h:outputLabel>
+                                        <h:outputLabel value="Government Taxes" rendered="#{cc.attrs.bill.vat ne 0.0}"></h:outputLabel>
                                     </td>
                                     <td>
-                                        <p:spacer width="10" ></p:spacer>
+                                        <p:spacer width="10" rendered="#{cc.attrs.bill.vat ne 0.0}"></p:spacer>
                                     </td>
                                     <td>
-                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.vat ne 0.0}"></h:outputLabel>
                                     </td>
                                     <td>
-                                        <h:outputLabel value="#{cc.attrs.bill.vat}" >
+                                        <h:outputLabel value="#{cc.attrs.bill.vat}" rendered="#{cc.attrs.bill.vat ne 0.0}">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </td>
@@ -266,7 +272,7 @@
                                 <tr>
                                     <td>
                                         <b>
-                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                            <h:outputLabel value="Total Fee" ></h:outputLabel>
                                         </b>
                                     </td>
                                     <td>
@@ -347,6 +353,13 @@
                                         <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
                                     </td>
                                 </tr>
+<!--                                <tr>
+                                    <td colspan="4">
+                                        <P>
+                                            <sup>*</sup>Note : Above bill inclusive of Hospital Charges, Professional fee &amp; Government Taxes.  
+                                        </P>
+                                    </td>
+                                </tr>-->
 
                             </table>
                         </div>

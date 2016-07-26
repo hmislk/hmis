@@ -1012,6 +1012,8 @@ public class PharmacyController implements Serializable {
     public void createInstitutionStock() {
         //   //System.err.println("Institution Stock");
         List<Institution> insList = getCompany();
+        
+        System.out.println("insList.size() = " + insList.size());
 
         institutionStocks = new ArrayList<>();
         grantStock = 0;
@@ -1027,6 +1029,9 @@ public class PharmacyController implements Serializable {
                 r.setDepartment((Department) obj[0]);
                 r.setStock((Double) obj[1]);
                 list.add(r);
+                
+                System.out.println("r.getDepartment().getName() = " + r.getDepartment().getName());
+                System.out.println("r.getStock() = " + r.getStock());
 
                 //Total Institution Stock
                 totalStock += r.getStock();

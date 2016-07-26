@@ -21,6 +21,7 @@ import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
+import javax.persistence.Transient;
 
 /**
  *
@@ -56,6 +57,15 @@ public class ReportKeyWord {
     WebUser webUser;
     private String string;
     boolean bool1;
+    String address;
+    @Transient
+    String transAddress1;
+    @Transient
+    String transAddress2;
+    @Transient
+    String transAddress3;
+    @Transient
+    String transAddress4;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -285,6 +295,70 @@ public class ReportKeyWord {
 
     public void setBool1(boolean bool1) {
         this.bool1 = bool1;
+    }
+    
+    public String getTransAddress1() {
+        if (transAddress1==null) {
+            split();
+        }
+        return transAddress1;
+    }
+
+    public void setTransAddress1(String transAddress1) {
+        this.transAddress1 = transAddress1;
+    }
+
+    public String getTransAddress2() {
+        return transAddress2;
+    }
+
+    public void setTransAddress2(String transAddress2) {
+        this.transAddress2 = transAddress2;
+    }
+
+    public String getTransAddress3() {
+        return transAddress3;
+    }
+
+    public void setTransAddress3(String transAddress3) {
+        this.transAddress3 = transAddress3;
+    }
+
+    public String getTransAddress4() {
+        return transAddress4;
+    }
+
+    public void setTransAddress4(String transAddress4) {
+        this.transAddress4 = transAddress4;
+    }
+    
+    public void split() {
+        if(address == null){
+            return;
+        }
+        
+        String arr[] = address.split(",");
+        //System.out.println(arr);
+        if(arr==null){
+            return;
+        }
+       try{
+            transAddress1=arr[0];
+            transAddress2=arr[1];
+            transAddress3=arr[2];
+            transAddress4=arr[3];
+       }catch(Exception e){
+           //System.out.println(e.getMessage());
+       }
+        
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public void resetKeyWord() {

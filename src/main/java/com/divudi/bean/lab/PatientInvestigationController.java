@@ -24,6 +24,7 @@ import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
@@ -101,6 +102,8 @@ public class PatientInvestigationController implements Serializable {
     SmsFacade smsFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
 
     List<Investigation> investSummery;
     Date sampledOutsideDate;
@@ -709,8 +712,30 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        checkRefundBillItems(lstToSamle);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/sampling(/faces/lab_sample.xhtml)");
+    }
+    
+    public void checkRefundBillItems(List<PatientInvestigation> pis) {
+        for (PatientInvestigation pi : pis) {
+            markRefundBillItem(pi);
+        }
+    }
+
+    public void markRefundBillItem(PatientInvestigation pi) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bi from BillItem bi "
+                + " where bi.referanceBillItem.id=:bi ";
+        m.put("bi", pi.getBillItem().getId());
+        List<BillItem> bis = billItemFacade.findBySQL(sql, m);
+        System.out.println("bis.size() = " + bis.size());
+        if (bis.isEmpty()) {
+            pi.getBillItem().setTransRefund(false);
+        } else {
+            pi.getBillItem().setTransRefund(true);
+        }
     }
 
     List<PatientInvestigation> toReceive;

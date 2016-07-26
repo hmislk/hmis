@@ -77,7 +77,7 @@
                             <tr>
                                 <td>
                                     <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
-                                                styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                                styleClass="dateTimePickerSmall" pattern="yyyy MMMM dd" >
                                         <p:ajax event="dateSelect" 
                                                 process="@this date" 
                                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} a"  

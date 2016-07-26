@@ -20,18 +20,18 @@
         <h:panelGroup>
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
-            <div class="fiveinchbillBreakRuhunu">
+            <div class="fiveinchbillBreakRuhunu" style="background-color: skyblue">
                 <h:panelGroup id="gpBillPreview" >
 
-                    <div style="position: absolute!important;left: 70%!important; font-weight: bold!important;
-                         top: 0%!important;font-size: 15px!important; text-decoration: underline!important;">
-                        <h:outputLabel value="OPD Invoice"/>
+                    <div style="position: absolute!important;left: 60%!important; font-weight: bold!important;
+                         top: 0%!important;font-size: 10px!important; text-decoration: underline!important;">
+                        <h:outputLabel value="INTERNAL SERVICE ORDER"/>
                     </div>
-                    <div style="position: absolute!important;left: 50%!important; font-weight: bold!important;
+<!--                    <div style="position: absolute!important;left: 50%!important; font-weight: bold!important;
                          top: 4%!important;font-size: 8px!important;">
                         <h:outputLabel value="VAT Reg. No : 114103438-7000"/>
-                    </div>
-                    <div class="errorMessage" >
+                    </div>-->
+<!--                    <div class="errorMessage" >
                         <h:outputLabel rendered="#{cc.attrs.bill.transError}"
                                        style="font-size: 15px!important; 
                                        font-weight: bolder!important;
@@ -39,7 +39,7 @@
                                        left: 7.0%!important;
                                        top: 2.0%!important;"
                                        value=" THIS BILL IS NOT VALID PLEASE CANCEL"/>
-                    </div>
+                    </div>-->
 
                     <div style="position: absolute;
                          left: 0%!important;
@@ -78,19 +78,19 @@
                     </div>
 
                     <div style="position: absolute;
-                         left: 73%!important;
+                         left: 72%!important;
                          top: 7%!important;
                          font-size: 12px!important;">
                         <h:outputLabel value="Date"/>
                     </div>
                     <div style="position: absolute;
-                         left: 82%;
+                         left: 80%;
                          top: 7%;
                          font-size:12px!important;">
                         <h:outputLabel value=":"/>
                     </div>
                     <div style="position: absolute;
-                         left: 84%!important;
+                         left: 82%!important;
                          top: 7%!important;
                          font-size: 12px!important;" >  
 
@@ -104,7 +104,7 @@
                          left: 0%!important;
                          top: 11%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Payment Type"/>
+                        <h:outputLabel value="BHT No"/>
                     </div>
                     <div style="position: absolute;
                          left: 23%;
@@ -117,24 +117,24 @@
                          top: 11%;
                          font-size:12px!important;" >
                         <h:panelGroup>
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" />                                
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />                                
                         </h:panelGroup>
                     </div>
 
                     <div style="position: absolute;
-                         left: 73%!important;
+                         left: 72%!important;
                          top: 11%!important;
                          font-size: 12px!important;">
                         <h:outputLabel value="Time"/>
                     </div>
                     <div style="position: absolute;
-                         left: 82%;
+                         left: 80%;
                          top: 11%;
                          font-size:12px!important;">
                         <h:outputLabel value=":"/>
                     </div>
                     <div style="position: absolute;
-                         left: 84%;
+                         left: 82%;
                          top: 11%;
                          font-size:12px!important;" >      
 
@@ -160,28 +160,28 @@
                          left: 25%;
                          top: 15%;
                          font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  >
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"  >
                         </h:outputLabel>
                     </div>
 
                     <div style="position: absolute;
-                         left: 73%!important;
+                         left: 72%!important;
                          top: 15%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Ref. Ins." rendered="#{cc.attrs.bill.referredByInstitution ne null}"/>
+                        <h:outputLabel value="Age" />
+                    </div>
+                    <div style="position: absolute;
+                         left: 80%;
+                         top: 15%;
+                         font-size:12px!important;">
+                        <h:outputLabel value=":" />
                     </div>
                     <div style="position: absolute;
                          left: 82%;
                          top: 15%;
-                         font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.referredByInstitution ne null}"/>
-                    </div>
-                    <div style="position: absolute;
-                         left: 84%;
-                         top: 15%;
                          font-size:12px!important;" >
                         <h:panelGroup>
-                            <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}" rendered="#{cc.attrs.bill.referredByInstitution ne null}"/>                              
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.age}" />                              
                         </h:panelGroup>
                     </div>
 
@@ -189,60 +189,21 @@
                          left: 0%!important;
                          top: 19%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Patient Tel." rendered="#{cc.attrs.bill.patient.person.phone ne null and cc.attrs.bill.patient.person.phone ne ''}"/>
+                        <h:outputLabel value="Patient Tel." rendered="#{cc.attrs.bill.patientEncounter.patient.person.phone ne null and cc.attrs.bill.patientEncounter.patient.person.phone ne ''}"/>
                     </div>
                     <div style="position: absolute;
                          left: 23%;
                          top: 19%;
                          font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.person.phone ne null and cc.attrs.bill.patient.person.phone ne ''}"/>
+                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patientEncounter.patient.person.phone ne null and cc.attrs.bill.patientEncounter.patient.person.phone ne ''}"/>
                     </div>
                     <div style="position: absolute;
                          left: 25%;
                          top: 19%;
                          font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" rendered="#{cc.attrs.bill.patient.person.phone ne null and cc.attrs.bill.patient.person.phone ne ''}" />
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}" rendered="#{cc.attrs.bill.patientEncounter.patient.person.phone ne null and cc.attrs.bill.patientEncounter.patient.person.phone ne ''}" />
                     </div>
 
-                    <div style="position: absolute;
-                         left: 0%!important;
-                         top: 23%!important;
-                         font-size: 12px!important;">
-                        <h:outputLabel value="Age" rendered="#{cc.attrs.bill.patient.age ne null and cc.attrs.bill.patient.age ne ''}"/>
-                    </div>
-                    <div style="position: absolute;
-                         left: 23%;
-                         top: 23%;
-                         font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.age ne null and cc.attrs.bill.patient.age ne ''}"/>
-                    </div>
-                    <div style="position: absolute;
-                         left: 25%;
-                         top: 23%;
-                         font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.patient.age}" rendered="#{cc.attrs.bill.patient.age ne null and cc.attrs.bill.patient.age ne ''}" />
-                    </div>
-
-                    <div style="position: absolute;
-                         left: 0%!important;
-                         top: 27%!important;
-                         font-size: 12px!important;">
-                        <h:outputLabel value="Credit Comp." rendered="#{cc.attrs.bill.creditCompany ne null}"/>
-                        <h:outputLabel value="Col. Cen." rendered="#{cc.attrs.bill.collectingCentre ne null}"/>
-                    </div>
-                    <div style="position: absolute;
-                         left: 23%;
-                         top: 27%;
-                         font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.creditCompany ne null or cc.attrs.bill.collectingCentre ne null}"/>
-                    </div>
-                    <div style="position: absolute;
-                         left: 25%;
-                         top: 27%;
-                         font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.collectingCentre.name}" rendered="#{cc.attrs.bill.collectingCentre ne null}"/>
-                        <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="#{cc.attrs.bill.creditCompany ne null}"/>
-                    </div>
 
                     <div style="position: absolute;
                          left: 12%;
@@ -255,6 +216,7 @@
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>
+                                    <br/>
                                     <h:panelGroup rendered="#{bip.item.sessionNumberType ne null}">
                                         <h:outputLabel value="Session No . " style="margin: 4px; font-size: 12px!important; font-weight: bold;"></h:outputLabel>
                                         <h:outputLabel value="#{bip.billSession.serialNo}" style="margin: 4px; font-size: 12px!important; font-weight: bold;" >
@@ -265,27 +227,20 @@
                         </h:dataTable>
                     </div>
 
-                    <div style="position: absolute;
+<!--                    <div style="position: absolute;
                          left: 80%;
                          top: 34%;
                          font-size:12px!important;" >
                         <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip1"  >
                             <h:column >
-                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue+bip1.vat}"  style="font-size: 11px!important;float: right;" >
+                                <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue}"  style="font-size: 11px!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:panelGroup rendered="#{bip1.item.department.id eq cc.attrs.bill.toDepartment.id and bip1.billSession ne null }"  >
-                                    <br/>
-                                    <h:panelGroup rendered="#{bip1.item.sessionNumberType ne null}">
-                                        <h:outputLabel value="-" styleClass="nonPrintBlock" >
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                </h:panelGroup>
                             </h:column>
                         </h:dataTable>
-                    </div>
+                    </div>-->
 
-                    <div style="position: absolute;
+<!--                    <div style="position: absolute;
                          left: 30%!important;
                          bottom:10%!important;
                          /*top: 13.8cm;*/
@@ -309,13 +264,13 @@
                                     <h:outputLabel value="TOTAL" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel value="#{cc.attrs.bill.total+cc.attrs.bill.vat}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
                             </tr>
 
-                            <!--                             <tr>
+                                                         <tr>
                                                             <td style="text-align: left; min-width: 3cm;">
                                                                 <h:outputLabel value="Net Total" />
                                                             </td>
@@ -324,8 +279,8 @@
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputLabel>
                                                             </td>
-                                                        </tr>-->
-                            <!--                            <tr>
+                                                        </tr>
+                                                        <tr>
                                                             <td style="text-align: left;">
                                                                 <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="VAT" style=" text-align: right!important;  font-size: 15px!important;   "/>
                                                             </td>
@@ -334,7 +289,7 @@
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputLabel>
                                                             </td>
-                                                        </tr>-->
+                                                        </tr>
 
                             <tr>
                                 <td style="text-align: left;">
@@ -346,28 +301,24 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
-                            <!--                            <tr>
-                                                            <td style="text-align: left; min-width: 3cm;">
-                                                                <h:outputLabel value="VAT (15%)" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
-                                                            </td>
-                                                            <td style="text-align: right!important; ">
-                                                                <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-                                                            </td>
-                                                        </tr>-->
                             <tr>
-                                <td style="text-align: left;">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
-                                    <!--<h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>-->
+                                <td style="text-align: left; min-width: 3cm;">
+                                    <h:outputLabel value="VAT (15%)" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}"/>
                                 </td>
                                 <td style="text-align: right!important; ">
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                    <h:outputLabel value="#{cc.attrs.bill.vat}" style="text-align: right!important; font-size: 12px!important;" rendered="#{cc.attrs.bill.vat ne 0.0}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-<!--                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="Net Total" style=" text-align: right!important;  font-size: 15px!important;   "/>
+                                </td>
+                                <td style="text-align: right!important; ">
+                                    <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 or cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.netTotal+cc.attrs.bill.vat}"  style="font-weight: bold ; text-align: right!important; font-size: 15px!important;">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>-->
+                                    </h:outputLabel>
                                 </td>
                             </tr>
 
@@ -375,13 +326,13 @@
 
                         </table>
 
-                    </div>
+                    </div>-->
 
                     <div style="text-decoration: overline;
                          position:absolute!important;
                          left:20%!important;
                          bottom:1%!important;">
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}">
+                        <h:outputLabel value="Signature : #{cc.attrs.bill.creater.code}">
                         </h:outputLabel>
                     </div>
 

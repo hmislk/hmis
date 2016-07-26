@@ -18,7 +18,12 @@
 
 
 
-                        <h:panelGrid columns="4">
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="Issue Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.department}" converter="departmentConverter" >
+                            </p:autoComplete>
                             <h:outputLabel value="From" />
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                             <h:outputLabel value="To" />
@@ -45,7 +50,8 @@
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.listz}" var="i"  >
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue From "/>
-                                    <h:outputLabel value="#{storeReportsTransfer.fromDepartment.name}"/> 
+                                    <h:outputLabel value="#{storeReportsTransfer.department.name}" rendered="#{storeReportsTransfer.department ne null}"/>
+                                    <h:outputLabel value="#{sessionController.department.name}" rendered="#{storeReportsTransfer.department eq null}"/>
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                     <h:outputLabel value="#{storeReportsTransfer.fromDate}">
                                         <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>

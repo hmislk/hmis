@@ -249,7 +249,7 @@ public class CreditSummeryController implements Serializable {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + "  and bf.billItem.item=:itm"
+                + " and bf.billItem.item=:itm "
                 + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
@@ -262,7 +262,7 @@ public class CreditSummeryController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
         if (item != null) {
-            sql += " and bi.item=:it ";
+            sql += " and bf.billItem.item=:it ";
             temMap.put("it", item);
         }
 
@@ -293,7 +293,7 @@ public class CreditSummeryController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
         if (item != null) {
-            sql += " and bi.item=:it ";
+            sql += " and bf.billItem.item=:it ";
             temMap.put("it", item);
         }
 
@@ -321,7 +321,7 @@ public class CreditSummeryController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
         if (item != null) {
-            sql += " and bi.item=:it ";
+            sql += " and bf.billItem.item=:it ";
             temMap.put("it", item);
         }
 

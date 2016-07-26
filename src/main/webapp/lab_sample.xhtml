@@ -51,13 +51,13 @@
                             
                             >
                             <p:column headerText="Bill Id">
-                                <p:outputLabel value="#{smpIx.billItem.bill.insId}"/>
+                                <p:outputLabel value="#{smpIx.billItem.bill.insId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
                             </p:column>
                             <p:column headerText="Patient" >
-                                <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{smpIx.billItem.bill.patient.person.nameWithTitle}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
                             </p:column>
                             <p:column headerText="Investigation" >
-                                <h:outputLabel value="#{smpIx.investigation.name}"/>
+                                <h:outputLabel value="#{smpIx.investigation.name}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
                             </p:column>
                             <p:column >
                                 <p:selectBooleanCheckbox disabled="#{smpIx.collected}" id="chkSampledOutside" value="#{smpIx.sampleOutside}"  itemLabel="Outside" >
@@ -71,7 +71,7 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column >
-                                <h:commandButton  disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled()}" >
+                                <h:commandButton  disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled()}" >
                                     <f:setPropertyActionListener value="#{smpIx}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     <f:ajax execute="chkSampledOutside calSampledDate btnSample" render="@all" />
                                 </h:commandButton>

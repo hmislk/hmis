@@ -167,6 +167,20 @@ public class StaffSalary implements Serializable {
     String departmentString;
     @Transient
     String rosterString;
+    @Transient
+    double basicVal;
+    @Transient
+    double noPayBasicVal;
+    @Transient
+    double poyaVal;
+    @Transient
+    double merchantileVal;
+    @Transient
+    double dayOffVal;
+    @Transient
+    double perVal;
+    @Transient
+    double perPercentage;
     String comments;
 
     public String getChequeNumberSalary() {
@@ -1163,6 +1177,62 @@ public class StaffSalary implements Serializable {
 
     public void setRosterString(String rosterString) {
         this.rosterString = rosterString;
+    }
+
+    public double getBasicVal() {
+        return basicVal;
+    }
+
+    public void setBasicVal(double basicVal) {
+        this.basicVal = basicVal;
+    }
+
+    public double getNoPayBasicVal() {
+        return noPayBasicVal;
+    }
+
+    public void setNoPayBasicVal(double noPayBasicVal) {
+        this.noPayBasicVal = noPayBasicVal;
+    }
+
+    public double getPoyaVal() {
+        return poyaVal;
+    }
+
+    public void setPoyaVal(double poyaVal) {
+        this.poyaVal = poyaVal;
+    }
+
+    public double getMerchantileVal() {
+        return merchantileVal;
+    }
+
+    public void setMerchantileVal(double merchantileVal) {
+        this.merchantileVal = merchantileVal;
+    }
+
+    public double getDayOffVal() {
+        return dayOffVal;
+    }
+
+    public void setDayOffVal(double dayOffVal) {
+        this.dayOffVal = dayOffVal;
+    }
+
+    public double getPerVal() {
+        return perVal;
+    }
+
+    public void setPerVal(double perVal) {
+        this.perVal = perVal;
+    }
+
+    public double getPerPercentage() {
+        return perPercentage;
+    }
+
+    public void setPerPercentage(double perPercentage) {
+        this.perPercentage = perPercentage;
     }
 
 }
