@@ -319,6 +319,15 @@ public class CommonFunctions {
         ////System.out.println("First : " + cal.getTime());
         return cal.getTime();
     }
+    
+    public Date getFirstDayOfYear() {
+        Date date=new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(cal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
+        System.out.println("First : " + cal.getTime());
+        return cal.getTime();
+    }
 
     public Date getLastDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
@@ -326,6 +335,17 @@ public class CommonFunctions {
         cal.set(Calendar.MONTH, 11);
         cal.set(Calendar.DATE, 31);
         ////System.out.println("Last : " + cal.getTime());
+        return cal.getTime();
+    }
+    
+    public Date getLastDayOfYear() {
+        Date date=new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.MONTH, 11);
+        cal.set(Calendar.DATE, 31);
+        cal.set(cal.get(Calendar.YEAR), 11, 31, 23, 59, 59);
+        System.out.println("Last : " + cal.getTime());
         return cal.getTime();
     }
 

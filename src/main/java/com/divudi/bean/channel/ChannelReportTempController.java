@@ -119,6 +119,7 @@ public class ChannelReportTempController implements Serializable {
     List<ChannelDateDetailRow> channelDateDetailRows;
     List<ChannelSummeryDateRangeOrUserRow> channelSummeryDateRangeOrUserRows = new ArrayList<>();
     List<AgentHistory> agentHistorys;
+    List<ChannelReferenceBookRow> channelReferenceBookRows;
     //
     Date fromDate;
     Date toDate;
@@ -745,10 +746,18 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createChannelAgentReferenceBookIssuedBillList() {
-        if (getSearchKeyword().getVal1() == null || "".equals(getSearchKeyword().getVal1())) {
-            JsfUtil.addErrorMessage("Please Enter Channel Book Number");
-            return;
+        if (!getSearchKeyword().isActiveAdvanceOption()) {
+            if (getSearchKeyword().getVal1() == null || "".equals(getSearchKeyword().getVal1())) {
+                JsfUtil.addErrorMessage("Please Enter Channel Book Number");
+                return;
+            }
+        } else {
+            if (getSearchKeyword().getIns() == null || "".equals(getSearchKeyword().getIns())) {
+                JsfUtil.addErrorMessage("Please Enter Agency");
+                return;
+            }
         }
+
         createReferenceBookIssuedBillList(ReferenceBookEnum.ChannelBook);
     }
 
@@ -780,24 +789,37 @@ public class ChannelReportTempController implements Serializable {
             m.put("bn", dbl);
         }
 
-        sql += " order by a.bookNumber ";
-
         m.put("rb", bookEnum);
 //        m.put("fd", fromDate);
 //        m.put("td", toDate);
 
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (!getSearchKeyword().isActiveAdvanceOption()) {
+            sql += " order by a.bookNumber ";
+            agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        } else {
+            sql += " order by a.bookNumber desc ";
+            agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 5);
+        }
+        channelReferenceBookRows = new ArrayList<>();
         if (agentReferenceBooks.isEmpty()) {
             JsfUtil.addErrorMessage("This Book Is Not Issued");
-            agentHistorys = new ArrayList<>();
         } else {
-            int srn = (int) agentReferenceBooks.get(0).getStartingReferenceNumber();
-            int ern = (int) agentReferenceBooks.get(0).getEndingReferenceNumber();
-            searchKeyword.setIns(agentReferenceBooks.get(0).getInstitution());
-            searchKeyword.setNumber(" " + srn + " - " + ern);
-            agentHistorys = channelReportController.createAgentHistoryByBook(agentReferenceBooks.get(0).getCreatedAt(), new Date(), agentReferenceBooks.get(0).getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}), srn, ern);
-
+            for (AgentReferenceBook arb : agentReferenceBooks) {
+                channelReferenceBookRows.add(createBookRow(arb));
+            }
         }
+    }
+
+    public ChannelReferenceBookRow createBookRow(AgentReferenceBook arb) {
+        ChannelReferenceBookRow bookRow = new ChannelReferenceBookRow();
+        int srn = (int) arb.getStartingReferenceNumber();
+        int ern = (int) arb.getEndingReferenceNumber();
+        bookRow.setBn((int) arb.getBookNumber());
+        bookRow.setRefRange(" " + srn + " - " + ern);
+        bookRow.setIns(arb.getInstitution());
+        bookRow.setAgentHistorys(channelReportController.createAgentHistoryByBook(arb.getCreatedAt(), new Date(), arb.getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}), srn, ern));
+        bookRow.setAgentHistoryTotal(channelReportController.createAgentHistoryByBookTotal(arb.getCreatedAt(), new Date(), arb.getInstitution(), Arrays.asList(new HistoryType[]{HistoryType.ChannelBooking}), srn, ern));
+        return bookRow;
     }
 
     public void createAgentReferenceBooks(ReferenceBookEnum bookEnum) {
@@ -2388,6 +2410,55 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
+    public class ChannelReferenceBookRow {
+
+        int bn;
+        String refRange;
+        Institution ins;
+        List<AgentHistory> agentHistorys;
+        double  agentHistoryTotal;
+
+        public int getBn() {
+            return bn;
+        }
+
+        public void setBn(int bn) {
+            this.bn = bn;
+        }
+
+        public Institution getIns() {
+            return ins;
+        }
+
+        public void setIns(Institution ins) {
+            this.ins = ins;
+        }
+
+        public List<AgentHistory> getAgentHistorys() {
+            return agentHistorys;
+        }
+
+        public void setAgentHistorys(List<AgentHistory> agentHistorys) {
+            this.agentHistorys = agentHistorys;
+        }
+
+        public String getRefRange() {
+            return refRange;
+        }
+
+        public void setRefRange(String refRange) {
+            this.refRange = refRange;
+        }
+
+        public double getAgentHistoryTotal() {
+            return agentHistoryTotal;
+        }
+
+        public void setAgentHistoryTotal(double agentHistoryTotal) {
+            this.agentHistoryTotal = agentHistoryTotal;
+        }
+    }
+
     //Getters and Setters
     public Date getFromDate() {
         if (fromDate == null) {
@@ -2733,6 +2804,14 @@ public class ChannelReportTempController implements Serializable {
 
     public void setAgentHistorys(List<AgentHistory> agentHistorys) {
         this.agentHistorys = agentHistorys;
+    }
+
+    public List<ChannelReferenceBookRow> getChannelReferenceBookRows() {
+        return channelReferenceBookRows;
+    }
+
+    public void setChannelReferenceBookRows(List<ChannelReferenceBookRow> channelReferenceBookRows) {
+        this.channelReferenceBookRows = channelReferenceBookRows;
     }
 
 }

@@ -182,11 +182,14 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and ss.considerForLateIn!=true "
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
-                + "  and ss.staff=:stf "
-                + " and ss.shiftDate<:date "
+                + " and ss.staff=:stf "
+//                + " and ss.shiftDate<:date "
+                + " and ss.shiftDate between :fd and :td "
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
-        hm.put("date", staffShift.getShiftDate());
+//        hm.put("date", staffShift.getShiftDate());
+        hm.put("fd",commonFunctions.getFirstDayOfYear());
+        hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
 
@@ -237,10 +240,13 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " and (ss.leaveType is null"
                 + " or ss.autoLeave=true) "
                 + "  and ss.staff=:stf "
-                + " and ss.shiftDate<:date "
+//                + " and ss.shiftDate<:date "
+                + " and ss.shiftDate between :fd and :td "
                 + " and ss.id !=" + staffShift.getId();
         hm.put("stf", staffShift.getStaff());
-        hm.put("date", staffShift.getShiftDate());
+//        hm.put("date", staffShift.getShiftDate());
+        hm.put("fd", commonFunctions.getFirstDayOfYear());
+        hm.put("td", staffShift.getShiftDate());
         hm.put("dtp", DayType.Normal);
         hm.put("cls", StaffShiftExtra.class);
 

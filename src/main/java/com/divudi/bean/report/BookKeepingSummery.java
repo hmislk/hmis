@@ -2273,7 +2273,10 @@ public class BookKeepingSummery implements Serializable {
                 + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
-                + " and bi.bill.paymentMethod in :pms";
+                + " and bi.bill.paymentMethod in :pms "
+                + " and bi.bill.retired=false "
+                + " and bi.retired=false "
+                + " and bf.retired=false ";
 
         if (creditCompany != null) {
             jpql += " and bi.bill.creditCompany=:cd ";

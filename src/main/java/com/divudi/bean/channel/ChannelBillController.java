@@ -214,6 +214,16 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
         settleSucessFully = true;
         printingBill = getBillFacade().find(b.getId());
+        for (BillFee bf : billSession.getBill().getBillFees()) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
+                bf.setTmpChangedValue(bf.getFeeValue());
+            }
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                printingBill.setVatPlusStaffFee(printingBill.getVatPlusStaffFee() + bf.getFeeValue() + bf.getFeeVat());
+            } else {
+                printingBill.setVatPlusHosFee(printingBill.getVatPlusHosFee() + bf.getFeeValue() + bf.getFeeVat());
+            }
+        }
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        System.out.println("bs = " + bs);
 //        System.out.println("getBillSession() = " + getBillSession().getName());
