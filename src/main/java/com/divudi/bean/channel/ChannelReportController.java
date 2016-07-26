@@ -190,6 +190,10 @@ public class ChannelReportController implements Serializable {
         bookingCountSummryRows = new ArrayList<>();
         bookingCountSummryRowsScan = new ArrayList<>();
     }
+    
+    public void clearWithDefultValue(){
+        getReportKeyWord().setFrom(45.0);
+    }
 
     public Institution getInstitution() {
         return institution;

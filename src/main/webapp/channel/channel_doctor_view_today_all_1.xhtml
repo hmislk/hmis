@@ -24,7 +24,7 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
                         </p:calendar>
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
                             <h:outputText id="output" value="Percentage #{channelReportController.reportKeyWord.from} % " />
                             <h:inputHidden id="txt2" value="#{channelReportController.reportKeyWord.from}" />
                         </h:panelGrid>
