@@ -45,6 +45,9 @@
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
                                 <p:panel header="Package Name">
+                                    <h:outputLabel value="Active" rendered="#{!medicalPackageNameController.current.inactive}" style="color: green;"></h:outputLabel>
+                                    <h:outputLabel value="Inactive" rendered="#{medicalPackageNameController.current.inactive}" style="color: red;"></h:outputLabel>
+
                                     <h:panelGrid id="gpDetailText" columns="2">
 
                                         <h:outputText value="Name" ></h:outputText>
@@ -55,16 +58,20 @@
                                             <f:selectItems value="#{institutionController.creditCompanies}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}" />
                                         </p:selectOneMenu>
+                                        <h:outputText value="" ></h:outputText>
+                                        <p:selectBooleanCheckbox value="#{medicalPackageNameController.current.inactive}" itemLabel="Service Inactive"/>
                                     </h:panelGrid>
                                 </p:panel>
 
                                 <h:panelGrid id="gpDetailButtons" columns="2">
+
+
                                     <h:commandButton id="btnSave" value="Save" action="#{medicalPackageNameController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>
-                                    
+
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>

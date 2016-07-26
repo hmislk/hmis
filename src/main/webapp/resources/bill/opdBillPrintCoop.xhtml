@@ -53,10 +53,6 @@
                     <div  class="receiptnoPrinting">
 
 
-
-
-
-
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null and cc.attrs.cancell eq true}"/> 
 
@@ -249,14 +245,13 @@
                     </div>
 
                     <div class="cashierPrinting" >
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}"  
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code ne sessionController.loggedUser}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code ne sessionController.loggedUser}"
                                        rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"   />
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" 
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code ne sessionController.loggedUser}" 
                                        rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
                                                    cc.attrs.bill.cancelledBill.deptId eq null }"/>
-
 
                     </div>
 

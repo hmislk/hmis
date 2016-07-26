@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:panel header="Contact numbers" >
+                    <f:facet name="header">
+                        <h:panelGrid columns="5" >
+<!--                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                            </p:calendar>-->
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createAllBillContacts()}" onclick="onSubmitButton();" />
+                        </h:panelGrid>
+                    </f:facet>
+                </p:panel>
+
+                <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i">
+                    <f:facet name="header" >
+                        <!--<p:outputLabel value="Investigation Bill List" />-->
+                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                        <h:outputLabel  value="#{searchController.fromDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel  value="#{searchController.toDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp; &#13;&nbsp; &#13;&nbsp; &#13;&nbsp;
+                        <p:outputLabel value="Contact Numbers" />                                
+                    </f:facet>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="No" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{i+1}"> 
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Phone number" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{b}"> 
+                        </p:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+<!--                <p:dataTable value="#{searchController.bills}" var="b" id="tb1">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Investigation Bill List" />
+                        <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                        <h:outputLabel  value="#{searchController.fromDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>                          
+                        <h:outputLabel value="&emsp;&emsp;To :"/>
+                        <h:outputLabel  value="#{searchController.toDate}" >
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                        </h:outputLabel>&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;&#13;&nbsp; &#13;&nbsp; &#13;&nbsp; &#13;&nbsp;
+                        <p:outputLabel value="Contact Numbers" />                                
+                    </f:facet>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Person Name" />
+                        </f:facet>
+                        <p:outputLabel value="#{b.patient.person.name}" />                                    
+                    </p:column> 
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Phone number" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{b.patient.person.phone}"> 
+                        </p:outputLabel>
+                    </p:column>
+
+                </p:dataTable>-->
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>
