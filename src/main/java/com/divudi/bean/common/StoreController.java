@@ -107,6 +107,28 @@ public class StoreController implements Serializable {
 
         return items;
     }
+    
+    public List<Stock> completeAllStocksWithZero(String qry) {
+        List<Stock> items;
+        String sql;
+//        double d = 0.0;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dtp1", DepartmentType.Store);
+//        m.put("stk", d);
+
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select i from Stock i where i.department=:d "
+                + " and i.itemBatch.item.departmentType=:dtp1"
+//                + " and i.stock > :stk "
+                + " and (upper(i.itemBatch.item.name) like :n  or "
+                + " upper(i.itemBatch.item.code) like :n  or  "
+                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " order by i.stock ";
+        items = getStockFacade().findBySQL(sql, m, 40);
+
+        return items;
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
