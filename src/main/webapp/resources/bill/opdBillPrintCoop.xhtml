@@ -248,7 +248,7 @@
                         </table>
                     </div>
 
-                    <div class="cashierPrinting" >
+                    <div class="cashierPrinting"  >
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
@@ -256,8 +256,18 @@
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" 
                                        rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
                                                    cc.attrs.bill.cancelledBill.deptId eq null }"/>
+                    </div>
+                    <div style=" position:absolute!important;
+                         left:50%!important;
+                         bottom:3%!important;">
 
-
+                        <h:outputLabel value="Print by" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                        <p:spacer width="10" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></p:spacer>
+                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                        <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>&nbsp;&nbsp;
+                        <h:outputLabel value="#{sessionController.currentDate}">
+                            <f:convertDateTime pattern="dd/MM/yy hh:mm a"></f:convertDateTime>
+                        </h:outputLabel>
                     </div>
 
                     <div class="consult">
