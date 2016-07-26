@@ -109,7 +109,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     boolean stopProgress;
     private boolean paginator = true;
     private int rows = 20;
-
+    double grantTotal;
+    BillListTotal billlistTotal;
+    
+    
     /**
      * Creates a new instance of CashierReportController
      */
@@ -396,7 +399,12 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         cancelledBills = fetchInvestigationBillList(new CancelledBill());
         refundedBills = new ArrayList<>();
         refundedBills = fetchInvestigationBillList(new RefundBill());
-
+        
+       billlistTotal = new BillListTotal();
+       
+       
+      
+       
     }
 
     public List<Bill> fetchInvestigationBillList(Bill b) {
@@ -418,7 +426,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //            map.put("btype1", BillType.OpdBill);
 //            map.put("btype2", BillType.InwardBill);
             //2
-            List<BillType> billTypes=new ArrayList<>();
+            List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.OpdBill);
             billTypes.add(BillType.InwardBill);
             sql += " and bi.bill.billType in :btypes";
@@ -434,6 +442,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             sql += " and bi.bill.billType=:btype";
             map.put("btype", billType);
         }
+        
 
         map.put("iclass", Investigation.class);
         map.put("biclass", b.getClass());
@@ -1485,13 +1494,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         this.rows = rows;
     }
 
-    /**
-     * @param billType the billType to set
-     */
-    /**
-     *
-     * @param billType the billType to set
-     */
     public class institutionInvestigationCountRow {
 
         Institution institution;
@@ -1630,5 +1632,56 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public void setBillType(BillType billType) {
         this.billType = billType;
     }
+
+    public double getGrantTotal() {
+        return grantTotal;
+    }
+
+    public void setGrantTotal(double grantTotal) {
+        this.grantTotal = grantTotal;
+    }
+
+    public class BillListTotal {
+
+        double hosFee;
+        double staffFee;
+        double netTotal;
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getStaffFee() {
+            return staffFee;
+        }
+
+        public void setStaffFee(double staffFee) {
+            this.staffFee = staffFee;
+        }
+
+          public double getNetTotal() {
+            System.out.println("this is tot = " + this);
+            return netTotal;
+        }
+
+        public void setNetTotal(double netTotal) {
+            this.netTotal = netTotal;
+        }
+        
+    }
+
+    public BillListTotal getBilllistTotal() {
+        System.out.println("this = " + this);
+        return billlistTotal;
+    }
+
+    public void setBilllistTotal(BillListTotal billlistTotal) {
+        this.billlistTotal = billlistTotal;
+    }
+
 
 }

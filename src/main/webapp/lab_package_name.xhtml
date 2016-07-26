@@ -48,15 +48,22 @@
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
                                 <p:panel header="PackageItem Detail">
+                                    <h:outputLabel value="Active" rendered="#{!packageNameController.current.inactive}" style="color: green;"></h:outputLabel>
+                                    <h:outputLabel value="Inactive" rendered="#{packageNameController.current.inactive}" style="color: red;"></h:outputLabel>
+
                                     <h:panelGrid id="gpDetailText" columns="2">
 
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtName" value="#{packageNameController.current.name}"  ></h:inputText>
+                                        <h:outputText value="" ></h:outputText>
+                                        <p:selectBooleanCheckbox value="#{packageNameController.current.inactive}" itemLabel="Service Inactive"/>
                                     </h:panelGrid>
                                 </p:panel>
 
 
                                 <h:panelGrid id="gpDetailButtons" columns="2">
+
+
 
                                     <h:commandButton id="btnSave" value="Save" action="#{packageNameController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >

@@ -31,7 +31,7 @@
                     <h:panelGrid id ="gpVeda" columns="3" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel  >
+                            <p:panel>
                                 <f:facet name="header" >
                                     <h:outputText value="Search" ></h:outputText>
                                     <p:commandButton id="btnAdd" ajax="false" value="Add New" action="#{investigationController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" style="float: right;" >
@@ -41,7 +41,6 @@
                                 </f:facet>
 
                                 <h:panelGrid id="gpSelectText" >
-
                                     <p:inputText autocomplete="off" id="txtSearch" value="#{investigationController.selectText}" >
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </p:inputText>
@@ -60,7 +59,7 @@
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
-                        </h:panelGrid  >
+                        </h:panelGrid>
 
                         <p:panel id="detailPan" >
                             <f:facet name="header" >

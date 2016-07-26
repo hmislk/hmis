@@ -19,7 +19,7 @@
                                         completeMethod="#{admissionController.completePatient}" 
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" 
-                                        size="30"  style="width: 400px;" required="true"> 
+                                        size="30"  style="width: 400px;" required="true" requiredMessage="Please Select the patient"> 
                             <f:ajax execute="acPt" render="@all" event="itemSelect" 
                                     listener="#{roomChangeController.createGuardianRoom()}"/>
                             <p:column>
