@@ -1784,7 +1784,7 @@ public class ChannelReportController implements Serializable {
 
         String sql;
         Map m = new HashMap();
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
 
         sql = " select bf from BillFee  bf where "

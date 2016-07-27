@@ -654,9 +654,9 @@ public class ChannelBillController implements Serializable {
     public void cancelAgentPaidBill() {
         System.out.println("getBillSession() = " + getBillSession());
         System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
-        if (getBillSessionTmp()!=null) {
+        if (getBillSessionTmp() != null) {
             setBillSession(getBillSessionTmp());
-        }else{
+        } else {
             setBillSession(getBillSession());
         }
         System.out.println("getBillSession() = " + getBillSession());
@@ -1203,12 +1203,11 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
-    
-    public void clearAll(){
+    public void clearAll() {
         makeNull();
         makeNullSearchData();
     }
-    
+
     public void makeNull() {
         System.err.println("make null");
         amount = 0.0;
@@ -1236,12 +1235,12 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSpeciality("");
         bookingController.setSelectTextConsultant("");
         bookingController.setSelectTextSession("");
-        comment="";
-        commentR="";
-        
+        comment = "";
+        commentR = "";
+
     }
-    
-    public void makeNullSearchData(){
+
+    public void makeNullSearchData() {
         channelSearchController.setFromDate(null);
         channelSearchController.setToDate(null);
         channelSearchController.setTxtSearch("");
@@ -1258,7 +1257,7 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
-        
+
         removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
@@ -1313,21 +1312,23 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
-            if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "Invaild Reference Number.";
-                UtilityController.addErrorMessage("Invaild Reference Number.");
-                return true;
-            }
-            if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
-                UtilityController.addErrorMessage("This Reference Number is alredy Given.");
-                setAgentRefNo("");
-                return true;
-            }
-            if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
-                UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
-                return true;
+            if (!getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                    errorText = "Invaild Reference Number.";
+                    UtilityController.addErrorMessage("Invaild Reference Number.");
+                    return true;
+                }
+                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                    errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
+                    UtilityController.addErrorMessage("This Reference Number is alredy Given.");
+                    setAgentRefNo("");
+                    return true;
+                }
+                if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                    errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
+                    UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
+                    return true;
+                }
             }
         }
         if (paymentMethod == PaymentMethod.Staff) {
@@ -1413,6 +1414,9 @@ public class ChannelBillController implements Serializable {
 
     private boolean errorCheckAfterSaveBill(Bill b) {
         if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+            return true;
+        }
+        if (b.getPaymentMethod() == null) {
             return true;
         }
         return false;
@@ -1576,7 +1580,7 @@ public class ChannelBillController implements Serializable {
                 if (bs.getBill().getSingleBillItem() != null) {
                     bi = getBillItemFacade().find(bs.getBill().getSingleBillItem().getId());
                 } else {
-                    sql = " select bi from billItem bi where "
+                    sql = " select bi from BillItem bi where "
                             + " bi.bill=:b ";
                     bi = getBillItemFacade().findFirstBySQL(sql, m);
                 }
@@ -2083,8 +2087,8 @@ public class ChannelBillController implements Serializable {
         }
         return refundBillFee;
     }
-    
-    public void listnerSetBillSession(BillSession bs){
+
+    public void listnerSetBillSession(BillSession bs) {
         setBillSessionTmp(bs);
         setBillSession(bs);
     }

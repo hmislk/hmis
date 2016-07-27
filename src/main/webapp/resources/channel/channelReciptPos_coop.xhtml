@@ -216,7 +216,8 @@
                         <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
                             <tr>
                                 <td>
-                                    <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeValue ne 0.0}"></h:outputLabel>
+                                    <h:outputLabel value="#{cbif.fee.name}" rendered="#{cbif.feeValue ne 0.0 and cbif.fee.name ne 'Scan Fee'}"></h:outputLabel>
+                                    <h:outputLabel value="VAT(15%)" rendered="#{cbif.feeValue ne 0.0 and cbif.fee.name eq 'Scan Fee'}"></h:outputLabel>
                                 </td>
                                 <td>
                                     <p:spacer width="10" rendered="#{cbif.feeValue ne 0.0}"></p:spacer>
@@ -335,6 +336,26 @@
                             </td>
                             <td>
                                 <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>
+                                    <h:outputLabel value="Vat Register No" ></h:outputLabel>
+                                </b>
+                            </td>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>
+                            <td>
+                                <b>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                </b>
+                            </td>
+                            <td>
+                                <b>
+                                    <h:outputLabel value="409198465-2525" ></h:outputLabel>
+                                </b>
                             </td>
                         </tr>
                         <tr>
