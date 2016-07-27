@@ -53,6 +53,7 @@ public class PatientController implements Serializable {
     PracticeBookingController practiceBookingController;
 
     private Patient current;
+    
     private List<Patient> items = null;
 
     @EJB
@@ -164,10 +165,16 @@ public class PatientController implements Serializable {
         return Sex.values();
     }
 
+    public void prepareAddReg() {
+       prepareAdd();
+       current.setCode(null);
+    }
+
     public void prepareAdd() {
         current = null;
-        yearMonthDay = null;        
-        getCurrent();        
+        yearMonthDay = null;
+        getCurrent();
+
         getYearMonthDay();
     }
 
@@ -210,6 +217,9 @@ public class PatientController implements Serializable {
         } else {
             sql = "select p from Patient p where p.retired=false "
                     + " and upper(p.person.name) like :q "
+                    + " or upper(p.code) like :q "
+                    + " or upper(p.person.nic) like :q"
+                    + " or upper(p.person.mobile) like :q "
                     + "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             ////System.out.println(sql);
@@ -232,8 +242,9 @@ public class PatientController implements Serializable {
                 + " or upper(p.person.nic) like :q "
                 + " or upper(p.person.mobile) like :q "
                 + " or upper(p.person.phone) like :q "
-                + " or upper(p.person.address) like :q )"
-                + "order by p.person.name";
+                + " or upper(p.person.address) like :q "
+                + " or upper(p.phn) like :q)"
+                + " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
@@ -250,11 +261,11 @@ public class PatientController implements Serializable {
         String sql;
 
         sql = "select count(p) FROM Patient p where p.code is not null";
-        
+
         long lng = getEjbFacade().countBySql(sql);
         lng++;
         String str = "";
-        str+=lng;
+        str += lng;
         return str;
     }
 
@@ -267,8 +278,12 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return;
         }
-        if(getCurrent().getPerson().getName().trim().equals("")){
+        if (getCurrent().getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
+        if (getCurrent().getPhn().equals("")) {
+            UtilityController.addErrorMessage("Please Enter PHN number");
             return;
         }
         if (getCurrent().getPerson().getId() == null) {
@@ -324,12 +339,15 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
+ 
+
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
             current = new Patient();
             current.setCode(getCountPatientCode());
             current.setPerson(p);
+
         }
         return current;
     }
@@ -450,8 +468,8 @@ public class PatientController implements Serializable {
                 key = 0l;
             } else {
                 key = Long.valueOf(value);
-                ////System.out.println(key);
-                ////System.out.println(value);
+                System.out.println(key);
+                System.out.println(value);
             }
             return key;
         }
@@ -561,5 +579,7 @@ public class PatientController implements Serializable {
             }
         }
     }
+
+ 
 
 }

@@ -31,7 +31,7 @@
                     <h:panelGrid id ="gpVeda" columns="3" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel  >
+                            <p:panel>
                                 <f:facet name="header" >
                                     <h:outputText value="Search" ></h:outputText>
                                     <p:commandButton id="btnAdd" ajax="false" value="Add New" action="#{investigationController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" style="float: right;" >
@@ -39,9 +39,8 @@
                                         </f:ajax>
                                     </p:commandButton>
                                 </f:facet>
-                                
-                                <h:panelGrid id="gpSelectText" >
 
+                                <h:panelGrid id="gpSelectText" >
                                     <p:inputText autocomplete="off" id="txtSearch" value="#{investigationController.selectText}" >
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </p:inputText>
@@ -54,13 +53,13 @@
                                 </h:panelGrid>
 
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                    
+
                                     <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" action="#{investigationController.delete()}"  value="Delete"  >
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
-                        </h:panelGrid  >
+                        </h:panelGrid>
 
                         <p:panel id="detailPan" >
                             <f:facet name="header" >
@@ -83,10 +82,23 @@
                                                  value="#{investigationController.current.printName}"  ></p:inputText>
                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                     <p:inputText styleClass="longText pdInputText" autocomplete="off" id="txtFullName"  
-                                                  value="#{investigationController.current.fullName}"  ></p:inputText>
+                                                 value="#{investigationController.current.fullName}"  ></p:inputText>
                                     <p:outputLabel value="Item Code"/>
                                     <p:inputText autocomplete="off" value="#{investigationController.current.code}"/>
 
+                                    <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>
+                                    <p:inputText styleClass="longText pdInputText" autocomplete="off"   
+                                                 value="#{investigationController.current.vatPercentage}"  ></p:inputText>
+                                    
+                                    <h:outputText value="VATable" ></h:outputText>
+                                    <p:selectBooleanCheckbox  value="#{investigationController.current.vatable}" >
+                                    </p:selectBooleanCheckbox>
+
+                                    <h:outputText value="VAT Percentage" ></h:outputText>
+                                    <p:inputText  autocomplete="off" 
+                                                  value="#{investigationController.current.vatPercentage}"  ></p:inputText>
+                                    
+                                    
                                     <p:outputLabel value="Report Format"/>
                                     <p:selectOneMenu value="#{investigationController.current.reportType}" >                               
                                         <f:selectItem itemLabel="General" itemValue="General"/>
@@ -110,7 +122,7 @@
                                     </p:selectOneMenu>
                                     <h:outputText value="Serial Numbers" ></h:outputText>
                                     <p:selectOneMenu id="cmbSerial"  
-                                                        value="#{investigationController.current.sessionNumberType}" >
+                                                     value="#{investigationController.current.sessionNumberType}" >
                                         <f:selectItem itemLabel="Please select a Session Number Generation Strategy"/>
                                         <f:selectItems value="#{enumController.sessionNumberTypes}" />
                                     </p:selectOneMenu>
@@ -171,13 +183,13 @@
                                         <f:selectItem itemLabel="Please select a Department"/>
                                         <f:selectItems value="#{investigationController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
-                                    
+
                                     <h:outputText value="Inward Category" ></h:outputText>
                                     <p:selectOneMenu id="cmbInward" value="#{investigationController.current.inwardChargeType}" >
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                     </p:selectOneMenu>
-                                    
+
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{investigationController.current.inactive}" itemLabel="Item Inactive"/>
 
@@ -196,7 +208,7 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{investigationController.current.discountAllowed}" itemLabel="Discount Allowed"/>
-                                    
+
 
                                 </h:panelGrid>
                             </h:panelGrid>

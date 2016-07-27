@@ -39,8 +39,7 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.generateSessions}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
                             <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
@@ -75,7 +74,7 @@
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
                                  update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
-                                 listener="#{bookingController.generateSessions}"/>
+                                 listener="#{bookingController.listnerServiceSessionListForRowSelectNew}"/>
                     </p:dataTable>
 
 
@@ -195,7 +194,7 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved eq false}" >
                         <h:outputText value="ARRIVED AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.recordTimeStamp}" >
-                            <f:convertDateTime pattern="hh:mm a" >
+                            <f:convertDateTime pattern="hh:mm:ss a" >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
@@ -206,14 +205,14 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved ne false}" >
                         <h:outputText value="ARRIVED AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.recordTimeStamp}" >
-                            <f:convertDateTime pattern="hh:mm a" >
+                            <f:convertDateTime pattern="hh:mm:ss a" >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
                         <h:outputText value="LEFT AT " ></h:outputText>
                         <h:outputText value="#{bookingController.arrivalRecord.approvedAt}" >
-                            <f:convertDateTime pattern="hh:mm a" >
+                            <f:convertDateTime pattern="hh:mm:ss a" >
                             </f:convertDateTime>
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>

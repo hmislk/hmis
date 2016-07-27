@@ -262,6 +262,9 @@
                                             <p:column style="max-width: 200px;" headerText="Dept">
                                                 <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
                                             </p:column>
+                                            <p:column style="max-width: 200px;" headerText="Code">
+                                                <h:outputLabel value="#{ix.code}"></h:outputLabel>
+                                            </p:column>
                                             <p:column style="text-align: right; max-width: 80px;" headerText="Value">
                                                 <h:outputLabel value="#{ix.total}"></h:outputLabel>
                                             </p:column>
@@ -319,7 +322,7 @@
                                         <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
                                         <h:outputText id="lblAddressD" value="Address" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                        <h:outputText value="Code" ></h:outputText>   
+                                        <h:outputText value="Code"></h:outputText>   
                                         <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
                                         <h:outputText value="Speciality" ></h:outputText>
                                         <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
@@ -551,6 +554,10 @@
                                                 <h:outputLabel id="netTotal" value="#{billController.netTotal}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
+                                                 <h:outputLabel value="VAT" ></h:outputLabel>
+                                                 <h:outputLabel id="netTotalVat" value="#{billController.vat}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
                                                 <h:outputLabel value="Tendered" ></h:outputLabel>
                                                 <p:inputText autocomplete="off"  id="paid" value="#{billController.strTenderedValue}" >
                                                     <!--<p:ajax process="netTotal paid" update="balance" event="change"/>-->
@@ -618,8 +625,10 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewCoop">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
+                                    
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
@@ -639,6 +648,7 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="fiveFivePaperWithHeadings">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:five_five_paper_with_headings bill="#{b}"/>                        
                                 </ui:repeat>
@@ -660,6 +670,7 @@
                                                          return false;"/>
                             </div>
                             <h:panelGroup id="gpBillPreviewRmh">
+                                
                                 <ui:repeat value="#{billController.bills}" var="b">
                                     <bi:opdBillPrintRmh bill="#{b}" dup="false"/>                        
                                 </ui:repeat>
@@ -668,6 +679,8 @@
 
                     </h:panelGroup>
 
+                    
+                    
                     <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
                         <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
                             <div class="nonPrintBlock">
@@ -675,6 +688,8 @@
                                     <p:printer target="gpPosBill" ></p:printer>
                                 </p:commandButton>
 
+                                
+                                
                                 <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
                                 </p:commandButton>
 
@@ -684,12 +699,14 @@
                             </div>
                             <h:panelGroup id="gpPosBill">
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
                                 </div>
                                 <div></div>
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
@@ -715,6 +732,7 @@
                             </div>
                             <h:panelGroup id="gpPosBillWithoutLogo">
                                 <div style="page-break-after: always;">
+                                    
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>

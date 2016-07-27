@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel header="Cannel Agent Reperence Book">
+                <f:facet name="header">
+                    <p:outputLabel value="Cannel Agent Reperence Book" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+                <p:panel>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel value="With Deleted Books"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.withRetiered}" />
+                        <p:outputLabel value="Search By Agency"/>
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.searchKeyword.activeAdvanceOption}" >
+                            <p:ajax event="change" process="@this" update="val1 val2 pgAdvan pgAdvan2" />
+                        </p:selectBooleanCheckbox>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgAdvan" columns="2"  >
+                        <h:panelGrid columns="3" rendered="#{channelReportTempController.searchKeyword.activeAdvanceOption}">
+                            <p:outputLabel value="Agency"/>
+                            <p:autoComplete id="val1"
+                                            converter="deal" 
+                                            value="#{channelReportTempController.searchKeyword.ins}" 
+                                            forceSelection="true"
+                                            completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column>#{vt.institutionCode}</p:column>
+                                <p:column>#{vt.name}</p:column>
+                            </p:autoComplete>
+                        </h:panelGrid>
+                    </h:panelGrid>
+                    <h:panelGrid id="pgAdvan2" columns="2"  >
+                        <h:panelGrid columns="3" rendered="#{!channelReportTempController.searchKeyword.activeAdvanceOption}">
+                            <p:outputLabel value="Book No"/>
+                            <p:inputText id="val2" value="#{channelReportTempController.searchKeyword.val1}" />
+                        </h:panelGrid>
+                    </h:panelGrid>
+                    <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBookIssuedBillList}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="reportPrint"  />
+                    </p:commandButton>
+
+                    <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBookIssuedBillList}" ajax="false" value="Excel" styleClass="noPrintButton"  >
+                        <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
+                    </p:commandButton> 
+
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportTempController.channelReferenceBookRows}" var="ar" id="tbl1" rowIndexVar="i">
+                        <f:facet name="header">
+                            <p:outputLabel value="Agency Channel Report By Book" />
+                        </f:facet>
+                        <p:columnGroup  type="header">
+                            <p:row>
+                                <p:column headerText="Ref. No"/>
+                                <p:column headerText="Bill No"/>
+                                <p:column headerText="Patient"/>
+                                <p:column headerText="Creater"/>
+                                <p:column headerText="Created Date"/>
+                                <p:column headerText="Bill Value"/>
+                            </p:row>
+                        </p:columnGroup>
+                        <p:subTable value="#{ar.agentHistorys}" var="a">
+                            <f:facet name="header">
+                                <p:outputLabel value=" Channel Agent #{ar.ins.name}" />
+                                <p:outputLabel value=" Channel Receipt Report" /><br></br>
+                                <p:outputLabel value=" Book No - #{ar.bn}" /><br></br>
+                                <p:outputLabel value=" Reference Range - #{ar.refRange}" />
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Ref. No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.referenceNo}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.insId}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Patient" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.patient.person.name}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Creater" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.creater.webUserPerson.nameWithTitle}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Created Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill Value" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bill.netTotal+a.bill.vat}" >
+                                    <f:convertNumber pattern="#,##,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:columnGroup type="footer">
+                                <p:row>
+                                    <p:column footerText="Total " colspan="5"></p:column>
+                                    <p:column footerText="#{ar.agentHistoryTotal}">
+                                        <p:outputLabel value="#{ar.agentHistoryTotal}" style="float: right;">
+                                            <f:convertNumber pattern="#,##,##0.00" />
+                                        </p:outputLabel>                    
+                                    </p:column>
+                                </p:row>
+                            </p:columnGroup>
+                        </p:subTable>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

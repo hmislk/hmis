@@ -35,6 +35,8 @@
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
+                        <p:outputLabel value="Agent Name" />
+                        <p:selectBooleanCheckbox value="#{channelReportController.showPatient}" />
 
                         <p:commandButton action="#{channelReportController.createCollectingCenterHistorySubTable}" value="Fill" ajax="false" ></p:commandButton> 
                         <h:panelGrid columns="2">
@@ -66,8 +68,9 @@
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
-                                <p:column headerText="Channel Recipt No" />
+                                <p:column headerText="Recipt No" />
                                 <p:column headerText="Cus.Inv.N" />
+                                <p:column headerText="Patient" rendered="#{channelReportController.showPatient}"/>
                                 <p:column headerText="Hos. Fee" />
                                 <p:column headerText="Doc. Fee" />
                                 <p:column headerText="Total" />
@@ -83,12 +86,15 @@
                                 </p:outputLabel>
                             </f:facet>
                             <p:column>
-                                <p:outputLabel value="#{a.bill.insId} - #{a.bill.deptId}" >
+                                <p:outputLabel value="#{a.bill.insId}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
-                                <p:outputLabel value="#{a.referenceNo}" />
-                            </p:column>              
+                                <p:outputLabel value="#{a.referenceNo}"/>
+                            </p:column>  
+                            <p:column rendered="#{channelReportController.showPatient}">
+                                <p:outputLabel value="#{a.bill.patient.person.name}" />
+                            </p:column>
                             <p:column styleClass="numberCol" >
                                 <p:outputLabel value="#{a.bill.netTotal-a.bill.staffFee}" rendered="#{a.historyType ne 'ChannelDeposit'}" >
                                     <f:convertNumber pattern="##,##,##0.00" />

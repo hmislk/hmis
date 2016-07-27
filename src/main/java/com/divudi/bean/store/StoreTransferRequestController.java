@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacyController;
@@ -42,6 +43,8 @@ public class StoreTransferRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    CommonController commonController;
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -127,15 +130,17 @@ public class StoreTransferRequestController implements Serializable {
 
         currentBillItem = null;
     }
+//    @Inject
+//    private PharmacyController pharmacyController;
     @Inject
-    private PharmacyController pharmacyController;
+    StoreController1 storeController1;
 
     public void onEdit(BillItem tmp) {
-        getPharmacyController().setPharmacyItem(tmp.getItem());
+        storeController1.setPharmacyItem(tmp.getItem());
     }
 
     public void onEdit() {
-        getPharmacyController().setPharmacyItem(getCurrentBillItem().getItem());
+        storeController1.setPharmacyItem(getCurrentBillItem().getItem());
     }
 
     public void saveBill() {
@@ -152,6 +157,10 @@ public class StoreTransferRequestController implements Serializable {
     }
 
     public void request() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBill().getToDepartment() == null) {
             UtilityController.addErrorMessage("Select Requested Department");
             return;
@@ -202,6 +211,8 @@ public class StoreTransferRequestController implements Serializable {
         UtilityController.addSuccessMessage("Transfer Request Succesfully Created");
 
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Request(/faces/store/store_transfer_request.xhtml)");
 
     }
 
@@ -302,14 +313,6 @@ public class StoreTransferRequestController implements Serializable {
         this.itemsDistributorsFacade = itemsDistributorsFacade;
     }
 
-    public PharmacyController getPharmacyController() {
-        return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
-    }
-
 //    public boolean isPrintPreview() {
 //        return printPreview;
 //    }
@@ -331,7 +334,7 @@ public class StoreTransferRequestController implements Serializable {
 
         this.currentBillItem = currentBillItem;
         if (currentBillItem != null && currentBillItem.getItem() != null) {
-            getPharmacyController().setPharmacyItem(currentBillItem.getItem());
+            storeController1.setPharmacyItem(currentBillItem.getItem());
         }
     }
 
@@ -353,4 +356,14 @@ public class StoreTransferRequestController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
+    
 }

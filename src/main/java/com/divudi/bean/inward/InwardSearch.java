@@ -8,6 +8,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
@@ -94,6 +95,8 @@ public class InwardSearch implements Serializable {
     SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    PatientInvestigationController patientInvestigationController;
     @EJB
     PersonFacade personFacade;
     /**
@@ -181,8 +184,8 @@ public class InwardSearch implements Serializable {
         }
 
     }
-    
-    public String fromBhtFinalBillSearchToBillReprint(){
+
+    public String fromBhtFinalBillSearchToBillReprint() {
         refreshFinalBillBackwordReferenceBills();
         bhtSummeryFinalizedController.setPatientEncounter(bill.getPatientEncounter());
         return "/inward/inward_reprint_bill_final";
@@ -544,6 +547,15 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
+
+                //System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+                if (patientInvestigationController.sampledForAnyItemInTheBill(getBill())) {
+                    UtilityController.addErrorMessage("Sample Already collected can't cancel");
+                    return;
+                }
+            }
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -713,10 +725,10 @@ public class InwardSearch implements Serializable {
 
             long dayCount = getCommonFunctions().getDayCount(getBill().getCreatedAt(), new Date());
 
-//            if (Math.abs(dayCount) > 3) {
-//                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
-//                return;
-//            }
+            if (Math.abs(dayCount) > 3 && !getWebUserController().hasPrivilege("InwardFinalBillCancel")) {
+                UtilityController.addErrorMessage("You can't Cancell Two days Old Bill Sory .com");
+                return;
+            }
             if (getBill().isCancelled()) {
                 UtilityController.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;

@@ -557,7 +557,10 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Item c where c.retired=false and type(c)=Packege and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Item c where c.retired=false"
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + "and type(c)=Packege "
+                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -622,7 +625,10 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Item c where c.retired=false and type(c)=MedicalPackage and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Item c where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + "and type(c)=MedicalPackage "
+                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -703,7 +709,8 @@ public class ItemController implements Serializable {
                 + " and type(c)!=:pac "
                 + " and (type(c)=:ser "
                 + " or type(c)=:inward "
-                + " or type(c)=:inv)  "
+                + " or type(c)=:inv) "
+                + " and (c.inactive=false or c.inactive is null) "
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         m.put("pac", Packege.class);
@@ -725,7 +732,8 @@ public class ItemController implements Serializable {
                 + " and type(c)!=:pac "
                 + " and (type(c)=:ser "
                 + " or type(c)=:inward "
-                + " or type(c)=:inv)  "
+                + " or type(c)=:inv) "
+                + " and (c.inactive=false or c.inactive is null) "
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         m.put("ct", cat);
@@ -803,6 +811,7 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
+        
 //        System.out.println(sql);
 //        System.out.println("m = " + m);
         mySuggestions = getFacade().findBySQL(sql, m, 20);

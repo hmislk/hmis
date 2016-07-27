@@ -54,49 +54,84 @@
                                     <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
                                 </h:outputLabel>
                             </f:facet>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Consutant Name" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.consultant.person.name}" />                                    
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Cash" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.cashCount}" />                                    
+                                <p:outputLabel value="#{b.cashCount}" >
+                                    <f:convertNumber pattern="#,###,##0" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.channelTotal.vat}" >
+                                        <f:convertNumber pattern="#,###,##0" />
+                                    </p:outputLabel>
+                                </f:facet>
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Agent" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.agentCount}" />                                    
+                                <p:outputLabel value="#{b.agentCount}" >
+                                    <f:convertNumber pattern="#,###,##0" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.channelTotal.discount}" >
+                                        <f:convertNumber pattern="#,###,##0" />
+                                    </p:outputLabel>
+                                </f:facet>                                   
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="OnCall" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.oncallCount}" />                                    
+                                <p:outputLabel value="#{b.oncallCount}" >
+                                    <f:convertNumber pattern="#,###,##0" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.channelTotal.hosFee}" >
+                                        <f:convertNumber pattern="#,###,##0" />
+                                    </p:outputLabel>
+                                </f:facet>                                    
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Staff" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.staffCount}" />                                    
+                                <p:outputLabel value="#{b.staffCount}" >
+                                    <f:convertNumber pattern="#,###,##0" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.channelTotal.netTotal}" >
+                                        <f:convertNumber pattern="#,###,##0" />
+                                    </p:outputLabel>
+                                </f:facet>                                    
                             </p:column>
-                            
+
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Total" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.staffCount+b.oncallCount+b.agentCount+b.cashCount}" />                                    
+                                <p:outputLabel value="#{b.staffCount+b.oncallCount+b.agentCount+b.cashCount}" >
+                                    <f:convertNumber pattern="#,###,##0" />
+                                </p:outputLabel>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal+channelReportController.channelTotal.hosFee+channelReportController.channelTotal.discount}" >
+                                        <f:convertNumber pattern="#,###,##0" />
+                                    </p:outputLabel>
+                                </f:facet>                                    
                             </p:column>
-                            
+
                         </p:dataTable>
                     </p:panel>
                 </p:panel>

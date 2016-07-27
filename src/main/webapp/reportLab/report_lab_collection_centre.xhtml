@@ -122,20 +122,36 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-
-                    <p:column headerText="Net Total" styleClass="averageNumericColumn">
+                    <p:column headerText="Vat Total" styleClass="averageNumericColumn">
                         <f:facet name="header">
-                            <h:outputLabel value="Net Total"/>                        
+                            <h:outputLabel value="Vat Total"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.vat}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Total" styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Total"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Vat Plus Total" styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Vat Plus Total"/>                        
+                        </f:facet>
+                        <h:outputLabel value="#{d.netTotal+d.vat}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:columnGroup type="footer">  
                         <p:row>                              
-                            <p:column footerText="Total" colspan="5" rendered="#{commonReport.collectingIns eq null}"/>
-                            <p:column footerText="Total" colspan="4" rendered="#{commonReport.collectingIns ne null}"/>
+                            <p:column footerText="Total" colspan="6" rendered="#{commonReport.collectingIns eq null}"/>
+                            <p:column footerText="Total" colspan="5" rendered="#{commonReport.collectingIns ne null}"/>
                             <p:column footerText="#{commonReport.totalCC}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.totalCC}" style=" text-align: right;">
@@ -150,9 +166,23 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column footerText="#{commonReport.totalVat}" style=" text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{commonReport.totalVat}" style=" text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
                             <p:column footerText="#{commonReport.total}" style=" text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{commonReport.total}" style=" text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column footerText="#{commonReport.total+commonReport.totalVat}" style=" text-align: right;">
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{commonReport.total+commonReport.totalVat}" style=" text-align: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>

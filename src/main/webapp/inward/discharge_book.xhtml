@@ -48,7 +48,7 @@
 
 
                         </h:panelGrid>
-                        <h:panelGrid columns="16">
+                        <h:panelGrid columns="16" id="paItems">
                             <p:outputLabel value="Discharge" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.dischargeDate}"/>
                             <p:outputLabel value="BHT No" />
@@ -80,7 +80,9 @@
                             <p:outputLabel value="Different Amount" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.differentAmount}" />
                             <p:outputLabel value="For Developers" />
-                            <p:selectBooleanCheckbox value="#{inwardReportController.developers}" />
+                            <p:selectBooleanCheckbox value="#{inwardReportController.developers}" >
+                                <p:ajax process="@this" update="paItems" listener="#{inwardReportController.listnerDeveloperCheckBox()}" />
+                            </p:selectBooleanCheckbox>
                         </h:panelGrid>
 
                         <p:panelGrid columns="6">

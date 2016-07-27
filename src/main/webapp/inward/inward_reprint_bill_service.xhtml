@@ -21,10 +21,10 @@
                                                 action="inward_cancel_bill_service"
                                                  disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }" onclick="onSubmitButton();" >                           
                                 </p:commandButton>
-                                <p:commandButton ajax="false" value="Return" 
+                                <p:commandButton ajax="false" value="Return" actionListener="#{billSearch.recreateModel()}"
                                                 action="inward_bill_service_refund"
                                                  disabled="#{inwardSearch.bill.cancelled}" onclick="onSubmitButton();" >    
-                                    <f:setPropertyActionListener value="#{inwardSearch.bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener  value="#{inwardSearch.bill}" target="#{billSearch.bill}"  />
                                 </p:commandButton>
                             </p:panel>
                             <p:panel>
@@ -131,14 +131,25 @@
                             <p:commandButton value="Reprint" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+                            <p:commandButton value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
+                                <p:printer target="gpBillPreview2" ></p:printer>
+                            </p:commandButton>
                         </div>
 
-                        <p:panel id="gpBillPreview">
+                        <p:panel id="gpBillPreview" >
 
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="bill">
-                                    <bill:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="bill">
+                                    <bill:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
 
@@ -146,6 +157,16 @@
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
+                            </h:panelGroup>
+                        </p:panel>
+                        <p:panel id="gpBillPreview2">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
                             </h:panelGroup>
                         </p:panel>
                     </p:panel>

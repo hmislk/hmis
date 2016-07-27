@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.util.JsfUtil;
@@ -64,6 +65,8 @@ public class SalaryCycleController implements Serializable {
     StaffController staffController;
     @Inject
     StaffSalaryController staffSalaryController;
+    @Inject
+    CommonController commonController;
     List<SalaryCycle> salaryCycles;
     List<String> headersAdd;
     List<Double> footerAdd;
@@ -114,11 +117,17 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void listAllSalaryCycles() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         String sql;
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
                 + " order by c.id desc";
         salaryCycles = getFacade().findBySQL(sql, 20);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
     }
 
     double brVal = 0.0;
@@ -783,11 +792,23 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffPayRoll() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRoll(false);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff Payrol(/faces/hr/hr_report_staff_payroll.xhtml)");
     }
 
     public void fillStaffPayRollSelectedStaff() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRoll(false, staffController.getSelectedList());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/staff over time(/faces/hr/hr_staff_salary_1.xhtml)");
     }
 
     public void fillStaffPayRollDepartmentWise() {
@@ -795,15 +816,33 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffPayRollrosterWise() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRollRos(false, fetchSalaryRosters());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
     }
 
     public void fillStaffPayRollBlocked() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRoll(true);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol(By department)(/faces/hr/hr_report_staff_payroll.xhtml)");
     }
 
     public void fillStaffPayRollBlockedSelectedStaff() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRoll(true, staffController.getSelectedList());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/ Staff payrol (selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
     }
 
     public void fillStaffPayRollBlockedDepartmentWise() {
@@ -811,7 +850,13 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffPayRollBlockedrosterWise() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         fillStaffPayRollRos(true, fetchSalaryRosters());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff Payrol by roster(/faces/hr/hr_report_staff_payroll_roster.xhtml)");
     }
 
     public void fillStaffPayRoll(boolean blocked) {
@@ -904,7 +949,34 @@ public class SalaryCycleController implements Serializable {
                     s.getTransStaffSalaryComponantsSubtraction().add(new StaffSalaryComponant(0, psc));
                 }
             }
-
+            for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
+                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
+                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
+                System.out.println("p.getComponantValue() = " + p.getComponantValue());
+                System.out.println("p.getComponantValue() = " + p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                    s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                    System.err.println("s.getBasicVal() = " + s.getBasicVal());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.MerchantileAllowance) {
+                    s.setMerchantileVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.PoyaAllowance) {
+                    s.setPoyaVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.DayOffAllowance) {
+                    s.setDayOffVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowance) {
+                    s.setPerVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                }
+                if (p.getStaffPaysheetComponentPercentage() != null) {
+                    if (p.getStaffPaysheetComponentPercentage().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowancePercentage) {
+                        s.setPerPercentage(p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
+                        System.out.println("p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue() = " + p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
+                    }
+                }
+            }
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {
@@ -1059,7 +1131,7 @@ public class SalaryCycleController implements Serializable {
             }
 
             m.put("sc", current);
-            
+
             staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
             System.out.println("staffSalarys.size() = " + staffSalarys.size());
 
@@ -1402,6 +1474,9 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffSalary() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         String jpql = "select spc from StaffSalary spc "
                 + " where spc.retired=false"
@@ -1412,6 +1487,8 @@ public class SalaryCycleController implements Serializable {
         m.put("sc", current);
         staffSalary = staffSalaryFacade.findBySQL(jpql, m);
         allStaffSalaryTotal(staffSalary);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/(/faces/hr/hr_shift_table.xhtml)");
     }
 
     public List<Department> fetchSalaryDepartment() {
@@ -1608,6 +1685,10 @@ public class SalaryCycleController implements Serializable {
     DepartmentFacade departmentFacade;
 
     public void fillStaffSalaryByDepartment() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         salaryByDepartments = new ArrayList<>();
         List<Department> departments = departments();
         for (Department d : departments) {
@@ -1668,6 +1749,8 @@ public class SalaryCycleController implements Serializable {
             }
         }
         allStaffSalaryByDepartmentTotal(salaryByDepartments);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/All staff salary summery(By department)(/faces/hr/hr_report_staff_salary_by_department.xhtml");
     }
 
     public Object[] fillStaffSalaryByDepartment(Department d) {
@@ -2163,6 +2246,14 @@ public class SalaryCycleController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + SalaryCycleController.class.getName());
             }
         }
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
     }
 
 }

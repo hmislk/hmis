@@ -34,12 +34,8 @@
                                                             value="#{bookingController.speciality}" 
                                                             style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
                                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerClearSelectedServiceSession}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerClearSelectedServiceSession}"/>
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.generateSessions}"/>
+                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
+                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                                         </p:selectOneListbox>
                                     </h:panelGrid>
                                 </td>
@@ -62,7 +58,7 @@
                                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                                             <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
-                                                     listener="#{bookingController.generateSessions}"/>
+                                                     listener="#{bookingController.generateSessionsOnlyIdNew}"/>
                                         </p:selectOneListbox>
                                     </h:panelGrid>
                                 </td>
@@ -81,11 +77,11 @@
                             <tr>
                                 <td>
                                     <p:calendar id="date" value="#{bookingController.sessionStartingDate}" navigator="true"
-                                                styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                                styleClass="dateTimePickerSmall" pattern="yyyy MMMM dd" >
                                         <p:ajax event="dateSelect" 
                                                 process="@this date" 
                                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} a"  
-                                                listener="#{bookingController.generateSessions}"
+                                                listener="#{bookingController.generateSessionsOnlyIdNew}"
                                                 />
                                     </p:calendar>
                                     <p:watermark for="date" value="Date" />
@@ -160,7 +156,20 @@
                                             </h:outputText>
                                             <h:outputText value=" &nbsp; (Doctor Leave) &nbsp; ******" rendered="#{ses.deactivated}" style="color: red;"/>
                                         </p:column>
-
+                                        <p:column headerText="Last Editor" style="width: 40px!important; text-align: center;" >
+                                            <h:outputText value="#{ses.editer.webUserPerson.name}">
+                                            </h:outputText>                                                            
+                                        </p:column>
+                                        <p:column headerText="Remove" rendered="#{webUserController.hasPrivilege('Developers')}" style="width: 40px!important; text-align: center;" >
+                                            <p:cellEditor>
+                                                <f:facet name="output" >
+                                                    <h:outputText value="#{ses.retired}"/>
+                                                </f:facet>
+                                                <f:facet name="input" >
+                                                    <p:selectBooleanCheckbox value="#{ses.retired}" rendered="#{webUserController.hasPrivilege('Developers')}" />
+                                                </f:facet>
+                                            </p:cellEditor>
+                                        </p:column>
                                         <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                                             <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                             <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
@@ -181,7 +190,7 @@
                                                 <f:convertDateTime pattern="dd MMM"/>
                                             </h:outputText>
                                         </p:column>
-                                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                                             <p:cellEditor>
                                                 <f:facet name="output" >
                                                     <h:outputText value="#{ses.startingTime}">

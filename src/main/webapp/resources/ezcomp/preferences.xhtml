@@ -131,6 +131,7 @@
 
                     <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
+                        <f:selectItem itemLabel="Paper Type" />
                         <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                     </p:selectOneMenu>
                     <h:outputLabel value="Channel Bill Double"></h:outputLabel>

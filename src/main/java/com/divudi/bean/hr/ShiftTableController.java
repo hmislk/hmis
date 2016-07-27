@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.dataStructure.ShiftTable;
@@ -60,6 +61,8 @@ public class ShiftTableController implements Serializable {
     ShiftController shiftController;
     @Inject
     StaffShiftController staffShiftController;
+    @Inject
+    CommonController commonController;
     boolean all;
     Staff staff;
 
@@ -85,11 +88,11 @@ public class ShiftTableController implements Serializable {
     PhDateController phDateController;
 
     public void fetchAndSetDayType(StaffShift ss) {
-        DayType dayType=null;
+        DayType dayType = null;
         if (ss.getShift() != null) {
-           dayType = ss.getShift().getDayType();
+            dayType = ss.getShift().getDayType();
         }
-        
+
         System.out.println("ss.getDayType() = " + ss.getDayType());
 
         ss.setDayType(null);
@@ -190,6 +193,8 @@ public class ShiftTableController implements Serializable {
     }
 
     public void createShiftTable() {
+        Date startTime = new Date();
+
         if (errorCheck()) {
             return;
         }
@@ -251,9 +256,13 @@ public class ShiftTableController implements Serializable {
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill New)(/faces/hr/hr_shift_table.xhtml)");
     }
 
     public void fetchShiftTable() {
+        Date startTime = new Date();
+        
         if (errorCheck()) {
             return;
         }
@@ -334,6 +343,8 @@ public class ShiftTableController implements Serializable {
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill Old Roster)(/faces/hr/hr_shift_table.xhtml)");
     }
 
     public void fetchShiftTableByStaff() {
@@ -408,6 +419,8 @@ public class ShiftTableController implements Serializable {
     }
 
     public void fetchShiftTableForCheck() {
+        Date startTime = new Date();
+        
         if (errorCheck()) {
             return;
         }
@@ -601,6 +614,8 @@ public class ShiftTableController implements Serializable {
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Roster table and vertify time(/faces/hr/hr_report_shift_table.xhtml)");
     }
 
     public double fetchWorkTime(Staff staff, Date date) {
@@ -843,5 +858,14 @@ public class ShiftTableController implements Serializable {
     public void setStaff(Staff staff) {
         this.staff = staff;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+    
 
 }

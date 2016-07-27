@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete" 
+                xmlns:pe="http://primefaces.org/ui/extensions" >
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:panel >
+                <f:facet name="header" >
+                    <p:outputLabel value="Consultant BTT Report" />
+                </f:facet>
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+                        <h:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <h:outputText id="output" value="Percentage #{channelReportController.reportKeyWord.from} % " />
+                            <h:inputHidden id="txt2" value="#{channelReportController.reportKeyWord.from}" />
+                        </h:panelGrid>
+                        <p:slider for="txt2" display="output" style="width: 200px" displayTemplate="Percentage {value} % " rendered="#{webUserController.hasPrivilege('Developers')}" />
+                        <!--<h:outputLabel value=""/>-->
+                        <h:panelGrid columns="3">
+                            <p:commandButton action="#{channelReportController.createTotalDoctorAllBTT}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton value="Print" action="#" styleClass="noPrintButton">
+                                <p:printer target="pan1" />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                <pe:exporter type="xlsx" target="tbl" fileName="BTT_Report"  />
+                            </p:commandButton> 
+                        </h:panelGrid>
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="pan1" styleClass="noBorder summeryBorder">
+
+                    <p:dataTable id="tbl" value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
+                            <p:outputLabel value="Consultant BTT Report" /><br></br>
+                            <p:outputLabel value="From : "/>
+                            <p:outputLabel value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>     
+                            <p:outputLabel value=" - To : "/>
+                            <p:outputLabel value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:column headerText="Consultant" style="width: 10px!important;">
+                            <f:facet name="header">
+                                <p:outputLabel value="No" style="float: left;"/>
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="Consultant" style="width: 1000px!important;" sortBy="#{bs.consultant.person.name}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Consultant" style="float: left;"/>
+                            </f:facet>
+                            <p:outputLabel value="#{bs.consultant.person.nameWithTitle}" />
+                        </p:column>   
+                        <p:column headerText="Bill" styleClass="numberCol" rendered="true">
+                            <p:outputLabel value="#{bs.billCount}" >
+                                <f:convertNumber pattern="#,##0"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Cancel" styleClass="numberCol" rendered="true">
+                            <p:outputLabel value="#{bs.billCanncelCount}" >
+                                <f:convertNumber pattern="#,##0"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Refund" styleClass="numberCol" rendered="true">
+                            <p:outputLabel value="#{bs.refundedCount}" >
+                                <f:convertNumber pattern="#,##0"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="No Of Patients" styleClass="numberCol" style="width: 150px!important;">
+                            <p:outputLabel value="#{bs.billCount-(bs.billCanncelCount+bs.refundedCount)}" >
+                                <f:convertNumber pattern="#,##0"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Total" styleClass="numberCol">
+                            <p:outputLabel value="#{bs.billFee+bs.billCanncelFee+bs.refundFee}" >
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportController.total}" style="float: right;">
+                                    <f:convertNumber pattern="##,###,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>

@@ -42,6 +42,8 @@ public enum BillType {
     CashRecieveBill,
     PettyCash,
     AgentPaymentReceiveBill,
+    AgentCreditNoteBill,
+    AgentDebitNoteBill,
     CollectingCentrePaymentReceiveBill,
     @Deprecated
     PharmacyBill, //Cash In
@@ -85,7 +87,7 @@ public enum BillType {
     ChannelAgent(ChannelCashFlow),
     ChannelOnCall(ChannelCreditFlow),
     ChannelStaff(ChannelCreditFlow),
-    @Deprecated
+    //    @Deprecated need to payment bills for separately
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
@@ -119,7 +121,9 @@ public enum BillType {
     ChannelPaidOld,
     ChannelAgentOld,
     ChannelOnCallOld,
-    ChannelStaffOld,;
+    ChannelStaffOld,
+    ChannelIncomeBill,
+    ChannelExpenesBill,;
 
     public String getLabel() {
         switch (this) {
@@ -214,6 +218,12 @@ public enum BillType {
                 return "OPD Accepet Payment";
             case CollectingCentrePaymentReceiveBill:
                 return "Collecting Centre Payment";
+            case ChannelProPayment:
+                return "Channel Professional Payment Bill";
+            case ChannelIncomeBill:
+                return "Channel Income Bill";
+            case ChannelExpenesBill:
+                return "Channel Expenses Bill";
 
         }
 

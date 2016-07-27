@@ -133,6 +133,9 @@
                                 <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
                                     <bi:opdBillPrintRuhunu bill="#{bill}" dup="true" />
                                 </ui:repeat>
+                                <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                        <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
+                                    </ui:repeat>
                                 <!--  <br/>
                                                         <h:panelGroup >
                                                             <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        

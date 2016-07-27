@@ -240,6 +240,28 @@
                         <tr>
                             <td>
                                 <b>
+                                    <h:outputLabel value="VAT(15%)" ></h:outputLabel>
+                                </b>
+                            </td>
+                            <td>
+                                <p:spacer width="10" ></p:spacer>
+                            </td>
+                            <td>
+                                <h:outputLabel value=":" ></h:outputLabel>
+                            </td>
+                            <td>
+                                <b>
+                                    <h:outputLabel value="#{cc.attrs.bill.vat}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </b>
+                            </td>
+
+                        </tr>
+                        
+                        <tr>
+                            <td>
+                                <b>
                                     <h:outputLabel value="Total" ></h:outputLabel>
                                 </b>
                             </td>
@@ -251,7 +273,7 @@
                             </td>
                             <td>
                                 <b>
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                    <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </b>

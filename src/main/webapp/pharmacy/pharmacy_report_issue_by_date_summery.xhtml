@@ -50,7 +50,6 @@
                     </h:outputLabel>                       
                 </h:panelGrid>
 
-
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i">   
                     <f:facet name="header">
                         <p:outputLabel value="Sales Summary Report By Date" />
@@ -67,8 +66,6 @@
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
                             <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
                         </h:outputLabel>
-
-
 
                     </f:facet>
 

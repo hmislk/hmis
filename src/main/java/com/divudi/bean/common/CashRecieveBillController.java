@@ -59,6 +59,8 @@ public class CashRecieveBillController implements Serializable {
     private List<BillItem> selectedBillItems;
     private PaymentMethodData paymentMethodData;
     private Institution institution;
+    @Inject
+    CommonController commonController;
     String comment;
 
     public void makeNull() {
@@ -172,7 +174,7 @@ public class CashRecieveBillController implements Serializable {
 
     private double getReferenceBallance(BillItem billItem) {
         double refBallance = 0;
-        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal());
+        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal()+billItem.getReferenceBill().getVat());
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
 
         refBallance = neTotal - (paidAmt);
@@ -471,6 +473,9 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void settleBill() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         if (errorCheck()) {
             return;
@@ -491,9 +496,13 @@ public class CashRecieveBillController implements Serializable {
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
     }
 
     public void settleBillBht() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
 
         if (errorCheckBht()) {
             return;
@@ -511,6 +520,8 @@ public class CashRecieveBillController implements Serializable {
         //   savePayments();
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Inward/By OPD bill(/faces/credit/credit_compnay_bill_inward.xhtml)");
 
     }
 
@@ -545,7 +556,7 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public void removeAll() {
-        List<BillItem>tmp=new ArrayList<>();
+        List<BillItem> tmp = new ArrayList<>();
         for (BillItem b : selectedBillItems) {
             System.out.println("getBillItems().size() = " + getBillItems().size());
             System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
@@ -840,4 +851,13 @@ public class CashRecieveBillController implements Serializable {
     public void setAdmissionController(AdmissionController admissionController) {
         this.admissionController = admissionController;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

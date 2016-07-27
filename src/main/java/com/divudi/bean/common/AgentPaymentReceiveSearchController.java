@@ -254,6 +254,14 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public void channellAgencyCancelBill(){
         cancelBill(BillType.AgentPaymentReceiveBill, BillNumberSuffix.AGNCAN, HistoryType.ChannelDepositCancel);
     }
+    
+    public void channelCreditNoteCancelBill(){
+        cancelBill(BillType.AgentCreditNoteBill, BillNumberSuffix.AGNCNCAN, HistoryType.ChannelCreditNoteCancel);
+    }
+    
+    public void channelDebitNoteCancelBill(){
+        cancelBill(BillType.AgentDebitNoteBill, BillNumberSuffix.AGNDNCAN, HistoryType.ChannelDebitNoteCancel);
+    }
 
     public void cancelBill(BillType billType, BillNumberSuffix billNumberSuffix, HistoryType historyType) {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {

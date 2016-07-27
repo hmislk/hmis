@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.lab.InvestigationController;
@@ -44,6 +45,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.commons.io.filefilter.CanReadFileFilter;
 
 /**
  *
@@ -60,6 +62,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private SessionController sessionController;
     @Inject
     PatientInvestigationController patientInvestigationController;
+    @Inject
+    CommonController commonController;
     /**
      * EJBs
      */
@@ -93,15 +97,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     private List<InvestigationSummeryData> itemDetails;
     private List<Item> investigations;
     List<Bill> bills;
+    List<Bill> billedBills;
+    List<Bill> cancelledBills;
+    List<Bill> refundedBills;
     List<PatientInvestigation> pis;
     List<InvestigationSummeryData> itemsLab;
+    BillType billType;
     Long totalCount;
     int progressValue = 0;
     boolean progressStarted = false;
     boolean stopProgress;
     private boolean paginator = true;
     private int rows = 20;
-
+    double grantTotal;
+    BillListTotal billlistTotal;
+    
+    
     /**
      * Creates a new instance of CashierReportController
      */
@@ -381,6 +392,75 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         progressStarted = false;
     }
 
+    public void createInvestigationTable() {
+        billedBills = new ArrayList<>();
+        billedBills = fetchInvestigationBillList(new BilledBill());
+        cancelledBills = new ArrayList<>();
+        cancelledBills = fetchInvestigationBillList(new CancelledBill());
+        refundedBills = new ArrayList<>();
+        refundedBills = fetchInvestigationBillList(new RefundBill());
+        
+       billlistTotal = new BillListTotal();
+       
+       
+      
+       
+    }
+
+    public List<Bill> fetchInvestigationBillList(Bill b) {
+        List<Bill> billList = new ArrayList();
+
+        String sql;
+        Map map = new HashMap();
+
+        sql = "select distinct (bi.bill) from BillItem bi"
+                + " where bi.bill.retired=false"
+                + " and type(bi.item) =:iclass"
+                + " and type(bi.bill) =:biclass"
+                + " and bi.bill.institution=:ins"
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (billType == null) {
+            //1
+//            sql += " and (bi.bill.billType=:btype1 or bi.bill.billType=:btype2)";
+//            map.put("btype1", BillType.OpdBill);
+//            map.put("btype2", BillType.InwardBill);
+            //2
+            List<BillType> billTypes = new ArrayList<>();
+            billTypes.add(BillType.OpdBill);
+            billTypes.add(BillType.InwardBill);
+            sql += " and bi.bill.billType in :btypes";
+            map.put("btypes", billTypes);
+            //3
+//            BillType[] bt = {BillType.OpdBill, BillType.InwardBill};
+//            sql += " and bi.bill.billType in :btypes";
+//            map.put("btypes", Arrays.asList(bt));
+//            //4
+//            sql += " and bi.bill.billType in :btypes";
+//            map.put("btypes", Arrays.asList(new BillType[]{BillType.OpdBill, BillType.InwardBill}));
+        } else {
+            sql += " and bi.bill.billType=:btype";
+            map.put("btype", billType);
+        }
+        
+
+        map.put("iclass", Investigation.class);
+        map.put("biclass", b.getClass());
+        map.put("ins", getSessionController().getInstitution());
+        map.put("fromDate", getFromDate());
+        map.put("toDate", getToDate());
+
+        billList = billFacade.findBySQL(sql, map, TemporalType.TIMESTAMP);
+        System.out.println(billList);
+        return billList;
+
+    }
+
+    public BillType[] getBillTypeByInvestigation() {
+        BillType[] bt = {BillType.OpdBill, BillType.InwardBill};
+        return bt;
+    }
+
     public void setItem(Item item) {
         this.item = item;
     }
@@ -587,6 +667,8 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public void createIxCountByInstitutionAndCollectingCentre() {
+        Date startTime = new Date();
+
         String jpql;
         Map m;
         m = new HashMap();
@@ -625,6 +707,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("ixbt", Investigation.class);
         insInvestigationCountRows = (List<ItemInstitutionCollectingCentreCountRow>) (Object) billFacade.findAggregates(jpql, m, TemporalType.TIMESTAMP);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Investigation counts by institution and collecting centers(/faces/reportLab/ix_count_by_institution_and_collecting_centre.xhtml)");
     }
 
 //    public void createIxCountByInstitutionAndCollectingCentreIndividual() {
@@ -799,21 +882,21 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         is.setCount(c);
         is.setTotal(tot);
     }
-    
+
     private long calculateInvestigationBilledCount(Item w, BillType[] bts) {
         long billed = getCount3(new BilledBill(), w, bts);
         long cancelled = getCount3(new CancelledBill(), w, bts);
         long refunded = getCount3(new RefundBill(), w, bts);
         return billed - (cancelled + refunded);
     }
-    
+
     private double calculateInvestigationBilledValue(Item w, BillType[] bts) {
         double billed = getTotalValue(new BilledBill(), w, bts);
         double cancelled = getTotalValue(new CancelledBill(), w, bts);
         double refunded = getTotalValue(new RefundBill(), w, bts);
         return billed + (cancelled + refunded);
     }
-    
+
     private long getCount3(Bill bill, Item item, BillType[] bts) {
         String sql;
         Map temMap = new HashMap();
@@ -837,7 +920,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double getTotalValue(Bill bill, Item item, BillType[] bts) {
         String sql;
         Map temMap = new HashMap();
@@ -1509,5 +1592,96 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     public void setItemsLab(List<InvestigationSummeryData> itemsLab) {
         this.itemsLab = itemsLab;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    public List<Bill> getBilledBills() {
+        return billedBills;
+    }
+
+    public void setBilledBills(List<Bill> billedBills) {
+        this.billedBills = billedBills;
+    }
+
+    public List<Bill> getCancelledBills() {
+        return cancelledBills;
+    }
+
+    public void setCancelledBills(List<Bill> cancelledBills) {
+        this.cancelledBills = cancelledBills;
+    }
+
+    public List<Bill> getRefundedBills() {
+        return refundedBills;
+    }
+
+    public void setRefundedBills(List<Bill> refundedBills) {
+        this.refundedBills = refundedBills;
+    }
+
+    public BillType getBillType() {
+        return billType;
+    }
+
+    public void setBillType(BillType billType) {
+        this.billType = billType;
+    }
+
+    public double getGrantTotal() {
+        return grantTotal;
+    }
+
+    public void setGrantTotal(double grantTotal) {
+        this.grantTotal = grantTotal;
+    }
+
+    public class BillListTotal {
+
+        double hosFee;
+        double staffFee;
+        double netTotal;
+
+        public double getHosFee() {
+            return hosFee;
+        }
+
+        public void setHosFee(double hosFee) {
+            this.hosFee = hosFee;
+        }
+
+        public double getStaffFee() {
+            return staffFee;
+        }
+
+        public void setStaffFee(double staffFee) {
+            this.staffFee = staffFee;
+        }
+
+          public double getNetTotal() {
+            System.out.println("this is tot = " + this);
+            return netTotal;
+        }
+
+        public void setNetTotal(double netTotal) {
+            this.netTotal = netTotal;
+        }
+        
+    }
+
+    public BillListTotal getBilllistTotal() {
+        System.out.println("this = " + this);
+        return billlistTotal;
+    }
+
+    public void setBilllistTotal(BillListTotal billlistTotal) {
+        this.billlistTotal = billlistTotal;
+    }
+
 
 }

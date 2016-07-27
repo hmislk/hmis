@@ -18,7 +18,7 @@
 
 
 
-                <p:panel header="Manage Channel Agents" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel header="Manage Channel Agents" >
 
                     <div id="Temp" style="position: relative;left: 0%;">
                         <h:panelGrid id ="gpVeda" columns="2" >
@@ -32,7 +32,7 @@
                                         </h:inputText>
 
                                         <p:selectOneListbox  id="lstSelect"   value="#{institutionController.agency}" style="min-width: 223px; height: 300px;">
-                                            <f:selectItems  value="#{institutionController.selectedAgencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                            <f:selectItems  value="#{institutionController.selectedAgencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name} (#{myItem.institutionCode })" ></f:selectItems>
                                             <p:ajax event="change"   update="gpDetail" process="lstSelect" >
                                             </p:ajax>
                                         </p:selectOneListbox>
@@ -74,10 +74,7 @@
                                                 <h:inputText autocomplete="off"  value="#{institutionController.agency.institutionCode}"  >
                                                 </h:inputText> 
 
-                                                <h:outputText value="Descreption" >                                        
-                                                </h:outputText>
-                                                <h:inputTextarea  value="#{institutionController.agency.descreption}"  >
-                                                </h:inputTextarea> 
+                                                 
 
                                                 <h:outputText id="lblType" value="Institution Type" ></h:outputText>
 
@@ -106,6 +103,12 @@
 
                                                 <h:outputText id="lblPhone" value="Phone" ></h:outputText>
                                                 <h:inputText autocomplete="off" id="txtPhone" value="#{institutionController.agency.phone}"  ></h:inputText>
+                                                
+                                                <h:outputText id="lblMemo" value="Memo" ></h:outputText>
+                                                <h:inputTextarea id="txtMemo" value="#{institutionController.agency.descreption}"  ></h:inputTextarea>
+                                                
+                                                <h:outputText id="lblMobile" value="Moble" ></h:outputText>
+                                                <h:inputText autocomplete="off" id="txtMobile" value="#{institutionController.agency.mobile}"  ></h:inputText>
 
                                                 <h:outputText id="lblFax" value="Fax" ></h:outputText>
                                                 <h:inputText autocomplete="off" id="txtFax" value="#{institutionController.agency.fax}"  ></h:inputText>
@@ -131,6 +134,9 @@
                                                 <h:inputText autocomplete="off"  value="#{institutionController.agency.contactPerson.name}"  ></h:inputText>
 
                                                 <h:outputText value="Contact Person Tel" ></h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.phone}"  ></h:inputText>
+                                                
+                                                <h:outputText value="Contact Person Mobile" ></h:outputText>
                                                 <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.mobile}"  ></h:inputText>
 
                                                 <h:outputText value="Contact Person Email" ></h:outputText>

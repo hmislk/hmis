@@ -41,9 +41,15 @@
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
-            
-              <p:column headerText="Discount" styleClass="averageNumericColumn">
+
+            <p:column headerText="Discount" styleClass="averageNumericColumn">
                 <h:outputLabel value="#{b.discount}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column>
+            
+            <p:column headerText="VAT" styleClass="averageNumericColumn">
+                <h:outputLabel value="#{b.vat}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column>
@@ -52,7 +58,7 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Cash"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}" >
+                <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.vat+b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
@@ -61,18 +67,18 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Credit"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}"  >
+                <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.vat+b.netTotal}"  >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
 
             </p:column>
-            
+
             <p:column headerText="C Card" styleClass="averageNumericColumn" >
                 <f:facet name="header">  
                     <h:outputLabel value="C Card"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.netTotal}" >
+                <h:outputLabel rendered="#{b.paymentMethod=='Card'}" value="#{b.vat+b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Card'}" value="0.00"/>
@@ -82,7 +88,7 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Checque"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.netTotal}" >
+                <h:outputLabel rendered="#{b.paymentMethod=='Cheque'}" value="#{b.vat+b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Cheque'}" value="0.00"/>
@@ -92,7 +98,7 @@
                 <f:facet name="header">  
                     <h:outputLabel value="Slip"/>
                 </f:facet> 
-                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.netTotal}" >
+                <h:outputLabel rendered="#{b.paymentMethod=='Slip'}" value="#{b.vat+b.netTotal}" >
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b.paymentMethod!='Slip'}" value="0.00"/>
@@ -100,7 +106,7 @@
 
             <p:columnGroup type="footer">  
                 <p:row>                                 
-                    <p:column colspan="4"/>
+                    <p:column colspan="5"/>
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">

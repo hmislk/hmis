@@ -139,10 +139,10 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}">
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
+                        <td style="width: 10%">
 
                         </td>
                         <td style="width: 15%" >
@@ -508,6 +508,17 @@
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>                          
+                            </td>                        
+                        </tr>
+                        
+                         <tr>
+                            <td  class="totalsBlock" style="text-align: left;">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                                <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                          
                             </td>                        

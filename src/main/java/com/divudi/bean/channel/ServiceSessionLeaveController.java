@@ -197,7 +197,7 @@ public class ServiceSessionLeaveController implements Serializable {
         System.out.println("hm = " + hm);
         System.out.println("slq = " + slq);
         System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
-        bookingController.generateSessions();
+        bookingController.generateSessionsOnlyId();
     }
 
     public void addLeave() {

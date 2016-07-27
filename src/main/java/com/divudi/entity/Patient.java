@@ -68,6 +68,7 @@ public class Patient implements Serializable {
     String fileName;
     String fileType;
     String code;
+//    int code
     @Lob
     String comments;
     @Transient
@@ -82,12 +83,15 @@ public class Patient implements Serializable {
     Date toDate;
     @Size(max = 10)
     String phn;
+  
 
     public String getPhn() {
+        
         return phn;
     }
 
     public void setPhn(String phn) {
+        
         this.phn = phn;
     }
     
@@ -328,5 +332,6 @@ public class Patient implements Serializable {
     public void setComments(String comments) {
         this.comments = comments;
     }
+
 
 }

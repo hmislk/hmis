@@ -39,6 +39,22 @@
             <div style="font-size: 9px!important; font-family: Times New Roman!important;
                  letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 5%;">
                 <table >
+                    
+                    <tr>
+                        <td>
+                            <!--<h:outputLabel value="Date : " />-->
+                            <h:outputLabel value="Invoice No - #{cc.attrs.con.invoceNo}" />
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
@@ -165,7 +181,7 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Value" />
                                         </f:facet>
-                                        <h:outputLabel value="#{b.netTotal}" >
+                                        <h:outputLabel value="#{b.netTotal+b.vat}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -197,7 +213,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    " style="font-weight: bold;"/>
-                                    <h:outputLabel value="#{cc.attrs.con.total}" style="font-weight: bold;">
+                                    <h:outputLabel value="#{cc.attrs.con.total+cc.attrs.con.totalVat}" style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </f:facet>

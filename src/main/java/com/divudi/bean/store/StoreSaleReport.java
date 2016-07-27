@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -86,6 +87,10 @@ public class StoreSaleReport implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFacade billFacade;
+    
+    //////
+    @Inject
+    CommonController commonController;
 
     public void makeNull() {
         fromDate = null;
@@ -582,6 +587,8 @@ public class StoreSaleReport implements Serializable {
     }
 
     public void createSaleReportByDate() {
+        Date startTime = new Date();
+        
         billedSummery = new PharmacySummery();
 
         billedSummery.setBills(new ArrayList<String1Value3>());
@@ -615,6 +622,9 @@ public class StoreSaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalByDepartment(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalByDepartment();
+        
+        
+        
 
     }
 
@@ -654,6 +664,8 @@ public class StoreSaleReport implements Serializable {
     }
 
     public void createSalePaymentMethod() {
+        Date startTime = new Date();
+        
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
         billedPaymentSummery.setBills(new ArrayList<String2Value4>());
 
@@ -722,9 +734,13 @@ public class StoreSaleReport implements Serializable {
         grantCardTotal = calGrantTotalByPaymentMethod(PaymentMethod.Card);
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report by payment method/Sale summery report by date(/faces/store/store_report_sale_by_date_summery_payment_method.xhtml)");
     }
 
     public void createSaleReportByDateDetail() {
+        Date startTime = new Date();
+        
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -792,10 +808,14 @@ public class StoreSaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
         grantDiscount = calGrantDiscountByDepartment();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
 
     }
 
     public void createSalePaymentMethodDetail() {
+        Date startTime = new Date();
+        
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -885,6 +905,8 @@ public class StoreSaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethod(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethod(PaymentMethod.Credit);
         grantDiscount = calGrantDiscountByDepartment();
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Sale report all/sale detail report by date(/faces/store/store_report_sale_by_date_detail_payment_method.xhtml)");
 
     }
     
@@ -982,6 +1004,7 @@ public class StoreSaleReport implements Serializable {
     }
     
     public void getTransIssueValueByDate() {
+        Date startTime = new Date();
 
         String sql;
         Map m = new HashMap();
@@ -1016,6 +1039,8 @@ public class StoreSaleReport implements Serializable {
 //        for (BillItem bi:billItem){
 //            grantTotal+=getGrantTotal();
 //        }
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Assest transfer report/transfer issue  summery  report by  date(/faces/store/store_report_asset_issue_summery.xhtml)");
 
     }
     
@@ -1318,4 +1343,13 @@ public class StoreSaleReport implements Serializable {
         this.toDepartment = toDepartment;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    
 }

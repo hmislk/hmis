@@ -233,14 +233,19 @@ public class BillBhtController implements Serializable {
             BilledBill myBill = new BilledBill();
             saveBill(d, myBill, matrixDepartment);
             List<BillEntry> tmp = new ArrayList<>();
+            List<BillItem> tmpBis = new ArrayList<>();
             for (BillEntry e : lstBillEntries) {
                 if (e.getBillItem().getItem().getDepartment().equals(d)) {
-                    saveBillItems(myBill, e.getBillItem(), e, e.getLstBillFees(), getSessionController().getLoggedUser(), matrixDepartment);
+                    BillItem bi = saveBillItems(myBill, e.getBillItem(), e, e.getLstBillFees(), getSessionController().getLoggedUser(), matrixDepartment);
+                    bi.setSearialNo(tmpBis.size());
+                    System.out.println("tmpBis.size() = " + tmpBis.size());
                     //getBillBean().calculateBillItem(myBill, e);
+                    tmpBis.add(bi);
                     tmp.add(e);
                 }
             }
             getBillBean().calculateBillItems(myBill, tmp);
+            myBill.setBillItems(tmpBis);
             getBills().add(myBill);
         }
 
@@ -287,7 +292,8 @@ public class BillBhtController implements Serializable {
         for (BillEntry e : billEntries) {
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
-
+            billItem.setSearialNo(list.size());
+            System.out.println("list.size() = " + list.size());
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
@@ -331,20 +337,24 @@ public class BillBhtController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         //   bills = new ArrayList<>();
         bills = null;
         if (errorCheck()) {
             return;
         }
         //for daily return credit card transaction
-        paymentMethod=null;
+        paymentMethod = null;
         settleBill(getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
-    
-    commonController.printReportDetails(fromDate, toDate, startTime, "Services & Items/Add Services(/faces/inward/inward_bill_service.xhtml)");
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Services & Items/Add Services(/faces/inward/inward_bill_service.xhtml)");
     }
 
     public void settleBillSurgery() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getBatchBill() == null) {
             return;
         }
@@ -356,7 +366,7 @@ public class BillBhtController implements Serializable {
         if (getBatchBill().getFromDepartment() == null) {
             return;
         }
-        
+
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -367,6 +377,7 @@ public class BillBhtController implements Serializable {
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Service/Add service(/faces/theater/inward_bill_surgery_service.xhtml)");
     }
 
     @EJB
@@ -451,8 +462,8 @@ public class BillBhtController implements Serializable {
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
             return true;
         }
-        
-        if(getPatientEncounter().isDischarged()){
+
+        if (getPatientEncounter().isDischarged()) {
             UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
@@ -519,12 +530,12 @@ public class BillBhtController implements Serializable {
                     UtilityController.addErrorMessage("Please set Time To This Investigation");
                     return true;
                 }
-                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
-                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
-                    return true;
-                }
+//                if (getCurrentBillItem().getDescreption() == null || getCurrentBillItem().getDescreption().equals("")) {
+//                    UtilityController.addErrorMessage("Please set Discription To This Investigation");
+//                    return true;
+//                }
             }
-        }else{
+        } else {
             getCurrentBillItem().setBillTime(new Date());
             getCurrentBillItem().setDescreption("");
         }
@@ -908,6 +919,7 @@ public class BillBhtController implements Serializable {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
             currentBillItem.setQty(1.0);
+            currentBillItem.setBillTime(new Date());
         }
 
         return currentBillItem;
@@ -1126,5 +1138,5 @@ public class BillBhtController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
 }

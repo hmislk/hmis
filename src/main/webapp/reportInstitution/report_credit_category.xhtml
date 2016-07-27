@@ -75,7 +75,22 @@
 
             <in:opd_new_with_credit id="opd_new" />
 
-
+            <p:spacer height="30"/>
+            
+            <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
+                <p:column >
+                    <h:outputLabel value="#{sm.string}" ></h:outputLabel>
+                </p:column>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column/>
+                <p:column style="text-align: right;" >
+                    <h:outputLabel value="#{sm.value1}" > 
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </p:column>
+            </p:dataTable>
 
         </h:form>
     </ui:define>

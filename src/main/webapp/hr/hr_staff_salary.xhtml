@@ -127,6 +127,95 @@
                     </p:dataTable> 
                 </p:tab>
                 <p:tab title="Staff Salary">
+                    <p:tabView  id="lst" style="min-height:300px;">
+                <p:tab title="Salary Componenetns">
+                    <p:dataTable   editable="true" value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
+                        <f:facet name="header">
+                            <p:outputLabel value="#{staffSalaryController.current.staff.person.nameWithTitle}" /><br></br>
+                            <p:outputLabel value="#{staffSalaryController.current.staff.code}" />
+                        </f:facet>
+                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />  
+
+                        <p:column headerText="Compnent Name " style="width:10%">
+                            <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
+                        </p:column>
+                        <p:column headerText="Type" style="width:10%">
+                            <h:outputLabel  value="#{i.staffPaysheetComponent.paysheetComponent.componentType}"/>
+                        </p:column>
+                        <p:column style="width:6%">  
+                            <f:facet name="header">
+                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
+                            </f:facet>
+                            <p:rowEditor />  
+                        </p:column>
+                        <p:column headerText="Value">                        
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.componantValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
+                                </f:facet>
+                            </p:cellEditor> 
+                            <!--                            <f:facet name="footer">
+                                                        <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputLabel>  
+                                                        </f:facet>-->
+                        </p:column>
+                        <p:column headerText="Comment">                        
+                            <p:cellEditor>  
+                                <f:facet name="output">
+                                    <h:outputLabel value="#{i.comments}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                                <f:facet name="input">
+                                    <p:inputText autocomplete="off" value="#{i.comments}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
+                                </f:facet>
+                            </p:cellEditor> 
+                        </p:column>
+                        <p:column headerText="EPF">
+                            <h:outputLabel  value="#{i.epfValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>       
+                        <p:column headerText="EPF Company">
+                            <h:outputLabel value="#{i.epfCompanyValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="ETF Company">
+                            <h:outputLabel value="#{i.etfCompanyValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>      
+
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab title="Preview">
+                    <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
+                </p:tab>
+
+            </p:tabView>
                     <p:commandButton ajax="false" value="Delete All"
                                      action="#{staffSalaryController.deleteAll()}"
                                      />
@@ -252,95 +341,7 @@
             </p:tabView>
 
 
-            <p:tabView  id="lst" style="min-height:300px;">
-                <p:tab title="Salary Componenetns">
-                    <p:dataTable   editable="true" value="#{staffSalaryController.current.staffSalaryComponants}" var="i" >
-                        <f:facet name="header">
-                            <p:outputLabel value="#{staffSalaryController.current.staff.person.nameWithTitle}" /><br></br>
-                            <p:outputLabel value="#{staffSalaryController.current.staff.code}" />
-                        </f:facet>
-                        <p:ajax event="rowEdit" listener="#{staffSalaryController.onEdit}" />  
-
-                        <p:column headerText="Compnent Name " style="width:10%">
-                            <h:outputLabel value="#{i.staffPaysheetComponent.paysheetComponent.name}"/>
-                        </p:column>
-                        <p:column headerText="Type" style="width:10%">
-                            <h:outputLabel  value="#{i.staffPaysheetComponent.paysheetComponent.componentType}"/>
-                        </p:column>
-                        <p:column style="width:6%">  
-                            <f:facet name="header">
-                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
-                            </f:facet>
-                            <p:rowEditor />  
-                        </p:column>
-                        <p:column headerText="Value">                        
-                            <p:cellEditor>  
-                                <f:facet name="output">
-                                    <h:outputLabel value="#{i.componantValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{i.componantValue}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
-                                </f:facet>
-                            </p:cellEditor> 
-                            <!--                            <f:facet name="footer">
-                                                        <h:outputLabel value="#{staffSalaryController.current.transGrossSalary}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputLabel>  
-                                                        </f:facet>-->
-                        </p:column>
-                        <p:column headerText="Comment">                        
-                            <p:cellEditor>  
-                                <f:facet name="output">
-                                    <h:outputLabel value="#{i.comments}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{i.comments}" disabled="#{i.staffPaysheetComponent.paysheetComponent.componentType eq 'BasicSalary'}"/>
-                                </f:facet>
-                            </p:cellEditor> 
-                        </p:column>
-                        <p:column headerText="EPF">
-                            <h:outputLabel  value="#{i.epfValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{staffSalaryController.current.epfStaffValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>       
-                        <p:column headerText="EPF Company">
-                            <h:outputLabel value="#{i.epfCompanyValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{staffSalaryController.current.epfCompanyValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="ETF Company">
-                            <h:outputLabel value="#{i.etfCompanyValue}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{staffSalaryController.current.etfCompanyValue}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>      
-
-                    </p:dataTable>
-                </p:tab>
-
-                <p:tab title="Preview">
-                    <salary:pay_slip bill="#{staffSalaryController.current}"></salary:pay_slip>
-                </p:tab>
-
-            </p:tabView>
+            
 
         </h:form>        
     </ui:define>

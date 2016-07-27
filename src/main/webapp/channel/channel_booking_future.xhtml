@@ -10,9 +10,8 @@
 
     <ui:define name="content">
 
-        <h:form>
-
-
+        <h:form > 
+         
             <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop"> 
                 <p:panel header="Specialities">       
                     <h:panelGrid columns="1">
@@ -206,9 +205,10 @@
                                             value="#{channelBillController.searchPatient}" 
                                             completeMethod="#{patientController.completePatient}" 
                                             var="apt" itemLabel="#{apt.person.name}" 
-                                            itemValue="#{apt}" size="30"  style="width: 400px;">
+                                            itemValue="#{apt}" size="30"  style="width: 400px;" required="true" requiredMessage="Please select the patient" autocomplete="off">
                                 <p:ajax event="itemSelect" process="@this" update="panSearch"/>
-                            </p:autoComplete>   
+                            </p:autoComplete>  
+
 
                             <h:panelGrid id="panSearch" columns="2" >
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Name" />
@@ -219,23 +219,27 @@
                                 <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value="#{channelBillController.searchPatient.person.sex}" ></h:outputLabel>
                             </h:panelGrid>   
                         </p:tab>
+
                     </p:tabView>
                     <h:panelGrid columns="2" style="min-width: 100%;">
 
 
-                        <p:commandButton   value="Add" process="@form" 
-                                           update="gpThisBookingDetails" style="float: right;" 
-                                           action="#{channelBillController.add}" 
-                                           oncomplete="PF('dlgAdd').show();">                        
+                        <p:commandButton  id="btnAdd"  value="Add" process="@form" 
+                                          update="gpThisBookingDetails" style="float: right;" 
+                                          action="#{channelBillController.add}" 
+                                          oncomplete="PF('dlgAdd').show();">
+                            <p:resetInput target="tabSearchPt" />                         
                         </p:commandButton>
 
                         <p:commandButton ajax="false" action="#{channelBillController.makeNull}"  value="New Booking" onclick="onSubmitButton();"/>
                     </h:panelGrid>
+                    <!--<p:defaultCommand target="btnAdd"/>-->
 
                     <p:dialog id="dialogChannelAdded" header="Booked" widgetVar="dlgAdd" 
                               modal="true" height="400" width="600">
-                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false"
-                                         ></p:commandButton>
+                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" >
+
+                        </p:commandButton>
 
                         <p:commandButton value="Print" ajax="false" action="#"
                                          disabled="#{channelBillController.billSession.billItem.bill.balance eq 0.0}">

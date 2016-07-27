@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.hr;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.hr.DayType;
@@ -70,6 +71,8 @@ public class StaffSalaryAdvanceController implements Serializable {
     @EJB
     private CommonFunctions commonFunctions;
     /////////////
+    @Inject
+    CommonController commonController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -260,7 +263,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        }
 //
 //    }
-
     public void onEditBlockedUpdate(StaffSalary staffSalary) {
 //        current = staffSalary;
 
@@ -790,11 +792,9 @@ public class StaffSalaryAdvanceController implements Serializable {
                     getCurrent().calcualteEpfAndEtf();
 
 //                    double salaryValueForDiduction = getCurrent().getTransGrossSalary() + getCurrent().getTransTotalAllowance() + getCurrent().getTransTotalDeduction();
-
 //                    if ((salaryValueForDiduction - spc.getStaffPaySheetComponentValue()) > 0) {
 //                        continue;
 //                    }
-
                     StaffSalaryComponant ss = new StaffSalaryComponant();
                     ss.setCreatedAt(new Date());
                     ss.setSalaryCycle(salaryCycle);
@@ -1014,7 +1014,6 @@ public class StaffSalaryAdvanceController implements Serializable {
 ////        }
 //        System.err.println("Automatic Early out END " + stfCurrent.getStaff().getCodeInterger());
 //    }
-
 //    public void calStaffLeaveFromLateIn(StaffShift stfCurrent, double fromTime) {
 //
 //        stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
@@ -1086,6 +1085,10 @@ public class StaffSalaryAdvanceController implements Serializable {
 //    }
 //
     public void generate() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getStaffController().getSelectedList() == null) {
             UtilityController.addErrorMessage("Pls Select Staff");
             return;
@@ -1123,6 +1126,8 @@ public class StaffSalaryAdvanceController implements Serializable {
             UtilityController.addErrorMessage("There is allready salary generated .please delete generated salary");
         }
         //   createStaffSalaryTable();
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Generate Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
     }
 
     private void fetchAndSetBankData() {
@@ -1222,6 +1227,10 @@ public class StaffSalaryAdvanceController implements Serializable {
     }
 
     public void saveSalary() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
         if (getStaffController().getSelectedList() == null) {
             return;
         }
@@ -1245,6 +1254,9 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         //   createStaffSalaryTable();
+         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Save Salary Advance)(/faces/hr/hr_staff_salary_advance.xhtml)");
+        
+        
     }
 
     private void updateStaffShift(Staff staff, Date fromDate, Date toDate) {
@@ -1459,4 +1471,13 @@ public class StaffSalaryAdvanceController implements Serializable {
             }
         }
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
 }

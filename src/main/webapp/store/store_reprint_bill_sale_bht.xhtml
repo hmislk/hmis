@@ -1,12 +1,11 @@
-xml version='1.0' encoding='UTF-8' ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:st="http://java.sun.com/jsf/composite/store"
-      >
+      xmlns:st="http://java.sun.com/jsf/composite/store/inward">
 
     <h:body>
 
@@ -25,14 +24,14 @@ xml version='1.0' encoding='UTF-8' ?>
                                              disabled="#{storeBillSearch.bill.cancelled}">                           
                             </p:commandButton>
                            
-                        </f:facet><st:issueBht/>
+                        </f:facet>
 
                        
                     </p:panel>
 
 
                     <h:panelGroup id="gpBillPreview" >
-                        <st:issueBht bill="#{storeBillSearch.bill}" duplicate="true" />
+                        <st:issueBill bill="#{storeBillSearch.bill}" duplicate="true" />
                     </h:panelGroup>
 
 

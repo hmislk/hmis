@@ -48,7 +48,7 @@
                         <p:inputText autocomplete="off" disabled="#{!dataAdministrationController.bool4}" id="txt3" value="#{dataAdministrationController.val4}" >
                         </p:inputText>
                         <p:commandButton value="Update" action="#{dataAdministrationController.changeCreditLimts}" 
-                                         ajax="false" />
+                                         ajax="false" disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}" />
                     </h:panelGrid>
                 </p:panel>
                 <p:panel>

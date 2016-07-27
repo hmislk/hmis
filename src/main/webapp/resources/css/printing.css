@@ -121,10 +121,6 @@ root {
 
     }
 
-
-
-
-
 }
 
 
@@ -489,6 +485,15 @@ root {
     font-size: 11px;
     position: absolute;
     left: 12%;
+    top: 37%;
+
+}
+
+.itemsPrintingMid{
+
+    font-size: 11px;
+    position: absolute;
+    left: 35%;
     top: 37%;
 
 }
@@ -923,8 +928,8 @@ root {
 .totalsPrintingRuhunu{
     position: absolute;
     left: 30%!important;
-   bottom:10%!important;
-/*top: 13.8cm;*/
+    bottom:10%!important;
+    /*top: 13.8cm;*/
     font-size: 20px;
     font-weight: bolder;
     text-align: right;

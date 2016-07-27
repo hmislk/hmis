@@ -947,7 +947,10 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCountsWithOutMarginStore() {
+        Date startTime = new Date();
         fillItemCountsWithOutMargin(BillType.StoreIssue);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_unit_report_by_item_1.xhtml)");
     }
 
     public void fillItemCountsWithOutMargin(BillType bt) {
@@ -984,6 +987,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCountsStore() {
+        Date startTime = new Date();
 
         List<Object[]> list = fetchBillItem(BillType.StoreIssue);
 
@@ -1024,6 +1028,8 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.StoreIssue);
         billNetTotal = fetchBillNetTotal(BillType.StoreIssue);
 
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(batch)(/faces/store/store_unit_report_by_item.xhtml)");
     }
 
     public void fillItemCountsBht() {

@@ -37,6 +37,7 @@ public class BillEntry implements Serializable {
     Double totCash;
     Double totCredit;
     Double totCreditCard;
+    Double totVat;
     @Transient
     Bill bill;
 
@@ -129,6 +130,17 @@ public class BillEntry implements Serializable {
         this.totDiscount = totDiscount;
     }
 
+    public Double getTotVat() {
+        return totVat;
+    }
+
+    public void setTotVat(Double totVat) {
+        this.totVat = totVat;
+    }
+
+    
+    
+    
     public Double getTotCash() {
         return totCash;
     }

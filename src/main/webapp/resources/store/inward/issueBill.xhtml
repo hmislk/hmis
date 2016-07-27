@@ -47,14 +47,14 @@
             <div class="billDetails" >
                 <table style="width: 100%;" >
                     <tr>
-                        <td style="width: 20%; text-align: left;" >
+                        <td style="width: 40%; text-align: left;" >
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%" >
+                        <td style="width: 50%;text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
-                                <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -66,9 +66,9 @@
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
+<!--                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
-                            </h:outputLabel>
+                            </h:outputLabel>-->
                         </td>
 
                     </tr>
@@ -76,14 +76,14 @@
 
                     <tr>
                         <td style="width: 20%;text-align: left;" >
-                            <h:outputLabel value="Issue No" ></h:outputLabel>
+                            <h:outputLabel value="Issue No" class="billDetails"></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%;" >
+                        <td style="width: 30%;text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq false}">
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}" class="billDetails" rendered="#{cc.attrs.bill.cancelled eq false}">
                             </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}"  rendered="#{cc.attrs.bill.cancelled eq true}">
+                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" class="billDetails" rendered="#{cc.attrs.bill.cancelled eq true}">
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -105,11 +105,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 20% ;text-align: left;" >
-                                <h:outputLabel value="BHT" ></h:outputLabel>
+                                <h:outputLabel value="BHT" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
-                            <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"  >
+                            <td style="width: 30%;text-align: left;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetails" >
                                 </h:outputLabel>
                             </td>
                             <td style="width: 10%" >
@@ -123,11 +123,11 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Patient Name" ></h:outputLabel>
+                                <h:outputLabel value="Patient Name" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;text-align: left;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"  >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" class="billDetails" >
                                 </h:outputLabel>
                             </td>
 
