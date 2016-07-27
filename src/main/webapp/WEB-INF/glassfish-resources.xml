@@ -39,4 +39,5 @@
     <jdbc-resource enabled="true" jndi-name="java:app/Ruwan" object-type="user" pool-name="mysql_coop_rootPool_1"/>
     <jdbc-resource enabled="true" jndi-name="java:app/Sanda" object-type="user" pool-name="mysql_coop_rootPool_1"/>
     <jdbc-resource enabled="true" jndi-name="java:app/Sanda" object-type="user" pool-name="mysql_coop_rootPool_1"/>
+    <jdbc-resource enabled="true" jndi-name="java:app/Sanda" object-type="user" pool-name="mysql_coop_rootPool_1"/>
 </resources>
