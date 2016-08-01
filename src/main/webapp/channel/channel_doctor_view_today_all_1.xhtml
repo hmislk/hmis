@@ -28,7 +28,7 @@
                             <h:outputText id="output" value="Percentage #{channelReportController.reportKeyWord.from} % " />
                             <h:inputHidden id="txt2" value="#{channelReportController.reportKeyWord.from}" />
                         </h:panelGrid>
-                        <p:slider for="txt2" display="output" style="width: 200px" displayTemplate="Percentage {value} % " />
+                        <p:slider for="txt2" display="output" style="width: 200px" displayTemplate="Percentage {value} % " rendered="#{webUserController.hasPrivilege('Developers')}" />
                         <!--<h:outputLabel value=""/>-->
                         <h:panelGrid columns="3">
                             <p:commandButton action="#{channelReportController.createTotalDoctorAllBTT}" value="Fill" ajax="false" ></p:commandButton> 
