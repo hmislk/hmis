@@ -143,10 +143,13 @@ public  class MedicalPackageNameController implements Serializable {
         }
         return items;
     }
+    
+  
+    
     public List<MedicalPackage> getWithoutInactiveItems() {
         String temSql;
-        temSql = "SELECT i FROM MedicalPackage i where i.retired=false"
-                + "and (i.inactive=false or i.inactive is null) "
+        temSql = "SELECT i FROM MedicalPackage i where i.retired=false "
+                + " and (i.inactive=false or i.inactive is null) "
                 + " order by i.name";
         items = getFacade().findBySQL(temSql);
         if (items == null) {

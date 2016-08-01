@@ -143,17 +143,17 @@ public  class PackageNameController implements Serializable {
         }
         return items;
     }
-//     public List<Packege> getWithoutInativeItems() {
-//        String temSql;
-//        temSql = "SELECT i FROM Packege i where i.retired=false"
-//                + "and (i.inactive=false or i.inactive is null)"
-//                + " order by i.name";
-//        items = getFacade().findBySQL(temSql);
-//        if (items == null) {
-//            items = new ArrayList<Packege>();
-//        }
-//        return items;
-//    }
+     public List<Packege> getWithoutInativeItems() {
+        String temSql;
+        temSql = "SELECT i FROM Packege i where i.retired=false "
+                + " and (i.inactive=false or i.inactive is null)"
+                + " order by i.name";
+        items = getFacade().findBySQL(temSql);
+        if (items == null) {
+            items = new ArrayList<Packege>();
+        }
+        return items;
+    }
 
     /**
      *
