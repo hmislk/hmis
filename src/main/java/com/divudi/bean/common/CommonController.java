@@ -9,9 +9,11 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -113,6 +115,13 @@ public class CommonController implements Serializable {
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         s=d.format(date);
         return s;
+    }
+    public Date getConvertDateTimeFormat24(String dateString) throws ParseException{
+        DateFormat d = new SimpleDateFormat("dd-MM-yyyy");
+        Date date=d.parse(dateString);
+        System.out.println("date = " + date);
+        System.out.println("dateString = " + dateString);
+        return date;
     }
     
     public String getDouble(double d){
