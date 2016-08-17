@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package com.divudi.ejb;
+
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.entity.Patient;
@@ -330,20 +331,33 @@ public class PatientReportBean {
         m.put("iit", InvestigationItemType.Value);
         m.put("iivt", InvestigationItemValueType.Varchar);
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
-        if (ii == null) {
-            //System.out.println("ii is null");
-            ii = new InvestigationItem();
-            ii.setName(a.getName());
-            ii.setItem(i);
-            ii.setIxItemType(InvestigationItemType.Value);
-            ii.setIxItemValueType(InvestigationItemValueType.Varchar);
-            ii.setCssTop("90%");
-            getIiFacade().create(ii);
-            i.getReportItems().add(ii);
-            getIxFacade().edit(i);
-        } else {
-            //System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
+        if (ii==null) {
+            System.out.println("-------a.getName() = " + a.getName());
         }
+//        if (ii == null) {
+//            //System.out.println("ii is null");
+//            try {
+//                ii = new InvestigationItem();
+//                ii.setName(a.getName());
+//                ii.setItem(i);
+//                ii.setIxItemType(InvestigationItemType.Value);
+//                ii.setIxItemValueType(InvestigationItemValueType.Varchar);
+//                ii.setCssTop("90%");
+//                System.out.println("ii.getId() = " + ii.getId());
+//                System.out.println("i.getId() = " + i.getId());
+//                if (ii.getId() == null || ii.getId()==0) {
+//                    getIiFacade().create(ii);
+//                }else{
+//                    getIiFacade().edit(ii);
+//                }
+//                i.getReportItems().add(ii);
+//                getIxFacade().edit(i);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            //System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
+//        }
         return ii;
     }
 
