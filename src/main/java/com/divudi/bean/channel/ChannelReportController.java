@@ -163,6 +163,8 @@ public class ChannelReportController implements Serializable {
     @Inject
     BookingController bookingController;
     @Inject
+    BookingPastController bookingPastController;
+    @Inject
     WebUserController webUserController;
 
     @EJB
@@ -3933,6 +3935,33 @@ public class ChannelReportController implements Serializable {
                 //+ " bs.bill.refunded=false and "
                 + " bs.bill.billType in :tbs and "
                 + " bs.serviceSession.id=" + bookingController.getSelectedServiceSession().getId() + " order by bs.serialNo";
+        HashMap hh = new HashMap();
+        hh.put("class", BilledBill.class);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.ChannelAgent);
+        bts.add(BillType.ChannelCash);
+        bts.add(BillType.ChannelOnCall);
+        bts.add(BillType.ChannelStaff);
+        hh.put("tbs", bts);
+        nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        System.out.println("nurseViewSessions = " + nurseViewSessions);
+
+    }
+    
+    public void fillNurseViewPb() {
+        nurseViewSessions = new ArrayList<>();
+        if (bookingPastController.getSelectedServiceSession() == null) {
+            UtilityController.addErrorMessage("Please Select Session");
+            return;
+        }
+        System.out.println("bookingController.getSelectedServiceSession() = " + bookingController.getSelectedServiceSession());
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false and "
+                + " type(bs.bill)=:class and "
+                //+ " bs.bill.refunded=false and "
+                + " bs.bill.billType in :tbs and "
+                + " bs.serviceSession.id=" + bookingPastController.getSelectedServiceSession().getId() + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
         List<BillType> bts = new ArrayList<>();
