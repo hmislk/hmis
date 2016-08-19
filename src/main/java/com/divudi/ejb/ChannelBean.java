@@ -132,6 +132,24 @@ public class ChannelBean {
 
         return lg.intValue();
     }
+    public int getBillSessionsCount(long ss, Date date) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select count(bs) From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession.id =:ser "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate";
+        HashMap hh = new HashMap();
+        hh.put("ssDate", date);
+        hh.put("ser", ss);
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        Long lg = getBillSessionFacade().findAggregateLong(sql, hh, TemporalType.DATE);
+
+        return lg.intValue();
+    }
 
     public int getBillSessionsCountWithOutCancelRefund(ServiceSession ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};

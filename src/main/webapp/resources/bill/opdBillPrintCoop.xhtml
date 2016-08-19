@@ -176,11 +176,8 @@
                         <f:facet name="footer" class="totallabel">
                             <br/>
                             <h:outputLabel value="Total" styleClass="totallabel">
+
                             </h:outputLabel>
-                            <br/>
-                            <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="VAT" styleClass="totallabel"/>
-                            <br/>
-                            <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="Total with VAT" styleClass="totallabel"/>
                         </f:facet>
                     </h:dataTable>
 
@@ -196,25 +193,17 @@
 
                                 <f:facet name="footer" class="totalCoop">
                                     <br/>
+
                                     <h:outputLabel value="#{cc.attrs.bill.total}" styleClass="totalCoop">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vat}"  styleClass="totalCoop">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <br/>
-                                    <h:outputLabel  rendered="#{cc.attrs.bill.vat ne 0.0}"    value="#{cc.attrs.bill.vatPlusNetTotal}"  styleClass="totalCoop">
-                                        <f:convertNumber pattern="#,##0.00" />
+
                                     </h:outputLabel>
                                 </f:facet>
-
                             </h:column>
                         </h:dataTable>
                     </div>
 
-                    <div class="totalsPrinting" >
-                        <table >
+                    <div class="totalsPrinting">
+                        <table>
                             <tr>
                                 <td>
                                     <br/>
@@ -225,6 +214,16 @@
                                     <br/>
                                 </td>
                             </tr>
+                            <!--                            <tr>
+                                                            <td style="text-align: left; min-width: 3cm;">
+                                                                <h:outputLabel value="TOTAL" style="  text-align: right!important;  font-size: 15px!important; font-weight: bold;"/>
+                                                            </td>
+                                                            <td style="text-align: right!important;">
+                                                                <h:outputLabel value="#{cc.attrs.bill.total}"  style=" text-decoration: underline!important; text-decoration-style: double!important; font-weight: bold ; text-align: right!important; font-size: 15px!important; margin-left: 115px;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputLabel>
+                                                            </td>
+                                                        </tr>-->
                             <tr>
                                 <td style="text-align: left;">
                                     <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" style=" text-align: right!important;  font-size: 15px!important;   "  value="Discount"/>
@@ -245,21 +244,32 @@
                                     </h:outputLabel>
                                 </td>
                             </tr>
+
+
                         </table>
                     </div>
 
                     <div class="cashierPrinting" >
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}"  
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code }"  
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
                         <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
                                        rendered="#{cc.attrs.bill.refundedBill.deptId ne null}"   />
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" 
+                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code  }" 
                                        rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
                                                    cc.attrs.bill.cancelledBill.deptId eq null }"/>
 
-
                     </div>
-
+                    <div style="position: absolute!important;
+                         left: 50%!important;
+                         bottom: 3%!important">
+                        <h:outputLabel value="Print By" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                        <p:spacer width="3" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></p:spacer>
+                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                        <h:outputLabel value="#{sessionController.loggedUser.code}" rendered="#{cc.attrs.bill.creater ne sessionController.loggedUser}"></h:outputLabel>
+                        <h:outputLabel value="#{sessionController.currentDate}">
+                            <f:convertDateTime pattern="dd/MM/yy hh:mm a"/>
+                        </h:outputLabel>
+                    </div>
                     <div class="consult">
 
                     </div>

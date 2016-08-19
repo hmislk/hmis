@@ -34,8 +34,8 @@
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
 
-<!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
-                                        </p:commandButton>-->
+                                        <!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
+                                                                                </p:commandButton>-->
 
                                     </f:facet>
 
@@ -45,8 +45,9 @@
                                                         value="#{patientController.current}" 
                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                         var="apt" itemLabel="#{apt.person.name}" 
-                                                        itemValue="#{apt}" size="30"  style="width: 400px;">
-                                            <p:column headerText="Name">
+                                                        itemValue="#{apt}" size="30"  style="width: 400px;"
+                                                        >
+                                          <p:column headerText="Name">
                                                 <h:outputLabel value="#{apt.person.nameWithTitle}" />
                                             </p:column>
 
@@ -88,12 +89,12 @@
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
                                     <p:commandButton  process="panelDetails" update="acPt" value="Save" 
-                                                      action="#{patientController.saveSelected()}" ></p:commandButton>
+                                                      action="#{patientController.saveSelected()}"></p:commandButton>
                                     <p:commandButton id="btnAddPt" 
                                                      style="float: right;" 
                                                      value="Add New Patient" process="btnAddPt" 
                                                      update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                     action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
+                                                     action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" >
                                     </p:commandButton>
                                 </f:facet>
 
@@ -117,9 +118,8 @@
                                                 <p:inputTextarea id="txtNewPtComments" value="#{patientController.current.comments}" style="width: 200px; height: 125px;">
                                                 </p:inputTextarea>
 
-
                                                 <h:outputLabel value="Code"/>
-                                                <h:outputLabel value="#{patientController.current.code}" ></h:outputLabel>
+                                                <p:inputText value="#{patientController.current.code}"/>
 
                                                 <h:outputLabel  value="PHN"/>
                                                 <p:inputText  id="phn"  autocomplete="off"  value="#{patientController.current.phn}"/>

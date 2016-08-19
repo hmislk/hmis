@@ -557,7 +557,10 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Item c where c.retired=false and type(c)=Packege and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Item c where c.retired=false"
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + "and type(c)=Packege "
+                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -622,7 +625,10 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Item c where c.retired=false and type(c)=MedicalPackage and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Item c where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + "and type(c)=MedicalPackage "
+                    + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }

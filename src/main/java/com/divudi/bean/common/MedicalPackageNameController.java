@@ -49,7 +49,9 @@ public  class MedicalPackageNameController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from MedicalPackage p where p.retired=false and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
+            sql = "select p from MedicalPackage p where p.retired=false"
+                    + " and (p.inactive=false or p.inactive is null)"
+                    + "and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
             ////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -135,6 +137,20 @@ public  class MedicalPackageNameController implements Serializable {
     public List<MedicalPackage> getItems() {
         String temSql;
         temSql = "SELECT i FROM MedicalPackage i where i.retired=false order by i.name";
+        items = getFacade().findBySQL(temSql);
+        if (items == null) {
+           items = new ArrayList<>();
+        }
+        return items;
+    }
+    
+  
+    
+    public List<MedicalPackage> getWithoutInactiveItems() {
+        String temSql;
+        temSql = "SELECT i FROM MedicalPackage i where i.retired=false "
+                + " and (i.inactive=false or i.inactive is null) "
+                + " order by i.name";
         items = getFacade().findBySQL(temSql);
         if (items == null) {
            items = new ArrayList<>();

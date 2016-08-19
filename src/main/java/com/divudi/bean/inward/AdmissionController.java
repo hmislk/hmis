@@ -234,12 +234,13 @@ public class AdmissionController implements Serializable {
         List<Admission> suggestions;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c from Admission c"
+        sql = "select c from Admission c "
                 + " where c.retired=false "
                 + " and c.discharged=false "
-                + " and (upper(c.bhtNo) like :q or"
-                + " upper(c.patient.person.name) like :q ) "
-                + " order by c.bhtNo";
+                + " and (upper(c.bhtNo) like :q "
+                + " or upper(c.patient.person.name) like :q "
+                + " or upper(c.patient.code) like :q) "
+                + " order by c.bhtNo ";
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findBySQL(sql, hm, 20);
 

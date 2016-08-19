@@ -52,8 +52,10 @@
                             <f:facet name="header" >
 
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
+                                <h:outputLabel value="Active" rendered="#{!inwardServiceController.current.inactive}" style="color: green;"></h:outputLabel>
+                                <h:outputLabel value="Inactive" rendered="#{inwardServiceController.current.inactive}" style="color: red;"></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{inwardServiceController.saveSelected()}" styleClass="buttons"
-                                               ajax="false" onclick="onSubmitButton();"  >
+                                                 ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
 
@@ -117,6 +119,9 @@
                                         <f:selectItem itemLabel="Please select Session Numbering"/>
                                         <f:selectItems value="#{inwardServiceController.sessionNumberType}"/>
                                     </p:selectOneMenu>
+
+                                    <h:outputText value="" ></h:outputText>
+                                    <p:selectBooleanCheckbox value="#{inwardServiceController.current.inactive}" itemLabel="Service Inactive"/>
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{inwardServiceController.current.userChangable}" itemLabel="Can change Rate"/>
 
@@ -125,7 +130,7 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{inwardServiceController.current.marginNotAllowed}" itemLabel="Margin Not Allowed"/>
-                                    
+
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{inwardServiceController.current.requestForQuentity}" itemLabel="Request for Quentity"/>
 

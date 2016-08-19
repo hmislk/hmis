@@ -14,6 +14,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.BillsTotals;
@@ -86,6 +87,8 @@ public class ChannelReportController implements Serializable {
     List<BillSession> selectedBillSessions;
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
+    private List<AvalabelChannelDoctorRow> acdrs;// created 2016.8.10
+    
     double netTotal;
     double netTotalDoc;
     double cancelTotal;
@@ -192,8 +195,8 @@ public class ChannelReportController implements Serializable {
         bookingCountSummryRows = new ArrayList<>();
         bookingCountSummryRowsScan = new ArrayList<>();
     }
-    
-    public void clearWithDefultValue(){
+
+    public void clearWithDefultValue() {
         getReportKeyWord().setFrom(45.0);
     }
 
@@ -1205,14 +1208,12 @@ public class ChannelReportController implements Serializable {
                     sql += " and b.referenceBill.paymentMethod=:pm ";
                     temMap.put("pm", paymentMethod);
                 }
+            } else if (paymentMethod == PaymentMethod.Agent) {
+                sql += " and b.billedBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
             } else {
-                if (paymentMethod == PaymentMethod.Agent) {
-                    sql += " and b.billedBill.paymentMethod=:pm ";
-                    temMap.put("pm", paymentMethod);
-                } else {
-                    sql += " and b.billedBill.referenceBill.paymentMethod=:pm ";
-                    temMap.put("pm", paymentMethod);
-                }
+                sql += " and b.billedBill.referenceBill.paymentMethod=:pm ";
+                temMap.put("pm", paymentMethod);
             }
 
         } else {
@@ -1851,7 +1852,7 @@ public class ChannelReportController implements Serializable {
 
         String sql;
         Map m = new HashMap();
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
 
         sql = " select bf from BillFee  bf where "
@@ -4578,7 +4579,7 @@ public class ChannelReportController implements Serializable {
     double fetchBillFeesBTT(Bill b, FeeType ft, Staff s, Date fd, Date td, List<BillType> billTypes, int max) {
         Map m = new HashMap();
         String sql;
-        List<BillFee> bfs=new ArrayList<>();
+        List<BillFee> bfs = new ArrayList<>();
 
         sql = "Select bf From BillFee bf "
                 + " where bf.retired=false "
@@ -4597,10 +4598,10 @@ public class ChannelReportController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         System.out.println("max = " + max);
-        bfs= getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
-        double d=0.0;
+        bfs = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
+        double d = 0.0;
         for (BillFee bf : bfs) {
-            d+=bf.getFeeValue();
+            d += bf.getFeeValue();
         }
         System.out.println("d = " + d);
 
@@ -4952,6 +4953,71 @@ public class ChannelReportController implements Serializable {
         System.out.println("sql = " + sql);
 
         return d;
+
+    }
+    // new method  it is used to fetch list of all channeld doctors on 2016/08/10
+
+    public List<Staff> fetchAllChannelDoctors() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                + " and pi.staff.retired=false "
+                + " and pi.type=:typ ";
+
+        m.put("typ", PersonInstitutionType.Channelling);
+
+        return staffFacade.findBySQL(sql,m);
+    }
+
+    public List<ServiceSession> fetchCreatedServiceSessions(Staff s) {
+        String sql;
+        Map m = new HashMap();
+        List<ServiceSession> tmp = new ArrayList<>();
+        acdrs =new ArrayList<>();
+        sql = "Select s From ServiceSession s where s.retired=false "
+                + " and s.staff=:staff "
+                + " and s.originatingSession is not null "
+                + " and s.sessionDate=:today "
+                + " and type(s)=:class "
+                + " order by s.sessionDate,s.startingTime ";
+        m.put("today", new Date());
+        m.put("staff", s);
+        m.put("class", ServiceSession.class);
+
+        return serviceSessionFacade.findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    //created a meathod which use above methods
+    public void createDoctorsWithSessions() {
+        List<Staff> staffs = fetchAllChannelDoctors();
+
+        for (Staff s : staffs) {
+
+            List<ServiceSession> serviceSessions = fetchCreatedServiceSessions(s);
+            if (!serviceSessions.isEmpty()) {
+                ServiceSession temp = new ServiceSession();
+                for (ServiceSession ss : serviceSessions) {
+                    if ((temp.getEndingTime() == ss.getStartingTime()) && !temp.isDeactivated() && !ss.isDeactivated()) {
+                        continue;
+                    } else {
+                        AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
+                        row.setS(s);
+                        DateFormat d =new SimpleDateFormat("HH:mm:ss");
+                        String time=d.format(ss.getStartingTime());
+                        row.setTime(time);
+                        row.setLeave(ss.isDeactivated());
+                        acdrs.add(row);
+                        
+                        
+                    }
+                    temp = ss;
+                }
+            } else {
+            }
+
+        }
 
     }
 
@@ -5332,6 +5398,14 @@ public class ChannelReportController implements Serializable {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public List<AvalabelChannelDoctorRow> getAcdrs() {
+        return acdrs;
+    }
+
+    public void setAcdrs(List<AvalabelChannelDoctorRow> acdrs) {
+        this.acdrs = acdrs;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
@@ -6212,6 +6286,38 @@ public class ChannelReportController implements Serializable {
         }
 
     }
+//created inner class
+    public class AvalabelChannelDoctorRow {
+
+        private Staff s;
+        private String time;
+        private boolean leave;
+
+        public Staff getS() {
+            return s;
+        }
+
+        public void setS(Staff s) {
+            this.s = s;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public void setTime(String time) {
+            this.time = time;
+        }
+
+        public boolean isLeave() {
+            return leave;
+        }
+
+        public void setLeave(boolean leave) {
+            this.leave = leave;
+        }
+
+    }
 
     public CommonController getCommonController() {
         return commonController;
@@ -6269,4 +6375,5 @@ public class ChannelReportController implements Serializable {
         this.arrivalRecords = arrivalRecords;
     }
 
+//
 }

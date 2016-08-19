@@ -18,7 +18,7 @@
 
                     <h:panelGrid columns="1" >
                         <h:selectOneListbox  id="lstSelect"   size="10" value="#{packageItemController.currentPackege}" style="min-width: 223px">
-                            <f:selectItems  value="#{packageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <f:selectItems  value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                             <f:ajax render="gpDetail" execute="lstSelect" >
                             </f:ajax>
                         </h:selectOneListbox>
@@ -33,7 +33,7 @@
                                     </h:selectOneListbox>
                                 </h:panelGroup>
 
-                                <h:panelGroup >
+                                <h:panelGroup>
                                     <h:commandButton value="Add" action="#{packageItemController.addToPackage()}"></h:commandButton>
                                     <h:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}"></h:commandButton>
                                 </h:panelGroup>

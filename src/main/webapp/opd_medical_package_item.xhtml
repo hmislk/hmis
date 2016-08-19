@@ -18,7 +18,7 @@
 
                     <h:panelGrid columns="1" >
                         <h:selectOneListbox  id="lstSelect"   size="10" value="#{medicalPackageItemController.currentMedicalPackage}" style="min-width: 223px">
-                            <f:selectItems  value="#{medicalPackageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <f:selectItems  value="#{medicalPackageNameController.withoutInactiveItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                             <f:ajax render="gpDetail" execute="lstSelect" >
                             </f:ajax>
                         </h:selectOneListbox>
