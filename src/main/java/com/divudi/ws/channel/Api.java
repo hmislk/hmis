@@ -42,14 +42,10 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import com.google.gson.Gson;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -265,10 +261,10 @@ public class Api {
     }
 
     @GET
-    @Path("/makeBooking/{name}/{title}/{phone}/{hospital_id}/{session_id}/{doc_id}/{agent_id}/{agent_reference_no}")
+    @Path("/makeBooking/{name}/{title}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
     @Produces("application/json")
     public String makeBooking(@PathParam("name") String name, @PathParam("title") String title, @PathParam("phone") String phone,
-            @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_id") String doc_id,
+            @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
 
         JSONArray bill = new JSONArray();
@@ -277,12 +273,11 @@ public class Api {
         JSONObject jSONObjectOut = new JSONObject();
         Long h_id = Long.parseLong(hospital_id);
         Long ss_id = Long.parseLong(session_id);
-        Long d_id = Long.parseLong(doc_id);
         Long a_id = Long.parseLong(agent_id);
         Long ar_no = Long.parseLong(agent_reference_no);
         try {
 
-            String s = fetchErrors(name, phone, d_id, ss_id, a_id, ar_no);
+            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
             System.out.println("s = " + s);
             if (!"".equals(s)) {
                 jSONObjectOut.put("make_booking", s);
@@ -307,7 +302,7 @@ public class Api {
             }
             System.out.println("ss = " + ss);
 
-            Bill b = saveBilledBill(ss, name, phone, d_id, a_id, ar_no);
+            Bill b = saveBilledBill(ss, name, phone, doc_code, a_id, ar_no);
             System.out.println("b = " + b);
 
             bill = billDetails(b.getId());
@@ -613,7 +608,7 @@ public class Api {
         return obj;
     }
 
-    String fetchErrors(String name, String phone, long doc, long ses, long agent, long agent_ref) {
+    String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
         String s = "";
         if (name == null || "".equals(name)) {
             s = "Please Enter Name";
@@ -647,7 +642,7 @@ public class Api {
         return s;
     }
 
-    private Bill saveBilledBill(ServiceSession ss, String name, String phone, long doc, long agent, long agent_ref) {
+    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
         Bill savingBill = createBill(ss, name, phone, agent);
         BillItem savingBillItem = createBillItem(savingBill, agent_ref, ss);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem, ss);
