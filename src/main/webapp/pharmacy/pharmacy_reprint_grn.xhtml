@@ -46,6 +46,14 @@
                                 <ph:grn_detail bill="#{pharmacyBillSearch.bill}"/>
                             </h:panelGroup>
 
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                                <ph:grn_wh bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                                <ph:grn_detail_wh bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+
                         </h:panelGroup>
 
                         <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
