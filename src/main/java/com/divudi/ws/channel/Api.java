@@ -220,6 +220,7 @@ public class Api {
     public String getSessions(@PathParam("doc_code") String doc_code) {
 
         JSONObject object = new JSONObject();
+        JSONArray array=new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
 
         try {
@@ -238,9 +239,10 @@ public class Api {
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
                     object.put("session_is_leaved", s[10]);
                     System.out.println("s.length = " + s.length);
+                    array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
                 }
-                jSONObjectOut.put("session", sessions);
+                jSONObjectOut.put("session", array);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
             } else {
