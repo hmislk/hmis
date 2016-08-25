@@ -8,14 +8,19 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="credit" />
+        <cc:attribute name="wholeSale" />
+        <cc:attribute name="pharmacy" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.pharmacySales}" var="str"
-                     rendered="#{bookKeepingSummery.pharmacySales.size()>0}">
+        <p:dataTable id="#{cc.id}" value="#{cc.attrs.pharmacy}" var="str"
+                     rendered="#{cc.attrs.pharmacy.size()>0}">
             <f:facet name="header">
                 <h:outputLabel value="Pharmacy Collection"/>
+                <h:outputLabel rendered="#{cc.attrs.credit}" value=" (Credit) "/>
+                <h:outputLabel rendered="#{cc.attrs.wholeSale}" value=" (WholeSale) "/>
             </f:facet>
             <p:column style="text-align: left;">
                 <f:facet name="header">

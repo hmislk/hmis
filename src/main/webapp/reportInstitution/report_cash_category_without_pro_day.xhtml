@@ -49,6 +49,9 @@
                                          colCredit,
                                          outside:outside,
                                          pharmacy:pharmacy,
+                                         pharmacyc:pharmacyc,
+                                         pharmacyws:pharmacyws,
+                                         pharmacywsc:pharmacywsc,
                                          inward_collection1:inward_collection1,
                                          agent_collection:agent_collection,
                                          credit_collection:credit_collection,
@@ -118,7 +121,19 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacy"/>
+            <in:pharmacy id="pharmacy" pharmacy="#{bookKeepingSummery.pharmacySales}"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacyws" pharmacy="#{bookKeepingSummery.pharmacyWholeSales}" wholeSale="true"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
 
             <p:spacer height="30"/>
 

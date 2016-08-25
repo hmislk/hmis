@@ -46,7 +46,6 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
@@ -88,7 +87,7 @@ public class ChannelReportController implements Serializable {
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     private List<AvalabelChannelDoctorRow> acdrs;// created 2016.8.10
-    
+
     double netTotal;
     double netTotalDoc;
     double cancelTotal;
@@ -140,6 +139,7 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBillsCancelled;
     List<Bill> channelBillsRefunded;
     List<ArrivalRecord> arrivalRecords;
+    List<StaffBookingWithCount> staffBookingWithCounts;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -3275,6 +3275,101 @@ public class ChannelReportController implements Serializable {
         return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    public void createStaffBookingTable() {
+        channelBills = new ArrayList<>();
+        channelBills = channelBillListByBillType(sessoinDate, paid, Arrays.asList(new BillType[]{BillType.ChannelStaff}), fromDate, toDate, staff);
+        System.out.println("channelBills.size() = " + channelBills.size());
+    }
+
+    public void createStaffBookingSummeryTable() {
+        staffBookingWithCounts = new ArrayList<>();
+        List<Object[]> objects = channelStaffCountList(sessoinDate, paid, Arrays.asList(new BillType[]{BillType.ChannelStaff}), fromDate, toDate);
+        System.out.println("objects.size() = " + objects.size());
+        for (Object[] ob : objects) {
+            StaffBookingWithCount sbwc = new StaffBookingWithCount();
+            sbwc.setStaff((Staff) ob[0]);
+            sbwc.setCount((long) ob[1]);
+            System.out.println("sbwc.getStaff().getPerson().getName() = " + sbwc.getStaff().getPerson().getName());
+            System.out.println("sbwc.getCount() = " + sbwc.getCount());
+            staffBookingWithCounts.add(sbwc);
+        }
+        System.out.println("staffBookingWithCounts.size() = " + staffBookingWithCounts.size());
+    }
+
+    public List<Bill> channelBillListByBillType(boolean createdDate, boolean paid, List<BillType> billTypes, Date fd, Date td, Staff s) {
+
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.refunded=false ";
+
+        if (paid) {
+            sql += " and b.paidBill is not null "
+                    + " and b.paidAmount!=0 ";
+        }
+
+        if (s != null) {
+            sql += " and b.toStaff-:s ";
+            hm.put("s", s);
+        }
+
+        if (createdDate) {
+            sql += " and b.createdAt between :fDate and :tDate ";
+        } else {
+            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+        }
+
+        if (!billTypes.isEmpty()) {
+            sql += " and b.billType in :bt ";
+            hm.put("bt", billTypes);
+        }
+
+        sql += " order by b.singleBillSession.sessionDate ";
+
+        hm.put("fDate", fd);
+        hm.put("tDate", td);
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Object[]> channelStaffCountList(boolean createdDate, boolean paid, List<BillType> billTypes, Date fd, Date td) {
+
+        HashMap hm = new HashMap();
+
+        String sql = " select b.toStaff,count(b) from Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.refunded=false "
+                + " and b.toStaff is not null ";
+
+        if (paid) {
+            sql += " and b.paidBill is not null "
+                    + " and b.paidAmount!=0 ";
+        }
+
+        if (createdDate) {
+            sql += " and b.createdAt between :fDate and :tDate ";
+        } else {
+            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+        }
+
+        if (!billTypes.isEmpty()) {
+            sql += " and b.billType in :bt ";
+            hm.put("bt", billTypes);
+        }
+
+        sql += " group by b.toStaff ";
+
+        hm.put("fDate", fd);
+        hm.put("tDate", td);
+
+        return billFacade.findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public void createChannelPatientCountByCreatedDate() {
         Date startTime = new Date();
 
@@ -3947,7 +4042,7 @@ public class ChannelReportController implements Serializable {
         System.out.println("nurseViewSessions = " + nurseViewSessions);
 
     }
-    
+
     public void fillNurseViewPb() {
         nurseViewSessions = new ArrayList<>();
         if (bookingPastController.getSelectedServiceSession() == null) {
@@ -4968,14 +5063,14 @@ public class ChannelReportController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        return staffFacade.findBySQL(sql,m);
+        return staffFacade.findBySQL(sql, m);
     }
 
     public List<ServiceSession> fetchCreatedServiceSessions(Staff s) {
         String sql;
         Map m = new HashMap();
         List<ServiceSession> tmp = new ArrayList<>();
-        acdrs =new ArrayList<>();
+        acdrs = new ArrayList<>();
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.staff=:staff "
                 + " and s.originatingSession is not null "
@@ -5004,13 +5099,12 @@ public class ChannelReportController implements Serializable {
                     } else {
                         AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
                         row.setS(s);
-                        DateFormat d =new SimpleDateFormat("HH:mm:ss");
-                        String time=d.format(ss.getStartingTime());
+                        DateFormat d = new SimpleDateFormat("HH:mm:ss");
+                        String time = d.format(ss.getStartingTime());
                         row.setTime(time);
                         row.setLeave(ss.isDeactivated());
                         acdrs.add(row);
-                        
-                        
+
                     }
                     temp = ss;
                 }
@@ -6287,6 +6381,7 @@ public class ChannelReportController implements Serializable {
 
     }
 //created inner class
+
     public class AvalabelChannelDoctorRow {
 
         private Staff s;
@@ -6317,6 +6412,28 @@ public class ChannelReportController implements Serializable {
             this.leave = leave;
         }
 
+    }
+
+    public class StaffBookingWithCount {
+
+        Staff staff;
+        long count;
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
     }
 
     public CommonController getCommonController() {
@@ -6375,5 +6492,11 @@ public class ChannelReportController implements Serializable {
         this.arrivalRecords = arrivalRecords;
     }
 
-//
+    public List<StaffBookingWithCount> getStaffBookingWithCounts() {
+        return staffBookingWithCounts;
+    }
+
+    public void setStaffBookingWithCounts(List<StaffBookingWithCount> staffBookingWithCounts) {
+        this.staffBookingWithCounts = staffBookingWithCounts;
+    }
 }
