@@ -3603,7 +3603,7 @@ public class BookKeepingSummery implements Serializable {
             }
 
             if (value != null) {
-                getPharmacySales().add(newRow);
+                getPharmacySalesCredit().add(newRow);
             }
         }
 
@@ -3629,7 +3629,7 @@ public class BookKeepingSummery implements Serializable {
             }
 
             if (value != null) {
-                getPharmacyWholeSales().add(newRow);
+                getPharmacyWholeSalesCredit().add(newRow);
             }
         }
 
