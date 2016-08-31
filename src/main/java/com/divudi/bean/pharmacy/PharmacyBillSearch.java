@@ -638,8 +638,8 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public PaymentMethod getPaymentMethod() {
-        if (paymentMethod==null) {
-            paymentMethod=getBill().getPaymentMethod();
+        if (paymentMethod == null) {
+            paymentMethod = getBill().getPaymentMethod();
         }
         return paymentMethod;
     }
@@ -1639,7 +1639,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (getBill().getReferenceBill().getBillType() != BillType.PharmacyPre) {
+            if (getBill().getReferenceBill().getBillType() != BillType.PharmacyPre && getBill().getReferenceBill().getBillType() != BillType.PharmacyWholesalePre) {
                 return;
             }
 
@@ -2164,12 +2164,11 @@ public class PharmacyBillSearch implements Serializable {
 //            }
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
-            
 
             pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
             getBillFacade().edit(getBill());
             UtilityController.addSuccessMessage("Cancelled");
-            
+
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
 
