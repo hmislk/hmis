@@ -14,6 +14,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.BillsTotals;
@@ -86,6 +87,8 @@ public class ChannelReportController implements Serializable {
     List<BillSession> selectedBillSessions;
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
+    List<AvalabelChannelDoctorRow> acdrs;
+
     double netTotal;
     double netTotalDoc;
     double cancelTotal;
@@ -190,8 +193,8 @@ public class ChannelReportController implements Serializable {
         bookingCountSummryRows = new ArrayList<>();
         bookingCountSummryRowsScan = new ArrayList<>();
     }
-    
-    public void clearWithDefultValue(){
+
+    public void clearWithDefultValue() {
         getReportKeyWord().setFrom(45.0);
     }
 
@@ -4549,7 +4552,7 @@ public class ChannelReportController implements Serializable {
     double fetchBillFeesBTT(Bill b, FeeType ft, Staff s, Date fd, Date td, List<BillType> billTypes, int max) {
         Map m = new HashMap();
         String sql;
-        List<BillFee> bfs=new ArrayList<>();
+        List<BillFee> bfs = new ArrayList<>();
 
         sql = "Select bf From BillFee bf "
                 + " where bf.retired=false "
@@ -4568,10 +4571,10 @@ public class ChannelReportController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         System.out.println("max = " + max);
-        bfs= getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
-        double d=0.0;
+        bfs = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
+        double d = 0.0;
         for (BillFee bf : bfs) {
-            d+=bf.getFeeValue();
+            d += bf.getFeeValue();
         }
         System.out.println("d = " + d);
 
@@ -4924,6 +4927,147 @@ public class ChannelReportController implements Serializable {
 
         return d;
 
+    }
+
+    public List<Staff> fetchAllChannelDoctors() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
+                + " and pi.staff.retired=false "
+                + " and pi.type=:typ ";
+
+        m.put("typ", PersonInstitutionType.Channelling);
+
+        return staffFacade.findBySQL(sql, m);
+    }
+
+    public List<ServiceSession> fetchCreatedServiceSessions(Staff s) {
+        String sql;
+        Map m = new HashMap();
+        List<ServiceSession> tmp = new ArrayList<>();
+
+        sql = "Select s From ServiceSession s where s.retired=false "
+                + " and s.staff=:staff "
+                + " and s.originatingSession is not null "
+                + " and s.sessionDate=:today "
+                + " and type(s)=:class "
+                + " order by s.sessionDate,s.startingTime ";
+        m.put("today", new Date());
+        m.put("staff", s);
+        m.put("class", ServiceSession.class);
+
+        return serviceSessionFacade.findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    //created a meathod which use above methods
+    public void createDoctorsWithSessions() {
+        List<Staff> staffs = fetchAllChannelDoctors();
+        acdrs = new ArrayList<>();
+        for (Staff s : staffs) {
+
+            List<ServiceSession> serviceSessions = fetchCreatedServiceSessions(s);
+            if (!serviceSessions.isEmpty()) {
+                ServiceSession temp = new ServiceSession();
+                for (ServiceSession ss : serviceSessions) {
+                    if ((temp.getEndingTime() == ss.getStartingTime()) && !temp.isDeactivated() && !ss.isDeactivated()) {
+                        continue;
+                    } else {
+                        AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
+                        row.setS(s);
+                        DateFormat d = new SimpleDateFormat("HH:mm:ss");
+                        String time = d.format(ss.getStartingTime());
+                        row.setTime(time);
+                        row.setLeave(ss.isDeactivated());
+                        acdrs.add(row);
+
+                    }
+                    temp = ss;
+                }
+            } else {
+
+                AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
+                row.setS(s);
+//                        DateFormat d =new SimpleDateFormat("HH:mm:ss");
+//                        String time=d.format(ss.getStartingTime());
+                row.setTime(null);
+                row.setLeave(false);
+                acdrs.add(row);
+            }
+
+        }
+        //limit the rows in the page
+        System.out.println("acdrs.size() = " + acdrs.size());
+        //created instance using listOfList
+        listOfList = new ArrayList<>();
+        DocPage dp = new DocPage();
+        List<AvalabelChannelDoctorRow> list = new ArrayList<>();
+        for (AvalabelChannelDoctorRow a : acdrs) {
+            if (list.size() == 8) {
+                System.out.println("if - list.size() = " + list.size());
+                if (dp.getTable1() == null) {
+                    dp.setTable1(list);
+                    list = new ArrayList<>();
+                } else {
+                    dp.setTable2(list);
+                    list = new ArrayList<>();
+                    listOfList.add(dp);
+                    dp = new DocPage();
+                }
+            } else {
+                list.add(a);
+                System.out.println("e - list.size() = " + list.size());
+            }
+
+        }
+        if (list.size() > 0) {
+            if (dp.getTable1() == null) {
+                dp.setTable1(list);
+                list = new ArrayList<>();
+            } else {
+                dp.setTable2(list);
+                list = new ArrayList<>();
+            }
+            listOfList.add(dp);
+            dp = new DocPage();
+        }
+        System.out.println("listOfList.size() = " + listOfList.size());
+    }
+
+    List<DocPage> listOfList = new ArrayList<>();
+
+    public class DocPage {
+
+        List<AvalabelChannelDoctorRow> table1;
+        List<AvalabelChannelDoctorRow> table2;
+
+        public List<AvalabelChannelDoctorRow> getTable1() {
+            return table1;
+        }
+
+        public void setTable1(List<AvalabelChannelDoctorRow> table1) {
+            this.table1 = table1;
+        }
+
+        public List<AvalabelChannelDoctorRow> getTable2() {
+            return table2;
+        }
+
+        public void setTable2(List<AvalabelChannelDoctorRow> table2) {
+            this.table2 = table2;
+        }
+        
+
+    }
+
+    public List<DocPage> getListOfList() {
+        createDoctorsWithSessions();
+        return listOfList;
+    }
+
+    public void setListOfList(List<DocPage> listOfList) {
+        this.listOfList = listOfList;
     }
 
     /**
@@ -6180,6 +6324,39 @@ public class ChannelReportController implements Serializable {
 
         public void setDiscount(double discount) {
             this.discount = discount;
+        }
+
+    }
+
+    //create inner class
+    public class AvalabelChannelDoctorRow {
+
+        Staff S;
+        String time;
+        boolean leave;
+
+        public Staff getS() {
+            return S;
+        }
+
+        public void setS(Staff S) {
+            this.S = S;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public void setTime(String time) {
+            this.time = time;
+        }
+
+        public boolean isLeave() {
+            return leave;
+        }
+
+        public void setLeave(boolean leave) {
+            this.leave = leave;
         }
 
     }
