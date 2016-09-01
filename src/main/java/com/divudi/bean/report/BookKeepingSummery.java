@@ -79,6 +79,8 @@ public class BookKeepingSummery implements Serializable {
     List<String1Value2> outSideFees;
     private List<String1Value2> pharmacySales;
     List<String1Value2> pharmacyWholeSales;
+    List<String1Value2> pharmacySalesCredit;
+    List<String1Value2> pharmacyWholeSalesCredit;
     private List<String1Value2> channelBills;
     List<String1Value2> collections2Hos;
     List<String1Value2> finalValues;
@@ -498,6 +500,28 @@ public class BookKeepingSummery implements Serializable {
 
     public void setPharmacyWholeSales(List<String1Value2> pharmacyWholeSales) {
         this.pharmacyWholeSales = pharmacyWholeSales;
+    }
+
+    public List<String1Value2> getPharmacySalesCredit() {
+        if (pharmacySalesCredit == null) {
+            pharmacySalesCredit = new ArrayList<>();
+        }
+        return pharmacySalesCredit;
+    }
+
+    public void setPharmacySalesCredit(List<String1Value2> pharmacySalesCredit) {
+        this.pharmacySalesCredit = pharmacySalesCredit;
+    }
+
+    public List<String1Value2> getPharmacyWholeSalesCredit() {
+        if (pharmacyWholeSalesCredit == null) {
+            pharmacyWholeSalesCredit = new ArrayList<>();
+        }
+        return pharmacyWholeSalesCredit;
+    }
+
+    public void setPharmacyWholeSalesCredit(List<String1Value2> pharmacyWholeSalesCredit) {
+        this.pharmacyWholeSalesCredit = pharmacyWholeSalesCredit;
     }
 
     public List<String1Value2> getChannelBills() {
@@ -3559,6 +3583,58 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    private void createPharmacySaleCredit() {
+        pharmacySalesCredit = new ArrayList<>();
+
+        //System.err.println("DEP " + d.getName());
+        List<Object[]> list = getBillBean().fetchDepartmentSaleCredit(getFromDate(), getToDate(), getInstitution(), BillType.PharmacySale);
+
+        for (Object[] obj : list) {
+            String1Value2 newRow = new String1Value2();
+            Department department = ((Department) obj[0]);
+            Double value = (Double) obj[1];
+
+            if (department != null) {
+                newRow.setString(department.getName());
+            }
+
+            if (value != null) {
+                newRow.setValue1(value);
+            }
+
+            if (value != null) {
+                getPharmacySalesCredit().add(newRow);
+            }
+        }
+
+    }
+
+    private void createPharmacyWholeSaleCredit() {
+        pharmacyWholeSalesCredit = new ArrayList<>();
+
+        //System.err.println("DEP " + d.getName());
+        List<Object[]> list = getBillBean().fetchDepartmentSaleCredit(getFromDate(), getToDate(), getInstitution(), BillType.PharmacyWholeSale);
+
+        for (Object[] obj : list) {
+            String1Value2 newRow = new String1Value2();
+            Department department = ((Department) obj[0]);
+            Double value = (Double) obj[1];
+
+            if (department != null) {
+                newRow.setString(department.getName());
+            }
+
+            if (value != null) {
+                newRow.setValue1(value);
+            }
+
+            if (value != null) {
+                getPharmacyWholeSalesCredit().add(newRow);
+            }
+        }
+
+    }
+
     private void createChannelBill() {
         channelBills = new ArrayList<>();
 
@@ -3859,6 +3935,9 @@ public class BookKeepingSummery implements Serializable {
 
         createOutSideFee();
         createPharmacySale();
+        createPharmacyWholeSale();
+        createPharmacySaleCredit();
+        createPharmacyWholeSaleCredit();
         createInwardCollection();
         agentCollections = agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
         collectingCentreCollections = getBillBean().fetchBills(BillType.CollectingCentrePaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
@@ -4227,6 +4306,8 @@ public class BookKeepingSummery implements Serializable {
         createOutSideFeeWithPro();
         createPharmacySale();
         createPharmacyWholeSale();
+        createPharmacySaleCredit();
+        createPharmacyWholeSaleCredit();
         createChannelBill();
         createInwardCollection();
         agentCollections = agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
@@ -4354,6 +4435,8 @@ public class BookKeepingSummery implements Serializable {
         createOutSideFee();
         createPharmacySale();
         createPharmacyWholeSale();
+        createPharmacySaleCredit();
+        createPharmacyWholeSaleCredit();
         createInwardCollectionMonth();
         ///////////////////
         FeeType[] feeTypes = {FeeType.OwnInstitution, FeeType.CollectingCentre};

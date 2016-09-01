@@ -89,6 +89,23 @@ public class CashRecieveBillController implements Serializable {
 //        }
         calTotal();
     }
+    
+    public void selectInstitutionListenerPharmacy() {
+        Institution ins = institution;
+        makeNull();
+
+        System.err.println("Select Listener");
+        List<Bill> list = getBillController().getCreditBillsPharmacy(ins);
+        for (Bill b : list) {
+            getCurrentBillItem().setReferenceBill(b);
+            selectBillListener();
+            addToBillPharmacy();
+        }
+//        if (billItems != null) {
+//            selectedBillItems.addAll(billItems);
+//        }
+        calTotal();
+    }
 
     public String getComment() {
         return comment;
@@ -239,6 +256,30 @@ public class CashRecieveBillController implements Serializable {
 
         return false;
     }
+    
+    private boolean errorCheckForAddingPharmacy() {
+        if (getCurrentBillItem().getReferenceBill().getToInstitution()== null) {
+            UtilityController.addErrorMessage("U cant add without credit company name");
+            return true;
+        }
+
+//        double dbl = getReferenceBallance(getCurrentBillItem());
+//
+//        if (dbl < Math.abs(getCurrentBillItem().getNetValue())) {
+//            UtilityController.addErrorMessage("U Cant Recieve Over Than Due");
+//            return true;
+//        }
+        for (BillItem b : getBillItems()) {
+            if (b.getReferenceBill() != null && b.getReferenceBill().getToInstitution() != null) {
+                if (!Objects.equals(getCurrentBillItem().getReferenceBill().getToInstitution().getId(), b.getReferenceBill().getToInstitution().getId())) {
+                    UtilityController.addErrorMessage("U can add only one type Credit companies at Once");
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     private boolean errorCheckForAddingBht() {
         if (getCurrentBillItem().getPatientEncounter().getCreditCompany() == null) {
@@ -294,6 +335,24 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getCreditCompany());
+        //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
+        //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
+
+        getCurrentBillItem().setSearialNo(getBillItems().size());
+        getSelectedBillItems().add(getCurrentBillItem());
+        getBillItems().add(getCurrentBillItem());
+
+        currentBillItem = null;
+        calTotal();
+
+    }
+    
+    public void addToBillPharmacy() {
+        if (errorCheckForAddingPharmacy()) {
+            return;
+        }
+
+        getCurrent().setFromInstitution(getCurrentBillItem().getReferenceBill().getToInstitution());
         //     getCurrentBillItem().getBill().setNetTotal(getCurrentBillItem().getNetValue());
         //     getCurrentBillItem().getBill().setTotal(getCurrent().getNetTotal());
 

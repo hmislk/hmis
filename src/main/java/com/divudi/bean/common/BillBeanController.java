@@ -1516,6 +1516,31 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<Object[]> fetchDepartmentSaleCredit(Date fromDate, Date toDate, Institution institution, BillType billType) {
+        PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Credit};
+
+        String sql = "Select b.referenceBill.department,"
+                + " sum(b.netTotal) "
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and  b.billType=:bType"
+                + " and b.referenceBill.department.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.paymentMethod in :pm"
+                + " and type(b)!=:cl "
+                + " group by b.referenceBill.department"
+                + " order by b.referenceBill.department.name";
+        HashMap hm = new HashMap();
+        hm.put("bType", billType);
+        hm.put("cl", PreBill.class);
+        hm.put("ins", institution);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("pm", Arrays.asList(pms));
+        return getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public List<Object[]> fetchChannelBills(Date fromDate, Date toDate, Institution institution) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);

@@ -155,7 +155,7 @@
                                                     value="CC Billing" 
                                                     rendered="#{webUserController.hasPrivilege('LabCCBilling')}" >
                                         </p:menuitem>
-
+                                        
                                         <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
                                                     actionListener="#{searchController.makeListNull}"
                                                     value="CC Bill Search" 
@@ -586,9 +586,15 @@
                                                 </p:submenu>     
                                             </p:submenu>
                                             <p:submenu label="Pharmacy">
-                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_to_pay" value="Credit Bill to Pay Search"  />
-                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid" value="Credit Bill Pay Search"  />
-                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid_bills" value="Credit Bill With Payment bills"  />
+                                                <p:menuitem  ajax="false"  action="/credit/credit_company_pharmacy_due" value="Due Search"  />
+                                                <p:menuitem  ajax="false"  action="/credit/credit_company_pharmacy_due_age" value="Due Age"  />
+                                                <p:submenu label="Payment">
+                                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_pharmacy" value="By Pharmacy Bill"  />
+                                                    <p:menuitem  ajax="false"  action="/credit/credit_compnay_bill_pharmacy_all" value="By Credit Company"  />
+                                                </p:submenu>
+                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_to_pay" value="Credit Bill to Pay Search" rendered="false"  />
+                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid" value="Credit Bill Pay Search" rendered="false" />
+                                                <p:menuitem  ajax="false"  action="/credit/pharmacy_search_bill_full_paid_bills" value="Credit Bill With Payment bills" rendered="false" />
                                             </p:submenu>
                                             <p:menuitem  ajax="false"  action="/credit/credit_reports" value="Report"  />
                                             <p:menuitem  ajax="false"  action="/credit/credit_company_bill_search" actionListener="#{searchController.makeListNull}"  value="Payment done Search"  />

@@ -158,7 +158,7 @@ public class BookingPastController implements Serializable {
 
     public String nurse() {
         if (preSet()) {
-            getChannelReportController().fillNurseView();
+            getChannelReportController().fillNurseViewPb();
             return "channel_nurse_view";
         } else {
             return "";

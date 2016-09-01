@@ -136,7 +136,7 @@
                     <p:column headerText="Wholesale Price"  > 
                         <p:cellEditor>
                             <f:facet name="output">
-                                <h:panelGroup id="retail">
+                                <h:panelGroup id="ws">
                                     <p:outputLabel value="#{bi.pharmaceuticalBillItem.wholesaleRate}"  > 
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
@@ -228,10 +228,8 @@
 
                     </p:panelGrid>
                 </p:panel>
-
-
-
             </h:panelGroup>
+            
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
                                  onclick="onSubmitButton();"
@@ -248,7 +246,6 @@
                     <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
                         <ph:grn_detail_wh bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
-
 
                 </p:panel>
             </p:panel>

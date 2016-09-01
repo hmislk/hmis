@@ -128,6 +128,14 @@
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
+                            <h:panelGrid columns="1">
+                                <p:panel header="Channel Reports (Staff)" style="width: 400px;margin: auto;"  toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportController.clearAll}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Summery Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportController.clearAll}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGrid>
 
                         </h:panelGrid>
                     </p:panel>

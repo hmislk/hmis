@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Staff Bokking Summery Report" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="yyyy MMM dd hh:mm:ss a"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="yyyy MMM dd hh:mm:ss a" >
+                        </p:calendar>
+                        <h:outputLabel value="Paid Only"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+                        <h:outputLabel value="By Created Date"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="3" >
+                        <p:commandButton action="#{channelReportController.createStaffBookingSummeryTable}" value="Process" ajax="false" />
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_staff_booking_summery"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton> 
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportController.staffBookingWithCounts}" var="s" id="tbl1" rowIndexVar="i" >
+                        <f:facet name="header">
+                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
+                            <br></br>
+                            <p:outputLabel value="Staff Bokking Summery Report" />
+                            <br></br>
+                            <p:outputLabel value="From : " />
+                            <p:outputLabel value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                            <p:outputLabel value="  To : " />
+                            <p:outputLabel value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </f:facet>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="No" />
+                            </f:facet>
+                            <p:outputLabel value="#{i+1}" />
+                        </p:column>
+                        
+                        <p:column sortBy="#{s.staff.person.name}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Staff Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{s.staff.person.name}" />
+                        </p:column>
+
+                        <p:column sortBy="#{s.count}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Count" />
+                            </f:facet>
+                            <p:outputLabel value="#{s.count}" >
+                                <f:convertNumber pattern="#,##0" />
+                            </p:outputLabel>
+                        </p:column>
+
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

@@ -430,8 +430,8 @@ public class GrnController implements Serializable {
                 //    return;
             }
         }
-
-        tmp.getPharmaceuticalBillItem().setWholesaleRate((tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08)* (tmp.getPharmaceuticalBillItem().getQtyInUnit())/(tmp.getPharmaceuticalBillItem().getQtyInUnit() + tmp.getPharmaceuticalBillItem().getFreeQtyInUnit())  );
+//        manually set Wholesale Rate**************
+//        tmp.getPharmaceuticalBillItem().setWholesaleRate((tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08)* (tmp.getPharmaceuticalBillItem().getQtyInUnit())/(tmp.getPharmaceuticalBillItem().getQtyInUnit() + tmp.getPharmaceuticalBillItem().getFreeQtyInUnit())  );
         
         calGrossTotal();
     }

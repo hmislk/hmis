@@ -67,6 +67,7 @@ public class PersonInstitutionController implements Serializable {
     StaffFacade staffFacade;
     @EJB
     PersonInstitutionFacade personInstitutionFacade;
+    
 
     ReportKeyWord reportKeyWord;
 
@@ -217,7 +218,7 @@ public class PersonInstitutionController implements Serializable {
         institutionPersons = findPersonInstitutions(reportKeyWord.getInstitution(), reportKeyWord.getStaff(),reportKeyWord.getSpeciality());
 
     }
-
+// important for today
     public void createWithOutInstitutionPersonsStaffs() {
         if (institution == null) {
             JsfUtil.addErrorMessage("Please Select Institution");
@@ -555,5 +556,11 @@ public class PersonInstitutionController implements Serializable {
     public Converter getConverter() {
         return converter;
     }
+   // new method for create doctor session 
+    
+    
+    
+   
+    
 
 }

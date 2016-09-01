@@ -6,8 +6,14 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -68,6 +74,65 @@ public class CommonController implements Serializable {
         System.err.println(s);
 
     }
+    //----------Date Time Formats
+    public String getDateFormat(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
+        s=d.format(date);
+        return s;
+    }
+    
+    public String getDateFormat2(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");
+        s=d.format(date);
+        return s;
+    }
+    
+    public String getTimeFormat12(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("hh:mm:ss a");
+        s=d.format(date);
+        return s;
+    }
+    
+    public String getTimeFormat24(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("HH:mm:ss");
+        s=d.format(date);
+        return s;
+    }
+    
+    public String getDateTimeFormat12(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss a");
+        s=d.format(date);
+        return s;
+    }
+    
+    public String getDateTimeFormat24(Date date){
+        String s="";
+        DateFormat d = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        s=d.format(date);
+        return s;
+    }
+    public Date getConvertDateTimeFormat24(String dateString) throws ParseException{
+        DateFormat d = new SimpleDateFormat("dd-MM-yyyy");
+        Date date=d.parse(dateString);
+        System.out.println("date = " + date);
+        System.out.println("dateString = " + dateString);
+        return date;
+    }
+    
+    public String getDouble(double d){
+        String s="";
+        NumberFormat myFormatter = new DecimalFormat("##0.00");
+        s=myFormatter.format(d);
+        System.out.println("s = " + s);
+        return s;
+    }
+    
+    //----------Date Time Formats
 
     public SessionController getSessionController() {
         return sessionController;

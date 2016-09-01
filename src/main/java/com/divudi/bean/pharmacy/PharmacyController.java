@@ -1537,13 +1537,21 @@ public class PharmacyController implements Serializable {
         makeNull();
 
         this.pharmacyItem = pharmacyItem;
+        System.out.println("Time 1 = " + new Date());
         createInstitutionSale();
+        System.out.println("Time 2 = " + new Date());
         createInstitutionWholeSale();
+        System.out.println("Time 3 = " + new Date());
         createInstitutionBhtIssue();
+        System.out.println("Time 4 = " + new Date());
         createInstitutionStock();
+        System.out.println("Time 5 = " + new Date());
         createInstitutionTransferIssue();
+        System.out.println("Time 6 = " + new Date());
         createInstitutionIssue();
+        System.out.println("Time 7 = " + new Date());
         createInstitutionTransferReceive();
+        System.out.println("Time 8 = " + new Date());
     }
 
     public double findPharmacyMovement(Department department, Item itm, BillType[] bts, Date fd, Date td) {

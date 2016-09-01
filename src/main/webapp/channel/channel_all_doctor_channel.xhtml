@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Doctor Arrival" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                    <p:commandButton value="Fill" ajax="false" style="float: right;" action="#{channelReportController.createDoctorsWithSessions()}"/>
+                  
+                </f:facet>
+
+                 <p:panel header="Available Doctor information" style="text-align: center; font-size: 20px;"/>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable value="#{channelReportController.acdrs}" var="d" id="tbl1" rowIndexVar="i"
+                                 >
+                      
+
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Consultant Name" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.s.person.name}">
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Speciality" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.s.speciality}">
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Time Session" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.time}">
+                               
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Availability" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.leave}"/>
+                        </p:column>
+                        
+                       
+
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

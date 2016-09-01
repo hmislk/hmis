@@ -30,6 +30,7 @@
                                             completeMethod="#{institutionController.completeCompany}" 
                                             forceSelection="true"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
+                            
                             <p:commandButton  value="Settle" action="#{pharmacyPurchaseController.settle}"
                                               onclick="onSubmitButton();"
                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
@@ -39,9 +40,14 @@
                                             action="#{pharmacyPurchaseController.makeNull()}" >
                             </p:commandButton>
 
+
                         </h:panelGrid>
 
                     </f:facet>
+                    
+                    
+                    
+                    
                 </p:panel>
                 <p:panel id="PnlAdd" rendered="#{sessionController.institutionPreference.pharmayPurchaseWithLastRate eq true}">
                     <p:autoComplete id="exItem" value="#{pharmacyPurchaseController.currentBillItem.item}"
@@ -64,6 +70,7 @@
                         process="PnlAdd" update="itemList PnlAdd tot focusItem :#{p:component('total')}"/>
 
                 </p:panel>
+                
 
 
                 <p:commandButton id="nullButton" value="No Action" action="#" style="display: none;" ></p:commandButton>
@@ -72,21 +79,24 @@
 
                 <h:panelGrid id="itemselectgrid" columns="2" style="min-width: 100%;" rendered="#{sessionController.institutionPreference.pharmayPurchaseWithLastRate eq false}">
                     <p:focus id="focusItem" for="acItem" ></p:focus>
-                    <p:panelGrid id="itemSelectgrid1" columns="9">                       
+                    <p:panelGrid id="itemSelectgrid1" columns="10">                       
                         <h:outputLabel value="Select Item"/>
                         <h:outputLabel value="Qty"/>
                         <h:outputLabel value="Free"/>
                         <h:outputLabel value="Purchase Rate"></h:outputLabel>
                         <h:outputLabel value="Sale Price"></h:outputLabel>
                         <h:outputLabel value="Wholesale Price"></h:outputLabel>
+                        <h:outputLabel value="Qty Free"></h:outputLabel><!-- newly added-->
                         <h:outputLabel value="DOE(dd mm yy)"/>
                         <h:outputLabel value="Bathch No"/>
+                        
                         <h:outputLabel/>
 
                         <p:autoComplete id="acItem"   value="#{pharmacyPurchaseController.currentBillItem.item}" 
                                         forceSelection="true"
                                         completeMethod="#{itemController.completeAmpItem}" 
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            
                             <p:column headerText="Item" >
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
@@ -133,14 +143,20 @@
                                      value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.wholesaleRate}"  >
                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                         </p:inputText>  
-
+                        <p:inputText autocomplete="off" id="txtQtyFree" styleClass="numericTxt" 
+                                     
+                                     style="width:100%" >
+                            <f:ajax event="keyup" execute="@this" ></f:ajax>
+                        </p:inputText><!--newly added-->
                         <p:calendar navigator="true"
                                     id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
                             <f:ajax event="dateSelect" execute="@this" render="tmp" 
                                     listener="#{pharmacyPurchaseController.setBatch()}"/>
                         </p:calendar> 
+                         
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
                                      id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
+                       
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{pharmacyPurchaseController.addItem}" 
                                          onclick="onSubmitButton();"
