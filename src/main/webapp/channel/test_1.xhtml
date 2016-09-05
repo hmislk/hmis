@@ -27,7 +27,7 @@
     </h:head>
 
     <h:body>
-        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="3000">
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="9000">
             <!-- Indicators -->
             <ol class="carousel-indicators">
                 <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
@@ -58,8 +58,9 @@
                                                         </td>
                                                         <td class="doctor-time">
                                                             <p:outputLabel value="#{d.time}" rendered="#{d.time ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <p:outputLabel value=" - #{d.timeEnd}" rendered="#{d.timeEnd ne null and d.leave eq false}" style="font-size: 24px;" />
                                                             <h:panelGrid rendered="#{d.leave eq true}" >
-                                                                <span class="doc-inout">Leave</span>
+                                                                <span class="doc-inout">On Leave</span>
                                                             </h:panelGrid>
                                                             <h:panelGrid rendered="#{d.time eq null}" >
                                                                 <span class="not-available-in">Not Available Today</span>
@@ -87,8 +88,9 @@
                                                         </td>
                                                         <td class="doctor-time">
                                                             <p:outputLabel value="#{d.time}" rendered="#{d.time ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <p:outputLabel value=" - #{d.timeEnd}" rendered="#{d.timeEnd ne null and d.leave eq false}" style="font-size: 24px;" />
                                                             <h:panelGrid rendered="#{d.leave eq true}" >
-                                                                <span class="doc-inout">Leave</span>
+                                                                <span class="doc-inout">On Leave</span>
                                                             </h:panelGrid>
                                                             <h:panelGrid rendered="#{d.time eq null}" >
                                                                 <span class="not-available-in">Not Available Today</span>
@@ -132,7 +134,7 @@
             $(document).ready(function () {
                 $('.item').first().addClass('active');
                 $('#carousel-example-generic').carousel({
-                    interval: 3000,
+                    interval: 9000,
                     cycle: true
                 });
             });
