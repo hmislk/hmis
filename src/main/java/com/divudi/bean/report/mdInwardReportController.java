@@ -1408,7 +1408,8 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void notDisBhtPySummerries() {
-
+        
+ 
         bil = inwdPaymentBillsNotDischarge(new BilledBill());
         cancel = inwdPaymentBillsNotDischarge(new CancelledBill());
         refund = inwdPaymentBillsNotDischarge(new RefundBill());
