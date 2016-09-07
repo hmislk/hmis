@@ -48,6 +48,15 @@
                 </h:outputLabel>
                 <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
             </p:column>    
+            <p:column headerText="Card" style="text-align: right;"   >
+                <f:facet name="header">  
+                    <h:outputLabel value="Card"/>
+                </f:facet> 
+                <h:outputLabel rendered="#{b7.paymentMethod=='Card'}" value="#{b7.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+                <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
+            </p:column>    
             <p:column headerText="Cheque" style="text-align: right;"   >
                 <f:facet name="header">  
                     <h:outputLabel value="Cheque"/>
@@ -77,6 +86,13 @@
                     <p:column footerText="#{cc.attrs.data.cash}" style=" text-align: right">
                         <f:facet name="footer">
                             <h:outputLabel value="#{cc.attrs.data.cash}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column footerText="#{cc.attrs.data.card}" style=" text-align: right">
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.data.card}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

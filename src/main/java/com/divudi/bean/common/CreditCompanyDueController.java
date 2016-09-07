@@ -136,6 +136,7 @@ public class CreditCompanyDueController implements Serializable {
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBillsPharmacy(true);
+        System.out.println("list.size() = " + list.size());
 
         setIns.addAll(list);
 

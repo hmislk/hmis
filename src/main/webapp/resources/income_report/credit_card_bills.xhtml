@@ -35,6 +35,12 @@
                 <h:outputLabel rendered="#{ch.billedBill ne null}" 
                                value="#{ch.billedBill.insId}"/>
             </p:column>
+            <p:column headerText="CC" style="width: 20%; "> 
+                <f:facet name="header">
+                    <h:outputLabel value="CC"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.fromInstitution.name}"/>                            
+            </p:column>
             <p:column headerText="Credit Card No" >
                 <f:facet name="header">              
                     <p:outputLabel value="Credit Card No"/>    
@@ -76,7 +82,7 @@
 
             <p:columnGroup type="footer">
                 <p:row>
-                    <p:column colspan="5" footerText="Total" />
+                    <p:column colspan="6" footerText="Total" />
                     <p:column style="text-align: right;" footerText="#{0-bookKeepingSummery.creditCardTotal}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{0-bookKeepingSummery.creditCardTotal}" >

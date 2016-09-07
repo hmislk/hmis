@@ -42,9 +42,30 @@
             <p:columnGroup type="footer">
                 <p:row>
                     <p:column colspan="5" footerText="Total Pharmacy Total"/>
-                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.pharmacyTotal}" >
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.pharmacyTotal}" rendered="#{!cc.attrs.wholeSale and !cc.attrs.credit}" >
                         <f:facet name="footer">
                             <h:outputLabel value="#{bookKeepingSummery.pharmacyTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.pharmacyWholeSaleTotal}" rendered="#{cc.attrs.wholeSale and !cc.attrs.credit}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.pharmacyWholeSaleTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.pharmacyTotalCredit}" rendered="#{!cc.attrs.wholeSale and cc.attrs.credit}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.pharmacyTotalCredit}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.pharmacyWholeSaleTotalCredit}" rendered="#{cc.attrs.wholeSale and cc.attrs.credit}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.pharmacyWholeSaleTotalCredit}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>

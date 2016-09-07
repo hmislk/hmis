@@ -1111,6 +1111,48 @@ public class BillBeanController implements Serializable {
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
+    
+    public List<BillItem> fetchBillItemsPharmacy(BillType billType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        HashMap temMap = new HashMap();
+
+        sql = "SELECT b FROM BillItem b"
+                + " WHERE b.bill.institution=:ins"
+                + " and b.bill.billType=:btp"
+                + " and b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.referenceBill.billType in :refTp "
+                + " order by b.id ";
+
+        temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("btp", billType);
+        temMap.put("ins", institution);
+
+        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    public List<Bill> fetchBillItemsPharmacyOld(BillType billType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        HashMap temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b"
+                + " WHERE b.institution=:ins"
+                + " and b.billType=:btp"
+                + " and b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.referenceBill.billType in :refTp "
+                + " order by b.id ";
+
+        temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("btp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public List<BillItem> fetchBillItems(Bill b, Date fromDate, Date toDate, Institution institution) {
         String sql;
@@ -1354,6 +1396,26 @@ public class BillBeanController implements Serializable {
 
         return netTotal;
     }
+    public double calInstitutionSaleCredit(Date fromDate, Date toDate, Institution institution, BillType billType) {
+        String sql = "Select sum(b.netTotal)"
+                + " from Bill b "
+                + " where b.retired=false"
+                + " and b.billType=:bType"
+                + " and b.referenceBill.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.paymentMethod = :pm ";
+        HashMap hm = new HashMap();
+        hm.put("bType", billType);
+        hm.put("ins", institution);
+        hm.put("fromDate", fromDate);
+        hm.put("toDate", toDate);
+        hm.put("pm", PaymentMethod.Credit);
+        double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("billType" + billType);
+        System.out.println("netTotal" + netTotal);
+
+        return netTotal;
+    }
 
     public double calChannelTotal(Date fromDate, Date toDate, Institution institution) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelStaff};
@@ -1414,6 +1476,46 @@ public class BillBeanController implements Serializable {
             sql += " and b.patientEncounter is not null ";
         }
 
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public double calBillTotalPharmacy(BillType billType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = " SELECT sum(b.netValue) "
+                + " FROM BillItem b"
+                + " WHERE b.bill.retired=false "
+                + " and b.bill.billType = :bTp "
+                + " and b.bill.institution=:ins "
+                + " and b.bill.createdAt between :fromDate and :toDate "
+                + " and b.referenceBill.billType in :refTp ";
+
+        temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("bTp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
+    public double calBillTotalPharmacyold(BillType billType, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = " SELECT sum(b.netTotal) "
+                + " FROM Bill b"
+                + " WHERE b.retired=false "
+                + " and b.billType = :bTp "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.referenceBill.billType in :refTp ";
+
+        temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("bTp", billType);
