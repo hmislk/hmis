@@ -14,32 +14,35 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:dataTable id="#{cc.id}"
-                     value="#{bookKeepingSummery.creditCompanyCollections}"
+                     value="#{bookKeepingSummery.creditCompanyCollectionsPharmacyOld}"
                      var="c"
-                     rendered="#{bookKeepingSummery.creditCompanyCollections.size()>0}">
+                     rendered="#{bookKeepingSummery.creditCompanyCollectionsPharmacyOld.size()>0}">
             <f:facet name="header">
-                <h:outputLabel value="Credit Company Collection  - OPD "/>    
+                <h:outputLabel value="Credit Company Collection  - Pharmacy(Old) "/>    
                 
             </f:facet>                               
             <p:column style="width: 200px;" headerText="Bill No">  
                 <h:outputLabel value="#{c.referenceBill.insId}" />                
             </p:column>                                    
-            <p:column headerText="Patient Name" style="width: 40%;">
-                <h:outputLabel value="#{c.referenceBill.patient.person.name}"/>                
-            </p:column>  
+            <p:column style="width: 200px;" headerText="Payment Methord">  
+                <h:outputLabel value="#{c.paymentMethod}" />                
+            </p:column>                                    
+            <p:column style="width: 200px;" headerText="Credit Company">  
+                <h:outputLabel value="#{c.fromInstitution.name}" />                
+            </p:column>                                    
             <p:column/>
             <p:column/>
             <p:column headerText="Total" style="width: 200px;text-align: right;">
-                <h:outputLabel value="#{c.netValue}">
+                <h:outputLabel value="#{c.netTotal}">
                     <f:convertNumber pattern="#,##0.00"/>
                 </h:outputLabel>
             </p:column> 
             <p:columnGroup type="footer">
                 <p:row>
                     <p:column colspan="5" footerText="Credit Company Collection Total"/>
-                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.creditCompanyTotal}" >
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.creditCompanyTotalPharmacyOld}" >
                         <f:facet name="footer">
-                            <h:outputLabel value="#{bookKeepingSummery.creditCompanyTotal}">
+                            <h:outputLabel value="#{bookKeepingSummery.creditCompanyTotalPharmacyOld}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </f:facet>
