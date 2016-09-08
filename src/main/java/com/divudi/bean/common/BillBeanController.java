@@ -1391,8 +1391,8 @@ public class BillBeanController implements Serializable {
         hm.put("pm3", PaymentMethod.Cheque);
         hm.put("pm4", PaymentMethod.Slip);
         double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
-        System.out.println("billType" + billType);
-        System.out.println("netTotal" + netTotal);
+        System.out.println("billType--" + billType);
+        System.out.println("netTotal--" + netTotal);
 
         return netTotal;
     }
@@ -1403,7 +1403,7 @@ public class BillBeanController implements Serializable {
                 + " and b.billType=:bType"
                 + " and b.referenceBill.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.paymentMethod = :pm ";
+                + " and b.paymentMethod=:pm ";
         HashMap hm = new HashMap();
         hm.put("bType", billType);
         hm.put("ins", institution);

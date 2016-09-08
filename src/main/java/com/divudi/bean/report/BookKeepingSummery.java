@@ -3783,6 +3783,7 @@ public class BookKeepingSummery implements Serializable {
                 + creditCompanyTotal
                 + creditCompanyTotalInward
                 + creditCompanyTotalPharmacy
+                + creditCompanyTotalPharmacyOld
                 + pettyCashTotal
                 + opdCashVatTotal;
 
@@ -3872,6 +3873,11 @@ public class BookKeepingSummery implements Serializable {
         dd.setString("Credit Company Pharmacy Collections ");
         dd.setValue1(creditCompanyTotalPharmacy);
         collections2Hos.add(dd);
+        //////////////////
+        dd = new String1Value2();
+        dd.setString("Credit Company Pharmacy(Old) Collections ");
+        dd.setValue1(creditCompanyTotalPharmacyOld);
+        collections2Hos.add(dd);
         /////////////////
         dd = new String1Value2();
         dd.setString("Collection For the Day");
@@ -3916,6 +3922,11 @@ public class BookKeepingSummery implements Serializable {
         dd = new String1Value2();
         dd.setString("Credit Company Pharmacy Collections ");
         dd.setValue1(creditCompanyTotalPharmacy);
+        collections2Hos.add(dd);
+        //////////////////
+        dd = new String1Value2();
+        dd.setString("Credit Company Pharmacy(Old) Collections ");
+        dd.setValue1(creditCompanyTotalPharmacyOld);
         collections2Hos.add(dd);
         /////////////////
         dd = new String1Value2();
@@ -4339,6 +4350,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyCollectionsPharmacy = getBillBean().fetchBillItemsPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyCollectionsPharmacyOld = getBillBean().fetchBillItemsPharmacyOld(BillType.CashRecieveBill, fromDate, toDate, institution);
         /////
         departmentProfessionalPayments = createDoctorPaymentOpdBySpecility(null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
         departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
@@ -4354,6 +4366,8 @@ public class BookKeepingSummery implements Serializable {
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
         pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
+        pharmacyTotalCredit = getBillBean().calInstitutionSaleCredit(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotalCredit = getBillBean().calInstitutionSaleCredit(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         channelTotal = getBillBean().calChannelTotal(fromDate, toDate, institution);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
@@ -4361,6 +4375,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyTotalPharmacy = getBillBean().calBillTotalPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyTotalPharmacyOld = getBillBean().calBillTotalPharmacyold(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2Hos();
         departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
@@ -4478,6 +4493,7 @@ public class BookKeepingSummery implements Serializable {
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyTotalPharmacy = getBillBean().calBillTotalPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyTotalPharmacyOld = getBillBean().calBillTotalPharmacyold(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2HosMonth();
         //createDoctorPaymentInward();
@@ -4524,12 +4540,15 @@ public class BookKeepingSummery implements Serializable {
         outSideFeeTotal = getBillBean().calOutSideInstitutionFeesWithPro(fromDate, toDate, institution);
         pharmacyTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacySale);
         pharmacyWholeSaleTotal = getBillBean().calInstitutionSale(fromDate, toDate, institution, BillType.PharmacyWholeSale);
+        pharmacyTotalCredit = getBillBean().calInstitutionSaleCredit(fromDate, toDate, institution, BillType.PharmacySale);
+        pharmacyWholeSaleTotalCredit = getBillBean().calInstitutionSaleCredit(fromDate, toDate, institution, BillType.PharmacyWholeSale);
         inwardPaymentTotal = getBillBean().calInwardPaymentTotalValue(fromDate, toDate, institution);
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
         collectingCentrePaymentTotal = getBillBean().calBillTotal(BillType.CollectingCentrePaymentReceiveBill, fromDate, toDate, institution);
         creditCompanyTotal = getBillBean().calBillTotal(BillType.CashRecieveBill, true, fromDate, toDate, institution);
         creditCompanyTotalInward = getBillBean().calBillTotal(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyTotalPharmacy = getBillBean().calBillTotalPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
+        creditCompanyTotalPharmacyOld = getBillBean().calBillTotalPharmacyold(BillType.CashRecieveBill, fromDate, toDate, institution);
         pettyCashTotal = getBillBean().calBillTotal(BillType.PettyCash, fromDate, toDate, institution);
         createCollections2HosMonth2();
         departmentProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, null, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}));
