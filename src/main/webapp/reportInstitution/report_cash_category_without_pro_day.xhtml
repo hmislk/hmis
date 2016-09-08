@@ -56,6 +56,7 @@
                                          agent_collection:agent_collection,
                                          credit_collection:credit_collection,
                                          credit_collection_inward:credit_collection_inward,
+                                         credit_collection_pharmacy:credit_collection_pharmacy,
                                          col,
                                          opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,
@@ -156,9 +157,18 @@
 
             <in:credit_collection_inward                 
                 id="credit_collection_inward"/>
-
+            
             <p:spacer height="30"/>
 
+            <in:credit_collection_pharmacy 
+                id="credit_collection_pharmacy"/>
+            
+            <p:spacer height="30"/>
+
+            <in:credit_collection_pharmacy_old 
+                id="credit_collection_pharmacy_old"/>
+
+            <p:spacer height="30"/>
 
             <p:dataTable id="col"  value="#{bookKeepingSummery.collections2Hos}" var="sm">
                 <p:column >

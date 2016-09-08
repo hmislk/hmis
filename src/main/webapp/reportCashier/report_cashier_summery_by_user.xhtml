@@ -95,19 +95,19 @@
 
                         <ca:phrmacyRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
 
-                        <!--                        <p:spacer height="30"/>
-                        
-                                                <ca:pharmacyWholeBilled data="#{commonReport.userBillsOwnPh}"/>                        
-                        
-                                                <p:spacer height="30"/>
-                        
-                                                <ca:pharmacyWholeCancelled data="#{commonReport.userCancelledBillsOwnPh}"  />
-                        
-                                                <p:spacer height="30"/>
-                        
-                                                <ca:phrmacyWholeRefunded data="#{commonReport.userRefundedBillsOwnPh}"/>
-                                                
-                                                <p:spacer height="30"/>-->
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyWholeBilledSummery data="#{commonReport.billedPhWholeSale}"/>                        
+
+                        <p:spacer height="30"/>
+
+                        <ca:pharmacyWholeCancelled data="#{commonReport.cancelledPhWholeSale}"  />
+
+                        <p:spacer height="30"/>
+
+                        <ca:phrmacyWholeRefunded data="#{commonReport.refundedPhWholeSale}"/>
+
+                        <p:spacer height="30"/>
 
                         <ca:pharmacyGrnPayment data="#{commonReport.grnPaymentBill}"/>                        
 
@@ -630,11 +630,39 @@
                         <p:spacer height="30"/>
 
 
-                        <h:panelGrid columns="1">
+                        <div>
                             <h:outputLabel value="Cashier : #{commonReport.webUser.webUserPerson.name}"/>
-                            <br/>
+                            <br></br>
+                            <br></br>
+                            <br></br>
                             <h:outputLabel value="............................"/>
-                        </h:panelGrid>
+                        </div>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <div>
+                            <h:outputLabel value="I Received Cash With / Without Sealed , With / Without Count."/>
+                        </div>
+                        <br></br>
+                        <br></br>
+                        <br></br>
+                        <div>
+                            <h:outputLabel value="Received By:"/>
+                            <br></br>
+                            <br></br>
+                            <br></br>
+                            <h:outputLabel value="............................(.......)"/>
+                            <br></br>
+                            <br></br>
+                            <br></br>
+                            <h:outputLabel value="Date:" />
+                            <br></br>
+                            <br></br>
+                            <h:outputLabel value="................/....../......" />
+                        </div>
                     </p:panel>
 
                     <div style="page-break-after: always;">

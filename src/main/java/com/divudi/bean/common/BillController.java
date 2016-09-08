@@ -484,11 +484,11 @@ public class BillController implements Serializable {
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select b from BilledBill b "
-                    + " where (b.netTotal-b.paidAmount)>0 "
+                    + " where (abs(b.netTotal)-abs(b.paidAmount))>:val "
                     + " and b.billType in :btps "
                     + " and b.paymentMethod= :pm "
                     + " and b.institution=:ins "
-                    + " and b.department=:dep "
+//                    + " and b.department=:dep "
                     + " and b.retired=false "
                     + " and b.refunded=false "
                     + " and b.cancelled=false "
@@ -499,14 +499,14 @@ public class BillController implements Serializable {
                     + " order by b.deptId ";
             hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
             hash.put("pm", PaymentMethod.Credit);
-//            hash.put("val", 0.1);
+            hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             hash.put("ins", getSessionController().getInstitution());
-            hash.put("dep", getSessionController().getDepartment());
-            System.out.println("hash = " + hash);
-            System.out.println("sql = " + sql);
-            System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
-            System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
+//            hash.put("dep", getSessionController().getDepartment());
+//            System.out.println("hash = " + hash);
+//            System.out.println("sql = " + sql);
+//            System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
+//            System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
             a = getFacade().findBySQL(sql, hash);
             System.out.println("a.size() = " + a.size());
         }
@@ -663,7 +663,7 @@ public class BillController implements Serializable {
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (b.netTotal-b.paidAmount)>0 "
+                + " (abs(b.netTotal)-abs(b.paidAmount))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "
@@ -672,14 +672,14 @@ public class BillController implements Serializable {
                 + " and b.paymentMethod=:pm  "
                 + " and b.toInstitution=:company "
                 + " and b.institution=:ins "
-                + " and b.department=:dep "
+//                + " and b.department=:dep "
                 + " order by b.id ";
         hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
         hash.put("pm", PaymentMethod.Credit);
-//        hash.put("val", 0.1);
+        hash.put("val", 0.1);
         hash.put("company", institution);
         hash.put("ins", getSessionController().getInstitution());
-        hash.put("dep", getSessionController().getDepartment());
+//        hash.put("dep", getSessionController().getDepartment());
         //     hash.put("pm", PaymentMethod.Credit);
         List<Bill> bill = getFacade().findBySQL(sql, hash);
 

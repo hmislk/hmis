@@ -141,11 +141,14 @@
 
                     <tr>
                         <td colspan="3">
-                            <h:outputLabel value="who is employed by us, we append below the particulars of his/her salary and deductions"/>
+                            <h:outputLabel value="who is employed by us, we append below the particulars of his/her salary and deductions."/>
+                            <h:outputLabel value="#{staffSalaryController.reportKeyWord.salaryCycle.salaryFromDate}" >
+                                <f:convertDateTime pattern="yyyy-MMMM" />
+                            </h:outputLabel>
                         </td>
 
                     </tr>
-                    
+
                     <tr>
                         <td>
                             <p:spacer height="10"/>
@@ -364,8 +367,10 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                <h:outputLabel value="The above named is employed as a #{cc.attrs.bill.staff.speciality} and his/her 
-                                               pay sheet/Service No. is #{cc.attrs.bill.staff.code} "/>
+                                <h:outputLabel value="The above named is employed as a #{cc.attrs.bill.staff.speciality} and "/>
+                                <p:outputLabel value="He" rendered="#{cc.attrs.bill.staff.person.sex eq 'Male'}"/>
+                                <p:outputLabel value="She" rendered="#{cc.attrs.bill.staff.person.sex eq 'Female'}"/>
+                                <h:outputLabel value=" pay sheet/Service No. is #{cc.attrs.bill.staff.code} "/>
                             </p>
                         </td>
 
@@ -373,10 +378,16 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                <h:outputLabel value="
-                                               and He/She is due to retire on #{cc.attrs.bill.staff.retiredAt} 
-                                               He/She has been in the permanent
-                                               "/>
+                                <h:outputLabel value="and "/>
+                                <p:outputLabel value="He" rendered="#{cc.attrs.bill.staff.person.sex eq 'Male'}"/>
+                                <p:outputLabel value="She" rendered="#{cc.attrs.bill.staff.person.sex eq 'Female'}"/>
+                                <h:outputLabel value=" is due to retire on "/>
+                                <h:outputLabel value="#{commonController.retiermentDate(cc.attrs.bill.staff.person.dob)}" rendered="#{cc.attrs.bill ne null}">
+                                    <f:convertDateTime pattern="yyyy MMM dd" />
+                                </h:outputLabel>
+                                <p:outputLabel value=". He" rendered="#{cc.attrs.bill.staff.person.sex eq 'Male'}"/>
+                                <p:outputLabel value="She" rendered="#{cc.attrs.bill.staff.person.sex eq 'Female'}"/>
+                                <h:outputLabel value=" has been in the permanent."/>
                             </p>
                         </td>
 
@@ -386,7 +397,7 @@
                             <p>
                                 <h:outputLabel value="Sevice Since "/>
                                 <h:outputLabel value="#{cc.attrs.bill.staff.dateJoined}">
-                                    <f:convertDateTime parent="YYYY/MM/dd" />
+                                    <f:convertDateTime pattern="yyyy MMM dd" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" The above information is Certified correct."/>
                             </p>

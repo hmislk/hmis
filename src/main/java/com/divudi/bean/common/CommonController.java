@@ -50,6 +50,17 @@ public class CommonController implements Serializable {
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
     }
+    
+    public Date retiermentDate(Date dob) {
+        if (dob==null) {
+            dob=new Date();
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dob);
+        cal.add(Calendar.YEAR, 50);
+        System.out.println("cal = " + cal.getTime());
+        return cal.getTime();
+    }
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         long timeInMs = toDate.getTime() - fromDate.getTime();
