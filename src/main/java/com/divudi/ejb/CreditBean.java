@@ -174,9 +174,9 @@ public class CreditBean {
         sql += " and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and b.createdAt between :frm and :to "
-                + " and b.paymentMethod= :pm "
+                + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
-                + " order by b.creditCompany.name ";
+                + " order by b.toInstitution.name ";
 
         hm = new HashMap();
         hm.put("frm", fromDate);
@@ -545,7 +545,7 @@ public class CreditBean {
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt is not null "
                 + " and b.toInstitution=:ins "
-                + " and b.billType=:tp1";
+                + " and b.billType in :tps";
 
         if (lessThan) {
             sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
@@ -556,7 +556,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
-        hm.put("tp1", BillType.OpdBill);
+        hm.put("tps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }

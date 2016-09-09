@@ -276,6 +276,12 @@ public class CashRecieveBillController implements Serializable {
                     return true;
                 }
             }
+            if (b.getReferenceBill() != null) {
+                if (Objects.equals(getCurrentBillItem().getReferenceBill().getId(), b.getReferenceBill().getId())) {
+                    UtilityController.addErrorMessage("U can add only one Bill at Once");
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -454,6 +460,38 @@ public class CashRecieveBillController implements Serializable {
 
         return false;
     }
+    
+    private boolean errorCheckPharmacy() {
+        if (getSelectedBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("No Bill Item ");
+            return true;
+        }
+
+        if (getCurrent().getFromInstitution() == null) {
+            UtilityController.addErrorMessage("Select Credit Company");
+            return true;
+        }
+
+        if (!Objects.equals(getBillItems().get(0).getReferenceBill().getToInstitution().getId(), getCurrent().getFromInstitution().getId())) {
+            UtilityController.addErrorMessage("Select same credit company as BillItem ");
+            return true;
+        }
+        
+        
+
+//        if (getCurrent().getPaymentScheme() == null) {
+//            return true;
+//        }
+        if (getCurrent().getPaymentMethod() == null) {
+            return true;
+        }
+
+        if (getPaymentSchemeController().errorCheckPaymentMethod(getCurrent().getPaymentMethod(), getPaymentMethodData())) {
+            return true;
+        }
+
+        return false;
+    }
 
     private boolean errorCheckBht() {
         if (getBillItems().isEmpty()) {
@@ -537,6 +575,33 @@ public class CashRecieveBillController implements Serializable {
         Date toDate = null;
 
         if (errorCheck()) {
+            return;
+        }
+
+        calTotal();
+
+        getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+
+        getCurrent().setTotal(getCurrent().getNetTotal());
+
+        saveBill(BillType.CashRecieveBill);
+        saveBillItem();
+
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        //   savePayments();
+        UtilityController.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Payment/By OPD bill(/faces/credit/credit_compnay_bill_opd.xhtml)");
+    }
+
+    public void settleBillPharmacy() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        if (errorCheckPharmacy()) {
             return;
         }
 

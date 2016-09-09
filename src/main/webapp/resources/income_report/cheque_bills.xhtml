@@ -30,7 +30,13 @@
                     </h:outputLabel>
                     <h:outputLabel style="color: red;" rendered="#{ch.cancelled}" value="&nbsp;&nbsp; #{ch.cancelledBill.insId}"/>
                 </h:panelGroup>
-            </p:column>                        
+            </p:column> 
+            <p:column headerText="CC" style="width: 20%; "> 
+                <f:facet name="header">
+                    <h:outputLabel value="CC"/>
+                </f:facet>
+                <h:outputLabel value="#{ch.fromInstitution.name}"/>                            
+            </p:column>
             <p:column headerText="Cheque No" style="width: 20%;">
                 <f:facet name="header">              
                     <p:outputLabel value="Cheque No"/>    

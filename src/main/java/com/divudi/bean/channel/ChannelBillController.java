@@ -1257,6 +1257,11 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
+        if (getArea() == null) {
+            errorText = "Please Select Area.";
+            UtilityController.addErrorMessage("Please Select Area.");
+            return true;
+        }
 
         removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
@@ -1429,6 +1434,8 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
+                System.out.println("getArea().getName() = " + getArea().getName());
+                getNewPatient().getPerson().setArea(getArea());
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
@@ -1476,7 +1483,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
-        bookingController.generateSessions();
+        bookingController.generateSessionsOnlyIdNew();
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
 

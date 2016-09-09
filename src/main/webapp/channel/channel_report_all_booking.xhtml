@@ -127,6 +127,13 @@
                                 <p:outputLabel value="(#{b.creditCompany.institutionCode})" rendered="#{b.paymentMethod=='Agent'}" >
                                 </p:outputLabel>
                             </p:column>
+                            <p:column style="text-align: right;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Area" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.patient.person.area.name}" >
+                                </p:outputLabel>
+                            </p:column>
 <!--                            <p:column headerText="Status" >
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>
                                 <p:outputLabel rendered="#{b.billType eq 'ChannelAgent'}" value="Agent" style="color: green;"/>

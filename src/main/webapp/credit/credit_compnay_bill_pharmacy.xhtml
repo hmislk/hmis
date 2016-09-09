@@ -37,7 +37,7 @@
                                 <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBill}"
+                            <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBillPharmacy}"
                                              ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
@@ -103,7 +103,7 @@
                             <p:inputText autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
-                            <p:commandButton id="btnAddIx" value="Add" action="#{cashRecieveBillController.addToBill()}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:commandButton id="btnAddIx" value="Add" action="#{cashRecieveBillController.addToBillPharmacy()}" ajax="false" onclick="onSubmitButton();"/>
                         </h:panelGroup>
                         <p:dataTable value="#{cashRecieveBillController.billItems}" rowIndexVar="rowIndex"   var="b" id="items">
                             <f:facet name="header">
@@ -115,11 +115,8 @@
                                 </f:facet>                               
                                 <p:outputLabel value="#{b.referenceBill.insId}"/>
                             </p:column>
-                            <p:column headerText="Patient Name">
-                                <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               
-                            </p:column>
                             <p:column headerText="Credit Company">     
-                                <p:outputLabel value="#{b.referenceBill.creditCompany.name}" />                                
+                                <p:outputLabel value="#{b.referenceBill.toInstitution.name}" />                                
                             </p:column>
                             <p:column headerText="Net Total">
                                 <h:outputLabel value="#{b.netValue}">
