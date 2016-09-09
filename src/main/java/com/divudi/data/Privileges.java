@@ -9,7 +9,9 @@ package com.divudi.data;
  * @author www.divudi.com
  */
 public enum Privileges {
+
     //Main Menu Privileges
+
     TheaterIssueBHT,
     Opd,
     Inward,
@@ -73,7 +75,6 @@ public enum Privileges {
     InwardUnCheck,
     InwardFinalBillCancel,
     ShowInwardFee,
-    
     LabBilling,
     LabBillCancelSpecial,
     LabBillRefundSpecial,
@@ -128,7 +129,6 @@ public enum Privileges {
     LabReporting,
     //dont remove
     LabSearchBillLoggedInstitution,
-    
     PaymentBilling,
     PaymentBillSearch,
     PaymentBillReprint,
@@ -205,8 +205,6 @@ public enum Privileges {
     TheaterIssueOpdSearchPreBillForReturnItemOnly,
     TheaterIssueOpdSearchPreBillReturn,
     TheaterIssueOpdSearchPreBillAddToStock,
-    
-    
     ClinicalPatientSummery,
     ClinicalPatientDetails,
     ClinicalPatientPhoto,
@@ -271,8 +269,6 @@ public enum Privileges {
     CashTransactionCashIn,
     CashTransactionCashOut,
     CashTransactionListToCashRecieve,
-    
-    
     ChannellingChannelBooking,
     ChannellingFutureChannelBooking,
     ChannellingPastBooking,
@@ -315,7 +311,6 @@ public enum Privileges {
     ChannelDebitNote,
     ChannelDebitNoteSearch,
     ChannelCashCancelRestriction,
-    
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,
@@ -325,35 +320,16 @@ public enum Privileges {
     MemberShipOpdMemberShipDisByDepartment,
     MemberShipOpdMemberShipDisByCategory,
     MemberShipOpdMemberShipDisOpdMemberShipReport,
-    
     HrAdmin,
     EmployeeHistoryReport,
     hrDeleteLateLeave,
     HrGenerateSalary,
-    
-    
     Developers,
-
     //Cashier
     AllCashierSummery,
-    
     //Administration
     SearchAll,
     ChannelBookingChange,
-    
-    
-   
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    ChangePreferece,
+
 }
