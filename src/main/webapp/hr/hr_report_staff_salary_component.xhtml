@@ -23,6 +23,7 @@
                             <h:outputLabel value="Salary Cycle"/>
                             <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
                                              var="t">
+                                <f:selectItem itemLabel="Select Salary Cycle" />    
                                 <f:selectItems value="#{salaryCycleController.salaryCycles}" 
                                                var="theme" 
                                                itemLabel="#{theme.name}" 
@@ -60,6 +61,7 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponent()}"/>
+                        <p:commandButton ajax="false" value="Process Special" action="#{hrReportController.createStaffSalaryComponentSpecial()}"/>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb1" fileName="staff_salary_component"/>
@@ -117,6 +119,20 @@
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.paysheetComponent.name}">
                                     </p:outputLabel>
                                 </p:column>  
+                                <p:column headerText="Salary Cycle" rendered="#{hrReportController.reportKeyWord.salaryCycle eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Salary Cycle"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.salaryCycle.name}">
+                                    </p:outputLabel>
+                                </p:column>  
+                                <p:column headerText="Opennig Balance" rendered="#{hrReportController.reportKeyWord.salaryCycle eq null}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Opennig Balance"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffPaysheetComponent.startingBalance}">
+                                    </p:outputLabel>
+                                </p:column>
                                 <p:column headerText="Bank">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bank"  />
