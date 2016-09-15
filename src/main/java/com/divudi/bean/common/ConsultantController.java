@@ -24,6 +24,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.Column;
 
 /**
  *
@@ -45,9 +46,10 @@ public class ConsultantController implements Serializable {
     private Consultant current;
     private List<Consultant> items = null;
     String selectText = "";
+ 
 
     public List<Consultant> getSelectedItems() {
-        String sql ;
+        String sql;
         HashMap hm = new HashMap();
         if (selectText.trim().equals("")) {
             sql = "select c from Consultant c "
@@ -193,6 +195,9 @@ public class ConsultantController implements Serializable {
         this.personFacade = personFacade;
     }
 
+    
+    
+
     /**
      *
      */
@@ -235,4 +240,5 @@ public class ConsultantController implements Serializable {
             }
         }
     }
+     
 }

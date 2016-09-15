@@ -25,6 +25,7 @@ import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,6 +114,41 @@ public class CreditCompanyDueController implements Serializable {
             String1Value5 newRow = new String1Value5();
             newRow.setString(ins.getName());
             setValues(ins, newRow);
+
+            if (newRow.getValue1() != 0
+                    || newRow.getValue2() != 0
+                    || newRow.getValue3() != 0
+                    || newRow.getValue4() != 0) {
+                creditCompanyAge.add(newRow);
+            }
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Due age(/faces/credit/credit_company_opd_due_age.xhtml)");
+    }
+    
+    public void createAgeTablePharmacy() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        makeNull();
+        System.err.println("Fill Items");
+        Set<Institution> setIns = new HashSet<>();
+
+        List<Institution> list = getCreditBean().getCreditCompanyFromBillsPharmacy(true);
+        System.out.println("list.size() = " + list.size());
+
+        setIns.addAll(list);
+
+        creditCompanyAge = new ArrayList<>();
+        for (Institution ins : setIns) {
+            if (ins == null) {
+                continue;
+            }
+
+            String1Value5 newRow = new String1Value5();
+            newRow.setString(ins.getName());
+            setValuesPharmacy(ins, newRow);
 
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
@@ -374,6 +410,33 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     }
 
+    private void setValuesPharmacy(Institution inst, String1Value5 dataTable5Value) {
+
+        List<Bill> lst = getCreditBean().getCreditBillsPharmacy(inst, true);
+        for (Bill b : lst) {
+
+            Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
+
+            double finalValue = (b.getNetTotal() + b.getPaidAmount());
+
+            System.err.println("DayCount " + dayCount);
+            System.err.println("NetTotal " + b.getNetTotal());
+            System.err.println("Paid " + b.getPaidAmount());
+
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+            }
+
+        }
+
+    }
+
     private void setValuesAccess(Institution inst, String1Value5 dataTable5Value) {
 
         List<Bill> lst = getCreditBean().getCreditBills(inst, false);
@@ -486,6 +549,31 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
         items = new ArrayList<>();
         for (Institution ins : setIns) {
             List<Bill> bills = getCreditBean().getCreditBills(ins, BillType.OpdBill, getFromDate(), getToDate(), true);
+            InstitutionBills newIns = new InstitutionBills();
+            newIns.setInstitution(ins);
+            newIns.setBills(bills);
+
+            for (Bill b : bills) {
+                newIns.setTotal(newIns.getTotal() + b.getNetTotal());
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
+            }
+
+            items.add(newIns);
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD/Due search(/faces/credit/credit_company_opd_due.xhtml)");
+
+    }
+
+    public void createPharmacyCreditDue() {
+        Date startTime = new Date();
+
+        List<Institution> setIns = getCreditBean().getCreditInstitutionPharmacy(Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+        System.out.println("setIns.size() = " + setIns.size());
+        items = new ArrayList<>();
+        for (Institution ins : setIns) {
+            List<Bill> bills = getCreditBean().getCreditBillsPharmacy(ins, Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
+            System.out.println("bills.size() = " + bills.size());
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);

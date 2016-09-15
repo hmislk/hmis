@@ -36,6 +36,8 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,6 +121,8 @@ public class SearchController implements Serializable {
     List<PatientInvestigation> userPatientInvestigations;
 
     String menuBarSearchText;
+    String smsText;
+    String uniqueSmsText;
     boolean channelingPanelVisible;
     boolean pharmacyPanelVisible;
     boolean opdPanelVisible;
@@ -134,6 +138,7 @@ public class SearchController implements Serializable {
     List<PatientInvestigation> pis;
     List<Patient> patients;
     List<String> telephoneNumbers;
+    List<String> selectedTelephoneNumbers;
 
     BillSession selectedBillSession;
 
@@ -6215,6 +6220,54 @@ public class SearchController implements Serializable {
         System.out.println("telephoneNumbers.size() = " + telephoneNumbers.size());
 
     }
+
+    public void sendSms() {
+        for (String stn : selectedTelephoneNumbers) {
+            
+           if(selectedTelephoneNumbers != null){
+           
+           }
+            
+        }
+
+        String sendingNo = uniqueSmsText;
+        if (sendingNo.contains("077") || sendingNo.contains("076")
+                || sendingNo.contains("071") || sendingNo.contains("072")
+                || sendingNo.contains("075") || sendingNo.contains("078")) {
+        } else {
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder(sendingNo);
+        sb.deleteCharAt(3);
+        sendingNo = sb.toString();
+
+        String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
+        HttpResponse<String> stringResponse;
+        String pw = "&q=14488825498722";
+
+        String messageBody2 = smsText;
+
+        System.out.println("messageBody2 = " + messageBody2.length());
+
+        final StringBuilder request = new StringBuilder(url);
+        request.append(sendingNo.substring(1, 10));
+        request.append(pw);
+
+        try {
+            System.out.println("pw = " + pw);
+            System.out.println("sendingNo = " + sendingNo);
+            System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
+            System.out.println("text = " + messageBody2);
+
+            stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return;
+        }
+
+    }
 //    public void createAllBillContacts() {
 //        Map temMap = new HashMap();
 //        bills=new ArrayList<>();
@@ -6667,6 +6720,49 @@ public class SearchController implements Serializable {
 
     public void setTelephoneNumbers(List<String> telephoneNumbers) {
         this.telephoneNumbers = telephoneNumbers;
+    }
+
+    public List<String> getSelectedTelephoneNumbers() {
+        return selectedTelephoneNumbers;
+    }
+
+    public void setSelectedTelephoneNumbers(List<String> selectedTelephoneNumbers) {
+        this.selectedTelephoneNumbers = selectedTelephoneNumbers;
+    }
+
+    boolean paginator = true;
+    int rows = 20;
+
+    public boolean isPaginator() {
+        return paginator;
+    }
+
+    public void setPaginator(boolean paginator) {
+        this.paginator = paginator;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
+    public String getSmsText() {
+        return smsText;
+    }
+
+    public void setSmsText(String smsText) {
+        this.smsText = smsText;
+    }
+
+    public String getUniqueSmsText() {
+        return uniqueSmsText;
+    }
+
+    public void setUniqueSmsText(String uniqueSmsText) {
+        this.uniqueSmsText = uniqueSmsText;
     }
 
 }

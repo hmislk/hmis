@@ -1,0 +1,65 @@
+body{
+	font-family: arial;
+}
+.green-row{
+	background-color: #006749;
+	color: #fff;
+}
+.gray-row{
+	background-color: #ececec;
+	color: #006749;
+}
+td{
+	font-size: 32px;
+	font-weight: bold;
+	line-height: 36px !important;
+    padding: 15px !important;
+}
+.doctor-time{
+	text-align: right;
+}
+.doc-spe{
+	font-size: 25px;
+	font-weight: normal;
+}       
+.gray-row .doc-spe{
+	color: #5b5b5b;
+     
+        
+}
+/* .gray-row .doctor-time{
+	text-align: left;
+} */
+.doc-inout{
+	background-color: #e10000;
+    border-radius: 5px;
+    color: #fff;
+    display: inline-block;
+    font-size: 24px;
+    padding: 4px 35px;
+    text-transform: uppercase;
+}
+.not-available .doctor-name{
+	color: #5c5c5c;
+}
+.not-available .doc-inout{
+	background-color: #b4b4b4;
+	color: #5c5c5c;
+	padding: 15px 20px;
+}
+#carousel-example-generic, 
+.carousel-inner {
+  /* height: 980px; */
+  height: 100%;
+}
+table{
+	margin-bottom: 0 !important;
+}
+.no-padding{
+	padding-left: 0;
+	padding-right: 0;
+}
+/*slider changes*/
+.doctor-name {
+    font-size: 30px;
+}

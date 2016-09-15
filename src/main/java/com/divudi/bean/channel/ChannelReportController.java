@@ -5070,7 +5070,6 @@ public class ChannelReportController implements Serializable {
         String sql;
         Map m = new HashMap();
         List<ServiceSession> tmp = new ArrayList<>();
-        acdrs = new ArrayList<>();
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.staff=:staff "
                 + " and s.originatingSession is not null "
@@ -5087,32 +5086,180 @@ public class ChannelReportController implements Serializable {
     //created a meathod which use above methods
     public void createDoctorsWithSessions() {
         List<Staff> staffs = fetchAllChannelDoctors();
-
+        System.out.println("staffs.size() = " + staffs.size());
+        acdrs = new ArrayList<>();
         for (Staff s : staffs) {
 
             List<ServiceSession> serviceSessions = fetchCreatedServiceSessions(s);
+            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            System.out.println("serviceSessions.size() = " + serviceSessions.size());
             if (!serviceSessions.isEmpty()) {
-                ServiceSession temp = new ServiceSession();
+//                ServiceSession temp = new ServiceSession();
+                ServiceSession last = null;
+                AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
                 for (ServiceSession ss : serviceSessions) {
-                    if ((temp.getEndingTime() == ss.getStartingTime()) && !temp.isDeactivated() && !ss.isDeactivated()) {
-                        continue;
-                    } else {
-                        AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
+                    if (ss.isDeactivated()) {
+                        if (last != null) {
+                            if (last.isDeactivated()) {
+                                continue;
+                            }
+                        }
+                        System.err.println("if 1");
+                        row = new AvalabelChannelDoctorRow();
                         row.setS(s);
-                        DateFormat d = new SimpleDateFormat("HH:mm:ss");
+                        DateFormat d = new SimpleDateFormat("hh:mm a");
                         String time = d.format(ss.getStartingTime());
                         row.setTime(time);
+                        time = d.format(ss.getEndingTime());
+                        row.setTimeEnd(time);
                         row.setLeave(ss.isDeactivated());
                         acdrs.add(row);
-
+                        last = ss;
+                        row = null;
+                        continue;
+                    } else {
+                        if (last != null) {
+                            if (last.isDeactivated()) {
+                                last = null;
+                            }
+                        }
                     }
-                    temp = ss;
+                    if (last != null) {
+                        System.err.println("if 2");
+                        if (ss.getStartingTime().getTime() - last.getStartingTime().getTime() < 3600000) {
+                            System.err.println("if 3");
+//                            row.setS(s);
+                            if (row == null) {
+                                row = new AvalabelChannelDoctorRow();
+                            }
+                            DateFormat d = new SimpleDateFormat("hh:mm a");
+                            String time = d.format(ss.getEndingTime());
+                            row.setTimeEnd(time);
+                            last = ss;
+//                            row.setLeave(ss.isDeactivated());
+//                            acdrs.add(row);
+                        } else {
+                            System.err.println("else 3");
+                            System.out.println("row.getTime() = " + row.getTime());
+                            acdrs.add(row);
+                            row = new AvalabelChannelDoctorRow();
+                            row.setS(s);
+                            DateFormat d = new SimpleDateFormat("hh:mm a");
+                            String time = d.format(ss.getStartingTime());
+                            row.setTime(time);
+                            time = d.format(ss.getEndingTime());
+                            row.setTimeEnd(time);
+                            row.setLeave(ss.isDeactivated());
+                            last = ss;
+                        }
+                    } else {
+                        System.err.println("else 2");
+                        row = new AvalabelChannelDoctorRow();
+                        row.setS(s);
+                        DateFormat d = new SimpleDateFormat("hh:mm a");
+                        String time = d.format(ss.getStartingTime());
+                        row.setTime(time);
+                        time = d.format(ss.getEndingTime());
+                        row.setTimeEnd(time);
+                        row.setLeave(ss.isDeactivated());
+                        last = ss;
+                    }
+
+                }
+                if (row != null) {
+                    System.out.println("row.getTime() = " + row.getTime());
+                    acdrs.add(row);
+                    row = null;
                 }
             } else {
+                System.err.println("No sessions");
+                AvalabelChannelDoctorRow row = new AvalabelChannelDoctorRow();
+                row.setS(s);
+//                        DateFormat d =new SimpleDateFormat("HH:mm:ss");
+//                        String time=d.format(ss.getStartingTime());
+                row.setTime(null);
+                row.setTimeEnd(null);
+                row.setLeave(false);
+                acdrs.add(row);
             }
+            System.out.println("staff-acdrs.size() = " + acdrs.size());
+        }
+        //limit the rows in the page
+        System.out.println("acdrs.size() = " + acdrs.size());
+        //created instance using listOfList
+        listOfList = new ArrayList<>();
+        DocPage dp = new DocPage();
+        List<AvalabelChannelDoctorRow> list = new ArrayList<>();
+        int i = 1;
+        for (AvalabelChannelDoctorRow a : acdrs) {
+            System.out.println("****" + i + "****");
+            if (list.size() == 8) {
+                System.out.println("if - list.size() = " + list.size());
+                if (dp.getTable1() == null) {
+                    System.err.println("Table 1");
+                    dp.setTable1(list);
+                    list = new ArrayList<>();
+                    list.add(a);
+                } else {
+                    System.err.println("Table 2");
+                    dp.setTable2(list);
+                    list = new ArrayList<>();
+                    list.add(a);
+                    listOfList.add(dp);
+                    dp = new DocPage();
+                }
+            } else {
+                list.add(a);
+                System.out.println("e - list.size() = " + list.size());
+            }
+            i++;
+        }
+        if (list.size() > 0) {
+            if (dp.getTable1() == null) {
+                dp.setTable1(list);
+                list = new ArrayList<>();
+            } else {
+                dp.setTable2(list);
+                list = new ArrayList<>();
+            }
+            listOfList.add(dp);
+            dp = new DocPage();
+        }
+        System.out.println("listOfList.size() = " + listOfList.size());
+    }
 
+    List<DocPage> listOfList = new ArrayList<>();
+
+    public class DocPage {
+
+        List<AvalabelChannelDoctorRow> table1;
+        List<AvalabelChannelDoctorRow> table2;
+
+        public List<AvalabelChannelDoctorRow> getTable1() {
+            return table1;
         }
 
+        public void setTable1(List<AvalabelChannelDoctorRow> table1) {
+            this.table1 = table1;
+        }
+
+        public List<AvalabelChannelDoctorRow> getTable2() {
+            return table2;
+        }
+
+        public void setTable2(List<AvalabelChannelDoctorRow> table2) {
+            this.table2 = table2;
+        }
+
+    }
+
+    public List<DocPage> getListOfList() {
+        createDoctorsWithSessions();
+        return listOfList;
+    }
+
+    public void setListOfList(List<DocPage> listOfList) {
+        this.listOfList = listOfList;
     }
 
     /**
@@ -6386,6 +6533,7 @@ public class ChannelReportController implements Serializable {
 
         private Staff s;
         private String time;
+        private String timeEnd;
         private boolean leave;
 
         public Staff getS() {
@@ -6410,6 +6558,14 @@ public class ChannelReportController implements Serializable {
 
         public void setLeave(boolean leave) {
             this.leave = leave;
+        }
+
+        public String getTimeEnd() {
+            return timeEnd;
+        }
+
+        public void setTimeEnd(String timeEnd) {
+            this.timeEnd = timeEnd;
         }
 
     }

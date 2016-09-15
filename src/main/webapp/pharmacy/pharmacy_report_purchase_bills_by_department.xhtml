@@ -143,7 +143,10 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Purchase Value"/>
                             </f:facet> 
-                            <h:outputLabel  value="#{b.netTotal}" >
+                            <h:outputLabel  value="#{-b.netTotal}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                            <h:outputLabel  value="#{b.netTotal}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -170,7 +173,10 @@
 
                                 <p:column style="text-align: right;" >
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.netTotal}">
+                                        <h:outputLabel value="#{-pharmacyPurchaseController.billListWithTotals.netTotal}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.netTotal}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -178,9 +184,10 @@
 
                                 <p:column style="text-align: right;" >
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.saleValueTotal}">
+                                        <h:outputLabel value="#{pharmacyPurchaseController.billListWithTotals.saleValueTotal}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
+                                        
                                     </f:facet>
                                 </p:column>
 

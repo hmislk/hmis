@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" 
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Channel Doctors - Ruhunu Hospitals</title>
+        <!-- Template -->
+        <h:outputStylesheet library="css" name="template.css"></h:outputStylesheet>
+        
+        <!--<h:outputScript library="js" name="bootstrap.js" />-->
+        <!--<h:outputScript library="js" name="bootstrap.min_1.js" />--> 
+        <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js" type="text/javascript"></script>--> 
+        <!--<script src="/resources/js/bootstrap.min_1.js" type="text/javascript"></script>-->
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" type="text/css"></link>
+    </h:head>
+
+    <h:body>
+        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="9000">
+            <!-- Indicators -->
+            <ol class="carousel-indicators">
+                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="3"></li>
+                
+            </ol>
+
+            <!-- Wrapper for slides -->
+            <div class="carousel-inner" role="listbox">
+                <ui:repeat value="#{channelReportController.listOfList}" var="ll" >
+                    <div class="item">
+                        <div class="container-fluid no-padding">
+                            <div class="row">
+
+                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+
+                                    <div class="table-responsive">
+
+                                        <table class="table col-sm-4 ">
+                                            <tbody>
+                                                <ui:repeat value="#{ll.table1}" var="d" >
+                                                    <tr class="green-row"  >
+                                                        <td class="doctor-name">
+                                                            #{d.s.person.name}<br/>
+                                                            <span class="doc-spe">#{d.s.speciality.name}</span>
+                                                        </td>
+                                                        <td class="doctor-time">
+                                                            <p:outputLabel value="#{d.time}" rendered="#{d.time ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <p:outputLabel value=" - #{d.timeEnd}" rendered="#{d.timeEnd ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <h:panelGrid rendered="#{d.leave eq true}" >
+                                                                <span class="doc-inout">On Leave</span>
+                                                            </h:panelGrid>
+                                                            <h:panelGrid rendered="#{d.time eq null}" >
+                                                                <span class="not-available-in">Not Available Today</span>
+                                                            </h:panelGrid>
+                                                        </td>
+                                                    </tr>
+
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" >
+
+                                    <div class="table-responsive" >
+
+                                        <table class="table col-md-4 "  >
+                                            <tbody>
+                                                <ui:repeat value="#{ll.table2}" var="d" >
+                                                    <tr class="green-row">
+                                                        <td class="doctor-name">
+                                                            #{d.s.person.name}<br></br>
+                                                            <span class="doc-spe">#{d.s.speciality.name}</span>
+                                                        </td>
+                                                        <td class="doctor-time " >
+                                                            <p:outputLabel value="#{d.time}" rendered="#{d.time ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <p:outputLabel value=" - #{d.timeEnd}" rendered="#{d.timeEnd ne null and d.leave eq false}" style="font-size: 24px;" />
+                                                            <h:panelGrid rendered="#{d.leave eq true}" >
+                                                                <span class="doc-inout">On Leave</span>
+                                                            </h:panelGrid>
+                                                            <h:panelGrid rendered="#{d.time eq null}" >
+                                                                <span class="not-available-in" style="width: 30px;">Not Available Today</span>
+                                                            </h:panelGrid>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div> <!--</table responsive> -->
+                                </div>
+
+                            </div><!--</row> -->
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <img class="img-responsive" src="../resources/image/bottom_ad.jpg" alt="Slide 01"></img>
+                                </div>
+                            </div>
+                        </div><!--</container-fluid no-padding> -->
+                    </div><!--</item -->
+
+                </ui:repeat>
+                <!--<div class="item">Second</div>-->
+
+            </div><!--</carousel-inner> -->
+        </div><!--</carousel-example-generic> -->
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js" type="text/javascript"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <!--<script src="js/bootstrap.min.js"></script>-->
+
+        <!--    <script>
+                    $(document).ready(function(){
+                        $('.item').first().addClass('active');
+                    }); 
+                </script>-->
+
+        <script>
+            $(document).ready(function () {
+                $('.item').first().addClass('active');
+                $('#carousel-example-generic').carousel({
+                    interval: 9000,
+                    cycle: true
+                });
+            });
+        </script>
+
+
+        <h:outputScript library="js" name="bootstrap.min_1.js" />
+    </h:body>
+
+</html>
