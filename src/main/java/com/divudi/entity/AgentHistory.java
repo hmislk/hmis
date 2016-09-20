@@ -16,6 +16,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -54,6 +55,8 @@ public class AgentHistory implements Serializable {
     private String retireComments;
     String referenceNo;
     String comment;
+    @Transient
+    double transCumilativeTotal;
 
     public String getReferenceNo() {
         return referenceNo;
@@ -195,6 +198,14 @@ public class AgentHistory implements Serializable {
 
         return referenceNoInterger;
 
+    }
+
+    public double getTransCumilativeTotal() {
+        return transCumilativeTotal;
+    }
+
+    public void setTransCumilativeTotal(double transCumilativeTotal) {
+        this.transCumilativeTotal = transCumilativeTotal;
     }
 
     @Override

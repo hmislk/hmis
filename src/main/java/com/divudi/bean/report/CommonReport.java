@@ -137,7 +137,7 @@ public class CommonReport implements Serializable {
     private Institution creditCompany;
     private Institution referenceInstitution;
     private Item referenceItem;
-    /////////////////////
+    String invoceNo;    /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
     private BillsTotals refundedBills;
@@ -5883,6 +5883,14 @@ public class CommonReport implements Serializable {
 
     public void setTotalVat(double totalVat) {
         this.totalVat = totalVat;
+    }
+
+    public String getInvoceNo() {
+        return invoceNo;
+    }
+
+    public void setInvoceNo(String invoceNo) {
+        this.invoceNo = invoceNo;
     }
 
 }
