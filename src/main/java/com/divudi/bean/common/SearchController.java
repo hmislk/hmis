@@ -6196,12 +6196,17 @@ public class SearchController implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and (b.patient.person.phone is not null "
-                + " or b.patient.person.phone!=:em) "
-                + " order by b.patient.person.phone ";
-//                + " and b.createdAt between :fd and :td  ";
+                + " or b.patient.person.phone!=:em) ";
+
+        if (isPatientPanelVisible()) {
+            sql += " and b.createdAt between :fd and :td  ";
+            temMap.put("fd", fromDate);
+            temMap.put("td", toDate);
+        }
+
+        sql += " order by b.patient.person.phone ";
 //
-//        temMap.put("fd", fromDate);
-//        temMap.put("td", toDate);
+
         temMap.put("em", "");
 
 //        bills=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -6213,7 +6218,14 @@ public class SearchController implements Serializable {
         for (Object o : objs) {
             String s = (String) o;
             if (s != null && !"".equals(s)) {
-                telephoneNumbers.add(s);
+                String ss = s.substring(0, 3);
+//                System.out.println("ss = " + ss);
+                if (ss.equals("077") || ss.equals("076")
+                        || ss.equals("071") || ss.equals("072")
+                        || ss.equals("075") || ss.equals("078")) {
+                    telephoneNumbers.add(s);
+                }
+
             }
         }
 
@@ -6222,13 +6234,6 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-        for (String stn : selectedTelephoneNumbers) {
-            
-           if(selectedTelephoneNumbers != null){
-           
-           }
-            
-        }
 
         String sendingNo = uniqueSmsText;
         if (sendingNo.contains("077") || sendingNo.contains("076")
@@ -6265,6 +6270,59 @@ public class SearchController implements Serializable {
         } catch (Exception ex) {
             ex.printStackTrace();
             return;
+        }
+
+    }
+
+    public void sendSmsAll() {
+        System.out.println("selectedTelephoneNumbers.size() = " + selectedTelephoneNumbers.size());
+        if (selectedTelephoneNumbers==null) {
+            JsfUtil.addErrorMessage("Please Select Numbers");
+            return;
+        }
+        if (selectedTelephoneNumbers.size()>10000) {
+            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+            return;
+        }
+        for (String stn : selectedTelephoneNumbers) {
+
+            String sendingNo = stn;
+            if (sendingNo.contains("077") || sendingNo.contains("076")
+                    || sendingNo.contains("071") || sendingNo.contains("072")
+                    || sendingNo.contains("075") || sendingNo.contains("078")) {
+            } else {
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder(sendingNo);
+            sb.deleteCharAt(3);
+            sendingNo = sb.toString();
+
+            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
+            HttpResponse<String> stringResponse;
+            String pw = "&q=14488825498722";
+
+            String messageBody2 = smsText;
+
+            System.out.println("messageBody2 = " + messageBody2.length());
+
+            final StringBuilder request = new StringBuilder(url);
+            request.append(sendingNo.substring(1, 10));
+            request.append(pw);
+
+            try {
+                System.out.println("pw = " + pw);
+                System.out.println("sendingNo = " + sendingNo);
+                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
+                System.out.println("text = " + messageBody2);
+
+                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return;
+            }
+
         }
 
     }
