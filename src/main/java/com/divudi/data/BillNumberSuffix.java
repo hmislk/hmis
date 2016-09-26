@@ -77,6 +77,10 @@ public enum BillNumberSuffix {
     //Collecting Centre
     CCPAY,//Payment 
     CCCAN,//Payment Cancel
+    CCCN,//Credit Note 
+    CCCNCAN,//Credit Note Cancel
+    CCDN,//Debit Note 
+    CCDNCAN,//Debit Note Cancel
     //Credit Company
     CRDPAY,//Payment
     CRDCAN,//Cancel

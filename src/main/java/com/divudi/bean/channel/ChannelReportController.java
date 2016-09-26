@@ -4913,7 +4913,11 @@ public class ChannelReportController implements Serializable {
         HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
             HistoryType.CollectingCentreDeposit,
             HistoryType.CollectingCentreDepositCancel,
-            HistoryType.CollectingCentreBilling};
+            HistoryType.CollectingCentreBilling,
+            HistoryType.CollectingCentreCreditNote,
+            HistoryType.CollectingCentreCreditNoteCancel,
+            HistoryType.CollectingCentreDebitNote,
+            HistoryType.CollectingCentreDebitNoteCancel};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -5278,12 +5282,12 @@ public class ChannelReportController implements Serializable {
             if (i.equals(a.getBill().getFromInstitution())) {
                 a.setTransCumilativeTotal(d + a.getTransactionValue());
                 d = a.getBeforeBallance() + a.getTransactionValue();
-            }else{
+            } else {
                 a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
                 d = a.getBeforeBallance() + a.getTransactionValue();
                 i = a.getBill().getFromInstitution();
             }
-            
+
         }
     }
 

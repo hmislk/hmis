@@ -5379,6 +5379,18 @@ public class SearchController implements Serializable {
         createAgentPaymentTable(BillType.AgentDebitNoteBill);
 
     }
+    
+    public void createCollectingCenterCreditNoteTable() {
+
+        createAgentPaymentTable(BillType.CollectingCentreCreditNoteBill);
+
+    }
+
+    public void createCollectingCenterDebitNoteTable() {
+
+        createAgentPaymentTable(BillType.CollectingCentreDebitNoteBill);
+
+    }
 
     public void createCollectingCentrePaymentTable() {
         Date startTime = new Date();

@@ -155,7 +155,7 @@
                                                     value="CC Billing" 
                                                     rendered="#{webUserController.hasPrivilege('LabCCBilling')}" >
                                         </p:menuitem>
-                                        
+
                                         <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
                                                     actionListener="#{searchController.makeListNull}"
                                                     value="CC Bill Search" 
@@ -521,7 +521,7 @@
                                     <p:menuitem ajax="false" value="Reports" action="/channel/channel_reports" rendered="#{webUserController.hasPrivilege('ChannelReports')}" />
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/channel/management_index" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}" ></p:menuitem>
-                                    
+
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Payments"  rendered="#{webUserController.hasPrivilege('Payment')}">  
@@ -624,6 +624,12 @@
                                             <p:menuitem  ajax="false"  action="/reportLab/collecting_center_report_history_1" value="Collecting Centre Statement"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_payment_bill" value="Collecting Centre Diposits"  ></p:menuitem>
                                             <p:menuitem  ajax="false"  action="/reportLab/report_collecting_center_balance" value="Collecting Center Current Balance"  ></p:menuitem>
+                                            <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
+                                                <p:menuitem  ajax="false"  value="Credit Note"  action="/collecting_centre/collecting_center_credit_note_bill" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                                                <p:menuitem  ajax="false"  value="Credit Note Search"  action="/collecting_centre/collecting_center_credit_note_bill_search_own" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                                                <p:menuitem  ajax="false"  value="Debit Note"  action="/collecting_centre/collecting_center_debit_note_bill" rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
+                                                <p:menuitem  ajax="false"  value="Debit Note Search"  action="/collecting_centre/collecting_center_note_bill_search_own" rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}" actionListener="#{searchController.makeListNull}" ></p:menuitem>
+                                            </p:submenu>
                                         </p:submenu>
 
                                         <p:submenu label="Channell Agency Book Issuing">
