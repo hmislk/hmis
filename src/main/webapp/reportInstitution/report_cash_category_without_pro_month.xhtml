@@ -17,9 +17,6 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary Without Pro (Month)"  styleClass="noPrintButton" />
 
-
-
-
                     <h:panelGrid columns="2"  styleClass="noPrintButton"  >
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{bookKeepingSummery.fromDate}" navigator="true"  pattern="dd MM yyyy HH:mm:ss" >
@@ -47,18 +44,18 @@
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="opd_new:opd_new, 
                                          colCash,
-                                         opd_new_credit:opd_new_credit,
                                          colCredit,
                                          outside:outside,
-                                         pharmacy:pharmacy,
-                                         pharmacyc:pharmacyc,
-                                         pharmacyws:pharmacyws,
                                          pharmacywsc:pharmacywsc,
                                          inward:inward,                                     
                                          col,
                                          opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,                                     
-                                         finalSum" 
+                                         finalSum,
+                                         opd_new_credit:opd_new_credit,
+                                         pharmacy:pharmacy,
+                                         pharmacyc:pharmacyc,
+                                         pharmacyws:pharmacyws" 
                                          fileName="Book_Keeping_Summery_without_pro_month_by_category_month_end"
                                          facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
@@ -72,7 +69,7 @@
             <in:opd_new id="opd_new"/>
 
             <p:spacer height="30"/>
-            
+
             <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -87,13 +84,13 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
+
+            <!--            <p:spacer height="30"/>
             
+                        <in:opd_new_1 id="opd_new_credit"/>-->
+
             <p:spacer height="30"/>
 
-            <in:opd_new_1 id="opd_new_credit"/>
-
-            <p:spacer height="30"/>
-            
             <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -108,7 +105,7 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
-            
+
             <p:spacer height="30"/>
 
             <in:outside id="outside"/>
@@ -119,7 +116,7 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+<!--            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
 
             <p:spacer height="30"/>
 
@@ -129,7 +126,7 @@
 
             <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
 
-            <p:spacer height="30"/>
+            <p:spacer height="30"/>-->
 
             <in:inward_collection_month id="inward"/>
 
@@ -151,7 +148,7 @@
             </p:dataTable>
 
             <p:spacer height="30"/>
-            
+
             <in:opd_professional_payment_credit id="opd_professional_credit"/>  
 
             <p:spacer height="30"/>
@@ -192,10 +189,33 @@
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="......................." />
                 </p:column>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+                <!--                <f:facet name="footer" >
+                                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                                </f:facet>-->
             </p:dataTable>
+
+            <!--credit opd-->
+            <p:spacer height="30"/>
+
+            <in:opd_new_1 id="opd_new_credit"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacyws" pharmacy="#{bookKeepingSummery.pharmacyWholeSales}" wholeSale="true"/>
+
+            <p:spacer height="30"/>
+
+            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+
+            <p:spacer height="30"/>
+
+            <f:facet name="footer" >
+                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+            </f:facet>
 
 
         </h:form>
