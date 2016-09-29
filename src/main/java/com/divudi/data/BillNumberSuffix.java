@@ -46,6 +46,7 @@ public enum BillNumberSuffix {
     @Deprecated
     BHTISSUECAN,//Bht Issue Cancel
     PHISSUE,//Pharmacy Issue
+    PHISSUEREQ,//Pharmacy Issue Request
     PHISSCAN,//Pharmacy Issue Cancel
     PHISSRET,//Pharmacy Issue Return
     STISSUE,//Store Issue
