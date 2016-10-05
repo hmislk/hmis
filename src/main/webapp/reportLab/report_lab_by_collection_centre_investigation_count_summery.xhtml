@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel>
+                    <f:facet name="header" >
+                        <p:outputLabel value="Collecting Centre Collection Count Report" />
+                    </f:facet>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="4">
+                        <p:spacer height="1" width="110"/>
+                        <p:commandButton ajax="false" value="Process" action="#{investigationMonthSummeryOwnControllerSession.createItemNewChangesSummery}" ></p:commandButton>
+
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
+                            <p:dataExporter type="xls" target="tbl"  fileName="Collecting_Centre_Sale_Report_byItem" />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="panelPrint"  styleClass="noBorder summeryBorder">
+                    <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.itemsLab}" var="c" rowIndexVar="i" >
+
+                        <p:column headerText="No" style="text-align: center">
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}" />
+                        </p:column>
+                        <p:column headerText="CC Code"
+                                  sortBy="#{c.institution.institutionCode}">
+                            <f:facet name="header">
+                                <h:outputLabel value="CC Code"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.institution.institutionCode}"  />
+                        </p:column>
+                        <p:column headerText="CC Name"
+                                  sortBy="#{c.institution.name}">
+                            <f:facet name="header">
+                                <h:outputLabel value="CC Name"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.institution.name}"  />
+                        </p:column>
+                        <p:column headerText="Count" style="text-align: center" sortBy="#{c.count}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Count"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.count}" >
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.countTotal2}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Total Value" style="text-align: right;" sortBy="#{c.total}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Total Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.total}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.itemValue}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>  
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>
+
