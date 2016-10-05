@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:phe="http://java.sun.com/jsf/composite/pharmacy/inward">
+
+    <ui:define name="content">
+        <h:form>
+
+            <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
+
+                <f:facet name="header" >                                  
+                    <h:panelGrid columns="4"   >
+                        <p:commandButton  value="Issue" action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                        </p:commandButton>                        
+                    </h:panelGrid>
+                </f:facet>
+
+                <p:dataTable styleClass="noBorder" var="bItm" scrollable="true" scrollHeight="250" 
+                             value="#{pharmacySaleBhtController.billItems}" 
+                             id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
+
+                    <f:facet name="header">  
+                        Requested Item 
+                    </f:facet>  
+
+                    <p:column headerText="Item Name" style="width: 50px!important;"  >                     
+                        <h:outputText id="item" value="#{bItm.item.name}" >                                   
+                        </h:outputText>
+                    </p:column>  
+
+                    <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                    </p:column>
+
+                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>  
+
+                    <p:column headerText="Qty" style="width:25px!important; text-align: right;">                   
+                        <h:outputLabel value="#{bItm.pharmaceuticalBillItem.qtyInUnit}" />                               
+                    </p:column>              
+
+                </p:dataTable>  
+
+                <p:spacer height="50"/>
+            </p:panel>
+            <p:panel rendered="#{pharmacySaleBhtController.billPreview}">
+                <p:commandButton ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNull()}" value="Requested List"/>                    
+                <p:commandButton value="Print" ajax="false" action="#" >
+                    <p:printer target="gpBillPreview" ></p:printer>
+                </p:commandButton>
+
+                <h:panelGroup   id="gpBillPreview">
+
+                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+
+                        <div >
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                            </h:panelGroup>
+                        </div>
+
+                    </h:panelGroup>
+
+                </h:panelGroup>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>  
+
+</ui:composition>

@@ -1199,6 +1199,11 @@ public class CommonReport implements Serializable {
                 + " b.billType = :btp "
                 + " and b.department=:d "
                 + " and b.createdAt between :fromDate and :toDate ";
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
 
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
@@ -2076,6 +2081,11 @@ public class CommonReport implements Serializable {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
         }
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
 
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
@@ -2101,6 +2111,11 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
+        }
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
         }
 
         temMap.put("fromDate", getFromDate());
@@ -4254,7 +4269,7 @@ public class CommonReport implements Serializable {
     public void recreteModal() {
         collectingIns = null;
         dataTableData = null;
-        institution = null;
+//        institution = null;
         //  department=null;
         recreateList();
     }

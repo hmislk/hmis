@@ -23,38 +23,14 @@
                             <p:commandButton value="Reprint" ajax="false"   >
                                 <p:printer target="gpBillPreviewFiveFive" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" 
-                                            action="pharmacy_cancel_bill_retail_bht"
-                                             disabled="#{pharmacyBillSearch.bill.cancelled}" onclick="onSubmitButton();" >                           
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Return Item" 
-                                            action="pharmacy_bill_return_bht_issue"   
-                                             disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}" onclick="onSubmitButton();" >                                
-                                <f:setPropertyActionListener value="#{pharmacyBillSearch.bill}" 
-                                                             target="#{bhtIssueReturnController.bill}"  />
-                            </p:commandButton>
-
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
-                            </p:commandButton> 
-
-
+                            <p:commandButton ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search"  value="Requested List"/>
                         </f:facet>
 
 
 
                     </p:panel>
 
-                    <p:panel>
-                        <p:commandButton ajax="false" value="Mark As Checked"
-                                        action="#{pharmacyBillSearch.markAsChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Mark As Un Check"
-                                        action="#{pharmacyBillSearch.markAsUnChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Back To Intrim"
-                                        action="/inward/inward_bill_intrim" onclick="onSubmitButton();" />
-                    </p:panel>
+                   
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Matrix Department"/>

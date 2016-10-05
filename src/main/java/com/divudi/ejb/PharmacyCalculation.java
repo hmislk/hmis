@@ -222,6 +222,39 @@ public class PharmacyCalculation implements Serializable {
 
         return value;
     }
+    
+    public double getCancelledInwardPharmacyRequest(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p where p.creater is not null "
+                + " and type(p.bill)=:class "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billType=:btp "
+                + " and p.bill.cancelled=true ";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("class", PreBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
+    
+    public double getRefundedInwardPharmacyRequest(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("class", RefundBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
 
     public double getTotalQty(BillItem b, BillType billType, Bill refund, Bill cancel) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"

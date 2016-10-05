@@ -15,6 +15,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.SymanticType;
+import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.InvestigationWithCount;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -809,6 +810,10 @@ public class InvestigationController implements Serializable {
 //        }
         getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
+        System.out.println("getCurrent().getInwardChargeType() = " + getCurrent().getInwardChargeType());
+        if (getCurrent().getInwardChargeType()==null) {
+            getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
+        }
 //        getCurrent().setInstitution(institution);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             ////System.out.println("1");
