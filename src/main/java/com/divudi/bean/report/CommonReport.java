@@ -137,7 +137,7 @@ public class CommonReport implements Serializable {
     private Institution creditCompany;
     private Institution referenceInstitution;
     private Item referenceItem;
-    /////////////////////
+    String invoceNo;    /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
     private BillsTotals refundedBills;
@@ -1199,6 +1199,11 @@ public class CommonReport implements Serializable {
                 + " b.billType = :btp "
                 + " and b.department=:d "
                 + " and b.createdAt between :fromDate and :toDate ";
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
 
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
@@ -2076,6 +2081,11 @@ public class CommonReport implements Serializable {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
         }
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
 
         temMap.put("fromDate", getFromDate());
         temMap.put("toDate", getToDate());
@@ -2101,6 +2111,11 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:ins ";
             temMap.put("ins", getReferenceInstitution());
+        }
+        
+        if (institution!=null) {
+            sql+=" and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
         }
 
         temMap.put("fromDate", getFromDate());
@@ -4254,7 +4269,7 @@ public class CommonReport implements Serializable {
     public void recreteModal() {
         collectingIns = null;
         dataTableData = null;
-        institution = null;
+//        institution = null;
         //  department=null;
         recreateList();
     }
@@ -5883,6 +5898,14 @@ public class CommonReport implements Serializable {
 
     public void setTotalVat(double totalVat) {
         this.totalVat = totalVat;
+    }
+
+    public String getInvoceNo() {
+        return invoceNo;
+    }
+
+    public void setInvoceNo(String invoceNo) {
+        this.invoceNo = invoceNo;
     }
 
 }

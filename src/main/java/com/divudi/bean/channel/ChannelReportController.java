@@ -4861,7 +4861,8 @@ public class ChannelReportController implements Serializable {
         HistoryType[] hts = {HistoryType.CollectingCentreBalanceUpdateBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreDepositCancel, HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(hts);
 
-        agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);
+        agentHistorys = createAgentHistoryErrorCheck(fromDate, toDate, institution, historyTypes);
+        checkCumilativeTotal(agentHistorys);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
 
@@ -4912,7 +4913,11 @@ public class ChannelReportController implements Serializable {
         HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
             HistoryType.CollectingCentreDeposit,
             HistoryType.CollectingCentreDepositCancel,
-            HistoryType.CollectingCentreBilling};
+            HistoryType.CollectingCentreBilling,
+            HistoryType.CollectingCentreCreditNote,
+            HistoryType.CollectingCentreCreditNoteCancel,
+            HistoryType.CollectingCentreDebitNote,
+            HistoryType.CollectingCentreDebitNoteCancel};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -4965,6 +4970,40 @@ public class ChannelReportController implements Serializable {
         m.put("td", td);
 
         sql += " order by ah.createdAt ";
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size() = " + getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size());
+
+        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<AgentHistory> createAgentHistoryErrorCheck(Date fd, Date td, Institution i, List<HistoryType> hts) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ah from AgentHistory ah where ah.retired=false "
+                + " and ah.bill.retired=false "
+                + " and ah.createdAt between :fd and :td ";
+
+        if (i != null) {
+            sql += " and (ah.bill.fromInstitution=:ins"
+                    + " or ah.bill.creditCompany=:ins) ";
+
+            m.put("ins", i);
+        }
+
+        if (hts != null) {
+            sql += " and ah.historyType in :hts ";
+
+            m.put("hts", hts);
+        }
+
+        m.put("fd", fd);
+        m.put("td", td);
+
+        sql += " order by ah.bill.fromInstitution.name ,ah.createdAt ";
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
@@ -5226,6 +5265,30 @@ public class ChannelReportController implements Serializable {
             dp = new DocPage();
         }
         System.out.println("listOfList.size() = " + listOfList.size());
+    }
+
+    public void checkCumilativeTotal(List<AgentHistory> agentHistorys) {
+        boolean start = true;
+        double d = 0.0;
+        Institution i = null;
+        for (AgentHistory a : agentHistorys) {
+            if (start) {
+                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                start = false;
+                d = a.getBeforeBallance() + a.getTransactionValue();
+                i = a.getBill().getFromInstitution();
+                continue;
+            }
+            if (i.equals(a.getBill().getFromInstitution())) {
+                a.setTransCumilativeTotal(d + a.getTransactionValue());
+                d = a.getBeforeBallance() + a.getTransactionValue();
+            } else {
+                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                d = a.getBeforeBallance() + a.getTransactionValue();
+                i = a.getBill().getFromInstitution();
+            }
+
+        }
     }
 
     List<DocPage> listOfList = new ArrayList<>();

@@ -18,26 +18,28 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless
 public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalBillItem> {
+
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        if (em == null) {
+        }
+        return em;
     }
 
     public PharmaceuticalBillItemFacade() {
         super(PharmaceuticalBillItem.class);
     }
-    
-     public List<PharmaceuticalBillItem> getPharmaceuticalBillItems(Bill bill) {
+
+    public List<PharmaceuticalBillItem> getPharmaceuticalBillItems(Bill bill) {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill=:b and p.billItem.retired=false";
         HashMap hm = new HashMap();
         hm.put("b", bill);
-        List<PharmaceuticalBillItem> btm= findBySQL(sql, hm);
-        //System.err.println("Getting Bills Item"+btm.size());
+        List<PharmaceuticalBillItem> btm = findBySQL(sql, hm);
+        System.err.println("btm.size() = " + btm.size());
         return btm;
     }
 
-    
 }
