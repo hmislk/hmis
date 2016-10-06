@@ -392,6 +392,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         progressStarted = false;
     }
 
+    
     public void createInvestigationTable() {
         billedBills = new ArrayList<>();
         billedBills = fetchInvestigationBillList(new BilledBill());

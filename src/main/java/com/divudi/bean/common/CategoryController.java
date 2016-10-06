@@ -131,7 +131,7 @@ public class CategoryController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Category> completeInvestigationCategory(String query) {
         List<Category> suggestions;
         String sql;
@@ -167,6 +167,27 @@ public class CategoryController implements Serializable {
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         c = getFacade().findBySQL(sql, temMap, TemporalType.DATE);
+
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public  List<Category> fetchCategoryList() {
+        List<Category> c;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select c from Category c where c.retired=false"
+                + " and (type(c)= :service or type(c)= :sub or type(c)= :invest or "
+                + " like :q order by c.name";
+
+        temMap.put("service", ServiceCategory.class);
+        temMap.put("sub", ServiceSubCategory.class);
+        temMap.put("invest", InvestigationCategory.class);
+
+        c = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -458,7 +479,7 @@ public class CategoryController implements Serializable {
     public List<Category> getItems() {
         if (items == null) {
             String j;
-            j="select c "
+            j = "select c "
                     + " from Category c "
                     + " where c.retired=false "
                     + " order by c.name";

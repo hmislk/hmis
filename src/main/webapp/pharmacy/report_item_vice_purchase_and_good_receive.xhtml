@@ -56,7 +56,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         stickyHeader="true"
+                                         stickyHeader="false"
                                          value="#{pharmacyPurchaseController.rows}" 
                                          var="i"  
                                          rowKey="#{i.name}"
@@ -66,12 +66,18 @@
                                          rowsPerPageTemplate="20,50,100"
                                          >
 
-                                <p:column headerText="Item" sortBy="#{i.name}" filterBy="#{i.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>                                    
+                                <p:column headerText="Item"
+                                          sortBy="#{i.name}" 
+                                          filterBy="#{i.name}"
+                                          filterMatchMode="contains">
+                                    <h:outputLabel value="#{i.name}"></h:outputLabel>                                    
                                 </p:column>
 
-                                <p:column headerText="Quentity" style="text-align: right;"
-                                          sortBy="#{i.qty}" filterBy="#{i.qty}" >
+                                <p:column headerText="Quentity" 
+                                          style="text-align: right;"
+                                          sortBy="#{i.qty}" 
+                                          filterBy="#{i.qty}" 
+                                          filterMatchMode="contains">
                                     <h:outputLabel value="#{i.qty}" >
                                     </h:outputLabel>
                                 </p:column>

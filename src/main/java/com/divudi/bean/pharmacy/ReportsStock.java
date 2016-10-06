@@ -1095,6 +1095,7 @@ public class ReportsStock implements Serializable {
         this.rows = rows;
     }
 
+    
     public void prepareForPrint() {
         paginator = false;
         rows = getStocks().size();

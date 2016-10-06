@@ -43,6 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -51,11 +54,18 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.mail.Authenticator;
+import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -499,9 +509,9 @@ public class PatientInvestigationController implements Serializable {
             String messageBody2 = "Dear Sir/Madam,\n"
                     + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
                     + "\"RHD your trusted diagnostics partner\"";
-            
+
             System.out.println("messageBody2 = " + messageBody2.length());
-            
+
             final StringBuilder request = new StringBuilder(url);
             request.append(sendingNo.substring(1, 10));
             request.append(pw);
@@ -590,6 +600,78 @@ public class PatientInvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Sms send");
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
+
+//    ...............sendEmail...............................................
+//    private class SMTPAuthenticator extends javax.mail.Authenticator {
+//
+//        @Override
+//        public PasswordAuthentication getPasswordAuthentication() {
+//            String username = sessionController.applicationPreference.getGmailUserName();
+//            String password = sessionController.applicationPreference.getGmailPassword();
+//            return new PasswordAuthentication(username, password);
+//        }
+//    }
+
+    public void sendEmail() {
+        final String username = "ravisarani@archmage.lk";
+        final String password = "archmage121";
+
+        Properties props = new Properties();
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+//        Authenticator auth = new SMTPAuthenticator();
+        Session session = Session.getInstance(props,
+                new javax.mail.Authenticator() {
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(username, password);
+                    }
+                });
+
+        try {
+
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("ravisarani@archmage.lk"));
+            message.setRecipients(Message.RecipientType.TO,
+                    InternetAddress.parse("ravisarani@archmage.lk"));
+            message.setSubject("Testing E-mail API");
+            message.setText("Dear Ravisarani,"
+                    + "\n\n I am going to check email!");
+
+            //3) create MimeBodyPart object and set your message text     
+            BodyPart msbp1 = new MimeBodyPart();
+            msbp1.setText("Final Lab report of patient");
+
+            //4) create new MimeBodyPart object and set DataHandler object to this object      
+            MimeBodyPart msbp2 = new MimeBodyPart();
+
+            String filename = "D:\\ProJects\\LabReport\\report1.pdf";//change accordingly 
+
+            // find the file path
+//   Path p = Paths.get(yourFileNameUri);
+//   Path folder = p.getParent();
+            DataSource source = new FileDataSource(filename);
+            msbp2.setDataHandler(new DataHandler(source));
+            msbp2.setFileName(filename);
+
+            //5) create Multipart object and add MimeBodyPart objects to this object      
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(msbp1);
+            multipart.addBodyPart(msbp2);
+
+            //6) set the multiplart object to the message object  
+            message.setContent(multipart);
+
+            Transport.send(message);
+
+            System.out.println("Send Successfully");
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public void markAsSampled() {
@@ -716,7 +798,7 @@ public class PatientInvestigationController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/sampling(/faces/lab_sample.xhtml)");
     }
-    
+
     public void checkRefundBillItems(List<PatientInvestigation> pis) {
         for (PatientInvestigation pi : pis) {
             markRefundBillItem(pi);
