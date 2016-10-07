@@ -40,6 +40,9 @@
                     <p:column headerText="Department Form request">                      
                         <h:outputLabel value="#{p.department.name}"/>                          
                     </p:column> 
+                    <p:column headerText="BHT No">                      
+                        <h:outputLabel value="#{p.patientEncounter.bhtNo}"/>                          
+                    </p:column> 
                     <p:column headerText="Requested at"  >
                         <h:outputLabel value="#{p.createdAt}" >
                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>

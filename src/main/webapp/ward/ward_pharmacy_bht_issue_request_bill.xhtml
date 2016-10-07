@@ -122,6 +122,16 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
+                                                <p:column headerText="P.R" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
+                                                        <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:column headerText="S.R" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
+                                                        <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                                    </h:outputLabel>
+                                                </p:column>
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>

@@ -24,7 +24,7 @@
                              id="itemList" sortBy="#{bItm.searialNo}"  editable="true">  
 
                     <f:facet name="header">  
-                        Requested Item 
+                        Available Items 
                     </f:facet>  
 
                     <p:column headerText="Item Name" style="width: 50px!important;"  >                     
@@ -36,13 +36,13 @@
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
                     </p:column>
 
-                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">  
+                    <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">  
+                    <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -57,7 +57,7 @@
                 <p:spacer height="50"/>
             </p:panel>
             <p:panel rendered="#{pharmacySaleBhtController.billPreview}">
-                <p:commandButton ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNull()}" value="Requested List"/>                    
+                <p:commandButton ajax="false" action="ward_pharmacy_bht_issue_request_list_for_issue" actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" value="Requested List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
