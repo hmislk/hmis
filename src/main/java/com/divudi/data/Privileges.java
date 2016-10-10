@@ -75,6 +75,9 @@ public enum Privileges {
     InwardUnCheck,
     InwardFinalBillCancel,
     ShowInwardFee,
+    InwardPharmacyMenu,
+    InwardPharmacyIssueRequest,
+    InwardPharmacyIssueRequestSearch,
     LabBilling,
     LabBillCancelSpecial,
     LabBillRefundSpecial,
@@ -182,6 +185,7 @@ public enum Privileges {
     PharmacyAdministration,
     PharmacySetReorderLevel,
     PharmacyReturnWithoutTraising,
+    PharmacyBHTIssueAccept,
     //theater
     Theatre,
     TheatreAddSurgery,
