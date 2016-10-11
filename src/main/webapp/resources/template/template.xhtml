@@ -132,15 +132,14 @@
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_final" value="Final Bill Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/inward/inward_search_final_check" value="Final Bill Search by Discharge Date" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                                     </p:submenu>
-                                    <p:submenu label="Pharmacy" >
+                                    <p:submenu label="Pharmacy" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}" >
                                         <p:menuitem ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill"  
                                                     value="Pharmacy BHT Request" 
-                                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
+                                                    rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}" 
                                                     actionListener="#{pharmacySaleBhtController.resetAll()}"/>
-
                                         <p:menuitem  ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search" 
                                                      value="Search Inward Bills" 
-                                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
+                                                     rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}" ></p:menuitem>                                        
                                     </p:submenu>
                                     <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht" value="Investigation Trace"></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/inward/inward_reports" value="Inward Reports" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
@@ -251,8 +250,6 @@
                                                      value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" ></p:menuitem>
                                     </p:submenu>
 
-
-
                                     <p:submenu label="BHT Bills" >
                                         <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht"  
                                                     value="Inward Billing" 
@@ -265,7 +262,7 @@
                                         <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue" 
                                                      value="Accept BHT Issue"
                                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" />
 
                                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}" 
                                                      value="Search Inward Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>                                        
