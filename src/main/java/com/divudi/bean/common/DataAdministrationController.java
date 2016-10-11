@@ -114,6 +114,8 @@ public class DataAdministrationController {
     List<Bill> selectedBills;
     List<Institution> institutions;
     List<Institution> selectedInstitutions;
+    private List<Item> items;
+    private List<Item> selectedItems;
 
     double val1;
     double val2;
@@ -124,8 +126,14 @@ public class DataAdministrationController {
     boolean bool2;
     boolean bool3;
     boolean bool4;
+    private boolean vatableItem = true;
+    private boolean editableVatableItem = true;
+    private boolean vatableStatus = false;
 
     private ReportKeyWord reportKeyWord;
+    private String item;
+    private Category itemCategory;
+    private Double vatPrecentage = 0.0;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -620,6 +628,171 @@ public class DataAdministrationController {
             getPersonFacade().edit(s.getPerson());
         }
         JsfUtil.addSuccessMessage("Successfully Updated...");
+        createInvestigationsAndServiceTable();
+
+    }
+
+    //get vatable items to data table
+    public void createInvestigationsAndServiceTable() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select i from Item i where i.retired=false ";
+        System.out.println("item = " + item);
+        if (vatableItem) {
+            sql += " and i.vatable=true";
+        } else {
+            sql += " and i.vatable!=true ";
+        }
+
+        if (Integer.parseInt(item) == 1) {
+            sql += " and (type(i)=:ins or type(i)=:ser) ";
+            m.put("ins", Investigation.class);
+            m.put("ser", Service.class);
+
+        }
+        if (Integer.parseInt(item) == 2) {
+            sql += " and type(i)=:ins ";
+            m.put("ins", Investigation.class);
+            if (itemCategory != null) {
+                sql += " and i.category=:cat ";
+                m.put("cat", itemCategory);
+            }
+        }
+        if (Integer.parseInt(item) == 3) {
+            sql += " and type(i)=:ser ";
+            m.put("ser", Service.class);
+
+            if (itemCategory != null) {
+                sql += " and i.category=:cat2 ";
+                m.put("cat2", itemCategory);
+            }
+        }
+        sql += " order by i.name ";
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        items = itemFacade.findBySQL(sql, m);
+        System.out.println("items.size() = " + items.size());
+
+    }
+
+    // Edit vat precentage of vatable items
+    public void editVatableOfVatableItems() {
+
+        if (errorCheck()) {
+            return;
+        }
+        if (vatableStatus == true) {
+            for (Item i : selectedItems) {
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(true);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+            }
+            JsfUtil.addSuccessMessage("Succesfully Edited VAT For " + selectedItems.size() + " records with vat status ");
+        } else {
+            for (Item i : selectedItems) {
+
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(false);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+
+            }
+            JsfUtil.addSuccessMessage("Succesfully Edited VAT For " + selectedItems.size() + " records and items as without vat items");
+        }
+        createInvestigationsAndServiceTable();
+    }
+
+    // Edit vat precentage to vatable items
+    public void addVatableToVatableItems() {
+        if (errorCheck()) {
+            return;
+        }
+        if (vatableStatus == true) {
+            for (Item i : selectedItems) {
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(true);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+            }
+            JsfUtil.addSuccessMessage("Succesfully Added VAT For " + selectedItems.size() + " records with vat status ");
+        } else {
+            for (Item i : selectedItems) {
+
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(false);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+
+            }
+            JsfUtil.addSuccessMessage("Succesfully Added VAT For " + selectedItems.size() + " records and items as without vat items");
+        }
+        createInvestigationsAndServiceTable();
+
+    }
+
+    // remove vat precentage from vatable items
+    public void removeVatableFromVatableItems() {
+        if (selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select the item");
+            return;
+        }
+        if (vatableStatus == true) {
+            for (Item i : selectedItems) {
+               
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(true);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+            }
+            JsfUtil.addSuccessMessage("Succesfully Removed VAT For " + selectedItems.size() + " records with vat status ");
+        } else {
+            for (Item i : selectedItems) {
+              
+                i.setVatPercentage(vatPrecentage);
+                i.setVatable(false);
+                itemFacade.edit(i);
+                System.out.println("vatPrecentage = " + vatPrecentage);
+
+            }
+            JsfUtil.addSuccessMessage("Succesfully Removed VAT For " + selectedItems.size() + " records and items as without vat");
+        }
+    }
+
+    //error check
+    public boolean errorCheck() {
+
+        if (selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select the item");
+            return true;
+        }
+        //System.out.println("1.vatPrecentage = " + vatPrecentage);
+        if (vatPrecentage == null) {
+            // System.out.println("2.vatPrecentage = " + vatPrecentage);
+            JsfUtil.addErrorMessage("Pleace Check your VAT presentage Value");
+            return true;
+
+        }
+        if (vatPrecentage <= 0.0) {
+            //System.out.println("3.vatPrecentage = " + vatPrecentage);
+            JsfUtil.addErrorMessage("Pleace Check your VAT presentage Value");
+            return true;
+        }
+        return false;
+    }
+
+
+    
+
+    public void itemChangeListener() {
+        itemCategory = null;
+    }
+
+    public Class[] getItemTypes() {
+
+        Class[] items = {Investigation.class, Service.class};
+        return items;
 
     }
 
@@ -823,6 +996,70 @@ public class DataAdministrationController {
 
     public void setPersonFacade(PersonFacade personFacade) {
         this.personFacade = personFacade;
+    }
+
+    public Category getItemCategory() {
+        return itemCategory;
+    }
+
+    public void setItemCategory(Category itemCategory) {
+        this.itemCategory = itemCategory;
+    }
+
+    public String getItem() {
+        return item;
+    }
+
+    public void setItem(String item) {
+        this.item = item;
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
+    }
+
+    public boolean isVatableItem() {
+        return vatableItem;
+    }
+
+    public void setVatableItem(boolean vatableItem) {
+        this.vatableItem = vatableItem;
+    }
+
+    public List<Item> getSelectedItems() {
+        return selectedItems;
+    }
+
+    public void setSelectedItems(List<Item> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public boolean isEditableVatableItem() {
+        return editableVatableItem;
+    }
+
+    public void setEditableVatableItem(boolean editableVatableItem) {
+        this.editableVatableItem = editableVatableItem;
+    }
+
+    public Double getVatPrecentage() {
+        return vatPrecentage;
+    }
+
+    public void setVatPrecentage(Double vatPrecentage) {
+        this.vatPrecentage = vatPrecentage;
+    }
+
+    public boolean isVatableStatus() {
+        return vatableStatus;
+    }
+
+    public void setVatableStatus(boolean vatableStatus) {
+        this.vatableStatus = vatableStatus;
     }
 
 }
