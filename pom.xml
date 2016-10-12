@@ -57,11 +57,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.antlr</artifactId>
-            <version>SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency><dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>7.0</version>

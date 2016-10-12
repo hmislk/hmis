@@ -96,6 +96,10 @@ public class UserPrivilageController implements Serializable {
         TreeNode node141 = new PrivilageNode("Interim Bill", node14, Privileges.InwardBillingInterimBill);
         TreeNode node142 = new PrivilageNode("Interim Bill Search", node14, Privileges.InwardBillingInterimBillSearch);
         TreeNode node143 = new PrivilageNode("Edit Patient Name After Payment Finalized", node14, Privileges.InwardFinalBillReportEdit);
+        TreeNode node19 = new PrivilageNode("Pharmacy", node1);
+        TreeNode node190 = new PrivilageNode("Pharmacy Menu", node19,Privileges.InwardPharmacyMenu);
+        TreeNode node191 = new PrivilageNode("Pharmacy Issue Request", node19,Privileges.InwardPharmacyIssueRequest);
+        TreeNode node192 = new PrivilageNode("Pharmacy Issue Request Search", node19,Privileges.InwardPharmacyIssueRequestSearch);
         TreeNode node15 = new PrivilageNode("Search", node1);
         TreeNode node150 = new PrivilageNode("Serch Menu", node15, Privileges.InwardSearch);
         TreeNode node151 = new PrivilageNode("Serch Service Bill", node15, Privileges.InwardSearchServiceBill);
@@ -114,7 +118,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node187 = new PrivilageNode("Show Inward Fee", node18, Privileges.ShowInwardFee);
         TreeNode node188 = new PrivilageNode("Inward Check", node18, Privileges.InwardCheck);
         TreeNode node189 = new PrivilageNode("Inward Uncheck", node18, Privileges.InwardUnCheck);
-        TreeNode node190 = new PrivilageNode("Inward Final Bill Cancel With Out Check Date Range", node18, Privileges.InwardFinalBillCancel);
+        TreeNode node1810 = new PrivilageNode("Inward Final Bill Cancel With Out Check Date Range", node18, Privileges.InwardFinalBillCancel);
 
         TreeNode node1a = new PrivilageNode("Theatre", tmproot);
         TreeNode node1a0 = new PrivilageNode("Theatre Menu", node1a, Privileges.Theatre);
@@ -231,6 +235,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node311 = new PrivilageNode("Pharmacy Summery", node3, Privileges.PharmacySummery);
         TreeNode node312 = new PrivilageNode("Pharmacy Transfer", node3, Privileges.PharmacyTransfer);
         TreeNode node313 = new PrivilageNode("Pharmacy Set Reorder Level", node3, Privileges.PharmacySetReorderLevel);
+        TreeNode node315 = new PrivilageNode("Pharmacy Accept BHT Issue", node3, Privileges.PharmacyBHTIssueAccept);
 
         ///////////////////
         TreeNode node4 = new PrivilageNode("Payment", tmproot);

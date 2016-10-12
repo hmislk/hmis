@@ -24,10 +24,10 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -40,6 +40,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.StaffFacade;
@@ -86,6 +87,8 @@ public class ChannelReportTempController implements Serializable {
     @EJB
     ServiceSessionLeaveFacade serviceSessionLeaveFacade;
     @EJB
+    ServiceSessionFacade serviceSessionFacade;
+    @EJB
     StaffFacade staffFacade;
     @EJB
     SpecialityFacade specialityFacade;
@@ -120,6 +123,7 @@ public class ChannelReportTempController implements Serializable {
     List<ChannelSummeryDateRangeOrUserRow> channelSummeryDateRangeOrUserRows = new ArrayList<>();
     List<AgentHistory> agentHistorys;
     List<ChannelReferenceBookRow> channelReferenceBookRows;
+    List<ChannelSheduleSummeryRow> channelSheduleSummeryRows;
     //
     Date fromDate;
     Date toDate;
@@ -1822,6 +1826,24 @@ public class ChannelReportTempController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Session report/Entered schedule report(/faces/channel/channel_report_channel_shedule.xhtml)");
     }
 
+    public void createStaffShedulesSpecial() {
+        channelSheduleSummeryRows = new ArrayList<>();
+        if (getReportKeyWord().getStaff() == null) {
+            for (Staff s : fetchStaffs()) {
+                ChannelSheduleSummeryRow row = new ChannelSheduleSummeryRow();
+                row.setStaff(s);
+                row.setServiceSessions(fetchServiceSessions(s));
+                channelSheduleSummeryRows.add(row);
+            }
+        } else {
+            ChannelSheduleSummeryRow row = new ChannelSheduleSummeryRow();
+            row.setStaff(getReportKeyWord().getStaff());
+            row.setServiceSessions(fetchServiceSessions(getReportKeyWord().getStaff()));
+            channelSheduleSummeryRows.add(row);
+        }
+        System.out.println("channelSheduleSummeryRows.size() = " + channelSheduleSummeryRows.size());
+    }
+
     public void createAgencyBalanceTable() {
         Date startTime = new Date();
 
@@ -1880,6 +1902,46 @@ public class ChannelReportTempController implements Serializable {
         if (withOutDocPayment) {
             withDocPayment = false;
         }
+    }
+
+    public List<Staff> fetchStaffs() {
+        String sql;
+        HashMap m = new HashMap();
+        List<Staff> list = new ArrayList<>();
+
+        sql = "Select distinct(s.staff) From ServiceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.originatingSession is null "
+                + " order by s.staff.speciality.name,s.staff.person.name ";
+
+        m.put("class", ServiceSession.class);
+
+        list = getStaffFacade().findBySQL(sql, m);
+        System.out.println("Staff list.size() = " + list.size());
+
+        return list;
+    }
+
+    public List<ServiceSession> fetchServiceSessions(Staff s) {
+        String sql;
+        HashMap m = new HashMap();
+        List<ServiceSession> list = new ArrayList<>();
+
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and type(s)=:class "
+                + " and s.staff=:s "
+                + " and s.originatingSession is null "
+                + " order by s.sessionWeekday,s.startingTime ";
+
+        m.put("s", s);
+        m.put("class", ServiceSession.class);
+
+        list = getServiceSessionFacade().findBySQL(sql, m);
+        System.out.println("Service Session list.size() = " + list.size());
+
+        return list;
     }
 
     //inner Classes(Data Structures)
@@ -2416,7 +2478,7 @@ public class ChannelReportTempController implements Serializable {
         String refRange;
         Institution ins;
         List<AgentHistory> agentHistorys;
-        double  agentHistoryTotal;
+        double agentHistoryTotal;
 
         public int getBn() {
             return bn;
@@ -2457,6 +2519,29 @@ public class ChannelReportTempController implements Serializable {
         public void setAgentHistoryTotal(double agentHistoryTotal) {
             this.agentHistoryTotal = agentHistoryTotal;
         }
+    }
+
+    public class ChannelSheduleSummeryRow {
+
+        Staff staff;
+        List<ServiceSession> serviceSessions;
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public List<ServiceSession> getServiceSessions() {
+            return serviceSessions;
+        }
+
+        public void setServiceSessions(List<ServiceSession> serviceSessions) {
+            this.serviceSessions = serviceSessions;
+        }
+
     }
 
     //Getters and Setters
@@ -2812,6 +2897,22 @@ public class ChannelReportTempController implements Serializable {
 
     public void setChannelReferenceBookRows(List<ChannelReferenceBookRow> channelReferenceBookRows) {
         this.channelReferenceBookRows = channelReferenceBookRows;
+    }
+
+    public ServiceSessionFacade getServiceSessionFacade() {
+        return serviceSessionFacade;
+    }
+
+    public void setServiceSessionFacade(ServiceSessionFacade serviceSessionFacade) {
+        this.serviceSessionFacade = serviceSessionFacade;
+    }
+
+    public List<ChannelSheduleSummeryRow> getChannelSheduleSummeryRows() {
+        return channelSheduleSummeryRows;
+    }
+
+    public void setChannelSheduleSummeryRows(List<ChannelSheduleSummeryRow> channelSheduleSummeryRows) {
+        this.channelSheduleSummeryRows = channelSheduleSummeryRows;
     }
 
 }
