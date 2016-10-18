@@ -122,16 +122,6 @@
                                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="P.R" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
-                                                        <f:convertNumber pattern="#,###.##" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="S.R" rendered="#{webUserController.hasPrivilege('Developers')}">
-                                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                        <f:convertNumber pattern="#,###.##" ></f:convertNumber>
-                                                    </h:outputLabel>
-                                                </p:column>
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
@@ -188,9 +178,18 @@
                                             <p:column style="width:6%">  
                                                 <p:rowEditor />  
                                             </p:column>  
+                                            <p:column headerText="P.R.">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
 
+                                            </p:column>
+                                            <p:column headerText="R.S.R.">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
 
-
+                                            </p:column>
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>

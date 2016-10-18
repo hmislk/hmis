@@ -355,7 +355,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node2101 = new PrivilageNode("Grand Search", node21, Privileges.SearchGrand);
         
         TreeNode node24 = new PrivilageNode("User", tmproot);
-        TreeNode node240 = new PrivilageNode("Search Menu", node24, Privileges.ChangePreferece);
+        TreeNode node240 = new PrivilageNode("Change Theme", node24, Privileges.ChangePreferece);
 
         TreeNode node22 = new PrivilageNode("Cash Transaction", tmproot);
         TreeNode node2200 = new PrivilageNode("Cash Transaction Menu", node22, Privileges.CashTransaction);
