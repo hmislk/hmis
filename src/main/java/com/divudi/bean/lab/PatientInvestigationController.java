@@ -31,11 +31,32 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.PdfWriter;
+import static com.lowagie.text.pdf.PdfFileSpecification.url;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.sun.jndi.toolkit.url.UrlUtil;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -68,6 +89,11 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.criteria.Path;
+import static jdk.nashorn.internal.objects.NativeRegExp.source;
+import org.primefaces.component.inputtext.InputTextRenderer;
+import org.primefaces.model.UploadedFile;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 /**
  *
@@ -603,17 +629,30 @@ public class PatientInvestigationController implements Serializable {
     }
 
 //    ...............sendEmail...............................................
-//    private class SMTPAuthenticator extends javax.mail.Authenticator {
-//
-//        @Override
-//        public PasswordAuthentication getPasswordAuthentication() {
-//            String username = sessionController.applicationPreference.getGmailUserName();
-//            String password = sessionController.applicationPreference.getGmailPassword();
-//            return new PasswordAuthentication(username, password);
-//        }
-//    }
 
-    public void sendEmail() {
+    public void create() throws DocumentException, com.lowagie.text.DocumentException  {
+       String url = "http://localhost:8080/live/faces/newxhtml.xhtml";
+        try {
+            
+            final ITextRenderer iTextRenderer = new ITextRenderer();
+
+            iTextRenderer.setDocument(url);
+            iTextRenderer.layout();
+
+            final FileOutputStream fileOutputStream
+                    = new FileOutputStream(new File("D:\\ProJects\\LabReport\\LabReport.pdf"));
+
+            iTextRenderer.createPDF(fileOutputStream);
+            fileOutputStream.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException {
         final String username = "ravisarani@archmage.lk";
         final String password = "archmage121";
 
@@ -631,7 +670,6 @@ public class PatientInvestigationController implements Serializable {
                 });
 
         try {
-
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress("ravisarani@archmage.lk"));
             message.setRecipients(Message.RecipientType.TO,
@@ -647,16 +685,16 @@ public class PatientInvestigationController implements Serializable {
             //4) create new MimeBodyPart object and set DataHandler object to this object      
             MimeBodyPart msbp2 = new MimeBodyPart();
 
-            String filename = "D:\\ProJects\\LabReport\\report1.pdf";//change accordingly 
+//            createPDFDataSource();
+            create();
 
-            // find the file path
-//   Path p = Paths.get(yourFileNameUri);
-//   Path folder = p.getParent();
+//            ................Pdf......................
+            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
             DataSource source = new FileDataSource(filename);
             msbp2.setDataHandler(new DataHandler(source));
             msbp2.setFileName(filename);
 
-            //5) create Multipart object and add MimeBodyPart objects to this object      
+            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(msbp1);
             multipart.addBodyPart(msbp2);
@@ -1048,6 +1086,8 @@ public class PatientInvestigationController implements Serializable {
     public void setSms(Sms sms) {
         this.sms = sms;
     }
+
+    
 
     /**
      *
