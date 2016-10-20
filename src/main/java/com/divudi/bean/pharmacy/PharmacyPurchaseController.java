@@ -54,6 +54,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -117,37 +118,37 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void createGrnAndPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
-        
+
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.PharmacyGrnReturn, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Fill All)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void createOnlyPurchaseBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
-        
+
         BillType[] bts = new BillType[]{BillType.PharmacyPurchaseBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(Purchase Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void createOnlyGrnBillsWithCancellsAndReturnsOfSingleDepartment() {
         Date startTime = new Date();
-        
+
         BillType[] bts = new BillType[]{BillType.PharmacyGrnBill, BillType.PurchaseReturn,};
         Class[] bcs = new Class[]{BilledBill.class, CancelledBill.class, RefundBill.class};
         billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, bcs, department, null, null);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Purchase/Purchase bill by departments(GRN Only)(/faces/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml)");
     }
 
     public void fillItemVicePurchaseAndGoodReceive() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         BillItem bi = new BillItem();
@@ -162,8 +163,11 @@ public class PharmacyPurchaseController implements Serializable {
                 + " sum(bi.qty), "
                 + " sum(bi.pharmaceuticalBillItem.freeQty)) "
                 + " from BillItem bi "
-                + " where bi.bill.billType in :bts ";
+                + " where bi.bill.billType in :bts "
+                + " and bi.bill.createdAt between :fd and :td ";
 
+        m.put("fd", fromDate);
+        m.put("td", toDate);
         m.put("bts", bts);
 
         if (department != null) {
@@ -179,10 +183,10 @@ public class PharmacyPurchaseController implements Serializable {
         sql = sql + "group by bi.item "
                 + "order by bi.item.name";
 
-        List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m);
+        List<PharmacyStockRow> lsts = (List) billFacade.findObjects(sql, m, TemporalType.TIMESTAMP);
 
         rows = lsts;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Purchase Reports/Item-vise purchase /good receive(/faces/pharmacy/report_item_vice_purchase_and_good_receive.xhtml)");
     }
 
@@ -457,7 +461,7 @@ public class PharmacyPurchaseController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Billed");
         printPreview = true;
         //   recreate();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Purchase/Purchase (settle)(/faces/pharmacy/pharmacy_purchase.xhtml)");
     }
 
@@ -808,6 +812,5 @@ public class PharmacyPurchaseController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }

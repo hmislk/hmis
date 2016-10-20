@@ -43,7 +43,7 @@
                         </h:panelGrid>
                     </h:panelGrid> 
                 </p:panel>
-                <p:panel id="reportPrint">
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
                     <p:dataTable value="#{channelReportController.agentHistorys}" var="a" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
                             <p:outputLabel value="From - " />
@@ -84,7 +84,7 @@
                                 <p:outputLabel value="Before Balance" />
                             </f:facet>
                             <p:outputLabel value="#{a.beforeBallance}" >
-                                <f:convertNumber pattern="#,##,###.00" />
+                                <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
                         <p:column styleClass="numberCol">
@@ -92,7 +92,7 @@
                                 <p:outputLabel value="Transaction Value" />
                             </f:facet>
                             <p:outputLabel value="#{a.transactionValue}" >
-                                <f:convertNumber pattern="#,##,###.00" />
+                                <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
                         <p:column styleClass="numberCol" >
@@ -100,7 +100,23 @@
                                 <p:outputLabel value="After Balance" />
                             </f:facet>
                             <p:outputLabel value="#{a.beforeBallance+a.transactionValue}" >
-                                <f:convertNumber pattern="#,##,###.00" />
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Cum Balance" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.transCumilativeTotal}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column styleClass="numberCol" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Def." />
+                            </f:facet>
+                            <p:outputLabel value="#{(a.beforeBallance+a.transactionValue)-a.transCumilativeTotal}" >
+                                <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                         </p:column>
                         <p:column>

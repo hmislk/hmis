@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:panelGroup>
+
+            <h:form id="form1">
+                <p:panel header="Set Vatable to Items">
+                    <h:panelGrid columns="2" id="pan1">
+                        <h:outputLabel value="Item Type :"/>
+                        <p:selectOneMenu value="#{dataAdministrationController.item}" >
+                            <f:selectItem itemLabel="All" itemValue="1"/>
+                            <f:selectItem itemLabel="Investigation" itemValue="2"/>
+                            <f:selectItem itemLabel="Service" itemValue="3"/>
+
+                            <p:ajax event="change" process="@this" update="pan1" listener="#{dataAdministrationController.itemChangeListener()}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Investigation Category :" rendered="#{dataAdministrationController.item ne null and dataAdministrationController.item eq 2}"/>
+                        <p:selectOneMenu value="#{dataAdministrationController.itemCategory}" rendered="#{dataAdministrationController.item ne null and dataAdministrationController.item eq 2}">
+                            <f:selectItem itemLabel="Please select a category"/>
+                            <f:selectItems value="#{investigationCategoryController.items}" var="cat" 
+                                           itemLabel="#{cat.name}" itemValue="#{cat}" />
+                        </p:selectOneMenu>
+
+                        <h:outputText value="Service Category/Sub Category" rendered="#{dataAdministrationController.item ne null and dataAdministrationController.item eq 3}"/>
+                        <p:autoComplete converter="categoryConverter" 
+                                        completeMethod="#{categoryController.completeServiceCategory}" 
+                                        var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
+                                        forceSelection="true" value="#{dataAdministrationController.itemCategory}" 
+                                        rendered="#{dataAdministrationController.item ne null and dataAdministrationController.item eq 3}">                                    
+                            <p:column>#{pta.name}</p:column>
+                            <p:column>#{pta.parentCategory}</p:column>                                        
+                        </p:autoComplete>
+                        <h:panelGrid>
+                            <h:panelGrid columns="2">
+                                <h:outputText value="Show Only Vatable Items"/>
+                                <p:selectBooleanCheckbox id="chk" value="#{dataAdministrationController.vatableItem}" >
+                                    <p:ajax event="change" process="chk" update="pan2 pan3 dtable"
+                                            listener="#{dataAdministrationController.createInvestigationsAndServiceTable()}"/>
+                                </p:selectBooleanCheckbox>
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="2" id="pan3">
+                                <h:outputText value="Edit Vatable Items" rendered="#{dataAdministrationController.vatableItem eq true}"/>
+                                <p:selectBooleanCheckbox id="chk1" value="#{dataAdministrationController.editableVatableItem}" rendered="#{dataAdministrationController.vatableItem eq true}" >
+                                    <p:ajax event="change" process="chk1" update="pan2"/>
+                                </p:selectBooleanCheckbox>
+                            </h:panelGrid>
+                            <h:panelGrid columns="3" id="pan4">
+                                <h:outputText value="Set Vatable Status"/>
+                                <p:selectBooleanCheckbox id="chk2" value="#{dataAdministrationController.vatableStatus}" >
+                                <p:ajax event="change" process="chk2" update="txt"/>
+
+                                </p:selectBooleanCheckbox>
+                                <h:outputText id="txt" value="(#{dataAdministrationController.vatableStatus})"/>
+                            </h:panelGrid>
+
+                            <!--<p:commandButton value="Process" ajax="false" action="#{dataAdministrationController.createInvestigationsAndServiceTable()}"/>-->
+                        </h:panelGrid>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3" id="pan2">
+                        <h:outputLabel value="Vat Precentage" rendered="#{dataAdministrationController.vatableItem ne true or dataAdministrationController.editableVatableItem eq true}"/>
+                        <h:panelGrid columns="2">
+                            <p:inputText value="#{dataAdministrationController.vatPrecentage}" rendered="#{dataAdministrationController.vatableItem ne true or dataAdministrationController.editableVatableItem eq true}"/>
+                            <h:outputLabel value="%" rendered="#{dataAdministrationController.vatableItem ne true}"/>
+                        </h:panelGrid>
+
+
+
+                        <p:commandButton value="Add VAT For Selected Items" ajax="false" rendered="#{dataAdministrationController.vatableItem ne true}" 
+                                         action="#{dataAdministrationController.addVatableToVatableItems()}"
+                                         onclick="if (!confirm('Are you sure you want to add this records?'))
+                                                     return false;"/>
+                        <p:commandButton value="Remove VAT For Selected Items" ajax="false" 
+                                         rendered="#{dataAdministrationController.vatableItem eq true and dataAdministrationController.editableVatableItem ne true}"
+                                         action="#{dataAdministrationController.removeVatableFromVatableItems()}"
+                                         onclick="if (!confirm('Are you sure you want to remove this records?'))
+                                                     return false;"/>
+                        <p:commandButton value="Edit VAT For Selected Items" ajax="false" rendered="#{dataAdministrationController.vatableItem eq true and dataAdministrationController.editableVatableItem eq true}"
+                                         action="#{dataAdministrationController.editVatableOfVatableItems()}"
+                                         onclick="if (!confirm('Are you sure you want to edit this records?'))
+                                                     return false;"/>
+
+                    </h:panelGrid>
+
+                    <p:panel>
+                        <p:dataTable  id ="dtable" value="#{dataAdministrationController.items}" var="i" rowIndexVar="a"
+                                      rowKey="#{i.id}"
+                                      selection="#{dataAdministrationController.selectedItems}"
+                                      scrollable="true"
+                                      scrollHeight="300">
+
+
+
+                            <p:column  selectionMode="multiple" >                            
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a+1}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.name}" />
+                            </p:column>
+                            <p:column rendered="#{dataAdministrationController.itemCategory eq null}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Category" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.category.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Inward Charge Type" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.inwardChargeType}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Vatable Status" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.vatable}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="vat Precentage" />
+                                </f:facet>
+                                <p:outputLabel value="#{i.vatPercentage}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

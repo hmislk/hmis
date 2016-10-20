@@ -14,12 +14,27 @@
             <h:form id="form"  >
                 <p:panel header="Contact numbers" >
                     <f:facet name="header">
-                        <h:panelGrid columns="5" >
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createAllBillContacts()}" onclick="onSubmitButton();"/>&#13;&nbsp;&#13;&nbsp;&#13;&nbsp;
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" 
+                                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" 
+                                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            </p:calendar>
+                            <p:outputLabel value="Consider Date Range" />
+                            <p:selectBooleanCheckbox value="#{searchController.patientPanelVisible}" />
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createAllBillContacts()}" />
+                            <p:outputLabel />
+                            <p:outputLabel value="Message" />
                             <p:inputMask mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputMask>
-                            <p:inputMask mask="" maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputMask>
-                            
+
+                            <p:outputLabel value="Test Send" />
+                            <p:inputMask mask="999-9999999" maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputMask>
+
                             <p:commandButton id="btnSend" ajax="false" value="Send" action="#{searchController.sendSms()}"  />
+                            <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}" disabled="true" />
                         </h:panelGrid>
                     </f:facet>
                 </p:panel>
@@ -33,9 +48,9 @@
                              rowsPerPageTemplate="20, 50, 100">
 
                     <f:facet name="header" >
-                        <p:outputLabel value="Contact Numbers" />                                
+                        <p:outputLabel value="Contact Numbers - #{searchController.telephoneNumbers.size()}" />                                
                     </f:facet>
-                                    
+
                     <p:column selectionMode="multiple"></p:column>
                     <p:column style="text-align: left;" >
                         <f:facet name="header" >

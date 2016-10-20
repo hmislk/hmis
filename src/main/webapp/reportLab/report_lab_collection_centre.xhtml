@@ -6,7 +6,8 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:cre="http://java.sun.com/jsf/composite/cashier">
 
 
     <ui:define name="content">
@@ -26,7 +27,9 @@
                     <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
                     <h:outputLabel value="Collecting Center"/>
-                    <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                    <p:autoComplete forceSelection="true" 
+                                    value="#{commonReport.collectingIns}" 
+                                    completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                         <p:column>
                             #{ix.name}
                         </p:column>
@@ -34,7 +37,8 @@
                             #{ix.institutionCode}
                         </p:column>
                     </p:autoComplete>
-
+                    <h:outputLabel value="Invoice No"/>
+                    <p:inputText value="#{commonReport.invoceNo}" autocomplete="off" />
                 </h:panelGrid> 
                 <h:panelGrid columns="4" styleClass="noPrintButton">
                     <p:spacer width="40"/>
@@ -65,7 +69,7 @@
                         <h:outputLabel value="#{commonReport.toDate}" >
                             <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                         </h:outputLabel>
-                                          
+
                     </f:facet>
                     <p:column headerText="No">
                         <f:facet name="header">
@@ -79,9 +83,9 @@
                         </f:facet>
                         <h:outputLabel value="#{d.insId}"/>
                     </p:column>
-                    <p:column headerText="Bill No">
+                    <p:column headerText="Ref. No">
                         <f:facet name="header">
-                            <h:outputLabel value="Bill No"/>                        
+                            <h:outputLabel value="Ref. No"/>                        
                         </f:facet>
                         <h:outputLabel value="#{d.referralNumber}"/>
                     </p:column>
@@ -192,7 +196,14 @@
                 </p:dataTable>
 
             </p:panel>   
-
+            <p:panel rendered="#{commonReport.collectingIns ne null}">
+                <p:commandButton value="Print" ajax="false" action="#">
+                    <p:printer target="gpBillPreviewPaysheet" ></p:printer>
+                </p:commandButton>
+                <p:panel   id="gpBillPreviewPaysheet"  styleClass="noBorder summeryBorder">
+                    <cre:cc_letter bills="#{commonReport.bills}" con="#{commonReport}"/>
+                </p:panel>
+            </p:panel>
         </h:form>
 
     </ui:define>

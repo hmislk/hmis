@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:phe="http://java.sun.com/jsf/composite/pharmacy/inward">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel >
+                <f:facet name="header" >
+                    <h:outputLabel value="Inward Pharmacy Request Reprint" ></h:outputLabel>
+                    <p:commandButton ajax="false" action="/ward/ward_pharmacy_bht_issue_request_bill_search"  value="Requested List"/>
+                    <p:commandButton value="Reprint" ajax="false" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <p:panelGrid columns="2" style="width: 100%;">
+                        <p:panel header="Bill Detail">
+                            <p:panelGrid columns="2">
+                                <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                <h:outputLabel value="#{pharmacyBillSearch.bill.insId}" ></h:outputLabel>
+                                <h:outputLabel value="Discount :" ></h:outputLabel>
+                                <h:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                                <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></h:outputLabel>
+                            </p:panelGrid>
+                        </p:panel>
+                    </p:panelGrid>
+                    <p:panel header="Bill Item Detail">
+                        <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
+                            <p:column>
+                                <f:facet name="header">No</f:facet>
+                                    #{rowIndex+1}
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Item</f:facet>
+                                    #{bip.item.name}
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Value</f:facet>
+                                    #{bip.pharmaceuticalBillItem.qty}
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Value</f:facet>
+                                    #{bip.pharmaceuticalBillItem.purchaseRate}
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+
+
+                <p:panel >
+                    <h:panelGroup id="gpBillPreview">
+                        <phe:issueBill_request  bill="#{pharmacyBillSearch.bill}" />
+                    </h:panelGroup>
+                </p:panel>
+
+
+            </p:panel>
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>

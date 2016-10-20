@@ -174,6 +174,7 @@ public class SheduleController implements Serializable {
         currentStaff = null;
         filteredValue = null;
         itemFees = null;
+        prepareAdd();
     }
 
     public List<Staff> completeStaff(String query) {

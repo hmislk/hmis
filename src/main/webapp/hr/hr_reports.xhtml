@@ -14,7 +14,7 @@
                     <p:panel header="HR Reports">
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <h:panelGrid columns="1">
-                                <p:panel header="(1) Salary Report" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(1) Salary Report" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel1')}" >
                                     <h:panelGrid columns="1">
                                         <!--                                <p:commandButton value="(1) All Staff Salary Detail" 
                                                                                         action="/hr/hr_report_all_staff_salary" 
@@ -89,7 +89,7 @@
                                                          actionListener="#{hrReportController.makeNull()}"  />
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(4) Shift" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(4) Shift" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}" >
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Staff Shift Report" 
                                                          action="hr_report_staff_shift" 
@@ -110,7 +110,7 @@
 
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(7) Leave" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(7) Leave" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}" >
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Leave Report " 
                                                          action="hr_report_leave" 
@@ -134,7 +134,7 @@
                                                          styleClass="linkButton" ajax="false" />
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(10) Form" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(10) Form" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1)Additional Form Report" 
                                                          action="hr_form_staff_additional_report_1" 
@@ -154,7 +154,7 @@
                                                          styleClass="linkButton" ajax="false" />
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(13) Staff Reports" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(13) Staff Reports" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="Staff Details" 
                                                          action="/hr/report_staff_details" 
@@ -163,7 +163,7 @@
                                 </p:panel>
                                 </h:panelGrid>
                             <h:panelGrid columns="1">
-                                <p:panel header="(2) Attendance" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(2) Attendance" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel1')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Attendance Report" 
                                                          action="hr_report_attendance" 
@@ -202,7 +202,7 @@
 
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(5) Finger Print Records" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(5) Finger Print Records" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel1')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Finger Print Record By Logged" 
                                                          action="hr_report_finger_print_record_logged" 
@@ -222,7 +222,7 @@
                                                          styleClass="linkButton" ajax="false" /> 
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(8) Working Time" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">  
+                                <p:panel header="(8) Working Time" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">  
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Worked Time" 
                                                          action="hr_report_staff_shift_detail" 
@@ -249,7 +249,7 @@
                                 </p:panel>
                                 </h:panelGrid>
                             <h:panelGrid columns="1">
-                                <p:panel header="(3) Administration" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
+                                <p:panel header="(3) Administration" style="width: 400px;margin: auto;" collapsed="false" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Department Report " 
                                                          action="hr_report_department" 
@@ -272,7 +272,7 @@
                                     </h:panelGrid>
 
                                 </p:panel>
-                                <p:panel header="(6) Summary" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(6) Summary" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Head Count " 
                                                          action="hr_report_head_count" 
@@ -312,7 +312,7 @@
 
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(9) History" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(9) History" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}" >
                                          <!--rendered="#{webUserController.hasPrivilege('EmployeeHistoryReport')}" >-->
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="(1) Staff Shift History" 
@@ -325,7 +325,7 @@
                                                          styleClass="linkButton" ajax="false" />
                                     </h:panelGrid>
                                 </p:panel>
-                                <p:panel header="(12) Hr Holydays" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                <p:panel header="(12) Hr Holydays" style="width: 400px;margin: auto;" collapsed="true" toggleable="true" rendered="#{webUserController.hasPrivilege('HrReportsLevel3')}">
                                     <h:panelGrid columns="1">
                                         <p:commandButton value="Holyday Report" 
                                                          action="hr_report_ph_date" 

@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:form>
+
+
+            <h:panelGrid columns="1">
+                <p:panel header="Session Detail Report" >
+                    <h:panelGrid columns="2">
+                        <h:outputLabel  value="Speciality" ></h:outputLabel>
+                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                                         completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                         converter="specilityCon"   >
+                            <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
+                        </p:autoComplete>
+
+
+
+                        <h:outputLabel  value="Doctor" ></h:outputLabel>
+                        <p:autoComplete   forceSelection="true" value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
+                                          completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                          converter="stfcon"   >   
+                        </p:autoComplete>  
+                        <p:commandButton value="Fill Shedules" action="#{channelReportTempController.createStaffShedulesSpecial}" ajax="false" />
+                        <h:panelGroup >
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                                <p:printer target="reportPrint"  />
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                <pe:exporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
+                            </p:commandButton>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                    <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
+                        <p:dataTable value="#{channelReportTempController.channelSheduleSummeryRows}" var="r" id="tbl">
+
+                            <p:columnGroup  type="header">
+                                <p:row>
+                                    <p:column headerText="Session Name"/>
+                                    <p:column headerText="Starting Time"/>
+                                    <p:column headerText="Ending Time"/>
+                                    <p:column headerText="WeekDays/Date"/>
+                                    <p:column headerText="Refundable"/>
+                                    <p:column headerText="Max No"/>
+                                    <p:column headerText="Doc Fee"/>
+                                    <p:column headerText="Hos Fee"/>
+                                    <p:column headerText="Agent Fee"/>
+                                    <p:column headerText="On-Call Fee"/>
+                                    <p:column headerText="Total Cash"/>
+                                    <p:column headerText="Total Agent"/>
+                                    <p:column headerText="Total On-Call"/>
+                                </p:row>
+                            </p:columnGroup> 
+                            <p:subTable value="#{r.serviceSessions}" var="i" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Doctor : #{r.staff.person.name}" />
+                                    <br></br>
+                                    <p:outputLabel value="Speciality : #{r.staff.speciality.name}"/>
+                                    <!--<p:outputLabel value="Speciality : #{r.staff.speciality.name}" style="float: right;"/>-->
+                                </f:facet>
+                                <p:column>
+                                    <p:outputLabel value="#{i.name}" />
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{i.startingTime}" >
+                                        <f:convertDateTime pattern="hh:mm a" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{i.endingTime}" >
+                                        <f:convertDateTime pattern="hh:mm a" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="Sunday" rendered="#{i.sessionWeekday eq 1}"/>
+                                    <p:outputLabel value="Monday" rendered="#{i.sessionWeekday eq 2}"/>
+                                    <p:outputLabel value="Tuesday" rendered="#{i.sessionWeekday eq 3}"/>
+                                    <p:outputLabel value="Wednesday" rendered="#{i.sessionWeekday eq 4}"/>
+                                    <p:outputLabel value="Thursday" rendered="#{i.sessionWeekday eq 5}"/>
+                                    <p:outputLabel value="Friday" rendered="#{i.sessionWeekday eq 6}"/>
+                                    <p:outputLabel value="Sutarday" rendered="#{i.sessionWeekday eq 7}"/>
+                                    <p:outputLabel value="#{i.sessionDate}" >
+                                        <f:convertDateTime pattern="yyyy MMM dd" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="R" rendered="#{i.refundable}" />
+                                </p:column>
+                                <p:column  >
+                                    <p:outputLabel value="#{i.maxNo}" />
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelStaffFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelHosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelAgentFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelOnCallFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelStaffFee+i.channelHosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelStaffFee+i.channelHosFee+i.channelAgentFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberColS">
+                                    <p:outputLabel value="#{i.channelStaffFee+i.channelOnCallFee+i.channelHosFee}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+
+                            </p:subTable>
+                        </p:dataTable>
+                    </p:panel>
+
+                </p:panel>
+
+
+
+            </h:panelGrid>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

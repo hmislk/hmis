@@ -13,6 +13,7 @@ import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.PreBill;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.pharmacy.Amp;
@@ -188,7 +189,22 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        
+        return value;
+    }
+    
+    public double getBilledInwardPharmacyRequest(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem=:bt and p.bill.billType=:btp";
 
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("class", PreBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        
         return value;
     }
 
@@ -200,6 +216,39 @@ public class PharmacyCalculation implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bt", b);
         hm.put("class", CancelledBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
+    
+    public double getCancelledInwardPharmacyRequest(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p where p.creater is not null "
+                + " and type(p.bill)=:class "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billType=:btp "
+                + " and p.bill.cancelled=true ";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("class", PreBill.class);
+        hm.put("btp", billType);
+
+        double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+
+        return value;
+    }
+    
+    public double getRefundedInwardPharmacyRequest(BillItem b, BillType billType) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
+
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("class", RefundBill.class);
         hm.put("btp", billType);
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);

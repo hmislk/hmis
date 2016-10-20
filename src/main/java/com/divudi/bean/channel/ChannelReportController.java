@@ -26,6 +26,7 @@ import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.Area;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -140,6 +141,8 @@ public class ChannelReportController implements Serializable {
     List<Bill> channelBillsRefunded;
     List<ArrivalRecord> arrivalRecords;
     List<StaffBookingWithCount> staffBookingWithCounts;
+    List<AreaWithCount> areaWithCount;
+    List<StaffWithAreaRow> staffWithAreaRows;
     /////
     @EJB
     private BillSessionFacade billSessionFacade;
@@ -3823,6 +3826,10 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void createAreaWithCountTable() {
+        channelAreaWithCount(sessoinDate);
+    }
+
     public void channelBillList(boolean createdDate) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -3844,6 +3851,108 @@ public class ChannelReportController implements Serializable {
 
         channelBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
+    }
+
+    public void channelAreaWithCount(boolean createdDate) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+        areaWithCount = new ArrayList<>();
+        staffWithAreaRows = new ArrayList<>();
+        total=0.0;
+        String sql;
+        if (summery) {
+            sql = " select b.patient.person.area,count(b) ";
+        } else {
+            sql = " select b.staff,b.patient.person.area,count(b) ";
+        }
+
+        sql += " from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and b.patient.person.area is not null ";
+        if (createdDate) {
+            sql += " and b.createdAt between :fDate and :tDate ";
+        } else {
+            sql += " and b.singleBillSession.sessionDate between :fDate and :tDate ";
+        }
+
+        if (summery) {
+            sql += " group by b.patient.person.area "
+                    + " order by b.patient.person.area.name ";
+        } else {
+            sql += " group by b.staff,b.patient.person.area "
+                    + " order by b.staff.person.name,b.patient.person.area.name ";
+        }
+
+        hm.put("bt", bts);
+        hm.put("fDate", getFromDate());
+        hm.put("tDate", getToDate());
+
+        List<Object[]> objects = getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+
+        if (summery) {
+            for (Object[] ob : objects) {
+                AreaWithCount row = new AreaWithCount();
+                row.setArea((Area) ob[0]);
+                row.setCount((long) ob[1]);
+                System.out.println("row.getArea().getName() = " + row.getArea().getName());
+                areaWithCount.add(row);
+                total+=row.getCount();
+            }
+        } else {
+            Staff beforeStaff = null;
+            StaffWithAreaRow row = new StaffWithAreaRow();
+            for (Object[] ob : objects) {
+                Staff s = (Staff) ob[0];
+                Area a = (Area) ob[1];
+                long count = (long) ob[2];
+                System.err.println("****************");
+                System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                System.out.println("a.getName() = " + a.getName());
+                System.out.println("count = " + count);
+                System.err.println("****************");
+                total+=count;
+                if (s.equals(beforeStaff)) {
+                    AreaWithCount awc = new AreaWithCount();
+                    awc.setArea(a);
+                    awc.setCount(count);
+                    row.getAreaWithCounts().add(awc);
+                    row.setSubTotal(row.getSubTotal()+count);
+                    System.out.println("if row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
+                } else {
+                    if (!row.getAreaWithCounts().isEmpty()) {
+                        System.out.println("elase row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
+                        staffWithAreaRows.add(row);
+                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
+                        row = new StaffWithAreaRow();
+                        row.setStaf(s);
+                        AreaWithCount awc = new AreaWithCount();
+                        awc.setArea(a);
+                        awc.setCount(count);
+                        row.setSubTotal(row.getSubTotal()+count);
+                        row.getAreaWithCounts().add(awc);
+                    } else {
+                        row = new StaffWithAreaRow();
+                        row.setStaf(s);
+                        AreaWithCount awc = new AreaWithCount();
+                        awc.setArea(a);
+                        awc.setCount(count);
+                        row.setSubTotal(row.getSubTotal()+count);
+                        row.getAreaWithCounts().add(awc);
+                        if (beforeStaff!=null) {
+                            staffWithAreaRows.add(row);
+                        }
+                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
+                    }
+                    beforeStaff = s;
+                }
+
+            }
+        }
+        System.out.println("staffWithAreaRows.size() = " + staffWithAreaRows.size());
+        System.out.println("areaWithCount.size() = " + areaWithCount.size());
     }
 
     public void createChannelFees() {
@@ -4861,7 +4970,8 @@ public class ChannelReportController implements Serializable {
         HistoryType[] hts = {HistoryType.CollectingCentreBalanceUpdateBill, HistoryType.CollectingCentreDeposit, HistoryType.CollectingCentreDepositCancel, HistoryType.CollectingCentreBilling};
         List<HistoryType> historyTypes = Arrays.asList(hts);
 
-        agentHistorys = createAgentHistory(fromDate, toDate, institution, historyTypes);
+        agentHistorys = createAgentHistoryErrorCheck(fromDate, toDate, institution, historyTypes);
+        checkCumilativeTotal(agentHistorys);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/OPD(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
 
@@ -4912,7 +5022,11 @@ public class ChannelReportController implements Serializable {
         HistoryType[] ht = {HistoryType.CollectingCentreBalanceUpdateBill,
             HistoryType.CollectingCentreDeposit,
             HistoryType.CollectingCentreDepositCancel,
-            HistoryType.CollectingCentreBilling};
+            HistoryType.CollectingCentreBilling,
+            HistoryType.CollectingCentreCreditNote,
+            HistoryType.CollectingCentreCreditNoteCancel,
+            HistoryType.CollectingCentreDebitNote,
+            HistoryType.CollectingCentreDebitNoteCancel};
         List<HistoryType> historyTypes = Arrays.asList(ht);
 
         agentHistoryWithDate = new ArrayList<>();
@@ -4965,6 +5079,40 @@ public class ChannelReportController implements Serializable {
         m.put("td", td);
 
         sql += " order by ah.createdAt ";
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size() = " + getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP).size());
+
+        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<AgentHistory> createAgentHistoryErrorCheck(Date fd, Date td, Institution i, List<HistoryType> hts) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select ah from AgentHistory ah where ah.retired=false "
+                + " and ah.bill.retired=false "
+                + " and ah.createdAt between :fd and :td ";
+
+        if (i != null) {
+            sql += " and (ah.bill.fromInstitution=:ins"
+                    + " or ah.bill.creditCompany=:ins) ";
+
+            m.put("ins", i);
+        }
+
+        if (hts != null) {
+            sql += " and ah.historyType in :hts ";
+
+            m.put("hts", hts);
+        }
+
+        m.put("fd", fd);
+        m.put("td", td);
+
+        sql += " order by ah.bill.fromInstitution.name ,ah.createdAt ";
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
@@ -5226,6 +5374,30 @@ public class ChannelReportController implements Serializable {
             dp = new DocPage();
         }
         System.out.println("listOfList.size() = " + listOfList.size());
+    }
+
+    public void checkCumilativeTotal(List<AgentHistory> agentHistorys) {
+        boolean start = true;
+        double d = 0.0;
+        Institution i = null;
+        for (AgentHistory a : agentHistorys) {
+            if (start) {
+                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                start = false;
+                d = a.getBeforeBallance() + a.getTransactionValue();
+                i = a.getBill().getFromInstitution();
+                continue;
+            }
+            if (i.equals(a.getBill().getFromInstitution())) {
+                a.setTransCumilativeTotal(d + a.getTransactionValue());
+                d = a.getBeforeBallance() + a.getTransactionValue();
+            } else {
+                a.setTransCumilativeTotal(a.getBeforeBallance() + a.getTransactionValue());
+                d = a.getBeforeBallance() + a.getTransactionValue();
+                i = a.getBill().getFromInstitution();
+            }
+
+        }
     }
 
     List<DocPage> listOfList = new ArrayList<>();
@@ -6592,6 +6764,63 @@ public class ChannelReportController implements Serializable {
         }
     }
 
+    public class AreaWithCount {
+
+        Area area;
+        long count;
+
+        public Area getArea() {
+            return area;
+        }
+
+        public void setArea(Area area) {
+            this.area = area;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+    }
+
+    public class StaffWithAreaRow {
+
+        Staff staf;
+        List<AreaWithCount> areaWithCounts;
+        double subTotal;
+
+        public Staff getStaf() {
+            return staf;
+        }
+
+        public void setStaf(Staff staf) {
+            this.staf = staf;
+        }
+
+        public List<AreaWithCount> getAreaWithCounts() {
+            if (areaWithCounts == null) {
+                areaWithCounts = new ArrayList<>();
+            }
+            return areaWithCounts;
+        }
+
+        public void setAreaWithCounts(List<AreaWithCount> areaWithCounts) {
+            this.areaWithCounts = areaWithCounts;
+        }
+
+        public double getSubTotal() {
+            return subTotal;
+        }
+
+        public void setSubTotal(double subTotal) {
+            this.subTotal = subTotal;
+        }
+    }
+
     public CommonController getCommonController() {
         return commonController;
     }
@@ -6654,5 +6883,21 @@ public class ChannelReportController implements Serializable {
 
     public void setStaffBookingWithCounts(List<StaffBookingWithCount> staffBookingWithCounts) {
         this.staffBookingWithCounts = staffBookingWithCounts;
+    }
+
+    public List<AreaWithCount> getAreaWithCount() {
+        return areaWithCount;
+    }
+
+    public void setAreaWithCount(List<AreaWithCount> areaWithCount) {
+        this.areaWithCount = areaWithCount;
+    }
+
+    public List<StaffWithAreaRow> getStaffWithAreaRows() {
+        return staffWithAreaRows;
+    }
+
+    public void setStaffWithAreaRows(List<StaffWithAreaRow> staffWithAreaRows) {
+        this.staffWithAreaRows = staffWithAreaRows;
     }
 }
