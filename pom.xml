@@ -50,12 +50,12 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.6</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
             <version>5.5.6</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
@@ -80,11 +80,11 @@
             <version>4.0</version>
             <type>jar</type>
         </dependency>  
-        <dependency>
+<!--        <dependency>
             <groupId>com.lowagie.text</groupId>
             <artifactId>itext</artifactId>
             <version>4.2.1</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
