@@ -145,7 +145,7 @@ public enum BillType {
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyWholeSale:
-                return "Purchase Wholesale";
+                return "Pharmacy Wholesale";
             case PharmacyWholesalePre:
                 return "Purchase Wholsesale (Pre)";
             case PharmacyOrderApprove:

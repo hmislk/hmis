@@ -213,7 +213,7 @@
                                         <p:commandLink process="btnEmail" update="tblBills"  
                                                        id="btnEmail" 
                                                        disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund or pi.patientReports.size() eq 0}"
-                                                       action="#" >
+                                                       action="#{patientInvestigationController.sendEmail()}" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image/icon" styleClass="standedicon" name="email.jpg" ></p:graphicImage>
                                         </p:commandLink>

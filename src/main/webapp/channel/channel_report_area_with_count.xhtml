@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Channel Bill List">
+                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar styleClass="dateTimePicker" id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar styleClass="dateTimePicker" id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="Created Date"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+
+                        <h:outputLabel value="Summery"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.summery}" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="3"> 
+                        <p:commandButton ajax="false" id="btnRefresh2" value="Process" action="#{channelReportController.createAreaWithCountTable()}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl tbl2" fileName="hr_bill_list"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+
+
+                    <p:panel id="reportPrint">
+                        <p:dataTable value="#{channelReportController.areaWithCount}" var="b" id="tbl2" rowIndexVar="i" rendered="#{channelReportController.summery}" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Area Wise Count Summary" />
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <p:column >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="No" />
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}" />
+                                <f:facet name="footer"  >
+                                    <p:outputLabel value="Total" style="float: left;"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column sortBy="#{b.area.name}">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Area" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.area.name}" />
+                            </p:column>
+                            <p:column style="text-align:right;" sortBy="#{b.count}" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Count" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.count}" >
+                                    <f:convertNumber parent="#,##0"/>
+                                </p:outputLabel>
+                                <f:facet name="footer"  >
+                                    <p:outputLabel value="#{channelReportController.total}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                        <p:dataTable value="#{channelReportController.staffWithAreaRows}" var="a" id="tbl" rendered="#{!channelReportController.summery}" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Staff Wise Area Count Summary" />
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <p:subTable value="#{a.areaWithCounts}" var="b">
+                                <f:facet name="header" >
+                                    <p:outputLabel value="#{a.staf.person.name}" />
+                                    <p:outputLabel value="#{a.subTotal}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0" /> 
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Count : &nbsp;" style="float: right;"/>
+                                </f:facet>
+                                <p:column sortBy="#{b.area.name}">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Area" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.area.name}" />
+                                </p:column>
+                                <p:column style="text-align:right;" sortBy="#{b.count}" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Count" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{b.count}" >
+                                        <f:convertNumber parent="#,##0"/>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:subTable>
+                            <f:facet name="footer" >
+                                <p:outputLabel value="Total" style="float: left;" />
+                                <p:outputLabel value="#{channelReportController.total}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

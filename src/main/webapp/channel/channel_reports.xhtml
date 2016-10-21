@@ -27,14 +27,15 @@
                             <h:panelGrid columns="1">
                                 <p:panel header="Bill Reports" style="width: 400px;margin: auto;"  toggleable="true">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Session" action="/channel/channel_report_bill_session_1"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Fees" action="/channel/channel_report_by_fee"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  All Channel Bills" action="/channel/channel_report_all_bills"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="  All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat" style="color: red;"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Session" action="/channel/channel_report_bill_session_1"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees" action="/channel/channel_report_by_fee"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportController.clearAll}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat" style="color: red;"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -111,6 +112,9 @@
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" 
                                                          value="Entered Shedule Report" action="/channel/channel_report_channel_shedule" 
+                                                         actionListener="#{sheduleController.makeNull()}" />                                        
+                                        <p:commandButton styleClass="linkButton" ajax="false" 
+                                                         value="Entered Shedule Report Summery" action="/channel/channel_report_channel_shedule_sumery" 
                                                          actionListener="#{sheduleController.makeNull()}" />                                        
                                     </h:panelGrid>
                                 </p:panel>

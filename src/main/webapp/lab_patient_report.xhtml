@@ -69,7 +69,7 @@
                                                      rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }"
                                                      onclick="window.print();" 
                                                      actionListener="#{patientReportController.printPatientReport()}"/>
-
+                                   
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
@@ -77,9 +77,9 @@
                                     </p:commandButton>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
-                                    
+
                                 </h:panelGrid>
 
 
@@ -189,7 +189,7 @@
                                                         <td >
                                                             <h:outputLabel value="#{pvd.investigationItem.name}" ></h:outputLabel>
                                                         </td>
-                                                        <td >
+                                                        <td>
                                                             <p:selectOneMenu  id="cmbStrDl" value="#{pvd.strValue}" editable="true" style="min-width: 200px;" >
                                                                 <f:selectItems value="#{investigationItemDynamicLabelController.getDynamicLabelsByIxItId(pvd.investigationItem) }" var="iivd" itemLabel="#{iivd.flagMessage}" itemValue="#{iivd}" ></f:selectItems>
                                                                 <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
@@ -263,6 +263,9 @@
 
                         <div class="nonPrintBlock" >
                             <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
+                                             rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
+                        
+                            <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="PDF" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
                                              rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
                         </div>
 
@@ -477,20 +480,20 @@
                                 ixItemValueType
                             </th>
                             <td>
-                                    <h:outputLabel value="name" escape="false" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="cssTop" escape="false" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="riTop" escape="false" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="cssLeft" escape="false" />
-                                </td>
-                                <td>
-                                    <h:outputLabel value="riLeft" escape="false" />
-                                </td>
+                                <h:outputLabel value="name" escape="false" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="cssTop" escape="false" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="riTop" escape="false" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="cssLeft" escape="false" />
+                            </td>
+                            <td>
+                                <h:outputLabel value="riLeft" escape="false" />
+                            </td>
                         </tr>
 
                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >

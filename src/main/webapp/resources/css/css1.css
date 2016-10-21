@@ -36,6 +36,11 @@ root {
     text-align: right;
     padding: 5px;
 }
+.numberColS {
+    width: 50px;
+    text-align: right;
+    padding: 2px;
+}
 
 .textCol {
     text-align: left;
