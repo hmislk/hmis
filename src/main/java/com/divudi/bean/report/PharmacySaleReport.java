@@ -41,6 +41,7 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.ItemsDistributors;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -78,6 +79,7 @@ public class PharmacySaleReport implements Serializable {
 
     Category category;
     Item item;
+    Vmp vmp;
     private Date fromDate;
     private Date toDate;
     List<String1Value6> saleValuesCash;
@@ -582,19 +584,21 @@ public class PharmacySaleReport implements Serializable {
     public List<BillItem> createSaleBillItems(BillType billType) {
         String sql;
         Map m = new HashMap();
-        m.put("d", getDepartment());
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("cl", PreBill.class);
         m.put("btp", billType);
         sql = "select i "
                 + " from BillItem i "
-                + " where i.bill.referenceBill.department=:d "
-                //                + " and i.retired=false "
-                + " and i.bill.retired=false "
+                + " where i.bill.retired=false "
                 + " and i.bill.billType=:btp "
                 + " and type(i.bill)!=:cl "
                 + " and i.bill.createdAt between :fd and :td ";
+        
+        if (department!=null) {
+            sql+=" and i.bill.referenceBill.department=:d ";
+            m.put("d", getDepartment());
+        }
 
         if (category != null) {
             sql += " and i.item.category=:cat";
@@ -604,6 +608,11 @@ public class PharmacySaleReport implements Serializable {
         if (item != null) {
             sql += " and i.item=:itm";
             m.put("itm", item);
+        }
+        
+        if (vmp != null) {
+            sql += " and i.item.vmp=:vmp";
+            m.put("vmp", vmp);
         }
 
         sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
@@ -5392,9 +5401,9 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public Department getDepartment() {
-        if (department == null) {
-            department = sessionController.getDepartment();
-        }
+//        if (department == null) {
+//            department = sessionController.getDepartment();
+//        }
 
         return department;
     }
@@ -6757,6 +6766,14 @@ public class PharmacySaleReport implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public Vmp getVmp() {
+        return vmp;
+    }
+
+    public void setVmp(Vmp vmp) {
+        this.vmp = vmp;
     }
 
 }

@@ -37,8 +37,21 @@
                         <p:column headerText="Item">
                             <h:outputLabel value="#{myItem.name}"></h:outputLabel>
                         </p:column>
+                        <p:column headerText="Gen">
+                            <h:outputLabel value="#{myItem.vmp.name}"></h:outputLabel>
+                        </p:column>
                         <p:column headerText="Code">
                             <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                        </p:column>
+                    </p:autoComplete>
+                    <h:outputLabel value="Genaric Name"/>
+                    <p:autoComplete value="#{pharmacySaleReport.vmp}" 
+                                    forceSelection="true"
+                                    style="min-width: 223px" 
+                                    completeMethod="#{ampController.completeVmpByName}" 
+                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                        <p:column headerText="Item">
+                            <h:outputLabel value="#{myItem.name}"></h:outputLabel>
                         </p:column>
                     </p:autoComplete>
                 </h:panelGrid>
@@ -78,6 +91,14 @@
 
                         </h:outputLabel>
                     </p:column>
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Genaric name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.item.vmp.name}">
+
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -94,7 +115,7 @@
                             <h:outputLabel value="Bill No"/>
                         </f:facet>
                         <h:outputLabel value="#{b.bill.deptId}"/>
-                        <h:outputLabel value="/#{b.bill.insId}" rendered="#{b.deptId eq null}"/>
+                        <h:outputLabel value="/#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                     </p:column>
                     <p:column>
                         <f:facet name="header">
