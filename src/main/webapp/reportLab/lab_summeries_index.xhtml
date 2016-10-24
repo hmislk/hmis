@@ -30,13 +30,13 @@
                                     </p:panelGrid>
                                 </p:panel>
                                 <p:panel header="2)Lab Summary Inward" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1)Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2)Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="3)Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="4)Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
+                                    <p:panelGrid columns="1" styleClass="alignTop">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="3)Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="4)Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
 
-                                </p:panelGrid>
+                                    </p:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1" >
@@ -72,10 +72,16 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="5)Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
                                     </p:panelGrid>
                                 </p:panel>
+                                <p:panel header="6)Income" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <p:panelGrid columns="1" styleClass="alignTop">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Report 1" action="income_summery"/> 
+                                        
+                                    </p:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
                         </h:panelGrid>
                     </p:panel> 
-                    
+
                 </h:form>
             </ui:define>
 
