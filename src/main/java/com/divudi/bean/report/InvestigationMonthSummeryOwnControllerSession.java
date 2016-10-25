@@ -465,39 +465,44 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     //getsummery type method
     public void createIncomeSummery() {
 
-        System.out.println("start summery method");
-        bills = new ArrayList<>();
-        incomeSummeryRows = new ArrayList<>();
         String sql = "";
         Map m = new HashMap();
-//        BillItem billItem = null;
-//        billItem.getBill().getBillType();
-        System.out.println("start if");
+        bills = new ArrayList<>();
+        incomeSummeryRows = new ArrayList<>();
+        grantTotal = 0.0;
+
         System.out.println("summeryType= " + summeryType);
         System.out.println("totalType= " + totalType);
         if (summeryType.equals("1")) {
-            sql = "select distinct(bi.item),count(bi),sum(bi.netValue) ";
+            sql = "select bi.item,count(bi),sum(bi.netValue) ";
         }
         if (summeryType.equals("2")) {
             if (totalType.equals("1")) {
-                sql = "select distinct(bi.bill.department),count(bi.bill),sum(bi.bill.netTotal) ";
+                sql = "select b.department,count(b),sum(b.netTotal) ";
             }
             if (totalType.equals("2")) {
-                sql = "select distinct(bi.bill.toDepartment),count(bi.bill),sum(bi.bill.netTotal) ";
+                sql = "select b.toDepartment,count(b),sum(b.netTotal) ";
             }
         }
+        
         if (summeryType.equals("3")) {
             sql += "select distinct(bi.bill) ";
         }
-        sql += "from BillItem bi where bi.retired=false "
+
+        if (summeryType.equals("2")) {
+            sql += "from Bill b where b.retired=false "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billType=:bt ";
+        } else {
+            sql += "from BillItem bi where bi.retired=false "
                 + " and bi.bill.createdAt between :fd and :td "
                 + " and bi.bill.billType=:bt ";
-        System.out.println("department = " + department.getName());
+        }
+
         if (!summeryType.equals("2")) {
             if (totalType.equals("1")) {
                 if (department != null) {
                     sql += " and bi.bill.department=:d ";
-
                     m.put("d", department);
                 }
             }
@@ -509,6 +514,21 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             }
         }
 
+        if (summeryType.equals("1")) {
+            sql += "group by bi.item"
+                    + " order by bi.item.name ";
+        }
+        if (summeryType.equals("2")) {
+            if (totalType.equals("1")) {
+                sql += "group by b.department"
+                        + " order by b.department.name ";
+            }
+            if (totalType.equals("2")) {
+                sql += "group by b.toDepartment"
+                        + " order by b.toDepartment.name ";
+            }
+        }
+
         m.put("bt", BillType.OpdBill);
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -517,11 +537,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         System.out.println("sql = " + sql);
 
         if (summeryType.equals("3")) {
-            bills = billFacade.findBySQL(sql, m);
-            System.out.println("bills.size() = " + bills.size());
+            bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+            for (Bill b : bills) {
+                grantTotal += b.getNetTotal();
+            }
+            System.err.println("bills.size() = " + bills.size());
         }
         if (!summeryType.equals("3")) {
-            List<Object[]> objects = billFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+            List<Object[]> objects = billFacade.findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
             System.out.println("objects.size() = " + objects.size());
             if (!objects.isEmpty()) {
                 for (Object[] ob : objects) {
@@ -546,26 +569,23 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                         row.setCount(count);
                         row.setNetValue(tot);
 
-                        System.out.println("item1 = " + row.getItem1());
-                        System.out.println("count = " + row.getCount());
-                        System.out.println("netvalue = " + row.getNetValue());
-
+                        grantTotal += row.getNetValue();
                         incomeSummeryRows.add(row);
                     }
 
                     if (summeryType.equals("2")) {
-                      long count = (long) ob[1];
-                      if (count == 0) {
+                        long count = (long) ob[1];
+                        if (count == 0) {
                             continue;
                         }
-                        
                         Department d = (Department) ob[0];
-
                         double tot = (double) ob[2];
+
                         row.setDept(d);
                         row.setCount(count);
                         row.setNetValue(tot);
 
+                        grantTotal += row.getNetValue();
                         incomeSummeryRows.add(row);
                     }
 
@@ -1609,6 +1629,10 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
+    }
+
+    public void listnerSummeryTpe() {
+        department = null;
     }
 
     public void setItemDetails(List<InvestigationSummeryData> itemDetails) {
