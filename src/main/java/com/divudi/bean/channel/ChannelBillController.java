@@ -18,6 +18,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Area;
@@ -126,6 +127,8 @@ public class ChannelBillController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    FinalVariables finalVariables;
     //////////////////////////////////
     @EJB
     private ServiceSessionBean serviceSessionBean;
@@ -1701,6 +1704,9 @@ public class ChannelBillController implements Serializable {
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
+        double tmpTotalNet = 0;
+        double tmpTotalVat = 0;
+        double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
         for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
             if (paymentMethod != PaymentMethod.Agent) {
@@ -1757,6 +1763,16 @@ public class ChannelBillController implements Serializable {
             } else {
                 bf.setFeeValue(f.getFee());
             }
+            
+            if (f.getFeeType() == FeeType.Staff) {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(bf.getFeeValue()*finalVariables.getVATPercentage());
+                bf.setFeeVatPlusValue(bf.getFeeValue()*finalVariables.getVATPercentageWithAmount());
+            } else {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(0.0);
+                bf.setFeeVatPlusValue(bf.getFeeValue());
+            }
 
             if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
@@ -1766,7 +1782,10 @@ public class ChannelBillController implements Serializable {
                 tmpDiscount += d;
             }
 
-            tmpTotal += bf.getFeeValue();
+            tmpTotal += bf.getFeeGrossValue();
+            tmpTotalVat += bf.getFeeVat();
+            tmpTotalVatPlusNet += bf.getFeeVatPlusValue();
+            tmpTotalNet += bf.getFeeValue();
 
 //            if (paymentMethod.equals(PaymentMethod.Credit)) {
 //                bf.setPaidValue(0.0);
@@ -1777,7 +1796,10 @@ public class ChannelBillController implements Serializable {
             billFeeList.add(bf);
         }
         bill.setDiscount(tmpDiscount);
-        bill.setNetTotal(tmpTotal);
+        bill.setNetTotal(tmpTotalNet);
+        bill.setTotal(tmpTotal);
+        bill.setVat(tmpTotalVat);
+        bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
         System.out.println("tmpDiscount = " + tmpDiscount);
         System.out.println("tmpTotal = " + tmpTotal);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
@@ -1785,7 +1807,10 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
-        billItem.setNetValue(tmpTotal);
+        billItem.setGrossValue(tmpTotal);
+        billItem.setNetValue(tmpTotalNet);
+        billItem.setVat(tmpTotalVat);
+        billItem.setVatPlusNetValue(tmpTotalVatPlusNet);
         System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
         getBillItemFacade().edit(billItem);
 
