@@ -653,7 +653,7 @@ public class BookingController implements Serializable {
                 + " and f.item=:ses ";
 
         if (paymentMethod == PaymentMethod.Agent) {
-            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.OtherInstitution};
+            FeeType[] fts1 = {FeeType.Staff};
             feeTypes = Arrays.asList(fts1);
             jpql += " and f.feeType in :fts1 "
                     + " and f.name!=:name";
@@ -800,7 +800,7 @@ public class BookingController implements Serializable {
                 + " and f.item=:ses ";
 
         if (paymentMethod == PaymentMethod.Agent) {
-            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.OtherInstitution};
+            FeeType[] fts1 = {FeeType.Staff};
             feeTypes = Arrays.asList(fts1);
             jpql += " and f.feeType in :fts1 "
                     + " and f.name!=:name";
