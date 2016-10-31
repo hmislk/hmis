@@ -24,13 +24,13 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete converter="webUs" completeMethod="#{channelReportController.reportKeyWord.webUser}" styleClass="noPrintButton"
+                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{commonReport.webUser}" ></p:autoComplete>
+                                        value="#{channelReportController.reportKeyWord.webUser}" ></p:autoComplete>
                         <h:outputLabel value="Session Date"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
-                        <h:outputLabel value="With Out Agency"/>
+                        <h:outputLabel value="Without Agency"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.agncyOnCall}" />
                     </h:panelGrid>
                     <h:panelGrid columns="3"> 
