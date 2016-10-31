@@ -2967,8 +2967,12 @@ public class ChannelReportController implements Serializable {
         channelBills = new ArrayList<>();
         institution = null;
 
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
-        List<BillType> bts = Arrays.asList(billTypes);
+        List<BillType> bts;
+        if (agncyOnCall) {
+            bts = Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid});
+        } else {
+            bts = Arrays.asList(new BillType[]{BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid});
+        }
         if (sessoinDate) {
             channelBills.addAll(channelBillListByBillType(false, new BilledBill(), bts, fromDate, toDate));
             channelBills.addAll(channelBillListByBillType(false, new CancelledBill(), bts, fromDate, toDate));
@@ -3094,6 +3098,11 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
+        if (reportKeyWord.getWebUser() != null) {
+            sql += " and b.creater=:user";
+            hm.put("user", reportKeyWord.getWebUser());
+        }
+
         sql += " order by b.createdAt ";
 
         hm.put("fDate", fd);
@@ -3188,6 +3197,11 @@ public class ChannelReportController implements Serializable {
         if (institution != null) {
             sql += " and b.institution=:ins ";
             hm.put("ins", institution);
+        }
+        
+        if (reportKeyWord.getWebUser() != null) {
+            sql += " and b.creater=:user";
+            hm.put("user", reportKeyWord.getWebUser());
         }
 
         hm.put("fDate", fd);

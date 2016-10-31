@@ -23,8 +23,15 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete converter="webUs" completeMethod="#{channelReportController.reportKeyWord.webUser}" styleClass="noPrintButton"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                        value="#{commonReport.webUser}" ></p:autoComplete>
                         <h:outputLabel value="Session Date"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <h:outputLabel value="With Out Agency"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.agncyOnCall}" />
                     </h:panelGrid>
                     <h:panelGrid columns="3"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllChannelBillReportForVat}">
@@ -61,14 +68,14 @@
                             <p:outputLabel value="#{b.insId}" />                                    
                             <p:outputLabel value="(#{b.billedBill.insId})" rendered="#{b.billedBill ne null}" />                                    
                         </p:column>
-                        
+
                         <p:column style="text-align: left;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Patient Name" />
                             </f:facet>
                             <p:outputLabel value="#{b.patient.person.name}" />                                    
                         </p:column>
-                        
+
                         <p:column style="text-align: left;" rendered="#{!channelReportController.sessoinDate}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Created Date" />
@@ -77,7 +84,7 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh:ss:mm a" />
                             </p:outputLabel>                                    
                         </p:column>
-                        
+
                         <p:column style="text-align: left;" rendered="#{channelReportController.sessoinDate}" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Session Date" />
