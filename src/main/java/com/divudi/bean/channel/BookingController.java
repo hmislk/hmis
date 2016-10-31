@@ -674,13 +674,13 @@ public class BookingController implements Serializable {
 
         Double obj2 = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
-        if (obj == null ) {
-            obj=0.0;
+        if (obj == null) {
+            obj = 0.0;
         }
         if (obj2 == null) {
-            obj2=0.0;
+            obj2 = 0.0;
         }
-        double d=obj+(obj2*finalVariables.getVATPercentageWithAmount());
+        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
 
         return d;
     }
@@ -762,7 +762,7 @@ public class BookingController implements Serializable {
 
         return obj;
     }
-    
+
     private double fetchForiegnFeeOnlyStaffVat(Item item, PaymentMethod paymentMethod) {
         String jpql;
         Map m = new HashMap();
@@ -821,13 +821,13 @@ public class BookingController implements Serializable {
 
         Double obj2 = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
-        if (obj == null ) {
-            obj=0.0;
+        if (obj == null) {
+            obj = 0.0;
         }
         if (obj2 == null) {
-            obj2=0.0;
+            obj2 = 0.0;
         }
-        double d=obj+(obj2*finalVariables.getVATPercentageWithAmount());
+        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
 
         return d;
     }
@@ -974,14 +974,14 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+            ss.setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
 //            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
 //            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
 //            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
 //            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
