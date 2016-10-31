@@ -974,12 +974,16 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
         }
