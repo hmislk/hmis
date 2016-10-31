@@ -991,12 +991,18 @@ public class ChannelBillController implements Serializable {
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
         double hf = 0.0;
         double sf = 0.0;
+        double total = 0.0;
+        double NetTotal = 0.0;
+        double vat = 0.0;
+        double vatplusNetTotal = 0.0;
         for (BillFee bf : billFees) {
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
                 newBf.copy(bf);
                 newBf.setFeeGrossValue(0 - bf.getTmpChangedValue());
                 newBf.setFeeValue(0 - bf.getTmpChangedValue());
+                newBf.setFeeVat(0 - bf.getFeeVat());
+                newBf.setFeeVatPlusValue(0 - (bf.getTmpChangedValue() + bf.getFeeVat()));
                 newBf.setBill(b);
                 newBf.setBillItem(bt);
                 newBf.setCreatedAt(new Date());
@@ -1012,13 +1018,25 @@ public class ChannelBillController implements Serializable {
                     bt.setHospitalFee(0 - bf.getTmpChangedValue());
                     hf += bt.getHospitalFee();
                 }
+                total += newBf.getFeeGrossValue();
+                NetTotal += newBf.getFeeValue() ;
+                vat += newBf.getFeeVat();
+                vatplusNetTotal += newBf.getFeeVatPlusValue();
 
             }
         }
         b.setHospitalFee(hf);
         b.setStaffFee(sf);
+        b.setVat(vat);
+        b.setVatPlusNetTotal(vatplusNetTotal);
+        b.setTotal(total);
+        b.setNetTotal(NetTotal);
         billFacade.edit(b);
-
+        
+        bt.setGrossValue(total);
+        bt.setNetValue(NetTotal);
+        bt.setVat(vat);
+        bt.setVatPlusNetValue(vatplusNetTotal);
         billItemFacade.edit(bt);
     }
 
@@ -1036,7 +1054,7 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getTmpChangedValue() != null) {
-                refundableTotal += bf.getTmpChangedValue();
+                refundableTotal += bf.getTmpChangedValue() + bf.getFeeVat();
             }
         }
     }
@@ -1763,11 +1781,11 @@ public class ChannelBillController implements Serializable {
             } else {
                 bf.setFeeValue(f.getFee());
             }
-            
+
             if (f.getFeeType() == FeeType.Staff) {
                 bf.setFeeGrossValue(bf.getFeeValue());
-                bf.setFeeVat(bf.getFeeValue()*finalVariables.getVATPercentage());
-                bf.setFeeVatPlusValue(bf.getFeeValue()*finalVariables.getVATPercentageWithAmount());
+                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
             } else {
                 bf.setFeeGrossValue(bf.getFeeValue());
                 bf.setFeeVat(0.0);

@@ -129,17 +129,17 @@ public class FinalVariables {
 
     public double getVATPercentage() {
         //VAT 15% Only Vat Value
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             return 0.15;
 //            return 0;
         } else {
             return 0;
         }
     }
-    
+
     public double getVATPercentageWithAmount() {
         //VAT 15% With Total
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             return 1.15;
 //            return 1;
         } else {
