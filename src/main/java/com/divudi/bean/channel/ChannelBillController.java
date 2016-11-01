@@ -1019,7 +1019,7 @@ public class ChannelBillController implements Serializable {
                     hf += bt.getHospitalFee();
                 }
                 total += newBf.getFeeGrossValue();
-                NetTotal += newBf.getFeeValue() ;
+                NetTotal += newBf.getFeeValue();
                 vat += newBf.getFeeVat();
                 vatplusNetTotal += newBf.getFeeVatPlusValue();
 
@@ -1032,7 +1032,7 @@ public class ChannelBillController implements Serializable {
         b.setTotal(total);
         b.setNetTotal(NetTotal);
         billFacade.edit(b);
-        
+
         bt.setGrossValue(total);
         bt.setNetValue(NetTotal);
         bt.setVat(vat);
@@ -1455,8 +1455,10 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
-                System.out.println("getArea().getName() = " + getArea().getName());
-                getNewPatient().getPerson().setArea(getArea());
+                if (getArea() != null) {
+                    System.out.println("getArea().getName() = " + getArea().getName());
+                    getNewPatient().getPerson().setArea(getArea());
+                }
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
