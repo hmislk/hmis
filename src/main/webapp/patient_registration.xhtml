@@ -47,7 +47,7 @@
                                                         var="apt" itemLabel="#{apt.person.name}" 
                                                         itemValue="#{apt}" size="30"  style="width: 400px;"
                                                         >
-                                          <p:column headerText="Name">
+                                            <p:column headerText="Name">
                                                 <h:outputLabel value="#{apt.person.nameWithTitle}" />
                                             </p:column>
 
@@ -81,6 +81,19 @@
                                     </h:panelGrid>
 
                                 </p:panel>
+
+                                <p:panel>
+                                    <p:commandButton id="btnAddNewDoc" type="button" value="Add New Member" onclick="dlg.show();"  process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+
+                                    <p:panelGrid columns="3">
+                                        <p:dialog id="panDoc" header="Membership Registration" widgetVar="dlg" resizable="false" >
+                                            <h:panelGrid columns="2" style="margin-bottom:10px;">
+                                                <h:outputText id="name" value="Name"/>
+                                                <h:inputText autocomplete="off" id="memName"></h:inputText>
+                                            </h:panelGrid>
+                                        </p:dialog>
+                                    </p:panelGrid>
+                                </p:panel> 
 
                             </h:panelGroup>
 
