@@ -1566,6 +1566,12 @@ public class StaffSalaryController implements Serializable {
                 System.out.println("****lastAnalyseDate = " + lastAnalyseDate);
                 System.out.println("****s.getDateLeft() = " + s.getDateLeft());
                 System.out.println("getCurrent().getStaff().getDateLeft() = " + getCurrent().getStaff().getDateLeft());
+                if (s.isWithOutNotice()) {
+                    System.err.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    JsfUtil.addErrorMessage("This Employe Resingned Without Notice."
+                                + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
+                    continue;
+                }
                 if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
