@@ -20,6 +20,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -85,6 +86,7 @@ public class CommonReport1 implements Serializable {
     private BillsTotals inwardPaymentCancel;
     //////////////////    
     private List<String1Value1> dataTableData;
+    List<DocTotal> docTotals;
     ///
     List<Bill> biledBills;
     List<Bill> cancelBills;
@@ -98,7 +100,7 @@ public class CommonReport1 implements Serializable {
     double netTotal;
 
     Doctor referringDoctor;
-    
+
     boolean onlyOPD;
 
     public Doctor getReferringDoctor() {
@@ -395,10 +397,44 @@ public class CommonReport1 implements Serializable {
 
         biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
-            biledBillsTotal += bi.getNetValue();
+            biledBillsTotal += bi.getNetValue()+bi.getVat();
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
+
+    }
+
+    public void listBillItemsByReferringDoctorSummery() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals=new ArrayList<>();
+
+        sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and b.createdAt between :fromDate and :toDate  "
+                + " and b.billType=:bt "
+                + " group by b.referredBy "
+                + " order by b.referredBy.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.OpdBill);
+
+        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        biledBillsTotal = 0.0;
+        for (Object[] o : objects) {
+            Doctor d= (Doctor) o[0];
+            double tot = (double) o[1];
+            DocTotal row=new DocTotal();
+            row.setDoctor(d);
+            row.setTotal(tot);
+            docTotals.add(row);
+            biledBillsTotal += tot;
+        }
+        System.out.println("docTotals.size() = " + docTotals.size());
 
     }
 
@@ -1507,7 +1543,7 @@ public class CommonReport1 implements Serializable {
         } else {
             sql += " and b.paymentScheme is not null ";
         }
-        
+
         sql += " order by b.paymentScheme.name ";
 
         m.put("fromDate", getFromDate());
@@ -1529,7 +1565,7 @@ public class CommonReport1 implements Serializable {
                 + " and b.institution=:ins "
                 + " and b.paymentScheme=:ps "
                 + " and b.createdAt between :fromDate and :toDate";
-        
+
         if (ps != null) {
             sql += " and b.paymentScheme=:ps ";
             m.put("ps", ps);
@@ -1545,7 +1581,7 @@ public class CommonReport1 implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void createWithCreditbyDepartmentBilled() {
         Date startTime = new Date();
 
@@ -1558,9 +1594,9 @@ public class CommonReport1 implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Income Report/With credit/By department(/faces/reportIncome/report_income_with_credit_by_department.xhtml)");
     }
-    
+
     public List<Bill> getLabBillsOwnBilled() {
-        List<BillType> billTypes ;
+        List<BillType> billTypes;
         if (onlyOPD) {
             billTypes = Arrays.asList(new BillType[]{BillType.OpdBill});
         } else {
@@ -1582,11 +1618,11 @@ public class CommonReport1 implements Serializable {
         System.out.println("tm = " + tm);
         System.out.println("sql = " + sql);
 
-        return  getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        return getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
     }
-    
+
     public void getLabBillsOwnBilledTotals() {
-        List<BillType> billTypes ;
+        List<BillType> billTypes;
         if (onlyOPD) {
             billTypes = Arrays.asList(new BillType[]{BillType.OpdBill});
         } else {
@@ -1606,21 +1642,44 @@ public class CommonReport1 implements Serializable {
         tm.put("dep", getDepartment());
         System.out.println("tm = " + tm);
         System.out.println("sql = " + sql);
-        
-        Object[]ob=(Object[]) getBillFacade().findAggregates(sql, tm, TemporalType.TIMESTAMP).get(0);
+
+        Object[] ob = (Object[]) getBillFacade().findAggregates(sql, tm, TemporalType.TIMESTAMP).get(0);
         System.out.println("ob = " + ob);
-        
-        if (ob!=null) {
-            total=(double) ob[0];
+
+        if (ob != null) {
+            total = (double) ob[0];
             System.out.println("total = " + total);
-            discount=(double) ob[1];
+            discount = (double) ob[1];
             System.out.println("discount = " + discount);
-            staffTotal=(double) ob[2];
+            staffTotal = (double) ob[2];
             System.out.println("staffTotal = " + staffTotal);
-            netTotal=(double) ob[3];
+            netTotal = (double) ob[3];
             System.out.println("netTotal = " + netTotal);
         }
 
+    }
+
+    public class DocTotal {
+
+        Doctor doctor;
+        double total;
+
+        public Doctor getDoctor() {
+            return doctor;
+        }
+
+        public void setDoctor(Doctor doctor) {
+            this.doctor = doctor;
+        }
+
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
     }
 
     public void setDataTableData(List<String1Value1> dataTableData) {
@@ -1811,6 +1870,14 @@ public class CommonReport1 implements Serializable {
 
     public void setStaffTotal(double staffTotal) {
         this.staffTotal = staffTotal;
+    }
+
+    public List<DocTotal> getDocTotals() {
+        return docTotals;
+    }
+
+    public void setDocTotals(List<DocTotal> docTotals) {
+        this.docTotals = docTotals;
     }
 
 }
