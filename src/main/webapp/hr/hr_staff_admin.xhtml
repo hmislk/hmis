@@ -30,7 +30,7 @@
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </p:inputText>
 
-                                    <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; ">
+                                    <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
                                         <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.name}(#{myItem.code})" ></f:selectItems>
                                         <p:ajax event="change" process="lstSelect" update="gpDetail panelPrint" listener="#{staffController.changeStaff()}"/>                                        
                                     </p:selectOneListbox>
@@ -50,7 +50,7 @@
 
                             </p:panel>
 
-                            <p:panel >
+                            <p:panel rendered="false" >
                                 <h:panelGrid columns="1" >
                                     <p:commandButton value="Reset Working Hour" action="#{staffController.resetWorkingHour()}" ajax="false" />
                                     <p:commandButton value="Reset Late and Early Allowed" action="#{staffController.resetLateInEarlyOutLeaveAllowed()}" ajax="false" />
@@ -101,12 +101,21 @@
 
                                             <p:outputLabel  value="Name with Initials" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.nameWithInitials}"  styleClass="longText" />
-                                            
+
                                             <p:outputLabel  value="Last Name" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.person.lastName}"   styleClass="longText"/>
 
                                             <p:outputLabel  value="NIC No" ></p:outputLabel>
                                             <p:inputText autocomplete="off" value="#{staffController.current.person.nic}" />
+
+                                            <p:outputLabel  value="Mobile" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" value="#{staffController.current.person.mobile}" />
+
+                                            <p:outputLabel  value="Home" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" value="#{staffController.current.person.phone}" />
+
+                                            <p:outputLabel  value="Email" ></p:outputLabel>
+                                            <p:inputText autocomplete="off" value="#{staffController.current.person.email}" />
 
                                             <p:outputLabel  value="Address" ></p:outputLabel>
                                             <p:inputTextarea  value="#{staffController.current.person.address}"  styleClass="longText"  />
@@ -144,8 +153,20 @@
                                             <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
                                             </p:calendar>
 
+                                            <p:outputLabel value="Resigned Without Notice"/>
+                                            <p:selectBooleanCheckbox value="#{staffController.current.withOutNotice}" >
+                                                <f:ajax event="change" execute="@this" render="cal" listener="#{staffController.listenerWithNotice}"/>
+                                            </p:selectBooleanCheckbox>
+
+                                            <p:outputLabel value="Resigned With Notice Date"/>
+                                            <p:calendar id="cal" value="#{staffController.current.dateWithOutNotice}" pattern="dd MM yyyy" disabled="#{staffController.current.withOutNotice}" />
+
+                                            <p:outputLabel value="Date Resigned "/>
+                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
+                                            </p:calendar>
+
                                             <p:outputLabel value="Date Retired "/>
-                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" >
+                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" disabled="true" >
                                             </p:calendar>
 
                                             <p:outputLabel value="Speciality" />
@@ -266,6 +287,11 @@
                                                 <f:selectItem itemLabel="Please Staff Designation"/>
                                                 <f:selectItems value="#{designationController.items}" var="i" itemValue="#{i}" itemLabel="#{i.name}"/>
                                             </p:selectOneMenu>
+                                            <h:outputText  value="Roster" ></h:outputText>
+                                            <p:selectOneMenu  value="#{staffController.current.roster}" disabled="true" >
+                                                <f:selectItem itemLabel="Select Roster"/>
+                                                <f:selectItems value="#{rosterController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                            </p:selectOneMenu>
 
                                             <p:separator/>
                                             <p:separator/>
@@ -286,6 +312,8 @@
                                             <autocomplete:completeBank_Branch value="#{staffController.current.bankBranch}"/>                                           
                                             <p:outputLabel  value="Account No" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  value="#{staffController.current.accountNo}" styleClass="mediuminput"  />
+                                            <p:outputLabel  value="Memo" ></p:outputLabel>
+                                            <p:inputTextarea  value="#{staffController.current.person.description}"  styleClass="longText"  />
                                             <p:separator/>
                                             <p:separator/>
                                             <p:outputLabel value="Working Time Per Week in Hour (For Over Time)"/>                                                                                     

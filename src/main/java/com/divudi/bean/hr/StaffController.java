@@ -13,6 +13,7 @@ import com.divudi.bean.common.FormItemValue;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.Sex;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.SalaryPaymentFrequency;
@@ -45,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -311,7 +313,7 @@ public class StaffController implements Serializable {
     public void createActiveStaffTable(Date ssDate) {
         Date startTime = new Date();
         Date toDate = null;
-        
+
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
         String sql = "select ss from Staff ss "
@@ -364,7 +366,7 @@ public class StaffController implements Serializable {
         System.out.println("staffWithCode.size() = " + staffWithCode.size());
         System.out.println("selectedStaffes.size() = " + selectedStaffes.size());
         fetchWorkDays(staffWithCode);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff payrol(selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
     }
 
@@ -495,7 +497,7 @@ public class StaffController implements Serializable {
         //System.out.println(sql);
         //System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
 
     }
@@ -1031,6 +1033,30 @@ public class StaffController implements Serializable {
 //        }
         getCurrent().chageCodeToInteger();
 
+        if (getCurrent().getPerson().getDob() != null && getCurrent().getPerson().getSex() != null) {
+            System.out.println("getCurrent().getPerson().getSex() = " + getCurrent().getPerson().getSex());
+            System.out.println("getCurrent().getPerson().getDob() = " + getCurrent().getPerson().getDob());
+            Calendar dob = Calendar.getInstance();
+            dob.setTime(getCurrent().getPerson().getDob());
+            System.out.println("dob.get(Calendar.YEAR) = " + dob.get(Calendar.YEAR));
+            Calendar dor = Calendar.getInstance();
+            dor.setTime(getCurrent().getPerson().getDob());
+            if (getCurrent().getPerson().getSex() == Sex.Female) {
+                dor.set(Calendar.YEAR, (dob.get(Calendar.YEAR) + 50));
+            }
+            if (getCurrent().getPerson().getSex() == Sex.Male) {
+                dor.set(Calendar.YEAR, (dob.get(Calendar.YEAR) + 55));
+            }
+            if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
+                System.out.println("dor.get(Calendar.YEAR) = " + dor.get(Calendar.YEAR));
+                getCurrent().setDateRetired(dor.getTime());
+                System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
+            }
+        }
+        if (getCurrent().isWithOutNotice()) {
+            getCurrent().setDateWithOutNotice(null);
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
@@ -1141,6 +1167,12 @@ public class StaffController implements Serializable {
             getCurrent().getStaffEmployment().getStaffDesignations().add(tmp);
         }
 
+    }
+    
+    public void listenerWithNotice(){
+        if (getCurrent().isWithOutNotice()) {
+            getCurrent().setDateWithOutNotice(null);
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -1414,6 +1446,5 @@ public class StaffController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }
