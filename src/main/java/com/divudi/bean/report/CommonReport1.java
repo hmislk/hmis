@@ -494,6 +494,40 @@ public class CommonReport1 implements Serializable {
 
     }
 
+    public void listBillItemsByReferringDoctorSummery() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals=new ArrayList<>();
+
+        sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and b.createdAt between :fromDate and :toDate  "
+                + " and b.billType=:bt "
+                + " group by b.referredBy "
+                + " order by b.referredBy.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.OpdBill);
+
+        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        biledBillsTotal = 0.0;
+        for (Object[] o : objects) {
+            Doctor d= (Doctor) o[0];
+            double tot = (double) o[1];
+            DocTotal row=new DocTotal();
+            row.setDoctor(d);
+            row.setTotal(tot);
+            docTotals.add(row);
+            biledBillsTotal += tot;
+        }
+        System.out.println("docTotals.size() = " + docTotals.size());
+
+    }
+
     public List<Bill> getBillsByCollectingOwn() {
 
         Map temMap = new HashMap();
