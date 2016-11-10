@@ -18,12 +18,13 @@
                     <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete styleClass="noPrintButton"  
+                                    value="#{pharmacySaleReport.department}"  
+                                    completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
                     <h:outputLabel  rendered="true" value="Category"/>
                     <p:autoComplete rendered="true" styleClass="noPrintButton" 
                                     value="#{pharmacySaleReport.category}"  
-                                    style="text-align: left; margin: 5px; padding: 5px;"  
                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
                                     var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
                                     forceSelection="true"  >
@@ -31,14 +32,26 @@
                     <h:outputLabel value="Item"/>
                     <p:autoComplete value="#{pharmacySaleReport.item}" 
                                     forceSelection="true"
-                                    style="min-width: 223px" 
                                     completeMethod="#{ampController.completeAmpByName}" 
                                     var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                         <p:column headerText="Item">
                             <h:outputLabel value="#{myItem.name}"></h:outputLabel>
                         </p:column>
+                        <p:column headerText="Gen">
+                            <h:outputLabel value="#{myItem.vmp.name}"></h:outputLabel>
+                        </p:column>
                         <p:column headerText="Code">
                             <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                        </p:column>
+                    </p:autoComplete>
+                    <h:outputLabel value="Genaric Name"/>
+                    <p:autoComplete value="#{pharmacySaleReport.vmp}" 
+                                    forceSelection="true"
+                                    style="min-width: 223px" 
+                                    completeMethod="#{ampController.completeVmpByName}" 
+                                    var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                        <p:column headerText="Item">
+                            <h:outputLabel value="#{myItem.name}"></h:outputLabel>
                         </p:column>
                     </p:autoComplete>
                 </h:panelGrid>
@@ -78,6 +91,15 @@
 
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Genaric name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.item.vmp.name}">
+
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -94,7 +116,7 @@
                             <h:outputLabel value="Bill No"/>
                         </f:facet>
                         <h:outputLabel value="#{b.bill.deptId}"/>
-                        <h:outputLabel value="/#{b.bill.insId}" rendered="#{b.deptId eq null}"/>
+                        <h:outputLabel value="/#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                     </p:column>
                     <p:column>
                         <f:facet name="header">
@@ -159,6 +181,15 @@
 
                         </h:outputLabel>
                     </p:column>
+                    
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Genaric name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.item.vmp.name}">
+
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -174,8 +205,8 @@
                         <f:facet name="header">
                             <h:outputLabel value="Bill No"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.deptId}"/>
-                        <h:outputLabel value="#{b.insId}" rendered="#{b.deptId eq null}"/>
+                        <h:outputLabel value="#{b.bill.deptId}"/>
+                        <h:outputLabel value="#{b.bill.insId}" rendered="#{b.bill.deptId eq null}"/>
                     </p:column>
                     <p:column>
                         <f:facet name="header">

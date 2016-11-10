@@ -17,11 +17,12 @@
                 <h:panelGrid columns="3" styleClass="alignTop">
                     <p:panel header="Staff"  id="staff">
                         <h:outputLabel value="Select Staff"/>
-
                         <p:autoComplete  forceSelection="true" 
-                                          completeMethod="#{staffController.completeStaffCode}"  var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
+                                         value="#{staffChangeController.staff}"
+                                         completeMethod="#{staffController.completeStaffCode}"  
+                                         var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                          converter="stfcon"   >   
-                            <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic}" />
+                            <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonController.currentDateTime)}" />
                             <p:column headerText="Name">
                                 #{mys.person.name}
                             </p:column>
@@ -87,12 +88,12 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j1.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j1.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>                            
                         </p:column>
                         <p:column headerText="Department">
@@ -109,12 +110,12 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j2.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j2.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>  
                         </p:column>
                         <p:column headerText="Employee Status">
@@ -131,12 +132,12 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j3.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j3.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>  
                         </p:column>
                         <p:column headerText="Category">
@@ -153,12 +154,12 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j4.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j4.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>  
                         </p:column>
                         <p:column headerText="Grade">
@@ -175,12 +176,12 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j5.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j5.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>  
                         </p:column>
                         <p:column headerText="Designation">
@@ -197,16 +198,16 @@
                         </f:facet>
                         <p:column headerText="From" >
                             <h:outputLabel  value="#{j6.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" >
                             <h:outputLabel  value="#{j6.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yy"/>
+                                <f:convertDateTime pattern="yyyy MMM dd"/>
                             </h:outputLabel>  
                         </p:column>
                         <p:column headerText="Basic">
-                            <h:outputLabel value="#{j6.staffPaySheetComponentValue}"/>
+                            <h:outputLabel value="#{j6.basic.staffPaySheetComponentValue}"/>
                         </p:column>
                         <p:column headerText="Change User">
                             <h:outputLabel value="#{j6.creater.webUserPerson.name}"/>
