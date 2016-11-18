@@ -32,6 +32,8 @@
                                         value="#{serviceSummery.category}" >                                    
                             <p:column>#{pta.name}</p:column>
                         </p:autoComplete>
+                        <h:outputText value="Only Credit" ></h:outputText>
+                        <p:selectBooleanCheckbox value="#{serviceSummery.credit}" />
                     </h:panelGrid>
                     <h:panelGrid columns="5" styleClass="noPrintButton">
                         <p:spacer width="190" height="1"/>

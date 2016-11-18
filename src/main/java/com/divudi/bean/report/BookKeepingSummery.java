@@ -2595,11 +2595,11 @@ public class BookKeepingSummery implements Serializable {
                 }
 
             } else if (bct == BillClassType.BilledBill) {
-                if (countBilled == 0) {
+                if (countBilled == 0 || countBilled < count) {
                     countBilled = count;
                 }
                 //System.out.println("billed = " + countBilled);
-            } else if (countCancelled == 0) {
+            } else if (countCancelled == 0 || countCancelled < count) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
 

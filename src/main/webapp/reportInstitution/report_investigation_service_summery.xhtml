@@ -15,9 +15,9 @@
 
             <p:panel>
                 <f:facet name="header" > 
-                   
-                        <h:outputLabel value="Invesstigation Detail OPD"/>
-                         
+
+                    <h:outputLabel value="Invesstigation Detail OPD"/>
+
                     <h:panelGrid columns="2" styleClass="noPrintButton">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy  HH:mm:ss" >
@@ -39,17 +39,18 @@
                             <p:column>
                                 #{ix.category.name}
                             </p:column>
-                            
+
                             <p:column>
                                 #{ix.category.parentCategory.name}
                             </p:column> 
-                            
-                        </p:autoComplete>
 
+                        </p:autoComplete>
+                        <h:outputText value="Only Credit" ></h:outputText>
+                        <p:selectBooleanCheckbox value="#{serviceSummery.credit}" />
 
                     </h:panelGrid>
-                        <h:panelGrid columns="5">
-                            <p:spacer width="200" height="1"/>
+                    <h:panelGrid columns="5">
+                        <p:spacer width="200" height="1"/>
                         <p:commandButton id="btnRefresh" value="Refresh" ajax="false" 
                                          styleClass="noPrintButton"  
                                          action="#{serviceSummery.createInvestigationSummery()}"/>
@@ -77,7 +78,7 @@
                          rowsPerPageTemplate="5,10,15,20">                   
 
                 <f:facet name="header">
-                    
+
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
                     <h:outputLabel value="&emsp;&emsp;From :  "/>
                     <h:outputLabel value="#{serviceSummery.fromDate}">
@@ -171,7 +172,7 @@
                         </h:outputLabel>
                     </f:facet>
                 </p:column>    
-                
+
                 <p:column headerText="Vat Fee" style="text-align: right;">
                     <f:facet name="header">
                         <p:outputLabel value="Vat Fee"/>
