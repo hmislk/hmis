@@ -53,15 +53,15 @@
                                          colCredit,
                                          outside:outside,
                                          pharmacy:pharmacy,
-                                         pharmacyc:pharmacyc,
                                          pharmacyws:pharmacyws,
-                                         pharmacywsc:pharmacywsc,
                                          inward:inward,                                     
                                          col,
                                          opd_professional:opd_professional,
                                          opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,                                     
-                                         finalSum" 
+                                         finalSum,
+                                         pharmacywsc:pharmacywsc,
+                                         pharmacyc:pharmacyc" 
                                          fileName="Book_Keeping_Summery_with_pro_day"
                                          facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
@@ -76,7 +76,7 @@
             <in:opd_new_with id="opd_new" />
 
             <p:spacer height="30"/>
-            
+
             <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -91,13 +91,13 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
-            
+
             <p:spacer height="30"/>
 
             <in:opd_new_with_1 id="opd_new_credit" />
 
             <p:spacer height="30"/>
-            
+
             <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -112,7 +112,7 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
-            
+
             <p:spacer height="30"/>
 
             <in:outside_with id="outside" />
@@ -123,7 +123,7 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+            <!--<in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>-->
 
             <p:spacer height="30"/>
 
@@ -131,7 +131,7 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+            <!--<in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>-->
 
             <p:spacer height="30"/>
 
@@ -154,7 +154,7 @@
             <in:opd_professional_payment id="opd_professional"/>  
 
             <p:spacer height="30"/>
-            
+
             <in:opd_professional_payment_credit id="opd_professional_credit"/>  
 
             <p:spacer height="30"/>
@@ -194,12 +194,17 @@
                 <p:column style="text-align: right;" >
                     <h:outputLabel value="......................." />
                 </p:column>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
             </p:dataTable>
 
+            <!--credit area-->
+            <p:spacer height="30"/>
+            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+            <p:spacer height="30"/>
+            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
 
+            <f:facet name="footer" >
+                <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+            </f:facet>
         </h:form>
     </ui:define>
 

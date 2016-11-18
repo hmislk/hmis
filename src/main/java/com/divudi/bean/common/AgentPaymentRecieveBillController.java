@@ -109,8 +109,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
             UtilityController.addErrorMessage("Select Agency");
             return true;
         }
-
+        System.out.println("getAmount() = " + getAmount());
         if (getAmount() < 0.0) {
+            System.out.println("getAmount() = " + getAmount());
             UtilityController.addErrorMessage("Please Enter Correct Value");
             return true;
         }
@@ -190,7 +191,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(getAmount());
-        channelAgencyCreditDebitNote(BillType.AgentCreditNoteBill, HistoryType.ChannelCreditNote, BillNumberSuffix.AGNCN);
+        creditDebitNote(BillType.AgentCreditNoteBill, HistoryType.ChannelCreditNote, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNCN);
 
     }
 
@@ -200,23 +201,40 @@ public class AgentPaymentRecieveBillController implements Serializable {
         }
         getCurrent().setPaymentMethod(PaymentMethod.Slip);
         getCurrent().setNetTotal(0 - getAmount());
-        channelAgencyCreditDebitNote(BillType.AgentDebitNoteBill, HistoryType.ChannelDebitNote, BillNumberSuffix.AGNDN);
+        creditDebitNote(BillType.AgentDebitNoteBill, HistoryType.ChannelDebitNote, HistoryType.AgentBalanceUpdateBill, BillNumberSuffix.AGNDN);
 
     }
 
-    private void channelAgencyCreditDebitNote(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix) {
+    public void collectingCenterCreditNoteSettleBill() {
+        if (errorCheckCreditNoteDebitNote()) {
+            return;
+        }
+        getCurrent().setPaymentMethod(PaymentMethod.Slip);
+        getCurrent().setNetTotal(getAmount());
+        creditDebitNote(BillType.CollectingCentreCreditNoteBill, HistoryType.CollectingCentreCreditNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCCN);
 
-        settleBill(billType, historyType, HistoryType.AgentBalanceUpdateBill, billNumberSuffix);
+    }
+
+    public void collectingCenterDebitNoteSettleBill() {
+        if (errorCheckCreditNoteDebitNote()) {
+            return;
+        }
+        getCurrent().setPaymentMethod(PaymentMethod.Slip);
+        getCurrent().setNetTotal(0 - getAmount());
+        creditDebitNote(BillType.CollectingCentreDebitNoteBill, HistoryType.CollectingCentreDebitNote, HistoryType.CollectingCentreBalanceUpdateBill, BillNumberSuffix.CCDN);
+
+    }
+
+    private void creditDebitNote(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
+
+        settleBill(billType, historyType, updatHistoryType, billNumberSuffix);
 
     }
 
     public void settleBill(BillType billType, HistoryType historyType, HistoryType updatHistoryType, BillNumberSuffix billNumberSuffix) {
-        if (getCurrent().getNetTotal()<=0.0) {
-            JsfUtil.addErrorMessage("Please Enter Correct Amount");
-            return;
-        }
         addToBill();
-        if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)) {
+        if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
+                && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
             System.out.println("billType = " + billType);
             if (errorCheck()) {
                 return;

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                template="/resources/template/template.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:form>
+            <h:outputStylesheet library="css" name="printing.css" />
+
+            <p:panel id="panelReport" styleClass="noBorder summeryBorder">
+
+                <f:facet name ="header" >
+
+                    <h:outputLabel styleClass="noPrintButton"  value="Income Report" />
+
+                    <h:panelGrid columns="2" styleClass="noPrintButton">
+
+                        <h:outputLabel value="From" />
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+                        <h:outputLabel value="To" />
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+                        <h:outputLabel  value="Department" />
+                        <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.department}" 
+                                        style="text-align: left; margin: px; padding: 0px;" 
+                                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                                        itemLabel="#{dept.name}" forceSelection="true" rendered="true"
+                                        requiredMessage="You must select a department" >
+                        </p:autoComplete>
+                        <h:outputLabel  value="Only OPD Income" />
+                        <p:selectBooleanCheckbox value="#{commonReport1.onlyOPD}" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="5">
+                        <p:spacer width="70" height="1"/>
+                        <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" 
+                                         action="#{commonReport1.createWithCreditbyDepartmentBilled()}">
+                        </p:commandButton>
+                        <p:defaultCommand target="btnRefresh"/>
+
+                        <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                            <p:printer target="panelReport" />
+                        </p:commandButton> 
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </f:facet>
+                <p:dataTable id="tbl" value="#{commonReport1.biledBills}" var="b" >
+
+                    <f:facet name="header">
+                        <h:outputLabel value="Income Report With Credit By Department :"/>
+                        <h:outputLabel value="#{commonReport1.department.name}"  />
+                        <h:outputLabel value="From : " style="white-space: pre-line"/>
+                        <h:outputLabel value="#{commonReport1.fromDate}"  >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                        </h:outputLabel>
+                        <h:outputLabel value="&emsp; &emsp;To : "  />
+                        <h:outputLabel value="#{commonReport1.toDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                        </h:outputLabel>
+                    </f:facet>
+
+                    <p:column headerText="BillId" >
+                        <f:facet name="header">
+                            <h:outputLabel value="BillId"/>
+                        </f:facet>
+                        <p:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
+
+                        <p:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                    </p:column>
+
+                    <p:column headerText="Date and Time" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Date and Time"/>
+                        </f:facet>
+                        <p:outputLabel value="#{b.createdAt}" >
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss a"/>
+                        </p:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Name" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.patient.person.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Hospital Fee" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Hospital Fee"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.total - b.staffFee}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{commonReport1.total-commonReport1.staffTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Dis." style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Dis."/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.discount}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{commonReport1.discount}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Prof. Fee" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Prof. Fee"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.staffFee}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{commonReport1.staffTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <p:column headerText="Net Total" style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Net Total"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.netTotal}" >
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{commonReport1.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    <f:facet name="footer" >
+                        <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                    </f:facet>
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+
+</ui:composition>
+

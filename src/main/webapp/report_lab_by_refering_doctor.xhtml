@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <p:panel header="Report by Refering Doctor">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Report by Refering Doctor"/>
+                    </f:facet>
+
+
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{commonReport1.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </p:calendar>
+                        <h:outputLabel value="Referring Doctor"/>
+                        <p:autoComplete forceSelection="true" id="cmbDoc" value="#{commonReport1.referringDoctor}"
+                                        completeMethod="#{doctorController.completeDoctor}"
+                                        var="ix"
+                                        itemLabel="#{ix.person.name}" 
+                                        itemValue="#{ix}" 
+                                        style="width: 400px;">
+                        </p:autoComplete>
+
+                        <h:outputText value="Department" ></h:outputText>
+                        <p:autoComplete value="#{commonReport1.department}"
+                                        completeMethod="#{departmentController.completeDept}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"
+                                        style="width: 400px;"></p:autoComplete>
+
+                    </h:panelGrid>
+                    <h:panelGrid columns="4">
+                        <p:spacer height="1" width="110"/>
+                        <p:commandButton value="Process"
+                                         ajax="false" style="float: right;"
+                                         styleClass="noPrintButton"
+                                         action="#{commonReport1.listBillItemsByReferringDoctor}"
+                                         />
+                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="tbl" fileName="Report by Referring Doctor"
+                                         facetBackground="#008000" facetFontSize="15" 
+                                         facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
+                                         fontName="Courier New"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel  id="panelPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" 
+                                 rowStyleClass="#{d.bill.billClassType eq 'CancelledBill' or d.bill.billClassType eq 'RefundBill' ? 'redText':''}" 
+                                 >
+                        <f:facet name="header">
+                            <h:outputLabel value="Requests by Referring Doctor "/>
+                            <p:outputLabel value=" - #{commonReport1.referringDoctor.person.name}" rendered="#{commonReport1.referringDoctor ne null}" />
+                            <br></br>
+                            <h:outputLabel value="From " />
+                            <h:outputLabel  value="#{commonReport1.fromDate}">
+                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                            <h:outputLabel value=" - " />
+                            <h:outputLabel value="#{commonReport1.toDate}">
+                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
+                            </h:outputLabel>
+                        </f:facet>
+
+                        <p:column headerText="Bill No" 
+                                  sortBy="#{d.bill.insId}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Bill No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.bill.insId}"/>
+                            <h:outputLabel value=" - #{d.bill.billedBill.insId}" rendered="#{d.bill.billedBill ne null}"/>
+                            <f:facet name="footer">
+                                <h:outputLabel value="Total"/>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Referring Doctor" rendered="#{commonReport1.referringDoctor eq null}" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Referring Doctor" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.bill.referredBy.person.name}"/>
+                        </p:column>
+
+
+                        <p:column headerText="Date/Time" 
+                                  sortBy="#{d.bill.createdAt}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Date/Time"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.bill.createdAt}">
+                                <f:convertDateTime pattern="yyyy MMM dd hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </p:column>
+
+
+                        <p:column headerText="Item" sortBy="#{d.item.name}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Item"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.item.name}">
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Net Value" styleClass="numberCol" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Net Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.netValue}">
+                                <f:convertNumber pattern="#,###,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel  value="#{commonReport1.biledBillsTotal}" style="float: right;">
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>        
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

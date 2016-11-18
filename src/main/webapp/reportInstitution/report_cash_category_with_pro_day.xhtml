@@ -45,14 +45,11 @@
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="opd_new:opd_new,
                                          colCash,
-                                         opd_new_credit:opd_new_credit,
                                          colCredit,
                                          outside:outside,
                                          pharmacy:pharmacy,
-                                         pharmacyc:pharmacyc,
                                          pharmacyws:pharmacyws,
                                          pharmacywsc:pharmacywsc,
-                                         pharmacyWholeSale:pharmacyWholeSale,
                                          inward_collection:inward_collection,
                                          agent_collection:agent_collection,
                                          credit_collection:credit_collection,
@@ -64,10 +61,13 @@
                                          opd_professional_credit:opd_professional_credit,
                                          inward_professional:inward_professional,
                                          credit_card:credit_card,
-                                         slip:slip,
                                          cheque:cheque,
                                          finalSum,
-                                         bnkDiposit"
+                                         bnkDiposit,
+                                         slip:slip,
+                                         opd_new_credit:opd_new_credit,
+                                         pharmacyc:pharmacyc,
+                                         pharmacyWholeSale:pharmacyWholeSale"
                                          fileName="Book_Keeping_Summery_with_pro_day"
                                          facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
                                          fontName="Courier New"  />
@@ -79,9 +79,9 @@
             <!--            <p:spacer height="30" />-->
 
             <in:opd_new_with id="opd_new" />
-            
+
             <p:spacer height="30"/>
-            
+
             <p:dataTable id="colCash"  value="#{bookKeepingSummery.vatTableOpdCash}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -99,10 +99,10 @@
 
             <p:spacer height="30"/>
 
-            <in:opd_new_with_1 id="opd_new_credit" />
+            <!--<in:opd_new_with_1 id="opd_new_credit" />-->
 
             <p:spacer height="30"/>
-            
+
             <p:dataTable id="colCredit"  value="#{bookKeepingSummery.vatTableOpdCredit}" var="sm">
                 <p:column >
                     <h:outputLabel value="#{sm.string}" ></h:outputLabel>
@@ -117,7 +117,7 @@
                     </h:outputLabel>
                 </p:column>
             </p:dataTable>
-            
+
             <p:spacer height="30"/>
 
             <in:outside_with id="outside" />
@@ -128,7 +128,7 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+            <!--<in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>-->
 
             <p:spacer height="30"/>
 
@@ -136,7 +136,7 @@
 
             <p:spacer height="30"/>
 
-            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+            <!--<in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>-->
 
             <p:spacer height="30"/>
 
@@ -165,12 +165,12 @@
                 id="credit_collection_inward"/>
 
             <p:spacer height="30"/>
-            
+
             <in:credit_collection_pharmacy 
                 id="credit_collection_pharmacy"/>
 
             <p:spacer height="30"/>
-            
+
             <in:credit_collection_pharmacy_old 
                 id="credit_collection_pharmacy_old"/>
 
@@ -195,7 +195,7 @@
             <in:opd_professional_payment id="opd_professional"/> 
 
             <p:spacer height="30"/>
-            
+
             <in:opd_professional_payment_credit id="opd_professional_credit"/> 
 
             <p:spacer height="30"/>
@@ -205,10 +205,6 @@
             <p:spacer height="30"/>
 
             <in:credit_card_bills id="credit_card"/>
-
-            <p:spacer height="30"/>
-
-            <in:slip_bills id="slip"/>
 
             <p:spacer height="30"/>
 
@@ -481,10 +477,24 @@
                                 <p:column style="text-align: right;" >
                                     <h:outputLabel value="......................." />
                                 </p:column>-->
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By :#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+
             </p:dataTable>
+
+            <!--slip area-->
+            <p:spacer height="30"/>
+
+            <in:slip_bills id="slip"/>
+
+            <!--credit area-->
+            <p:spacer height="30"/>
+            <in:opd_new_with_1 id="opd_new_credit" />
+            <p:spacer height="30"/>
+            <in:pharmacy id="pharmacyc" pharmacy="#{bookKeepingSummery.pharmacySalesCredit}" credit="true"/>
+            <p:spacer height="30"/>
+            <in:pharmacy id="pharmacywsc" pharmacy="#{bookKeepingSummery.pharmacyWholeSalesCredit}" wholeSale="true" credit="true"/>
+            <f:facet name="footer" >
+                <h:outputLabel value="Printed By :#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+            </f:facet>
 
         </h:form>
     </ui:define>

@@ -19,11 +19,13 @@ td{
 	text-align: right;
 }
 .doc-spe{
-	font-size: 28px;
+	font-size: 25px;
 	font-weight: normal;
-}
+}       
 .gray-row .doc-spe{
 	color: #5b5b5b;
+     
+        
 }
 /* .gray-row .doctor-time{
 	text-align: left;
@@ -34,7 +36,7 @@ td{
     color: #fff;
     display: inline-block;
     font-size: 24px;
-    padding: 15px 35px;
+    padding: 4px 35px;
     text-transform: uppercase;
 }
 .not-available .doctor-name{
@@ -56,4 +58,8 @@ table{
 .no-padding{
 	padding-left: 0;
 	padding-right: 0;
+}
+/*slider changes*/
+.doctor-name {
+    font-size: 30px;
 }

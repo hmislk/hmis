@@ -45,6 +45,8 @@ public enum BillType {
     AgentCreditNoteBill,
     AgentDebitNoteBill,
     CollectingCentrePaymentReceiveBill,
+    CollectingCentreCreditNoteBill,
+    CollectingCentreDebitNoteBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,
@@ -55,6 +57,7 @@ public enum BillType {
     @Deprecated
     PharmacyBhtIssue,
     PharmacyBhtPre,
+    InwardPharmacyRequest,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,
@@ -142,7 +145,7 @@ public enum BillType {
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyWholeSale:
-                return "Purchase Wholesale";
+                return "Pharmacy Wholesale";
             case PharmacyWholesalePre:
                 return "Purchase Wholsesale (Pre)";
             case PharmacyOrderApprove:

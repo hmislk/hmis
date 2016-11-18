@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.memberShip;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PaymentMethod;
@@ -16,6 +17,7 @@ import com.divudi.entity.memberShip.AllowedPaymentMethod;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.PaymentSchemeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -194,9 +196,28 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public void saveSelectedAllowedPaymentMethod() {
+        
+        System.out.println("getCurrentAllowedPaymentMethod().getPaymentMethod() = " + getCurrentAllowedPaymentMethod().getPaymentMethod());
+        if (getCurrentAllowedPaymentMethod().getPaymentMethod()==null) {
+            JsfUtil.addErrorMessage("Please Select Payment Methord");
+            return;
+        }
 
-        getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
-        getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
+        System.out.println("getCurrent() = " + getCurrent());
+        if (getCurrent() != null) {
+            if (getCurrent().getId() != null) {
+                getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
+                System.out.println("getCurrent().getName() = " + getCurrent().getName());
+            }
+        }
+        System.out.println("getMembershipScheme() = " + getMembershipScheme());
+        if (getMembershipScheme() != null) {
+            if (getMembershipScheme().getId() != null) {
+                getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
+                System.out.println("getMembershipScheme().getName() = " + getMembershipScheme().getName());
+            }
+        }
+        
 
         if (getCurrentAllowedPaymentMethod().getId() != null && getCurrentAllowedPaymentMethod().getId() > 0) {
             getAllowedPaymentMethodFacade().edit(getCurrentAllowedPaymentMethod());
@@ -271,7 +292,7 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getItems() {
-        if(items==null){
+        if (items == null) {
             createPaymentSchemes();
         }
         return items;
@@ -285,16 +306,16 @@ public class PaymentSchemeController implements Serializable {
                 + " order by i.orderNo, i.name";
         items = getFacade().findBySQL(temSql);
     }
-    
-    public List<PaymentScheme> getPaymentSchemesForChannel(){
+
+    public List<PaymentScheme> getPaymentSchemesForChannel() {
         return createPaymentSchemes(false, false, true);
     }
-    
-    public List<PaymentScheme> getPaymentSchemesForOPD(){
+
+    public List<PaymentScheme> getPaymentSchemesForOPD() {
         return createPaymentSchemes(true, false, false);
     }
-    
-    public List<PaymentScheme> getPaymentSchemesForPharmacy(){
+
+    public List<PaymentScheme> getPaymentSchemesForPharmacy() {
         return createPaymentSchemes(false, true, false);
     }
 
@@ -312,9 +333,9 @@ public class PaymentSchemeController implements Serializable {
         if (opd) {
             temSql += " and i.validForBilledBills=true ";
         }
-        
+
         temSql += " order by i.orderNo, i.name";
-        
+
         return getFacade().findBySQL(temSql);
     }
 

@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:panelGroup>
+
+            <h:form id="form1">
+                <p:panel header="Get Income Summery">
+
+                    <h:panelGrid columns="2">
+
+                        <h:outputLabel   value="From Date" />
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+
+                        <h:outputLabel   value="To Date" />
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>  
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pan1">
+                        <p:outputLabel value="Select the summery type:" />
+                        <h:selectOneRadio value="#{investigationMonthSummeryOwnControllerSession.summeryType}" >
+                            <f:selectItem itemLabel="As Items" itemValue="1" />
+                            <f:selectItem itemLabel="As Departments" itemValue="2" />
+                            <f:selectItem itemLabel="As Bills" itemValue="3" />
+                            <f:ajax event="change" execute="@this" render="pan pan2" listener="#{investigationMonthSummeryOwnControllerSession.listnerSummeryTpe}"/>
+                        </h:selectOneRadio>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pan" >
+                        <p:outputLabel value="Department:" rendered="#{investigationMonthSummeryOwnControllerSession.summeryType ne '2'}"/>
+                        <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{investigationMonthSummeryOwnControllerSession.department}"  rendered="#{investigationMonthSummeryOwnControllerSession.summeryType ne '2'}"
+                                        style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
+                            <f:ajax event="itemSelect" execute="@this pan2" render="pan2" />
+                            <f:ajax event="blur" execute="@this pan2" render="pan2" />
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pan2">
+                        <p:outputLabel value="Get total:" />
+                        <h:selectOneRadio value="#{investigationMonthSummeryOwnControllerSession.totalType}" disabled="#{investigationMonthSummeryOwnControllerSession.department eq null and investigationMonthSummeryOwnControllerSession.summeryType ne '2'}">
+                            <f:selectItem itemLabel="As Billed Department" itemValue="1" />
+                            <f:selectItem itemLabel="As Income Department" itemValue="2" />
+                        </h:selectOneRadio>
+                    </h:panelGrid>
+                    <p:commandButton value="Process" ajax="false" action="#{investigationMonthSummeryOwnControllerSession.createIncomeSummery()}"/>
+                    <p:commandButton id="print" value="Print">
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
+                        <pe:exporter type="xlsx" target="tbl,tbl1" fileName="income_summery" />
+                    </p:commandButton>
+                    <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                        <p:dataTable id="tbl" value="#{investigationMonthSummeryOwnControllerSession.bills}" var="b" rowIndexVar="i" rendered="#{investigationMonthSummeryOwnControllerSession.summeryType eq '3'}">
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.deptId}"/>
+                            </p:column>
+                            <p:column sortBy="#{b.department.name}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Department"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.department.name}"/>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="To Department"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.toDepartment.name}"/>
+                            </p:column>
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="To Institution"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.institution.name}"/>
+                            </p:column>
+                            <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Institution"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.toInstitution.name}"/>
+                            </p:column>
+                            <p:column sortBy="#{b.paymentMethod}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Payment Methord"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.paymentMethod}"/>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Total"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Discount"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.discount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Net Total"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.grantTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+                        <p:dataTable id="tbl1" value="#{investigationMonthSummeryOwnControllerSession.incomeSummeryRows}" var="isr" rowIndexVar="i" 
+                                     rendered="#{investigationMonthSummeryOwnControllerSession.summeryType ne '3'}">
+                            <p:column style="width: 20px;" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column rendered="#{investigationMonthSummeryOwnControllerSession.summeryType eq '1'}" sortBy="#{isr.item1.name}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Item"/>
+                                </f:facet>
+                                <p:outputLabel value="#{isr.item1.name}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
+
+                            <p:column rendered="#{investigationMonthSummeryOwnControllerSession.summeryType eq '2'}" sortBy="#{isr.dept.name}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Department"/>
+                                </f:facet>
+                                <p:outputLabel value="#{isr.dept.name}"/>
+                            </p:column>
+<!--                            <p:column style="width: 50px;" sortBy="#{isr.count}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Count"/>
+                                </f:facet>
+                                <p:outputLabel value="#{isr.count}" style="float: right;"/>
+                            </p:column>-->
+
+                            <p:column styleClass="numberCol" sortBy="#{isr.netValue}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Net Value"/>
+                                </f:facet>
+                                <p:outputLabel value="#{isr.netValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{investigationMonthSummeryOwnControllerSession.grantTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+
+
+</ui:composition>

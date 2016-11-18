@@ -49,6 +49,9 @@ public class Item implements Serializable, Comparable<Item> {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
+    
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    List<ItemFee> itemFeesAuto;
 
     static final long serialVersionUID = 1L;
 
@@ -167,6 +170,15 @@ public class Item implements Serializable, Comparable<Item> {
     String reserveName;
     String reserveNumbers;
     int maxTableRows;
+    
+    @Transient
+    double channelStaffFee;
+    @Transient
+    double channelHosFee;
+    @Transient
+    double channelAgentFee;
+    @Transient
+    double channelOnCallFee;
 
     public double getVatPercentage() {
         if(vatable && vatPercentage==0.0){
@@ -326,6 +338,14 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFfee;
     @Transient
     List<ItemFee> itemFees;
+
+    public List<ItemFee> getItemFeesAuto() {
+        return itemFeesAuto;
+    }
+
+    public void setItemFeesAuto(List<ItemFee> itemFeesAuto) {
+        this.itemFeesAuto = itemFeesAuto;
+    }
 
     public List<ItemFee> getItemFees() {
         if (itemFees == null) {
@@ -898,6 +918,70 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public double getChannelStaffFee() {
+        if (!itemFeesAuto.isEmpty()) {
+            channelStaffFee=0.0;
+            for (ItemFee i : itemFeesAuto) {
+                if (i.getName().equals("Doctor Fee")) {
+                    channelStaffFee+=i.fee;
+                }
+            }
+        }
+        return channelStaffFee;
+    }
+
+    public void setChannelStaffFee(double channelStaffFee) {
+        this.channelStaffFee = channelStaffFee;
+    }
+
+    public double getChannelHosFee() {
+        if (!itemFeesAuto.isEmpty()) {
+            channelHosFee=0.0;
+            for (ItemFee i : itemFeesAuto) {
+                if (i.getName().equals("Hospital Fee")||i.getName().equals("Scan Fee")) {
+                    channelHosFee+=i.fee;
+                }
+            }
+        }
+        return channelHosFee;
+    }
+
+    public void setChannelHosFee(double channelHosFee) {
+        this.channelHosFee = channelHosFee;
+    }
+
+    public double getChannelAgentFee() {
+        if (!itemFeesAuto.isEmpty()) {
+            channelAgentFee=0.0;
+            for (ItemFee i : itemFeesAuto) {
+                if (i.getName().equals("Agency Fee")) {
+                    channelAgentFee+=i.fee;
+                }
+            }
+        }
+        return channelAgentFee;
+    }
+
+    public void setChannelAgentFee(double channelAgentFee) {
+        this.channelAgentFee = channelAgentFee;
+    }
+
+    public double getChannelOnCallFee() {
+        if (!itemFeesAuto.isEmpty()) {
+            channelOnCallFee=0.0;
+            for (ItemFee i : itemFeesAuto) {
+                if (i.getName().equals("On-Call Fee")) {
+                    channelOnCallFee+=i.fee;
+                }
+            }
+        }
+        return channelOnCallFee;
+    }
+
+    public void setChannelOnCallFee(double channelOnCallFee) {
+        this.channelOnCallFee = channelOnCallFee;
     }
 
     @Override

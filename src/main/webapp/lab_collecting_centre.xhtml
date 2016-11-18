@@ -98,6 +98,13 @@
                                     <h:outputText id="lblAcc" value="Account No" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtAcc" value="#{collectingCentreController.current.accountNo}"  ></p:inputText>
 
+                                    <h:outputText value="Creater" ></h:outputText>
+                                    <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
+                                    
+                                    <h:outputText value="Created At" ></h:outputText>
+                                    <h:outputText value="#{collectingCentreController.current.createdAt}" >
+                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                     </h:outputText>
                                 </h:panelGrid>
                             </p:panel>
                         </p:panel>

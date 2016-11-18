@@ -616,6 +616,75 @@ public class BookingController implements Serializable {
         return obj;
     }
 
+    private double fetchLocalFeeOnlyStaffVat(Item item, PaymentMethod paymentMethod) {
+        String jpql;
+        Map m = new HashMap();
+        List<FeeType> feeTypes = Arrays.asList(new FeeType[]{FeeType.Service, FeeType.OwnInstitution});
+        jpql = "Select sum(f.fee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.OtherInstitution};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+            }
+        }
+        m.put("ses", item);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
+
+        feeTypes = Arrays.asList(new FeeType[]{FeeType.Staff});
+        jpql = "Select sum(f.fee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Staff};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+            }
+        }
+        m.put("ses", item);
+
+        Double obj2 = getItemFeeFacade().findDoubleByJpql(jpql, m);
+
+        if (obj == null) {
+            obj = 0.0;
+        }
+        if (obj2 == null) {
+            obj2 = 0.0;
+        }
+        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+
+        return d;
+    }
+
     private Object[] fetchLocalForiegnFeeById(Long l, PaymentMethod paymentMethod) {
         String jpql;
         Map m = new HashMap();
@@ -692,6 +761,75 @@ public class BookingController implements Serializable {
         }
 
         return obj;
+    }
+
+    private double fetchForiegnFeeOnlyStaffVat(Item item, PaymentMethod paymentMethod) {
+        String jpql;
+        Map m = new HashMap();
+        List<FeeType> feeTypes = Arrays.asList(new FeeType[]{FeeType.Service, FeeType.OwnInstitution});
+        jpql = "Select sum(f.ffee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Service, FeeType.OwnInstitution, FeeType.OtherInstitution};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+            }
+        }
+        m.put("ses", item);
+        Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
+
+        feeTypes = Arrays.asList(new FeeType[]{FeeType.Staff});
+        jpql = "Select sum(f.ffee)"
+                + " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item=:ses ";
+
+        if (paymentMethod == PaymentMethod.Agent) {
+            FeeType[] fts1 = {FeeType.Staff};
+            feeTypes = Arrays.asList(fts1);
+            jpql += " and f.feeType in :fts1 "
+                    + " and f.name!=:name";
+            m.put("name", "On-Call Fee");
+            m.put("fts1", feeTypes);
+        } else {
+            if (paymentMethod == PaymentMethod.OnCall) {
+                jpql += " and f.feeType in :fts2 ";
+                m.put("fts2", feeTypes);
+            } else {
+                jpql += " and f.feeType in :fts3 "
+                        + " and f.name!=:name";
+                m.put("name", "On-Call Fee");
+                m.put("fts3", feeTypes);
+            }
+        }
+        m.put("ses", item);
+
+        Double obj2 = getItemFeeFacade().findDoubleByJpql(jpql, m);
+
+        if (obj == null) {
+            obj = 0.0;
+        }
+        if (obj2 == null) {
+            obj2 = 0.0;
+        }
+        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+
+        return d;
     }
 
     private List<ItemFee> fetchFee(Item item) {
@@ -836,12 +974,16 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+            ss.setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+//            ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
-            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
-            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+            ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+            ss.getOriginatingSession().setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+//            ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
+//            ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod) * finalVariables.getVATPercentageWithAmount());
             ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill
         }

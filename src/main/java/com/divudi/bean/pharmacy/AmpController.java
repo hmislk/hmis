@@ -363,6 +363,23 @@ public class AmpController implements Serializable {
         }
         return ampList;
     }
+    
+    public List<Vmp> completeVmpByName(String qry) {
+
+        List<Vmp> vmps=new ArrayList<>();
+        Map m = new HashMap();
+        m.put("n", "%" + qry + "%");
+        m.put("dep", DepartmentType.Store);
+        if (qry != null) {
+            vmps = getVmpFacade().findBySQL("select c from Vmp c where "
+                    + " c.retired=false and"
+                    + " (c.departmentType is null"
+                    + " or c.departmentType!=:dep )and "
+                    + "(upper(c.name) like :n ) order by c.name", m, 30);
+            ////System.out.println("a size is " + a.size());
+        }
+        return vmps;
+    }
 
     public void prepareAddNewVmp() {
         addingVtmInVmp = new VtmsVmps();

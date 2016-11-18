@@ -1156,14 +1156,16 @@ public class SearchController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("ins", getSessionController().getInstitution());
+        m.put("dep", getSessionController().getDepartment());
         String sql;
 
         sql = "Select b from Bill b "
                 + " where b.retired=false "
-                + "  and b.billedBill is null "
+                + " and b.billedBill is null "
                 + " and b.createdAt between :fd and :td "
                 + " and b.billType=:bt"
                 + " and b.institution=:ins "
+                + " and b.department=:dep "
                 + " and type(b)=:class ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -1675,6 +1677,80 @@ public class SearchController implements Serializable {
 
         for (Bill b : bills) {
             b.setListOfBill(getIssudBills(b));
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+
+    }
+    
+    public void createInwardBHTRequestTable() {
+        Date startTime = new Date();
+
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.InwardPharmacyRequest);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.department=:dep "
+                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and ((upper(b.insId) like :billNo ) or (upper(b.deptId) like :billNo )) ";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  (upper(b.patientEncounter.bhtNo) like :bht )";
+            tmp.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getBHTIssudBills(b));
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+
+    }
+    
+    public void createInwardBHTForIssueTable() {
+        Date startTime = new Date();
+
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.InwardPharmacyRequest);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.toDepartment=:toDep"
+                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and ((upper(b.insId) like :billNo ) or (upper(b.deptId) like :billNo )) ";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  (upper(b.patientEncounter.bhtNo) like :bht )";
+            tmp.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getBHTIssudBills(b));
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
@@ -2572,6 +2648,17 @@ public class SearchController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyTransferIssue);
+        return getBillFacade().findBySQL(sql, hm);
+    }
+    
+    private List<Bill> getBHTIssudBills(Bill b) {
+        String sql = "Select b From Bill b where b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.referenceBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyBhtPre);
+        System.out.println("getBillFacade().findBySQL(sql, hm) = " + getBillFacade().findBySQL(sql, hm));
         return getBillFacade().findBySQL(sql, hm);
     }
 
@@ -5379,6 +5466,18 @@ public class SearchController implements Serializable {
         createAgentPaymentTable(BillType.AgentDebitNoteBill);
 
     }
+    
+    public void createCollectingCenterCreditNoteTable() {
+
+        createAgentPaymentTable(BillType.CollectingCentreCreditNoteBill);
+
+    }
+
+    public void createCollectingCenterDebitNoteTable() {
+
+        createAgentPaymentTable(BillType.CollectingCentreDebitNoteBill);
+
+    }
 
     public void createCollectingCentrePaymentTable() {
         Date startTime = new Date();
@@ -6196,12 +6295,17 @@ public class SearchController implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and (b.patient.person.phone is not null "
-                + " or b.patient.person.phone!=:em) "
-                + " order by b.patient.person.phone ";
-//                + " and b.createdAt between :fd and :td  ";
+                + " or b.patient.person.phone!=:em) ";
+
+        if (isPatientPanelVisible()) {
+            sql += " and b.createdAt between :fd and :td  ";
+            temMap.put("fd", fromDate);
+            temMap.put("td", toDate);
+        }
+
+        sql += " order by b.patient.person.phone ";
 //
-//        temMap.put("fd", fromDate);
-//        temMap.put("td", toDate);
+
         temMap.put("em", "");
 
 //        bills=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -6213,7 +6317,14 @@ public class SearchController implements Serializable {
         for (Object o : objs) {
             String s = (String) o;
             if (s != null && !"".equals(s)) {
-                telephoneNumbers.add(s);
+                String ss = s.substring(0, 3);
+//                System.out.println("ss = " + ss);
+                if (ss.equals("077") || ss.equals("076")
+                        || ss.equals("071") || ss.equals("072")
+                        || ss.equals("075") || ss.equals("078")) {
+                    telephoneNumbers.add(s);
+                }
+
             }
         }
 
@@ -6222,13 +6333,6 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-        for (String stn : selectedTelephoneNumbers) {
-            
-           if(selectedTelephoneNumbers != null){
-           
-           }
-            
-        }
 
         String sendingNo = uniqueSmsText;
         if (sendingNo.contains("077") || sendingNo.contains("076")
@@ -6265,6 +6369,59 @@ public class SearchController implements Serializable {
         } catch (Exception ex) {
             ex.printStackTrace();
             return;
+        }
+
+    }
+
+    public void sendSmsAll() {
+        System.out.println("selectedTelephoneNumbers.size() = " + selectedTelephoneNumbers.size());
+        if (selectedTelephoneNumbers==null) {
+            JsfUtil.addErrorMessage("Please Select Numbers");
+            return;
+        }
+        if (selectedTelephoneNumbers.size()>10000) {
+            JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+            return;
+        }
+        for (String stn : selectedTelephoneNumbers) {
+
+            String sendingNo = stn;
+            if (sendingNo.contains("077") || sendingNo.contains("076")
+                    || sendingNo.contains("071") || sendingNo.contains("072")
+                    || sendingNo.contains("075") || sendingNo.contains("078")) {
+            } else {
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder(sendingNo);
+            sb.deleteCharAt(3);
+            sendingNo = sb.toString();
+
+            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
+            HttpResponse<String> stringResponse;
+            String pw = "&q=14488825498722";
+
+            String messageBody2 = smsText;
+
+            System.out.println("messageBody2 = " + messageBody2.length());
+
+            final StringBuilder request = new StringBuilder(url);
+            request.append(sendingNo.substring(1, 10));
+            request.append(pw);
+
+            try {
+                System.out.println("pw = " + pw);
+                System.out.println("sendingNo = " + sendingNo);
+                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
+                System.out.println("text = " + messageBody2);
+
+                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return;
+            }
+
         }
 
     }

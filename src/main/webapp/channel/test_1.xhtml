@@ -48,12 +48,12 @@
 
                                     <div class="table-responsive">
 
-                                        <table class="table">
+                                        <table class="table col-sm-4 ">
                                             <tbody>
                                                 <ui:repeat value="#{ll.table1}" var="d" >
-                                                    <tr class="green-row">
+                                                    <tr class="green-row"  >
                                                         <td class="doctor-name">
-                                                            #{d.s.person.name}<br></br>
+                                                            #{d.s.person.name}<br/>
                                                             <span class="doc-spe">#{d.s.speciality.name}</span>
                                                         </td>
                                                         <td class="doctor-time">
@@ -74,11 +74,11 @@
 
                                     </div>
                                 </div>
-                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" >
 
-                                    <div class="table-responsive">
+                                    <div class="table-responsive" >
 
-                                        <table class="table">
+                                        <table class="table col-md-4 "  >
                                             <tbody>
                                                 <ui:repeat value="#{ll.table2}" var="d" >
                                                     <tr class="green-row">
@@ -86,18 +86,17 @@
                                                             #{d.s.person.name}<br></br>
                                                             <span class="doc-spe">#{d.s.speciality.name}</span>
                                                         </td>
-                                                        <td class="doctor-time">
+                                                        <td class="doctor-time " >
                                                             <p:outputLabel value="#{d.time}" rendered="#{d.time ne null and d.leave eq false}" style="font-size: 24px;" />
                                                             <p:outputLabel value=" - #{d.timeEnd}" rendered="#{d.timeEnd ne null and d.leave eq false}" style="font-size: 24px;" />
                                                             <h:panelGrid rendered="#{d.leave eq true}" >
                                                                 <span class="doc-inout">On Leave</span>
                                                             </h:panelGrid>
                                                             <h:panelGrid rendered="#{d.time eq null}" >
-                                                                <span class="not-available-in">Not Available Today</span>
+                                                                <span class="not-available-in" style="width: 30px;">Not Available Today</span>
                                                             </h:panelGrid>
                                                         </td>
                                                     </tr>
-
                                                 </ui:repeat>
                                             </tbody>
                                         </table>

@@ -102,6 +102,7 @@ public class ServiceSummery implements Serializable {
     double vatFeeTotal;
 
     boolean onlyInwardBills;
+    boolean credit = false;
 
     List<String1Value5> string1Value5;
 
@@ -113,7 +114,7 @@ public class ServiceSummery implements Serializable {
     ItemFeeFacade itemFeeFacade;
     @EJB
     FeeFacade feeFacade;
-    
+
     List<BillItem> billItems;
 
     List<Staff> staffs;
@@ -177,14 +178,21 @@ public class ServiceSummery implements Serializable {
         }
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
+
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -217,14 +225,21 @@ public class ServiceSummery implements Serializable {
         }
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
+
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -470,14 +485,21 @@ public class ServiceSummery implements Serializable {
                 + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
+
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -578,15 +600,22 @@ public class ServiceSummery implements Serializable {
                 + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
 
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
+
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -1590,15 +1619,21 @@ public class ServiceSummery implements Serializable {
                 + " and bi.item.category=:cat";
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
 
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -1667,15 +1702,21 @@ public class ServiceSummery implements Serializable {
                 + " and bi.bill.toInstitution=:ins ";
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
 
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -1708,15 +1749,21 @@ public class ServiceSummery implements Serializable {
                 + " and bi.billItem.item.category=:cat";
 
         if (billType != BillType.InwardBill) {
-            sql += " and ( bi.bill.paymentMethod = :pm1 "
-                    + " or  bi.bill.paymentMethod = :pm2 "
-                    + " or  bi.bill.paymentMethod = :pm3"
-                    + " or  bi.bill.paymentMethod = :pm4) ";
+            if (credit) {
+                sql += " and bi.bill.paymentMethod = :pm ";
 
-            temMap.put("pm1", PaymentMethod.Cash);
-            temMap.put("pm2", PaymentMethod.Card);
-            temMap.put("pm3", PaymentMethod.Cheque);
-            temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm", PaymentMethod.Credit);
+            } else {
+                sql += " and ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) ";
+
+                temMap.put("pm1", PaymentMethod.Cash);
+                temMap.put("pm2", PaymentMethod.Card);
+                temMap.put("pm3", PaymentMethod.Cheque);
+                temMap.put("pm4", PaymentMethod.Slip);
+            }
 
         }
 
@@ -2114,6 +2161,14 @@ public class ServiceSummery implements Serializable {
 
     public void setVatFeeTotal(double vatFeeTotal) {
         this.vatFeeTotal = vatFeeTotal;
+    }
+
+    public boolean isCredit() {
+        return credit;
+    }
+
+    public void setCredit(boolean credit) {
+        this.credit = credit;
     }
 
 }

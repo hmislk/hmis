@@ -18,6 +18,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Area;
@@ -126,6 +127,8 @@ public class ChannelBillController implements Serializable {
     AgentHistoryFacade agentHistoryFacade;
     @EJB
     AgentReferenceBookFacade agentReferenceBookFacade;
+    @EJB
+    FinalVariables finalVariables;
     //////////////////////////////////
     @EJB
     private ServiceSessionBean serviceSessionBean;
@@ -781,7 +784,7 @@ public class ChannelBillController implements Serializable {
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
                 if (cancelPaymentMethod == PaymentMethod.Agent) {
-                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
+                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()+bill.getVat()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
                 }
             }
 
@@ -988,12 +991,18 @@ public class ChannelBillController implements Serializable {
     private void createReturnBillFee(List<BillFee> billFees, Bill b, BillItem bt) {
         double hf = 0.0;
         double sf = 0.0;
+        double total = 0.0;
+        double NetTotal = 0.0;
+        double vat = 0.0;
+        double vatplusNetTotal = 0.0;
         for (BillFee bf : billFees) {
             if (bf.getTmpChangedValue() != null && bf.getTmpChangedValue() != 0) {
                 BillFee newBf = new BillFee();
                 newBf.copy(bf);
                 newBf.setFeeGrossValue(0 - bf.getTmpChangedValue());
                 newBf.setFeeValue(0 - bf.getTmpChangedValue());
+                newBf.setFeeVat(0 - bf.getFeeVat());
+                newBf.setFeeVatPlusValue(0 - (bf.getTmpChangedValue() + bf.getFeeVat()));
                 newBf.setBill(b);
                 newBf.setBillItem(bt);
                 newBf.setCreatedAt(new Date());
@@ -1009,13 +1018,25 @@ public class ChannelBillController implements Serializable {
                     bt.setHospitalFee(0 - bf.getTmpChangedValue());
                     hf += bt.getHospitalFee();
                 }
+                total += newBf.getFeeGrossValue();
+                NetTotal += newBf.getFeeValue();
+                vat += newBf.getFeeVat();
+                vatplusNetTotal += newBf.getFeeVatPlusValue();
 
             }
         }
         b.setHospitalFee(hf);
         b.setStaffFee(sf);
+        b.setVat(vat);
+        b.setVatPlusNetTotal(vatplusNetTotal);
+        b.setTotal(total);
+        b.setNetTotal(NetTotal);
         billFacade.edit(b);
 
+        bt.setGrossValue(total);
+        bt.setNetValue(NetTotal);
+        bt.setVat(vat);
+        bt.setVatPlusNetValue(vatplusNetTotal);
         billItemFacade.edit(bt);
     }
 
@@ -1033,7 +1054,7 @@ public class ChannelBillController implements Serializable {
         refundableTotal = 0;
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getTmpChangedValue() != null) {
-                refundableTotal += bf.getTmpChangedValue();
+                refundableTotal += bf.getTmpChangedValue() + bf.getFeeVat();
             }
         }
     }
@@ -1434,8 +1455,10 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
-                System.out.println("getArea().getName() = " + getArea().getName());
-                getNewPatient().getPerson().setArea(getArea());
+                if (getArea() != null) {
+                    System.out.println("getArea().getName() = " + getArea().getName());
+                    getNewPatient().getPerson().setArea(getArea());
+                }
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
@@ -1483,7 +1506,7 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
-        bookingController.generateSessions();
+        bookingController.generateSessionsOnlyIdNew();
         //********************retier bill,billitem,billsession***********************************************
         if (errorCheckAfterSaveBill(printingBill)) {
 
@@ -1701,6 +1724,9 @@ public class ChannelBillController implements Serializable {
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
+        double tmpTotalNet = 0;
+        double tmpTotalVat = 0;
+        double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
         for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
             if (paymentMethod != PaymentMethod.Agent) {
@@ -1758,6 +1784,16 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(f.getFee());
             }
 
+            if (f.getFeeType() == FeeType.Staff) {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+            } else {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(0.0);
+                bf.setFeeVatPlusValue(bf.getFeeValue());
+            }
+
             if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
@@ -1766,7 +1802,10 @@ public class ChannelBillController implements Serializable {
                 tmpDiscount += d;
             }
 
-            tmpTotal += bf.getFeeValue();
+            tmpTotal += bf.getFeeGrossValue();
+            tmpTotalVat += bf.getFeeVat();
+            tmpTotalVatPlusNet += bf.getFeeVatPlusValue();
+            tmpTotalNet += bf.getFeeValue();
 
 //            if (paymentMethod.equals(PaymentMethod.Credit)) {
 //                bf.setPaidValue(0.0);
@@ -1777,7 +1816,10 @@ public class ChannelBillController implements Serializable {
             billFeeList.add(bf);
         }
         bill.setDiscount(tmpDiscount);
-        bill.setNetTotal(tmpTotal);
+        bill.setNetTotal(tmpTotalNet);
+        bill.setTotal(tmpTotal);
+        bill.setVat(tmpTotalVat);
+        bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
         System.out.println("tmpDiscount = " + tmpDiscount);
         System.out.println("tmpTotal = " + tmpTotal);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
@@ -1785,7 +1827,10 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
-        billItem.setNetValue(tmpTotal);
+        billItem.setGrossValue(tmpTotal);
+        billItem.setNetValue(tmpTotalNet);
+        billItem.setVat(tmpTotalVat);
+        billItem.setVatPlusNetValue(tmpTotalVatPlusNet);
         System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
         getBillItemFacade().edit(billItem);
 
@@ -1968,7 +2013,7 @@ public class ChannelBillController implements Serializable {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal()+savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {

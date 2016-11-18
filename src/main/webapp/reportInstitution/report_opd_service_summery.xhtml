@@ -45,6 +45,8 @@
                             </p:column> 
                             
                         </p:autoComplete>
+                        <h:outputText value="Only Credit" ></h:outputText>
+                        <p:selectBooleanCheckbox value="#{serviceSummery.credit}" />
 
 <!--                        <h:outputText value="Service Category/Sub Category" ></h:outputText>
                         <p:autoComplete converter="categoryConverter" completeMethod="#{categoryController.completeServiceCategory}" var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" forceSelection="true" value="#{serviceSummery.category}" >                                    

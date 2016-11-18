@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
+import com.divudi.data.InstitutionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
@@ -185,6 +186,22 @@ public class DepartmentController implements Serializable {
         departmentList = getFacade().findBySQL(sql, hm);
 
         return departmentList;
+    }
+    public List<Department> completeDeptPharmacy(String qry) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and upper(c.name) like :q "
+                + " and c.institution=:ins "
+                + " and c.departmentType=:dt"
+                + " order by c.name";
+        
+        hm.put("dt", DepartmentType.Pharmacy);
+        hm.put("ins", getSessionController().getInstitution());
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+
+        return getFacade().findBySQL(sql, hm);
     }
 
     public List<Department> completeDeptWithDeptOrIns(String qry) {

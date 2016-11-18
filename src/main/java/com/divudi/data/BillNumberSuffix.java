@@ -46,6 +46,7 @@ public enum BillNumberSuffix {
     @Deprecated
     BHTISSUECAN,//Bht Issue Cancel
     PHISSUE,//Pharmacy Issue
+    PHISSUEREQ,//Pharmacy Issue Request
     PHISSCAN,//Pharmacy Issue Cancel
     PHISSRET,//Pharmacy Issue Return
     STISSUE,//Store Issue
@@ -77,6 +78,10 @@ public enum BillNumberSuffix {
     //Collecting Centre
     CCPAY,//Payment 
     CCCAN,//Payment Cancel
+    CCCN,//Credit Note 
+    CCCNCAN,//Credit Note Cancel
+    CCDN,//Debit Note 
+    CCDNCAN,//Debit Note Cancel
     //Credit Company
     CRDPAY,//Payment
     CRDCAN,//Cancel

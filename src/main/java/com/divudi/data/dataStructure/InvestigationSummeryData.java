@@ -5,6 +5,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class InvestigationSummeryData {
     Item investigation;
+    Institution institution;
     List<BillItem> billItems;
     long count;
     double total;
@@ -68,6 +70,14 @@ public class InvestigationSummeryData {
 
     public void setB(boolean b) {
         this.b = b;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
     
 }

@@ -347,7 +347,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (loginWithoutDepartment()) {
             return "/index.xhtml";
         } else {
-            UtilityController.addErrorMessage("Login Failure. Please try again");
+            UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
     }
@@ -695,7 +695,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                         selectDepartment();
                         UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
                     } else {
-                        UtilityController.addSuccessMessage("Logged successfully. Please select a department.");
+                        
+                        
+                        UtilityController.addSuccessMessage("Logged successfully!!!." +"\n Please select a department.");
+
+                        UtilityController.addSuccessMessage(setGreetingMsg() +" "+ loggedUser.getWebUserPerson().getName());
+                        
+
                     }
                     if (getApplicationController().isLogged(u) != null) {
                         UtilityController.addErrorMessage("This user is already logged.");
@@ -753,6 +759,31 @@ public class SessionController implements Serializable, HttpSessionListener {
         setInstitutionPreference(insPre);
         recordLogin();
         return "/index";
+    }
+
+    //get Current hour
+    public int getCurrentHour() {
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int hours = cal.get(Calendar.HOUR_OF_DAY);
+        return hours;
+
+    }
+
+    //set greeting message
+    public String setGreetingMsg() {
+        getCurrentHour();
+        String msg = "";
+        if (getCurrentHour() < 12 || getCurrentHour() == 12) {
+            msg = "Good Morning !";
+        } else if (getCurrentHour() > 12 && getCurrentHour() < 15) {
+
+            msg = "Good Afternoon !";
+        } else if (getCurrentHour() > 14 && getCurrentHour() < 19) {
+            msg = "Good Evening !";
+        }
+        return msg;
     }
 
     private boolean canLogToDept(WebUser e, Department d) {

@@ -1503,21 +1503,27 @@ public class CashierReportController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         BillType[] btpArr = enumController.getCashFlowBillTypesChannel();
-        List<BillType> btpList = Arrays.asList(btpArr);
+        List<BillType> btpListTmp = Arrays.asList(btpArr);
+        List<BillType> btpList = new ArrayList<>();
+        btpList.addAll(btpListTmp);
+        btpList.add(BillType.ChannelAgent);//Get Only Agency cash Cancel users
         sql = "select us from "
                 + " Bill b "
                 + " join b.creater us "
                 + " where b.retired=false "
                 + " and b.institution=:ins "
+                + " and b.paymentMethod!=:pm "
                 + " and b.billType in :btp "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " group by us "
                 + " having sum(b.netTotal)!=0 ";
+        temMap.put("pm", PaymentMethod.Agent);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
         cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("cashiers.size() = " + cashiers.size());
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }

@@ -51,7 +51,7 @@
                             <h:outputLabel value="Date" class="billDetails" ></h:outputLabel>
                         </td>
                         <td>:</td>
-                        <td style="width: 30%" >
+                        <td style="width: 30%;text-align: left;" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" >
                                 <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -106,7 +106,7 @@
                                 <h:outputLabel value="BHT" ></h:outputLabel>
                             </td>
                             <td>:</td>
-                            <td style="width: 30%;" >
+                            <td style="width: 30%;text-align: left;" >
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"  >
                                 </h:outputLabel>
                             </td>
