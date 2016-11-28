@@ -71,7 +71,7 @@
                                                                 value="#{billPackageController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatient}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;" required="true" requiredMessage="Please select the Patient">
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
                                                     <f:ajax event="itemSelect" execute="acPt" render="panSearch" />
                                                 </p:autoComplete>   
 
@@ -335,12 +335,20 @@
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
+                                <p:commandButton value="Print Without Totals" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview1" ></p:printer>
+                                </p:commandButton>
                                 <p:commandButton value="New Lab Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Batch Cancel" action="#{billPackageController.cancellAll}"/>
                                 <h:panelGroup id="gpBillPreview">
                                     <ui:repeat value="#{billPackageController.bills}" var="bill">
                                         <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup id="gpBillPreview1">
+                                    <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                        <bi:opdBillPrintRuhunu_pack_1 bill="#{bill}" dup="false"/>
                                     </ui:repeat>
                                 </h:panelGroup>
                                 <!--                                <div style="border: 1px solid;" >

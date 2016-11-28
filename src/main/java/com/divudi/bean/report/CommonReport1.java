@@ -6,7 +6,6 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
@@ -20,7 +19,6 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -397,7 +395,7 @@ public class CommonReport1 implements Serializable {
 
         biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
-            biledBillsTotal += bi.getNetValue()+bi.getVat();
+            biledBillsTotal += bi.getNetValue() + bi.getVat();
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
@@ -408,7 +406,7 @@ public class CommonReport1 implements Serializable {
 
         Map m = new HashMap();
         String sql;
-        docTotals=new ArrayList<>();
+        docTotals = new ArrayList<>();
 
         sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
                 + " WHERE b.retired=false "
@@ -426,9 +424,9 @@ public class CommonReport1 implements Serializable {
         System.out.println("objects.size() = " + objects.size());
         biledBillsTotal = 0.0;
         for (Object[] o : objects) {
-            Doctor d= (Doctor) o[0];
+            Doctor d = (Doctor) o[0];
             double tot = (double) o[1];
-            DocTotal row=new DocTotal();
+            DocTotal row = new DocTotal();
             row.setDoctor(d);
             row.setTotal(tot);
             docTotals.add(row);
@@ -1647,14 +1645,17 @@ public class CommonReport1 implements Serializable {
         System.out.println("ob = " + ob);
 
         if (ob != null) {
-            total = (double) ob[0];
-            System.out.println("total = " + total);
-            discount = (double) ob[1];
-            System.out.println("discount = " + discount);
-            staffTotal = (double) ob[2];
-            System.out.println("staffTotal = " + staffTotal);
-            netTotal = (double) ob[3];
-            System.out.println("netTotal = " + netTotal);
+            try {
+                total = (double) ob[0];
+                System.out.println("total = " + total);
+                discount = (double) ob[1];
+                System.out.println("discount = " + discount);
+                staffTotal = (double) ob[2];
+                System.out.println("staffTotal = " + staffTotal);
+                netTotal = (double) ob[3];
+                System.out.println("netTotal = " + netTotal);
+            } catch (Exception e) {
+            }
         }
 
     }
@@ -1671,7 +1672,6 @@ public class CommonReport1 implements Serializable {
         public void setDoctor(Doctor doctor) {
             this.doctor = doctor;
         }
-
 
         public double getTotal() {
             return total;

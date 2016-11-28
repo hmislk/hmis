@@ -67,7 +67,7 @@
                                                                 value="#{billPackageMedicalController.searchedPatient}" 
                                                                 completeMethod="#{patientController.completePatient}" 
                                                                 var="apt" itemLabel="#{apt.person.name}" 
-                                                                itemValue="#{apt}" size="30"  style="width: 400px;" required="true" requiredMessage="Please Enter the patient">
+                                                                itemValue="#{apt}" size="30"  style="width: 400px;" >
                                                     <f:ajax event="itemSelect" execute="acPt" render="panSearch" />
                                                 </p:autoComplete>   
 
