@@ -1886,7 +1886,7 @@ public class ChannelBillController implements Serializable {
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
         bill.setPaymentMethod(paymentMethod);
-
+        getBillBeanController().setPaymentMethodData(bill, paymentMethod, paymentMethodData);
         System.out.println("getPatientTabId() = " + getPatientTabId());
 
         if (getPatientTabId().equals("tabNewPt")) {
@@ -1944,6 +1944,7 @@ public class ChannelBillController implements Serializable {
         if (deptId.equals("")) {
             return null;
         }
+        
         bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
@@ -2601,5 +2602,6 @@ public class ChannelBillController implements Serializable {
     public void setBillSessionTmp(BillSession billSessionTmp) {
         this.billSessionTmp = billSessionTmp;
     }
+    
 
 }
