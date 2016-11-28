@@ -9,6 +9,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -143,6 +144,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelSearchController channelSearchController;
+     @Inject
+    private PaymentSchemeController paymentSchemeController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -1394,6 +1397,14 @@ public class ChannelBillController implements Serializable {
                 }
             }
         }
+        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+           
+            errorText="*Please select Cheque Number,Bank and Cheque Date OR"+
+                    "*Please Fill Memo,Bank and Slip Date  OR"+
+                    "*Please Fill Credit Card Number and Bank";
+            return true;
+        }
+        
 
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
@@ -1498,7 +1509,7 @@ public class ChannelBillController implements Serializable {
     public void add() {
         errorText = "";
         if (errorCheck()) {
-            settleSucessFully = false;
+           settleSucessFully = false;
             return;
         }
 
@@ -1886,7 +1897,9 @@ public class ChannelBillController implements Serializable {
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
         bill.setPaymentMethod(paymentMethod);
+        
         getBillBeanController().setPaymentMethodData(bill, paymentMethod, paymentMethodData);
+        
         System.out.println("getPatientTabId() = " + getPatientTabId());
 
         if (getPatientTabId().equals("tabNewPt")) {
@@ -2601,6 +2614,14 @@ public class ChannelBillController implements Serializable {
 
     public void setBillSessionTmp(BillSession billSessionTmp) {
         this.billSessionTmp = billSessionTmp;
+    }
+
+    public PaymentSchemeController getPaymentSchemeController() {
+        return paymentSchemeController;
+    }
+
+    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
+        this.paymentSchemeController = paymentSchemeController;
     }
     
 
