@@ -220,7 +220,9 @@ public class Api {
     public String getSessions(@PathParam("doc_code") String doc_code) {
 
         JSONObject object = new JSONObject();
-        JSONArray array=new JSONArray();
+        JSONArray array = new JSONArray();
+        JSONObject object1 = new JSONObject();
+        JSONArray array1 = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
 
         try {
@@ -242,7 +244,14 @@ public class Api {
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
                 }
+                object1.put("session_date_1","2016-12-01");
+                object1.put("session_date_2","2016-12-02");
+                object1.put("session_date_3","2016-12-03");
+                object1.put("session_date_4","2016-12-04");
+                object1.put("session_date_5","2016-12-05");
+                array1.put(object1);
                 jSONObjectOut.put("session", array);
+                jSONObjectOut.put("session_dates", array1);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
             } else {
@@ -263,9 +272,9 @@ public class Api {
     }
 
     @GET
-    @Path("/makeBooking/{name}/{title}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
+    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
     @Produces("application/json")
-    public String makeBooking(@PathParam("name") String name, @PathParam("title") String title, @PathParam("phone") String phone,
+    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
 
