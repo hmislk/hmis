@@ -72,6 +72,12 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.department.name}"/>
                             </p:column>
+                            <p:column rendered="#{channelReportController.webUser eq null}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="User"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
                             <p:column >
                                 <f:facet name="header">
                                     <p:outputLabel value="Refered By"/>
@@ -129,18 +135,13 @@
                                     <p:outputLabel value="Card No"/>
                                 </f:facet>
                                 <p:outputLabel value="#{b.creditCardRefNo}"/>
-                            </p:column>
-                            <p:column rendered="#{channelReportController.webUser eq null}">
-                                <f:facet name="header">
-                                    <p:outputLabel value="User"/>
-                                </f:facet>
-                                <p:outputLabel value="#{b.creater.webUserPerson.name}"/>
                                 <f:facet name="footer">
                                     <p:outputLabel value="#{channelReportController.grantNetTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
+
 
                         </p:dataTable>
                     </p:panel>
