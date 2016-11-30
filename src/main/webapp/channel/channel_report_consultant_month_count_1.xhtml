@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Consultant Wise Appoinment Totals And Count" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy" >
+                        </p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pg1" >
+                        <h:outputLabel value="By Date"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />
+                    </h:panelGrid> 
+                    <h:panelGrid columns="2">
+                        <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentCountNew}" value="Count" ajax="false" />
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton> 
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" >
+                    <table border="1" style="border: 1px solid black;">
+                        <tr>
+                            <th>Consultant</th>
+                            <ui:repeat value="#{channelReportTempController.headers}" var="h" >
+                                <th style="white-space: nowrap;">
+                                    #{h}
+                                </th>
+                            </ui:repeat>
+                        </tr>
+                        <tr>
+                            <ui:repeat value="#{channelReportTempController.channelDoctorCountsRows}" var="d" >
+                                <td style="white-space: nowrap;">
+                                    #{d.staff.person.name} 
+                                </td>
+                                <ui:repeat value="#{d.counts}" var="c" >
+                                    <td >
+                                        <center>#{c}</center>
+                                    </td>
+                                </ui:repeat>
+                            </ui:repeat>
+                        </tr>
+                    </table>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

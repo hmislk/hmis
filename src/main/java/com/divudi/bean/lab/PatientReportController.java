@@ -688,6 +688,7 @@ public class PatientReportController implements Serializable {
 //            cpt = getFacade().find(currentPatientReport.getId());
 //            currentPatientReport = cpt;
 //        }
+        System.out.println("currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
     }
 
@@ -744,10 +745,13 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
+        
         this.currentPatientReport = currentPatientReport;
+        
         if (currentPatientReport != null) {
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
+            System.out.println("setcurrentPatientReport.currentPtIx = " + currentPtIx);
         }
     }
 
