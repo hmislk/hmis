@@ -42,6 +42,8 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -221,7 +223,6 @@ public class Api {
 
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
-        JSONObject object1 = new JSONObject();
         JSONArray array1 = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
 
@@ -244,14 +245,14 @@ public class Api {
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
                 }
-                object1.put("session_date_1","2016-12-01");
-                object1.put("session_date_2","2016-12-02");
-                object1.put("session_date_3","2016-12-03");
-                object1.put("session_date_4","2016-12-04");
-                object1.put("session_date_5","2016-12-05");
-                array1.put(object1);
+//                array1.put("2016-12-01");
+//                array1.put("2016-12-02");
+//                array1.put("2016-12-03");
+//                array1.put("2016-12-04");
+//                array1.put("2016-12-05");
                 jSONObjectOut.put("session", array);
-                jSONObjectOut.put("session_dates", array1);
+                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
+//                jSONObjectOut.put("session_dates", array1);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
             } else {
@@ -480,6 +481,46 @@ public class Api {
         System.out.println("sessions.size() = " + sessions.size());
 
         return sessions;
+    }
+
+    public JSONArray sessionsDatesList(String doc_code, Date fromDate, Date toDate) {
+        JSONArray array = new JSONArray();
+        List<Object> sessions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select distinct(s.sessionDate) "
+                + " From ServiceSession s where s.retired=false "
+                + " and s.staff.code=:doc_code "
+                + " and s.originatingSession is not null "
+                + " and type(s)=:class ";
+        if (fromDate != null && toDate != null) {
+            sql += " and s.sessionDate between :fd and :td ";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        } else {
+            sql += " and s.sessionDate >= :nd ";
+            m.put("nd", commonFunctions.getStartOfDay());
+        }
+
+        sql += " order by s.sessionDate,s.startingTime ";
+
+        m.put("doc_code", doc_code);
+        m.put("class", ServiceSession.class);
+
+        sessions = getStaffFacade().findObjects(sql, m);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("sessions.size() = " + sessions.size());
+
+        for (Object s : sessions) {
+            Date d = (Date) s;
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            array.put(df.format(d));
+        }
+
+        return array;
     }
 
     public JSONArray billDetails(long billId) {

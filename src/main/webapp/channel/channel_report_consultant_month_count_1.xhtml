@@ -51,8 +51,8 @@
                                 </th>
                             </ui:repeat>
                         </tr>
-                        <tr>
-                            <ui:repeat value="#{channelReportTempController.channelDoctorCountsRows}" var="d" >
+                        <ui:repeat value="#{channelReportTempController.channelDoctorCountsRows}" var="d" >
+                            <tr>
                                 <td style="white-space: nowrap;">
                                     #{d.staff.person.name} 
                                 </td>
@@ -61,8 +61,8 @@
                                         <center>#{c}</center>
                                     </td>
                                 </ui:repeat>
-                            </ui:repeat>
-                        </tr>
+                            </tr>
+                        </ui:repeat>
                     </table>
                 </p:panel>
 
