@@ -99,6 +99,26 @@
                                 </p:outputLabel>
                             </f:facet>
                         </p:column>
+                        <p:column headerText="Vat" styleClass="numberCol">
+                            <p:outputLabel value="#{(bs.billFee+bs.billCanncelFee+bs.refundFee)*0.15}" >
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{(channelReportController.total)*0.15}" style="float: right;">
+                                    <f:convertNumber pattern="##,###,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column headerText="Vat Plus Total" styleClass="numberCol">
+                            <p:outputLabel value="#{(bs.billFee+bs.billCanncelFee+bs.refundFee)*1.15}" >
+                                <f:convertNumber pattern="##,###,##0.00" />
+                            </p:outputLabel>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{(channelReportController.total)*1.15}" style="float: right;">
+                                    <f:convertNumber pattern="##,###,##0.00" />
+                                </p:outputLabel>
+                            </f:facet>
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
             </p:panel>
