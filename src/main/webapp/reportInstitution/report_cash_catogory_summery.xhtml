@@ -24,15 +24,15 @@
                 <p:panel>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy" >
+                        <p:calendar value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MMM yyyy" >
                         </p:calendar>
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pg1" >
                         <h:outputLabel value="By Date"/> 
-                        <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />
+                        <p:selectBooleanCheckbox value="#{bookKeepingSummery.byDate}" />
                     </h:panelGrid> 
                     <h:panelGrid columns="2">
                         <p:commandButton action="#{bookKeepingSummery.createCashCategorySummery()}" value="Count" ajax="false" />
@@ -45,18 +45,18 @@
                     <table border="1" style="border: 1px solid black;">
                         <tr>
                             <th>Consultant</th>
-                            <ui:repeat value="#{channelReportTempController.headers}" var="h" >
+                            <ui:repeat value="#{bookKeepingSummery.headers}" var="h" >
                                 <th style="white-space: nowrap;">
                                     #{h}
                                 </th>
                             </ui:repeat>
                         </tr>
                         <tr>
-                            <ui:repeat value="#{channelReportTempController.channelDoctorCountsRows}" var="d" >
+                            <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
                                 <td style="white-space: nowrap;">
-                                    #{d.staff.person.name} 
+                                    #{b.categoryName} 
                                 </td>
-                                <ui:repeat value="#{d.counts}" var="c" >
+                                <ui:repeat value="#{b.incomes}" var="c" >
                                     <td >
                                         <center>#{c}</center>
                                     </td>
