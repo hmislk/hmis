@@ -88,6 +88,8 @@ public class ChannelReportController implements Serializable {
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     private List<AvalabelChannelDoctorRow> acdrs;// created 2016.8.10
+   
+    
 
     double netTotal;
     double netTotalDoc;
@@ -3198,7 +3200,7 @@ public class ChannelReportController implements Serializable {
             sql += " and b.institution=:ins ";
             hm.put("ins", institution);
         }
-        
+
         if (reportKeyWord.getWebUser() != null) {
             sql += " and b.creater=:user";
             hm.put("user", reportKeyWord.getWebUser());
@@ -3873,7 +3875,7 @@ public class ChannelReportController implements Serializable {
         HashMap hm = new HashMap();
         areaWithCount = new ArrayList<>();
         staffWithAreaRows = new ArrayList<>();
-        total=0.0;
+        total = 0.0;
         String sql;
         if (summery) {
             sql = " select b.patient.person.area,count(b) ";
@@ -3913,7 +3915,7 @@ public class ChannelReportController implements Serializable {
                 row.setCount((long) ob[1]);
                 System.out.println("row.getArea().getName() = " + row.getArea().getName());
                 areaWithCount.add(row);
-                total+=row.getCount();
+                total += row.getCount();
             }
         } else {
             Staff beforeStaff = null;
@@ -3927,13 +3929,13 @@ public class ChannelReportController implements Serializable {
                 System.out.println("a.getName() = " + a.getName());
                 System.out.println("count = " + count);
                 System.err.println("****************");
-                total+=count;
+                total += count;
                 if (s.equals(beforeStaff)) {
                     AreaWithCount awc = new AreaWithCount();
                     awc.setArea(a);
                     awc.setCount(count);
                     row.getAreaWithCounts().add(awc);
-                    row.setSubTotal(row.getSubTotal()+count);
+                    row.setSubTotal(row.getSubTotal() + count);
                     System.out.println("if row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
                 } else {
                     if (!row.getAreaWithCounts().isEmpty()) {
@@ -3945,7 +3947,7 @@ public class ChannelReportController implements Serializable {
                         AreaWithCount awc = new AreaWithCount();
                         awc.setArea(a);
                         awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal()+count);
+                        row.setSubTotal(row.getSubTotal() + count);
                         row.getAreaWithCounts().add(awc);
                     } else {
                         row = new StaffWithAreaRow();
@@ -3953,9 +3955,9 @@ public class ChannelReportController implements Serializable {
                         AreaWithCount awc = new AreaWithCount();
                         awc.setArea(a);
                         awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal()+count);
+                        row.setSubTotal(row.getSubTotal() + count);
                         row.getAreaWithCounts().add(awc);
-                        if (beforeStaff!=null) {
+                        if (beforeStaff != null) {
                             staffWithAreaRows.add(row);
                         }
                         System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
@@ -5388,6 +5390,49 @@ public class ChannelReportController implements Serializable {
             dp = new DocPage();
         }
         System.out.println("listOfList.size() = " + listOfList.size());
+    }
+
+    public void createCardSummery() {
+        String sql = "";
+        Map m = new HashMap();
+        grantNetTotal=0.0;
+        
+        
+        sql+="select b from Bill b where b.retired=false "
+                + " and b.paymentMethod=:pm ";
+        m.put("pm", paymentMethod.Card);
+               
+        if (department!=null) {
+            sql+=" and b.department=:d ";
+            m.put("d", department);
+        }
+        
+        if(webUser !=null){
+        sql+=" and b.creater=:u ";
+        m.put("u", webUser);
+        }
+        
+        sql+=" and (b.billType=:cc or b.billType=:cp) ";
+        m.put("cc", BillType.ChannelCash);
+        m.put("cp", BillType.ChannelPaid);
+        
+        sql+=" and b.createdAt between :fd and :td ";
+        
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        channelBills=billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("channelBills.size() = " + channelBills.size());
+        
+        for (Bill b : channelBills) {
+            grantNetTotal+=b.getNetTotal()+b.getVat();
+            System.out.println("grantNetTotal = " + grantNetTotal);  
+        }
+        
+        
+        
+
     }
 
     public void checkCumilativeTotal(List<AgentHistory> agentHistorys) {

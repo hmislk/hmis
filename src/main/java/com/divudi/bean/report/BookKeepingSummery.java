@@ -32,6 +32,7 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
+import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -73,6 +74,8 @@ public class BookKeepingSummery implements Serializable {
     BillFacade billFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    CategoryFacade categoryFacade;
     //List
     private List<String1Value3> opdList;
     List<String1Value2> outSideFees;
@@ -136,6 +139,9 @@ public class BookKeepingSummery implements Serializable {
     double channelTotal;
     long countTotals;
     String header = "";
+    List<String> headers;
+    List<String> headers1;
+    boolean byDate;
     @Inject
     SessionController sessionController;
     @Inject
@@ -4637,6 +4643,209 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    public void createCashCategorySummery() {
+        bookKeepingSummeryRowsOpd = new ArrayList<>();
+        fetchHeaders(fromDate, toDate, byDate);
+        List<PaymentMethod> pms = Arrays.asList(new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card});
+
+        for (Category c : fetchCategories(pms, fromDate, toDate)) {
+            BookKeepingSummeryRow row = new BookKeepingSummeryRow();
+            System.out.println("c.getName() = " + c.getName());
+            row.setCategoryName(c.getName());
+            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate));
+            bookKeepingSummeryRowsOpd.add(row);
+        }
+
+    }
+//    sql  = "select c.name, "
+//            + " i.name, "
+//            + " count(bi.bill), "
+//            + " sum(bf.feeValue), "
+//            + " bf.fee.feeType, "
+//            + " bi.bill.billClassType "
+//            + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+//            + " where bi.bill.institution=:ins "
+//            + " and bf.department.institution=:ins "
+//            + " and bi.bill.billType= :bTp  "
+//            + " and bi.bill.createdAt between :fromDate and :toDate "
+//            + " and bi.bill.paymentMethod in :pms";
+//
+//    sql += " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
+//            + " order by c.name, i.name, bf.fee.feeType" ;
+//
+//    temMap.put (
+//            
+//
+//    "toDate", toDate);
+//    temMap.put (       
+//
+//    "fromDate", fromDate);
+//    temMap.put (
+//            
+//
+//    "ins", institution);
+//    temMap.put (
+//            
+//
+//    "bTp", BillType.OpdBill);
+//    temMap.put (
+//            
+//
+//    "pms", paymentMethods);
+
+    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate) {
+        List<Double> list = new ArrayList<>();
+
+        Date nowDate = fDate;
+
+        while (nowDate.before(tDate)) {
+            double netTot = 0.0;
+            Date fd;
+            Date td;
+            if (byDate) {
+                fd = commonFunctions.getStartOfDay(nowDate);
+                td = commonFunctions.getEndOfDay(nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
+                System.out.println("netTot = " + netTot);
+                list.add(netTot);
+            } else {
+                fd = commonFunctions.getStartOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
+                System.out.println("netTot = " + netTot);
+                list.add(netTot);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            if (byDate) {
+                cal.add(Calendar.DATE, 1);
+            } else {
+                cal.add(Calendar.MONTH, 1);
+            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+
+        return list;
+    }
+
+    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select sum(bf.feeValue) "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+                + " where bi.bill.institution=:ins "
+                + " and bf.department.institution=:ins "
+                + " and bi.bill.billType= :bTp  "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms "
+                + " and c=:cat ";
+
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("cat", c);
+        m.put("ins", institution);
+        m.put("bTp", BillType.OpdBill);
+        m.put("pms", paymentMethods);
+
+        double total = categoryFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("total = " + total);
+
+        return total;
+    }
+
+    public List<Category> fetchCategories(List<PaymentMethod> paymentMethods, Date fd, Date td) {
+        List<Category> cats = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(c) "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+                + " where bi.bill.institution=:ins "
+                + " and bf.department.institution=:ins "
+                + " and bi.bill.billType= :bTp  "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms"
+                + " order by c.name ";
+
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("ins", institution);
+        m.put("bTp", BillType.OpdBill);
+        m.put("pms", paymentMethods);
+
+        cats = categoryFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("cats.size() = " + cats.size());
+
+        return cats;
+    }
+
+    public void fetchHeaders(Date fDate, Date tDate, boolean byDate) {
+        headers = new ArrayList<>();
+        headers1 = new ArrayList<>();
+        Date nowDate = fDate;
+        double netTot = 0.0;
+        while (nowDate.before(tDate)) {
+            String formatedDate;
+            String formatedDate1;
+            Date fd;
+            Date td;
+            if (byDate) {
+                fd = commonFunctions.getStartOfDay(nowDate);
+                td = commonFunctions.getEndOfDay(nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
+                DateFormat df = new SimpleDateFormat("yy MM dd ");
+                formatedDate = df.format(fd);
+                headers.add(formatedDate);
+                System.out.println("formatedDate = " + formatedDate);
+
+                df = new SimpleDateFormat("E");
+                formatedDate1 = df.format(fd);
+                headers1.add(formatedDate1);
+                System.out.println("formatedDate2 = " + formatedDate1);
+
+            } else {
+                fd = commonFunctions.getStartOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
+                DateFormat df = new SimpleDateFormat(" yyyy MMM ");
+                formatedDate = df.format(fd);
+                System.out.println("formatedDate = " + formatedDate);
+                headers.add(formatedDate);
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            if (byDate) {
+                cal.add(Calendar.DATE, 1);
+            } else {
+                cal.add(Calendar.MONTH, 1);
+            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+        headers.add("Net");
+        headers1.add("Total");
+
+    }
+
     /**
      * Creates a new instance of BookKeepingSummery
      */
@@ -4786,6 +4995,7 @@ public class BookKeepingSummery implements Serializable {
         double subTotal;
         BillClassType billClassType;
         List<String1Value3> bills;
+        List<Double> incomes;
 
         int serialNo;
 
@@ -4899,6 +5109,14 @@ public class BookKeepingSummery implements Serializable {
 
         public void setCountTotal(long countTotal) {
             this.countTotal = countTotal;
+        }
+
+        public List<Double> getIncomes() {
+            return incomes;
+        }
+
+        public void setIncomes(List<Double> incomes) {
+            this.incomes = incomes;
         }
 
         @Override
@@ -5074,6 +5292,30 @@ public class BookKeepingSummery implements Serializable {
 
     public void setCreditCompanyTotalPharmacyOld(double creditCompanyTotalPharmacyOld) {
         this.creditCompanyTotalPharmacyOld = creditCompanyTotalPharmacyOld;
+    }
+
+    public List<String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(List<String> headers) {
+        this.headers = headers;
+    }
+
+    public List<String> getHeaders1() {
+        return headers1;
+    }
+
+    public void setHeaders1(List<String> headers1) {
+        this.headers1 = headers1;
+    }
+
+    public boolean isByDate() {
+        return byDate;
+    }
+
+    public void setByDate(boolean byDate) {
+        this.byDate = byDate;
     }
 
 }
