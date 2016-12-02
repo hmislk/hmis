@@ -4644,18 +4644,18 @@ public class BookKeepingSummery implements Serializable {
     }
 
     public void createCashCategorySummery() {
-        bookKeepingSummeryRowsOpd=new ArrayList<>();
-        fetchHeaders(toDate, toDate, true);
+        bookKeepingSummeryRowsOpd = new ArrayList<>();
+        fetchHeaders(fromDate, toDate, byDate);
         List<PaymentMethod> pms = Arrays.asList(new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card});
 
         for (Category c : fetchCategories(pms, fromDate, toDate)) {
-            BookKeepingSummeryRow row=new BookKeepingSummeryRow();
+            BookKeepingSummeryRow row = new BookKeepingSummeryRow();
             System.out.println("c.getName() = " + c.getName());
             row.setCategoryName(c.getName());
-            row.setIncomes(fetchCategoryIncome(c, pms, toDate, toDate, byDate));
-            bookKeepingSummeryRows.add(row);
+            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate));
+            bookKeepingSummeryRowsOpd.add(row);
         }
-        
+
     }
 //    sql  = "select c.name, "
 //            + " i.name, "
@@ -4692,12 +4692,12 @@ public class BookKeepingSummery implements Serializable {
 //            
 //
 //    "pms", paymentMethods);
-    
-    public List<Double> fetchCategoryIncome(Category c,List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate){
-        List<Double>list=new ArrayList<>();
-        
+
+    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate) {
+        List<Double> list = new ArrayList<>();
+
         Date nowDate = fDate;
-        
+
         while (nowDate.before(tDate)) {
             double netTot = 0.0;
             Date fd;
@@ -4705,20 +4705,20 @@ public class BookKeepingSummery implements Serializable {
             if (byDate) {
                 fd = commonFunctions.getStartOfDay(nowDate);
                 td = commonFunctions.getEndOfDay(nowDate);
-                System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
-                System.out.println("nowDate = " + nowDate);
-                
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
                 netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
                 td = commonFunctions.getEndOfMonth(nowDate);
-                System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
-                System.out.println("nowDate = " + nowDate);
-                
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
+
                 netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
@@ -4734,11 +4734,11 @@ public class BookKeepingSummery implements Serializable {
             nowDate = cal.getTime();
             System.out.println("nowDate = " + nowDate);
         }
-        
+
         return list;
     }
-    
-    public double  fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td,Category c) {
+
+    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c) {
 
         String sql;
         Map m = new HashMap();
@@ -4758,28 +4758,25 @@ public class BookKeepingSummery implements Serializable {
         m.put("ins", institution);
         m.put("bTp", BillType.OpdBill);
         m.put("pms", paymentMethods);
-        
-        double total= categoryFacade.findDoubleByJpql(header, m, TemporalType.TIMESTAMP);
+
+        double total = categoryFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         System.out.println("total = " + total);
-        
 
         return total;
     }
-    
-    public List<Category> fetchCategories(List<PaymentMethod> paymentMethods, Date fd, Date td) 
-    {
+
+    public List<Category> fetchCategories(List<PaymentMethod> paymentMethods, Date fd, Date td) {
         List<Category> cats = new ArrayList<>();
         String sql;
         Map m = new HashMap();
 
-        sql = "select c.name "
+        sql = "select distinct(c) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
                 + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms"
-                + " group by c.name "
                 + " order by c.name ";
 
         m.put("toDate", td);
@@ -4807,9 +4804,9 @@ public class BookKeepingSummery implements Serializable {
             if (byDate) {
                 fd = commonFunctions.getStartOfDay(nowDate);
                 td = commonFunctions.getEndOfDay(nowDate);
-                System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
-                System.out.println("nowDate = " + nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
 
                 DateFormat df = new SimpleDateFormat("yy MM dd ");
                 formatedDate = df.format(fd);
@@ -4824,9 +4821,9 @@ public class BookKeepingSummery implements Serializable {
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
                 td = commonFunctions.getEndOfMonth(nowDate);
-                System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
-                System.out.println("nowDate = " + nowDate);
+//                System.out.println("td = " + td);
+//                System.out.println("fd = " + fd);
+//                System.out.println("nowDate = " + nowDate);
 
                 DateFormat df = new SimpleDateFormat(" yyyy MMM ");
                 formatedDate = df.format(fd);

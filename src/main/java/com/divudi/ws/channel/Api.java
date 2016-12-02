@@ -227,32 +227,26 @@ public class Api {
         JSONObject jSONObjectOut = new JSONObject();
 
         try {
-            List<Object[]> sessions = sessionsList(doc_code, null, null);
+            List<ServiceSession> sessions = sessionsList(doc_code, null, null);
             if (!sessions.isEmpty()) {
-                for (Object[] s : sessions) {
-                    object.put("session_id", s[0]);
-                    object.put("session_date", getCommonController().getDateFormat((Date) s[1]));
-                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s[2]));
-                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s[3]));
-                    object.put("session_max_no", s[4]);
-                    object.put("session_is_refundable", s[5]);
-                    object.put("session_duration", s[6]);
-                    object.put("session_room_no", s[7]);
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
-                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
-                    object.put("session_is_leaved", s[10]);
-                    System.out.println("s.length = " + s.length);
+                for (ServiceSession s : sessions) {
+                    object=new JSONObject();
+                    object.put("session_id", s.getId());
+                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
+                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
+                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
+                    object.put("session_max_no", s.getMaxNo());
+                    object.put("session_is_refundable", s.isRefundable());
+                    object.put("session_duration", s.getDuration());
+                    object.put("session_room_no", s.getRoomNo());
+                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()));
+                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
                 }
-//                array1.put("2016-12-01");
-//                array1.put("2016-12-02");
-//                array1.put("2016-12-03");
-//                array1.put("2016-12-04");
-//                array1.put("2016-12-05");
                 jSONObjectOut.put("session", array);
                 jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
-//                jSONObjectOut.put("session_dates", array1);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
             } else {
@@ -265,6 +259,39 @@ public class Api {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
+//        try {
+//            List<Object[]> sessions = sessionsList(doc_code, null, null);
+//            if (!sessions.isEmpty()) {
+//                for (Object[] s : sessions) {
+//                    object.put("session_id", s[0]);
+//                    object.put("session_date", getCommonController().getDateFormat((Date) s[1]));
+//                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s[2]));
+//                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s[3]));
+//                    object.put("session_max_no", s[4]);
+//                    object.put("session_is_refundable", s[5]);
+//                    object.put("session_duration", s[6]);
+//                    object.put("session_room_no", s[7]);
+//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
+//                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
+//                    object.put("session_is_leaved", s[10]);
+//                    System.out.println("s.length = " + s.length);
+//                    array.put(object);
+////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
+//                }
+//                jSONObjectOut.put("session", array);
+//                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
+//                jSONObjectOut.put("error", "0");
+//                jSONObjectOut.put("error_description", "");
+//            } else {
+//                jSONObjectOut.put("session", sessions);
+//                jSONObjectOut.put("error", "1");
+//                jSONObjectOut.put("error_description", "No Data.");
+//            }
+//        } catch (Exception e) {
+//            jSONObjectOut.put("session", object);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "Invalid Argument.");
+//        }
 
         String json = jSONObjectOut.toString();
 //        String json = new Gson().toJson(sessions);
@@ -439,7 +466,7 @@ public class Api {
         return consultants;
     }
 
-    public List<Object[]> sessionsList(String doc_code, Date fromDate, Date toDate) {
+    public List<Object[]> sessionsListObject(String doc_code, Date fromDate, Date toDate) {
 
         List<Object[]> sessions = new ArrayList<>();
         String sql;
@@ -474,11 +501,70 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getStaffFacade().findAggregates(sql, m);
+        sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
+
+        return sessions;
+    }
+
+    public List<ServiceSession> sessionsList(String doc_code, Date fromDate, Date toDate) {
+
+        List<ServiceSession> sessions = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select s "
+                + " From ServiceSession s where s.retired=false "
+                + " and s.staff.code=:doc_code "
+                + " and s.originatingSession is not null "
+                + " and type(s)=:class ";
+        if (fromDate != null && toDate != null) {
+            sql += " and s.sessionDate between :fd and :td ";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        } else {
+            sql += " and s.sessionDate >= :nd ";
+            m.put("nd", commonFunctions.getStartOfDay());
+        }
+
+        sql += " order by s.sessionDate,s.startingTime ";
+
+        m.put("doc_code", doc_code);
+        m.put("class", ServiceSession.class);
+
+        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("sessions.size() = " + sessions.size());
+        
+        for (ServiceSession session : sessions) {
+            System.out.println("session.getId() = " + session.getId());
+        }
+
+
+//        List<Object[]> objects = new ArrayList<>();
+//        for (ServiceSession s : sessions) {
+//            Object[] ob = null;
+//            ob[0] =s.getId();
+//            ob[1] =s.getSessionDate();
+//            ob[2] =s.getStartingTime();
+//            ob[3] =s.getEndingTime();
+//            ob[4] =s.getMaxNo();
+//            ob[5] =s.isRefundable();
+//            ob[6] =s.getDuration();
+//            ob[7] =s.getRoomNo();
+//            ob[8] =0;
+//            ob[9] =0;
+//            ob[10] =s.isDeactivated();
+//            if (ob!=null) {
+//                objects.add(ob);
+//            }
+//        }
+//        System.out.println("objects.size() = " + objects.size());
 
         return sessions;
     }

@@ -31,6 +31,12 @@
                         </p:calendar>
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pg1" >
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                         <h:outputLabel value="By Date"/> 
                         <p:selectBooleanCheckbox value="#{bookKeepingSummery.byDate}" />
                     </h:panelGrid> 
@@ -44,15 +50,15 @@
                 <p:panel id="reportPrint" >
                     <table border="1" style="border: 1px solid black;">
                         <tr>
-                            <th>Consultant</th>
+                            <th>Consultant</th>-
                             <ui:repeat value="#{bookKeepingSummery.headers}" var="h" >
                                 <th style="white-space: nowrap;">
                                     #{h}
                                 </th>
                             </ui:repeat>
                         </tr>
-                        <tr>
-                            <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
+                        <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
+                            <tr>
                                 <td style="white-space: nowrap;">
                                     #{b.categoryName} 
                                 </td>
@@ -61,8 +67,8 @@
                                         <center>#{c}</center>
                                     </td>
                                 </ui:repeat>
-                            </ui:repeat>
-                        </tr>
+                            </tr>
+                        </ui:repeat>
                     </table>
                 </p:panel>
 
