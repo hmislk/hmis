@@ -48,28 +48,44 @@
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" >
-                    <table border="1" style="border: 1px solid black;">
-                        <tr>
-                            <th>Consultant</th>-
-                            <ui:repeat value="#{bookKeepingSummery.headers}" var="h" >
-                                <th style="white-space: nowrap;">
-                                    #{h}
-                                </th>
-                            </ui:repeat>
-                        </tr>
-                        <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
-                            <tr>
-                                <td style="white-space: nowrap;">
-                                    #{b.categoryName} 
-                                </td>
-                                <ui:repeat value="#{b.incomes}" var="c" >
-                                    <td >
-                                        <center>#{c}</center>
-                                    </td>
-                                </ui:repeat>
-                            </tr>
-                        </ui:repeat>
-                    </table>
+                    <p:dataTable value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="s">
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Doctor Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.categoryName}"/>
+                        </p:column>
+                        <p:columns value="#{bookKeepingSummery.columnModels}" var="column" >
+                            <f:facet name="header">
+                                <h:outputText value="#{column.header}" />
+                            </f:facet>
+                            <h:outputText value="#{s.incomes[column.property]}" />
+                        </p:columns>
+
+
+                    </p:dataTable>
+                    <!--                    <table border="1" style="border: 1px solid black;">
+                                            <tr>
+                                                <th>Consultant</th>-
+                                                <ui:repeat value="#{bookKeepingSummery.headers}" var="h" >
+                                                    <th style="white-space: nowrap;">
+                    #{h}
+                </th>
+            </ui:repeat>
+        </tr>
+        <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
+            <tr>
+                <td style="white-space: nowrap;">
+                    #{b.categoryName} 
+                </td>
+                <ui:repeat value="#{b.incomes}" var="c" >
+                    <td >
+                        <center>#{c}</center>
+                    </td>
+                </ui:repeat>
+            </tr>
+        </ui:repeat>
+    </table>-->
                 </p:panel>
 
             </p:panel>
