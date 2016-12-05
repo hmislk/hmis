@@ -141,6 +141,7 @@ public class BookKeepingSummery implements Serializable {
     String header = "";
     List<String> headers;
     List<String> headers1;
+    List<ColumnModel> columnModels;
     boolean byDate;
     @Inject
     SessionController sessionController;
@@ -4645,6 +4646,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createCashCategorySummery() {
         bookKeepingSummeryRowsOpd = new ArrayList<>();
+        columnModels=new ArrayList<>();
         fetchHeaders(fromDate, toDate, byDate);
         List<PaymentMethod> pms = Arrays.asList(new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card});
 
@@ -4654,6 +4656,14 @@ public class BookKeepingSummery implements Serializable {
             row.setCategoryName(c.getName());
             row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate));
             bookKeepingSummeryRowsOpd.add(row);
+        }
+
+        Long l = 0l;
+        for (String h : headers) {
+            ColumnModel c = new ColumnModel();
+            c.setHeader(h);
+            c.setProperty(l.toString());
+            columnModels.add(c);
         }
 
     }
@@ -4841,7 +4851,7 @@ public class BookKeepingSummery implements Serializable {
             nowDate = cal.getTime();
             System.out.println("nowDate = " + nowDate);
         }
-        headers.add("Net");
+        headers.add("Total");
         headers1.add("Total");
 
     }
@@ -5142,6 +5152,28 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+    public class ColumnModel {
+
+        private String header;
+        private String property;
+
+        public String getHeader() {
+            return header;
+        }
+
+        public void setHeader(String header) {
+            this.header = header;
+        }
+
+        public String getProperty() {
+            return property;
+        }
+
+        public void setProperty(String property) {
+            this.property = property;
+        }
+    }
+
     public List<BillItem> getCreditCompanyCollectionsInward() {
         return creditCompanyCollectionsInward;
     }
@@ -5316,6 +5348,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setByDate(boolean byDate) {
         this.byDate = byDate;
+    }
+
+    public List<ColumnModel> getColumnModels() {
+        return columnModels;
+    }
+
+    public void setColumnModels(List<ColumnModel> columnModels) {
+        this.columnModels = columnModels;
     }
 
 }
