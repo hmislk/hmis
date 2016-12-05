@@ -8,14 +8,20 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Person;
+import com.divudi.entity.Speciality;
+import com.divudi.entity.Staff;
 import com.divudi.facade.ConsultantFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -43,28 +49,38 @@ public class ConsultantController implements Serializable {
     @EJB
     private PersonFacade personFacade;
     List<Consultant> selectedItems;
+
     private Consultant current;
     private List<Consultant> items = null;
     String selectText = "";
- 
+    private Speciality speciality;
 
     public List<Consultant> getSelectedItems() {
         String sql;
         HashMap hm = new HashMap();
         if (selectText.trim().equals("")) {
             sql = "select c from Consultant c "
-                    + " where c.retired=false "
-                    + " order by c.person.name";
+                    + " where c.retired=false ";
+
+            if (speciality != null) {
+                sql += " and c.speciality=:s ";
+                hm.put("s", speciality);
+            }
+            sql += " order by c.codeInterger, c.person.name ";
 
         } else {
             sql = "select c from Consultant c "
                     + " where c.retired=false"
-                    + " and upper(c.person.name) like :q "
-                    + " order by c.person.name";
+                    + " and upper(c.person.name) like :q ";
+
+            sql += " and c.speciality=:s ";
+            sql += " order by c.codeInterger , c.person.name ";
+            hm.put("s", speciality);
 
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
-
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
         selectedItems = getFacade().findBySQL(sql, hm);
 
         return selectedItems;
@@ -195,8 +211,13 @@ public class ConsultantController implements Serializable {
         this.personFacade = personFacade;
     }
 
-    
-    
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
+    public void setSpeciality(Speciality speciality) {
+        this.speciality = speciality;
+    }
 
     /**
      *
@@ -240,5 +261,5 @@ public class ConsultantController implements Serializable {
             }
         }
     }
-     
+
 }

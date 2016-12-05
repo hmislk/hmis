@@ -1980,8 +1980,8 @@ public class ChannelReportTempController implements Serializable {
         columns.add(c);
 
         System.out.println("channelReportSpecialityWiseSummeryRows.size() = " + channelReportSpecialityWiseSummeryRows.size());
-        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
-        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
+//        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
+//        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
 
         return channelReportSpecialityWiseSummeryRows;
     }
