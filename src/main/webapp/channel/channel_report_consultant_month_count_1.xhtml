@@ -24,10 +24,10 @@
                 <p:panel>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker" >
                         </p:calendar>
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pg1" >
@@ -42,7 +42,7 @@
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" >
-                    <table border="1" style="border: 1px solid black;">
+<!--                    <table border="1" style="border: 1px solid black;">
                         <tr>
                             <th>Consultant</th>
                             <ui:repeat value="#{channelReportTempController.headers}" var="h" >
@@ -63,7 +63,26 @@
                                 </ui:repeat>
                             </tr>
                         </ui:repeat>
-                    </table>
+                    </table>-->
+                    <p:dataTable id="tbl1" value="#{channelReportTempController.channelDoctorCountsRows}" var="s">
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Doctor Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.staff.person.name}" rendered="#{s.staff ne null}"/>
+                            <h:outputText value="Total" rendered="#{s.staff eq null}"/>
+                        </p:column>
+                        <p:columns value="#{channelReportTempController.columnModels}" var="column" styleClass="numberCol">
+                            <f:facet name="header">
+                                <h:outputText value="#{column.header}" />
+                            </f:facet>
+                            <h:outputText value="#{s.counts[column.property]}" >
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </p:columns>
+
+
+                    </p:dataTable>
                 </p:panel>
 
             </p:panel>

@@ -143,6 +143,7 @@ public class BookKeepingSummery implements Serializable {
     List<String> headers1;
     List<ColumnModel> columnModels;
     boolean byDate;
+    boolean withOutPro=true;
     @Inject
     SessionController sessionController;
     @Inject
@@ -4646,7 +4647,7 @@ public class BookKeepingSummery implements Serializable {
 
     public void createCashCategorySummery() {
         bookKeepingSummeryRowsOpd = new ArrayList<>();
-        columnModels=new ArrayList<>();
+        columnModels = new ArrayList<>();
         fetchHeaders(fromDate, toDate, byDate);
         List<PaymentMethod> pms = Arrays.asList(new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card});
 
@@ -4654,9 +4655,26 @@ public class BookKeepingSummery implements Serializable {
             BookKeepingSummeryRow row = new BookKeepingSummeryRow();
             System.out.println("c.getName() = " + c.getName());
             row.setCategoryName(c.getName());
-            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate));
+            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate,withOutPro));
             bookKeepingSummeryRowsOpd.add(row);
         }
+        
+        BookKeepingSummeryRow row = new BookKeepingSummeryRow();
+        int i=bookKeepingSummeryRowsOpd.size();
+        int j=headers.size();
+        row.setCategoryName("Total");
+        List<Double> list=new ArrayList<>();
+        System.out.println("Time 1 = " + new Date());
+        for (int k = 0; k < j; k++) {
+            double total=0.0;
+            for (int l = 0; l < i; l++) {
+                total+=bookKeepingSummeryRowsOpd.get(l).getIncomes().get(k);
+            }
+            list.add(total);
+        }
+        row.setIncomes(list);
+        System.out.println("Time 2 = " + new Date());
+        bookKeepingSummeryRowsOpd.add(row);
 
         Long l = 0l;
         for (String h : headers) {
@@ -4664,9 +4682,11 @@ public class BookKeepingSummery implements Serializable {
             c.setHeader(h);
             c.setProperty(l.toString());
             columnModels.add(c);
+            l++;
         }
 
     }
+    
 //    sql  = "select c.name, "
 //            + " i.name, "
 //            + " count(bi.bill), "
@@ -4703,11 +4723,11 @@ public class BookKeepingSummery implements Serializable {
 //
 //    "pms", paymentMethods);
 
-    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate) {
+    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate,boolean withoutpro) {
         List<Double> list = new ArrayList<>();
 
         Date nowDate = fDate;
-
+        double tot = 0.0;
         while (nowDate.before(tDate)) {
             double netTot = 0.0;
             Date fd;
@@ -4719,7 +4739,7 @@ public class BookKeepingSummery implements Serializable {
 //                System.out.println("fd = " + fd);
 //                System.out.println("nowDate = " + nowDate);
 
-                netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c,withoutpro);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
             } else {
@@ -4729,10 +4749,11 @@ public class BookKeepingSummery implements Serializable {
 //                System.out.println("fd = " + fd);
 //                System.out.println("nowDate = " + nowDate);
 
-                netTot = fetchCategoryTotal(paymentMethods, fd, td, c);
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c,withoutpro);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
             }
+            tot += netTot;
 
             Calendar cal = Calendar.getInstance();
             cal.setTime(nowDate);
@@ -4744,11 +4765,12 @@ public class BookKeepingSummery implements Serializable {
             nowDate = cal.getTime();
             System.out.println("nowDate = " + nowDate);
         }
+        list.add(tot);
 
         return list;
     }
 
-    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c) {
+    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c,boolean withoutpro) {
 
         String sql;
         Map m = new HashMap();
@@ -4761,6 +4783,10 @@ public class BookKeepingSummery implements Serializable {
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
                 + " and c=:cat ";
+        if (withoutpro) {
+            sql+=" and bf.fee.feeType!=:ft";
+            m.put("ft", FeeType.Staff);
+        }
 
         m.put("toDate", td);
         m.put("fromDate", fd);
@@ -5356,6 +5382,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setColumnModels(List<ColumnModel> columnModels) {
         this.columnModels = columnModels;
+    }
+
+    public boolean isWithOutPro() {
+        return withOutPro;
+    }
+
+    public void setWithOutPro(boolean withOutPro) {
+        this.withOutPro = withOutPro;
     }
 
 }
