@@ -129,10 +129,12 @@ public class ChannelReportTempController implements Serializable {
     List<String> headers;
     List<ChannelDoctorCountsRow> channelDoctorCountsRows;
     private List<ChannelReportSpecialityWiseSummeryRow> channelReportSpecialityWiseSummeryRows;
+    private List<ChannelVatReportPaymentSchemeWiseRow> channelVatReportPaymentSchemeWiseRows;
     private List<ColumnModel> columns;
     private List<String> dates;
     private List<Long> countsList;
     List<ColumnModel> columnModels;
+    private List<PaymentMethod> paymentMethods;
     //
     Date fromDate;
     Date toDate;
@@ -1401,7 +1403,7 @@ public class ChannelReportTempController implements Serializable {
             if (byDate) {
                 fd = commonFunctions.getStartOfDay(nowDate);
                 td = commonFunctions.getEndOfDay(nowDate);
-                
+
                 DateFormat df = new SimpleDateFormat("yy MM dd");
                 formatedDate = df.format(fd);
                 System.out.println("formatedDate = " + formatedDate);
@@ -1563,7 +1565,7 @@ public class ChannelReportTempController implements Serializable {
     public void fetchStaffWiseChannelCount() {
 
         channelDoctorCountsRows = new ArrayList<>();
-        for (Staff s : fetchBillsStaffs(null, Arrays.asList(new BillType []{BillType.ChannelPaid,BillType.ChannelCash,BillType.ChannelAgent}))) {
+        for (Staff s : fetchBillsStaffs(null, Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
             ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
             row.setStaff(s);
             row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
@@ -1903,21 +1905,21 @@ public class ChannelReportTempController implements Serializable {
     }
 
     public void createStaffWiseAppoinmentCountNew() {
-        columnModels=new ArrayList<>();
+        columnModels = new ArrayList<>();
         fetchChannelHeaders();
         fetchStaffWiseChannelCount();
         ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
-        int i=channelDoctorCountsRows.size();
-        int j=headers.size();
+        int i = channelDoctorCountsRows.size();
+        int j = headers.size();
 //        row.setCategoryName("Total");
-        List<Long> list=new ArrayList<>();
+        List<Long> list = new ArrayList<>();
         System.out.println("Time 1 = " + new Date());
         for (int k = 0; k < j; k++) {
-            double total=0.0;
+            double total = 0.0;
             for (int l = 0; l < i; l++) {
-                total+=channelDoctorCountsRows.get(l).getCounts().get(k);
+                total += channelDoctorCountsRows.get(l).getCounts().get(k);
             }
-            list.add((long)total);
+            list.add((long) total);
         }
         row.setCounts(list);
         System.out.println("Time 2 = " + new Date());
@@ -2058,6 +2060,112 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("((long) (btot - (ctot + rtot))) = " + ((long) (btot - (ctot + rtot))));
         System.out.println("countsList.size() = " + countsList.size());
         return countsList;
+    }
+
+    public List<Double> totalsBetweenDates(PaymentMethod pm, Date fd, Date td) {
+        ChannelVatReportPaymentSchemeWiseRow row = new ChannelVatReportPaymentSchemeWiseRow();
+        System.out.println("pm-betweendates = " + pm);
+        List<Double> totsList = new ArrayList<>();
+        Date nowDate = getFromDate();
+//        double btot = 0.0;
+//        double ctot = 0.0;
+//        double rtot = 0.0;
+        double netTot = 0.0;
+        double netTot1 ;
+        while (nowDate.before(getToDate())) {
+            String formatedDate;
+
+//            if (byDate) {
+            fd = commonFunctions.getStartOfDay(nowDate);
+            td = commonFunctions.getEndOfDay(nowDate);
+//            System.out.println("td = " + td);
+//            System.out.println("fd = " + fd);
+//            System.out.println("nowDate = " + nowDate);
+
+            DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
+            formatedDate = df.format(fd);
+            System.out.println("formatedDate = " + formatedDate);
+
+            netTot1 = (fetchBillsVatTotal(pm, fd, td))*45/100;
+            totsList.add(netTot1);
+            System.out.println(" finalTotofDay = " + netTot1);
+            netTot += netTot1;
+            //acsrs.add(acsr);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+//            if (byDate) {
+            cal.add(Calendar.DATE, 1);
+//            } else {
+//                cal.add(Calendar.MONTH, 1);
+//            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+        //row.setSum((long) netTot);
+        totsList.add(netTot);
+        System.out.println("(netTot) = " + netTot);
+        System.out.println("totsList.size() = " + totsList.size());
+        return totsList;
+
+    }
+
+    public double fetchBillsVatTotal(PaymentMethod pm, Date fd, Date td) {
+        String sql = "";
+        Map m = new HashMap();
+        double total = 0.0;
+
+        sql += " select sum(b.vat) from Bill b "
+                + " where b.retired=false "
+                + " and b.paymentMethod=:pm "
+                + " and b.createdAt between :fromDate and :toDate  ";
+        m.put("pm", pm);
+        m.put("fromDate", fd);
+        m.put("toDate", td);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + sql);
+        total = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("total = " + total);
+        return total;
+    }
+
+    public List<PaymentMethod> fetchPaymentMethods() {
+
+        paymentMethods = Arrays.asList(PaymentMethod.values());
+        System.out.println("paymentMethods.size() = " + paymentMethods.size());
+        return paymentMethods;
+    }
+
+    public List<ChannelVatReportPaymentSchemeWiseRow> createChannelVatReportPaymentSchemeWiseRows() {
+        channelVatReportPaymentSchemeWiseRows = new ArrayList<>();
+        columns=new ArrayList<>();
+        ChannelVatReportPaymentSchemeWiseRow row;
+        ColumnModel c;
+        for (PaymentMethod pm : fetchPaymentMethods()) {
+            row = new ChannelVatReportPaymentSchemeWiseRow();
+            System.out.println("pm = " + pm);
+            row.setPm(pm);
+            row.setTot(totalsBetweenDates(pm, toDate, toDate));
+            channelVatReportPaymentSchemeWiseRows.add(row);
+        }
+        Long l = 0l;
+        for (String d : datesBetween(fromDate, toDate)) {
+            c = new ColumnModel();
+            
+            System.out.println("d = " + d);
+            c.setHeader(d.toUpperCase());
+            
+            c.setProperty(l.toString());
+            System.out.println("c.setProperty(l.toString()) = " + l.toString());
+//           c.setProperty(d);
+            columns.add(c);
+            l++;
+        }
+        c = new ColumnModel();
+        System.out.println("l = " + l);
+        c.setHeader("Total");
+        c.setProperty(l.toString());
+        columns.add(c);
+        return channelVatReportPaymentSchemeWiseRows;
     }
 
     public void createSpecilityWiseAppoinmentTotal() {
@@ -2245,6 +2353,22 @@ public class ChannelReportTempController implements Serializable {
 
     public void setCountsList(List<Long> countsList) {
         this.countsList = countsList;
+    }
+
+    public List<ChannelVatReportPaymentSchemeWiseRow> getChannelVatReportPaymentSchemeWiseRows() {
+        return channelVatReportPaymentSchemeWiseRows;
+    }
+
+    public void setChannelVatReportPaymentSchemeWiseRows(List<ChannelVatReportPaymentSchemeWiseRow> channelVatReportPaymentSchemeWiseRows) {
+        this.channelVatReportPaymentSchemeWiseRows = channelVatReportPaymentSchemeWiseRows;
+    }
+
+    public List<PaymentMethod> getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 
     //inner Classes(Data Structures)
@@ -2898,6 +3022,29 @@ public class ChannelReportTempController implements Serializable {
 
         public void setSum(long sum) {
             this.sum = sum;
+        }
+
+    }
+
+    public class ChannelVatReportPaymentSchemeWiseRow {
+
+        private PaymentMethod pm;
+        private List<Double> tot;
+
+        public PaymentMethod getPm() {
+            return pm;
+        }
+
+        public void setPm(PaymentMethod pm) {
+            this.pm = pm;
+        }
+
+        public List<Double> getTot() {
+            return tot;
+        }
+
+        public void setTot(List<Double> tot) {
+            this.tot = tot;
         }
 
     }
