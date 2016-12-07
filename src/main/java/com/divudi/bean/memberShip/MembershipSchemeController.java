@@ -70,7 +70,6 @@ public class MembershipSchemeController implements Serializable {
                     membershipScheme = patient.getPerson().getMembershipScheme();
                 }
             }
-
         }
 
         return membershipScheme;

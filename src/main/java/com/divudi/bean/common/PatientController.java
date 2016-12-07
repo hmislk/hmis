@@ -282,10 +282,10 @@ public class PatientController implements Serializable {
             UtilityController.addErrorMessage("Please enter a name");
             return;
         }
-        if (getCurrent().getPhn().equals("")) {
-            UtilityController.addErrorMessage("Please Enter PHN number");
-            return;
-        }
+//        if (getCurrent().getPhn().equals("")) {
+//            UtilityController.addErrorMessage("Please Enter PHN number");
+//            return;
+//        }
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());

@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -29,13 +30,21 @@
                         </p:calendar>
                         <h:outputLabel  value="Department" />
                         <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.department}" 
-                                        style="text-align: left; margin: px; padding: 0px;" 
+                                        style="text-align: left; margin: px; padding: 0px;" placeholder="Billed Department"
                                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                         itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                         requiredMessage="You must select a department" >
                         </p:autoComplete>
-<!--                        <h:outputLabel  value="Only OPD Income" />
-                        <p:selectBooleanCheckbox value="#{commonReport1.onlyOPD}" />-->
+                        <h:outputLabel  value="Item" />
+                        <au:complete_opd_service_Investigation value="#{commonReport1.item}" />
+                        <h:outputLabel  value="Item Category" />
+                        <au:complete_opd_catagery_service_Investigation value="#{commonReport1.category}" />
+                        <h:outputLabel  value="Income Department" />
+                        <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.incomeDepartment}" 
+                                        style="text-align: left; margin: px; padding: 0px;" placeholder="Income Department"
+                                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                                        itemLabel="#{dept.name}" forceSelection="true" rendered="true"
+                                        requiredMessage="You must select a department" ></p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="5">
                         <p:spacer width="70" height="1"/>
@@ -89,19 +98,19 @@
                         </f:facet>
                         <h:outputLabel value="#{bi.bill.patient.person.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Item Name" >
+                    <p:column headerText="Item Name" sortBy="#{bi.item.name}" >
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
                         <h:outputLabel value="#{bi.item.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Item Cat." >
+                    <p:column headerText="Item Cat." sortBy="#{bi.item.category.name}">
                         <f:facet name="header">
                             <h:outputLabel value="Item Cat."/>
                         </f:facet>
                         <h:outputLabel value="#{bi.item.category.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Dep. Name" >
+                    <p:column headerText="Dep. Name" sortBy="#{bi.bill.toDepartment.name}" >
                         <f:facet name="header">
                             <h:outputLabel value="Dep. Name"/>
                         </f:facet>

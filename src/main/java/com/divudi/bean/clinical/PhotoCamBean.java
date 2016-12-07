@@ -52,7 +52,7 @@ public class PhotoCamBean implements Serializable {
         this.patientController = patientController;
     }
 
-    public void oncapturePatientPhoto(CaptureEvent captureEvent) {
+        public void oncapturePatientPhoto(CaptureEvent captureEvent) {
         if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null || getPatientController().getCurrent().getId() == 0) {
             UtilityController.addErrorMessage("Patient ?");
             return;

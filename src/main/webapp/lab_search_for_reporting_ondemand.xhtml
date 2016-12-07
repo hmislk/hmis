@@ -36,26 +36,26 @@
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-                                    
+
                                     <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                                     value="#{searchController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >                                
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                            </p:autoComplete>
+                                                    completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                                    var="myItem" itemValue="#{myItem}" 
+                                                    itemLabel="#{myItem.bhtNo}" 
+                                                    size="30"  >                                
+                                        <p:column>
+                                            #{myItem.bhtNo}
+                                        </p:column>
+                                        <p:column>
+                                            #{myItem.patient.person.nameWithTitle}
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                        </p:column>
+                                    </p:autoComplete>
 
                                 </h:panelGrid>
                             </h:panelGrid>
@@ -278,7 +278,7 @@
                                                 <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
-                                            
+
                                             <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 

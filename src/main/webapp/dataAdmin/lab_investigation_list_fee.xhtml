@@ -94,8 +94,13 @@
                             </f:facet>
                             <h:outputLabel value="#{ix.item.category.name}" ></h:outputLabel>
                         </p:column>
-
-
+                        
+                        <p:column headerText="Inward Charge Category" >
+                            <f:facet name="header">
+                                <h:outputLabel value="Item Category Name"/>    
+                            </f:facet>
+                            <h:outputLabel value="#{ix.item.inwardChargeType.label}" ></h:outputLabel>
+                        </p:column>
 
                         <p:column headerText="Hospiatal Fee" >
                             <f:facet name="header">

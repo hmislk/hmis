@@ -58,7 +58,7 @@
                     </h:panelGrid>
                 </f:facet>
                 <p:dataTable id="tbl" value="#{commonReport1.biledBills}" var="b"  
-                             rowStyleClass="#{b.billClass eq 'class com.divudi.entity.RefundBill' ? 'redText' :b.billClass eq 'class com.divudi.entity.CancelledBill' ? 'greenText' :''}"
+                             rowStyleClass="#{b.billClass eq 'class com.divudi.entity.RefundBill' ? 'redText' :b.billClass eq 'class com.divudi.entity.CancelledBill' ? 'greenText' :b.cancelled eq true ? 'blueText':''}"
                              >
 
                     <f:facet name="header">
@@ -82,6 +82,14 @@
 
                         <p:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
                     </p:column>
+                    <p:column headerText="BillId" >
+                        <f:facet name="header">
+                            <h:outputLabel value="BillId"/>
+                        </f:facet>
+                        <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
+
+                        <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                    </p:column>
 
                     <p:column headerText="Date and Time" >
                         <f:facet name="header">
@@ -98,7 +106,7 @@
                         </f:facet>
                         <h:outputLabel value="#{b.patient.person.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Department" >
+                    <p:column headerText="Department" sortBy="#{b.toDepartment.name}">
                         <f:facet name="header">
                             <h:outputLabel value="Department"/>
                         </f:facet>
