@@ -396,7 +396,7 @@ public class CommonReport1 implements Serializable {
             m.put("rd", referringDoctor);
             sql = sql + " and b.referredBy=:rd ";
         }
-        sql = sql + " order by b.referredBy.person.name ";
+        sql = sql + " order by b.referredBy.person.name";
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
@@ -408,6 +408,62 @@ public class CommonReport1 implements Serializable {
         biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
             biledBillsTotal += bi.getNetValue() + bi.getVat();
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
+
+    }
+    
+    List<Bill> bill;
+
+    public List<Bill> getBill() {
+        return bill;
+    }
+
+    public void setBill(List<Bill> bill) {
+        this.bill = bill;
+    }
+    
+    
+    public void listBillItemsByReferringDoctorIncome() {
+
+        Date startTime = new Date();
+
+//        referralBillItems = new ArrayList<>();
+        Map m = new HashMap();
+        
+        String sql;
+
+       sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and (b.refunded=false or b.refunded is null) "
+                + " and b.createdAt between :fromDate and :toDate  "
+                + " and b.billType=:bt ";
+       
+       
+        if (department != null) {
+            sql += " and b.department=:dept ";
+            m.put("dept", department);
+        }
+        if (referringDoctor != null) {
+            m.put("rd", referringDoctor);
+            sql = sql + " and b.referredBy=:rd ";
+        }
+        sql = sql + " group by b.referredBy.person.name";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.OpdBill);
+        //System.out.println("sql = " + sql);
+        //System.out.println("temMap = " + temMap);
+//        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        
+
+        biledBillsTotal = 0.0;
+        for (Bill bilst : bill) {
+            biledBillsTotal += bilst.getNetTotal();
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
@@ -439,6 +495,40 @@ public class CommonReport1 implements Serializable {
             Doctor d = (Doctor) o[0];
             double tot = (double) o[1];
             DocTotal row = new DocTotal();
+            row.setDoctor(d);
+            row.setTotal(tot);
+            docTotals.add(row);
+            biledBillsTotal += tot;
+        }
+        System.out.println("docTotals.size() = " + docTotals.size());
+
+    }
+
+    public void listBillItemsByReferringDoctorSummeryIncome() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals=new ArrayList<>();
+
+        sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and b.createdAt between :fromDate and :toDate  "
+                + " and b.billType=:bt "
+                + " group by b.referredBy "
+                + " order by b.referredBy.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bt", BillType.OpdBill);
+
+        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        biledBillsTotal = 0.0;
+        for (Object[] o : objects) {
+            Doctor d= (Doctor) o[0];
+            double tot = (double) o[1];
+            DocTotal row=new DocTotal();
             row.setDoctor(d);
             row.setTotal(tot);
             docTotals.add(row);

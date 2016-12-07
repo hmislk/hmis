@@ -39,8 +39,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import static java.util.Collections.list;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,13 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 /**
@@ -604,32 +613,35 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
+//    ...............Create PDF.... Jasper.........
 
-//    ...............sendEmail...............................................
-
-    public void create() throws DocumentException, com.lowagie.text.DocumentException  {
-       String url = "http://localhost:8080/live/faces/newxhtml.xhtml";
+    public void create() throws DocumentException, com.lowagie.text.DocumentException {
+        String url = "http://localhost:8080/temp/faces/lab/lab_patient_report_print_email_pfd.xhtml";
         try {
-            
+
             final ITextRenderer iTextRenderer = new ITextRenderer();
 
             iTextRenderer.setDocument(url);
             iTextRenderer.layout();
 
             final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("D:\\ProJects\\LabReport\\LabReport.pdf"));
+                    = new FileOutputStream(new File("D:\\LabReport.pdf"));
 
             iTextRenderer.createPDF(fileOutputStream);
             fileOutputStream.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+//    ...............sendEmail...............................................
 
-    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException {
+    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, JRException {
+
+        System.out.println("" + getCurrent());
+        System.out.println("" + getCurrent());
+
         final String username = "ravisarani@archmage.lk";
         final String password = "archmage121";
 
@@ -662,14 +674,12 @@ public class PatientInvestigationController implements Serializable {
             //4) create new MimeBodyPart object and set DataHandler object to this object      
             MimeBodyPart msbp2 = new MimeBodyPart();
 
-//            createPDFDataSource();
             create();
-
 //            ................Pdf......................
-            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
-            DataSource source = new FileDataSource(filename);
+//            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
+            DataSource source = new FileDataSource("D:\\LabReport.pdf");
             msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName(filename);
+            msbp2.setFileName("/Labreport.pdf");
 
             //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
             Multipart multipart = new MimeMultipart();
@@ -1063,8 +1073,6 @@ public class PatientInvestigationController implements Serializable {
     public void setSms(Sms sms) {
         this.sms = sms;
     }
-
-    
 
     /**
      *
