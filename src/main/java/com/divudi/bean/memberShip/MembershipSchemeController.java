@@ -49,7 +49,7 @@ public class MembershipSchemeController implements Serializable {
     private List<MembershipScheme> items = null;
     String selectText = "";
     Institution lastInstitution;
-    
+
     public MembershipScheme fetchPatientMembershipScheme(Patient patient) {
         MembershipScheme membershipScheme = null;
         if (patient != null
@@ -96,6 +96,7 @@ public class MembershipSchemeController implements Serializable {
 
     public void prepareAdd() {
         current = new MembershipScheme();
+        fillItems();
     }
 
     public void setSelectedItems(List<MembershipScheme> selectedItems) {
@@ -122,7 +123,7 @@ public class MembershipSchemeController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
-        getItems();
+        fillItems();
     }
 
     public void setSelectText(String selectText) {
@@ -171,7 +172,7 @@ public class MembershipSchemeController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+        fillItems();
         current = null;
         getCurrent();
     }
@@ -181,19 +182,22 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getItems() {
-        if (items == null || !lastInstitution.equals(sessionController.getInstitution())) {
-            lastInstitution = sessionController.getInstitution();
-            String j;
-            j="select s "
-                    + " from MembershipScheme s "
-                    + " where s.retired=false "
-                    + " and s.institution=:ins "
-                    + " order by s.name";
-            Map m = new HashMap();
-            m.put("ins", lastInstitution);
-            items = getFacade().findBySQL(j,m);
+        if (items == null) {
+            items = new ArrayList<>();
         }
         return items;
+    }
+
+    public void fillItems() {
+        String j;
+        j = "select s "
+                + " from MembershipScheme s "
+                + " where s.retired=false "
+                + " and s.institution=:ins "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ins", sessionController.getInstitution());
+        items = getFacade().findBySQL(j, m);
     }
 
     public Institution getLastInstitution() {
@@ -204,8 +208,6 @@ public class MembershipSchemeController implements Serializable {
         this.lastInstitution = lastInstitution;
     }
 
-    
-    
     /**
      *
      */

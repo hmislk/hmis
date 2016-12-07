@@ -36,6 +36,8 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat" style="color: red;"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Card Summery Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
+
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -74,15 +76,18 @@
                                 </p:panel>
                             </h:panelGrid>
                             <h:panelGrid columns="1">
-                                <p:panel header="Consutant Reports" style="width: 400px;margin: auto;"  toggleable="true">  
+                                <p:panel header="Consultant Reports" style="width: 400px;margin: auto;"  toggleable="true">  
                                     <h:panelGrid columns="1">
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report()" action="/channel/channel_report_doctor_leave"/>  
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)(New)" action="/channel/channel_report_consultant_month_count_1"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)" action="/channel/channel_report_specility_month_count"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Patient Count()" action="/channel/channel_report_staff_wise_patient_count"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="BTT" action="/channel/channel_doctor_view_today_all"/>
                                         <p:commandButton styleClass="linkButton" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1" actionListener="#{channelReportController.clearWithDefultValue}"/>
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment count" action="/channel/channel_report_speciality_wise" />
+
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
@@ -140,6 +145,7 @@
                                     </h:panelGrid>
                                 </p:panel>
                             </h:panelGrid>
+                            
 
                         </h:panelGrid>
                     </p:panel>

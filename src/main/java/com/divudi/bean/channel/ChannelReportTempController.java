@@ -24,6 +24,7 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Consultant;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.RefundBill;
@@ -61,6 +62,7 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import org.joda.time.LocalDate;
 
 /**
  *
@@ -124,6 +126,13 @@ public class ChannelReportTempController implements Serializable {
     List<AgentHistory> agentHistorys;
     List<ChannelReferenceBookRow> channelReferenceBookRows;
     List<ChannelSheduleSummeryRow> channelSheduleSummeryRows;
+    List<String> headers;
+    List<ChannelDoctorCountsRow> channelDoctorCountsRows;
+    private List<ChannelReportSpecialityWiseSummeryRow> channelReportSpecialityWiseSummeryRows;
+    private List<ColumnModel> columns;
+    private List<String> dates;
+    private List<Long> countsList;
+    List<ColumnModel> columnModels;
     //
     Date fromDate;
     Date toDate;
@@ -1381,6 +1390,92 @@ public class ChannelReportTempController implements Serializable {
         return acsrs;
     }
 
+    public List<Long> fetchChannelDocCountsRows(Institution i, BillType bt, BillType[] bts, boolean withOutDoc, boolean count, Staff s, boolean byDate, Speciality sp) {
+        List<Long> ls = new ArrayList<>();
+        Date nowDate = getFromDate();
+        double netTot = 0.0;
+        while (nowDate.before(getToDate())) {
+            String formatedDate;
+            Date fd;
+            Date td;
+            if (byDate) {
+                fd = commonFunctions.getStartOfDay(nowDate);
+                td = commonFunctions.getEndOfDay(nowDate);
+                
+                DateFormat df = new SimpleDateFormat("yy MM dd");
+                formatedDate = df.format(fd);
+                System.out.println("formatedDate = " + formatedDate);
+
+            } else {
+                fd = commonFunctions.getStartOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(nowDate);
+
+                DateFormat df = new SimpleDateFormat("yy MM");
+                formatedDate = df.format(fd);
+                System.out.println("formatedDate = " + formatedDate);
+            }
+            double tmpTot = fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
+                    - (fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
+                    + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
+
+            ls.add((long) tmpTot);
+            netTot += tmpTot;
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            if (byDate) {
+                cal.add(Calendar.DATE, 1);
+            } else {
+                cal.add(Calendar.MONTH, 1);
+            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+        ls.add((long) netTot);
+        return ls;
+    }
+
+    public List<String> fetchChannelHeaders() {
+        headers = new ArrayList<>();
+        Date nowDate = getFromDate();
+        double netTot = 0.0;
+        while (nowDate.before(getToDate())) {
+            String formatedDate;
+            Date fd;
+            Date td;
+            if (byDate) {
+                fd = commonFunctions.getStartOfDay(nowDate);
+                td = commonFunctions.getEndOfDay(nowDate);
+
+                DateFormat df = new SimpleDateFormat(" yy MM dd ");
+                formatedDate = df.format(fd);
+                System.out.println("formatedDate = " + formatedDate);
+
+            } else {
+                fd = commonFunctions.getStartOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(nowDate);
+
+                DateFormat df = new SimpleDateFormat(" yyyy MMM ");
+                formatedDate = df.format(fd);
+                System.out.println("formatedDate = " + formatedDate);
+            }
+            headers.add(formatedDate);
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+            if (byDate) {
+                cal.add(Calendar.DATE, 1);
+            } else {
+                cal.add(Calendar.MONTH, 1);
+            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+        headers.add("Total");
+
+        return headers;
+    }
+
     public List<ChannelSummeryDateRangeBillTotalRow> fetchChannelSummeryRows(Speciality sp, List<BillType> bts) {
         List<ChannelSummeryDateRangeBillTotalRow> acsrs = new ArrayList<>();
 
@@ -1463,6 +1558,19 @@ public class ChannelReportTempController implements Serializable {
             sws.setChannelSummeryDateRangeBillTotalRows(fetchChannelSummeryRows(null, null, new BillType[]{BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff}, withOutDocPayment, count, null, byDate, sp));
             channelSummeryDateRangeBillTotalTables.add(sws);
         }
+    }
+
+    public void fetchStaffWiseChannelCount() {
+
+        channelDoctorCountsRows = new ArrayList<>();
+        for (Staff s : fetchBillsStaffs(null, Arrays.asList(new BillType []{BillType.ChannelPaid,BillType.ChannelCash,BillType.ChannelAgent}))) {
+            ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+            row.setStaff(s);
+            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
+            System.out.println("row.getCounts().size() = " + row.getCounts().size());
+            channelDoctorCountsRows.add(row);
+        }
+
     }
 
     public void fetchSpecilityWiseDoctorAppoinmentCount() {
@@ -1794,6 +1902,36 @@ public class ChannelReportTempController implements Serializable {
         fetchStaffWiseChannelTotalOrCount();
     }
 
+    public void createStaffWiseAppoinmentCountNew() {
+        columnModels=new ArrayList<>();
+        fetchChannelHeaders();
+        fetchStaffWiseChannelCount();
+        ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+        int i=channelDoctorCountsRows.size();
+        int j=headers.size();
+//        row.setCategoryName("Total");
+        List<Long> list=new ArrayList<>();
+        System.out.println("Time 1 = " + new Date());
+        for (int k = 0; k < j; k++) {
+            double total=0.0;
+            for (int l = 0; l < i; l++) {
+                total+=channelDoctorCountsRows.get(l).getCounts().get(k);
+            }
+            list.add((long)total);
+        }
+        row.setCounts(list);
+        System.out.println("Time 2 = " + new Date());
+        channelDoctorCountsRows.add(row);
+        Long l = 0l;
+        for (String h : headers) {
+            ColumnModel c = new ColumnModel();
+            c.setHeader(h);
+            c.setProperty(l.toString());
+            columnModels.add(c);
+            l++;
+        }
+    }
+
     public void createStaffWiseAppoinmentTotal() {
         Date startTime = new Date();
         fetchStaffWiseChannelTotalOrCount();
@@ -1803,6 +1941,123 @@ public class ChannelReportTempController implements Serializable {
 
     public void createSpecilityWiseAppoinmentCount() {
         fetchSpecilityWiseChannelTotalOrCount();
+    }
+
+    public List<ChannelReportSpecialityWiseSummeryRow> createChannelReportDoctorWise() {
+        columns = new ArrayList<>();
+        channelReportSpecialityWiseSummeryRows = new ArrayList<>();
+        ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();;
+        ColumnModel c = new ColumnModel();
+        List<Staff> doctors = fetchBillsStaffs(null, null);
+        System.out.println("doctors.size() = " + doctors.size());
+
+        for (Staff s : doctors) {
+
+            row = new ChannelReportSpecialityWiseSummeryRow();
+            System.out.println("s.getName() = " + s.getPerson().getName());
+            //ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();
+            row.setDoctor(s);
+            row.setCounts(countsBetweenDates(s, fromDate, toDate));
+
+            channelReportSpecialityWiseSummeryRows.add(row);
+
+        }
+
+        Long l = 0l;
+        for (String d : datesBetween(fromDate, toDate)) {
+            c = new ColumnModel();
+            System.out.println("d = " + d);
+            c.setHeader(d.toUpperCase());
+            c.setProperty(l.toString());
+//           c.setProperty(d);
+            columns.add(c);
+            l++;
+        }
+        c = new ColumnModel();
+        System.out.println("l = " + l);
+        c.setHeader("Total");
+        c.setProperty(l.toString());
+        columns.add(c);
+
+        System.out.println("channelReportSpecialityWiseSummeryRows.size() = " + channelReportSpecialityWiseSummeryRows.size());
+//        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
+//        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
+
+        return channelReportSpecialityWiseSummeryRows;
+    }
+
+    public List<String> datesBetween(Date fd, Date td) {
+        ColumnModel c = new ColumnModel();
+        List<String> dates = new ArrayList<>();
+        SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd");
+
+        String startDate = sm.format(fd);
+        String endDate = sm.format(td);
+
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+
+        System.out.println("start = " + start);
+        System.out.println("end = " + end);
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            dates.add(String.valueOf(date.getYear()) + " - " + String.valueOf(date.getMonthOfYear()) + " - " + String.valueOf(date.getDayOfMonth()));
+        }
+
+        System.out.println("dates.size() = " + dates.size());
+        return dates;
+
+    }
+
+    public List<Long> countsBetweenDates(Staff s, Date fd, Date td) {
+        ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();
+        List<Long> countsList = new ArrayList<>();
+        //  List<ChannelSummeryDateRangeBillTotalRow> acsrs = new ArrayList<>();
+        Date nowDate = getFromDate();
+        double btot = 0.0;
+        double ctot = 0.0;
+        double rtot = 0.0;
+        double netTot = 0.0;
+        while (nowDate.before(getToDate())) {
+            String formatedDate;
+
+//            if (byDate) {
+            fd = commonFunctions.getStartOfDay(nowDate);
+            td = commonFunctions.getEndOfDay(nowDate);
+//            System.out.println("td = " + td);
+//            System.out.println("fd = " + fd);
+//            System.out.println("nowDate = " + nowDate);
+
+            DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
+            formatedDate = df.format(fd);
+            System.out.println("formatedDate = " + formatedDate);
+
+//           
+            double ctot1 = fetchBillsTotal(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, null, null, null, new CancelledBill(), fd, td, null, null, false, true, s, null, null);
+            double rtot1 = fetchBillsTotal(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, null, null, null, new RefundBill(), fd, td, null, null, false, true, s, null, null);
+            double btot1 = fetchBillsTotal(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, null, null, null, new BilledBill(), fd, td, null, null, false, true, s, null, null);
+            ctot += ctot1;
+            rtot += rtot1;
+            btot += btot1;
+            netTot = btot1 - (ctot1 + rtot1);
+            countsList.add((long) netTot);
+            System.out.println(" netTot = " + netTot);
+
+            //acsrs.add(acsr);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(nowDate);
+//            if (byDate) {
+            cal.add(Calendar.DATE, 1);
+//            } else {
+//                cal.add(Calendar.MONTH, 1);
+//            }
+            nowDate = cal.getTime();
+            System.out.println("nowDate = " + nowDate);
+        }
+        //row.setSum((long) netTot);
+        countsList.add((long) (btot - (ctot + rtot)));
+        System.out.println("((long) (btot - (ctot + rtot))) = " + ((long) (btot - (ctot + rtot))));
+        System.out.println("countsList.size() = " + countsList.size());
+        return countsList;
     }
 
     public void createSpecilityWiseAppoinmentTotal() {
@@ -1942,6 +2197,54 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("Service Session list.size() = " + list.size());
 
         return list;
+    }
+
+    public ChannelReportController getChannelReportController() {
+        return channelReportController;
+    }
+
+    public void setChannelReportController(ChannelReportController channelReportController) {
+        this.channelReportController = channelReportController;
+    }
+
+    public List<String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(List<String> headers) {
+        this.headers = headers;
+    }
+
+    public List<ChannelReportSpecialityWiseSummeryRow> getChannelReportSpecialityWiseSummeryRows() {
+        return channelReportSpecialityWiseSummeryRows;
+    }
+
+    public void setChannelReportSpecialityWiseSummeryRows(List<ChannelReportSpecialityWiseSummeryRow> channelReportSpecialityWiseSummeryRows) {
+        this.channelReportSpecialityWiseSummeryRows = channelReportSpecialityWiseSummeryRows;
+    }
+
+    public List<ColumnModel> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<ColumnModel> columns) {
+        this.columns = columns;
+    }
+
+    public List<String> getDates() {
+        return dates;
+    }
+
+    public void setDates(List<String> dates) {
+        this.dates = dates;
+    }
+
+    public List<Long> getCountsList() {
+        return countsList;
+    }
+
+    public void setCountsList(List<Long> countsList) {
+        this.countsList = countsList;
     }
 
     //inner Classes(Data Structures)
@@ -2544,6 +2847,83 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
+    public class ChannelDoctorCountsRow {
+
+        Staff staff;
+        List<Long> counts;
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public List<Long> getCounts() {
+            return counts;
+        }
+
+        public void setCounts(List<Long> counts) {
+            this.counts = counts;
+        }
+    }
+
+    public class ChannelReportSpecialityWiseSummeryRow {
+
+        private Staff doctor;
+        private List<Long> counts;
+        private long sum = 0l;
+
+        public Staff getDoctor() {
+            return doctor;
+        }
+
+        public void setDoctor(Staff doctor) {
+            this.doctor = doctor;
+        }
+
+        public List<Long> getCounts() {
+            return counts;
+        }
+
+        public void setCounts(List<Long> counts) {
+            this.counts = counts;
+        }
+
+        public long getSum() {
+
+            return sum;
+        }
+
+        public void setSum(long sum) {
+            this.sum = sum;
+        }
+
+    }
+
+    public class ColumnModel {
+
+        private String header;
+        private String property;
+
+        public String getHeader() {
+            return header;
+        }
+
+        public void setHeader(String header) {
+            this.header = header;
+        }
+
+        public String getProperty() {
+            return property;
+        }
+
+        public void setProperty(String property) {
+            this.property = property;
+        }
+    }
+
     //Getters and Setters
     public Date getFromDate() {
         if (fromDate == null) {
@@ -2913,6 +3293,22 @@ public class ChannelReportTempController implements Serializable {
 
     public void setChannelSheduleSummeryRows(List<ChannelSheduleSummeryRow> channelSheduleSummeryRows) {
         this.channelSheduleSummeryRows = channelSheduleSummeryRows;
+    }
+
+    public List<ChannelDoctorCountsRow> getChannelDoctorCountsRows() {
+        return channelDoctorCountsRows;
+    }
+
+    public void setChannelDoctorCountsRows(List<ChannelDoctorCountsRow> channelDoctorCountsRows) {
+        this.channelDoctorCountsRows = channelDoctorCountsRows;
+    }
+
+    public List<ColumnModel> getColumnModels() {
+        return columnModels;
+    }
+
+    public void setColumnModels(List<ColumnModel> columnModels) {
+        this.columnModels = columnModels;
     }
 
 }

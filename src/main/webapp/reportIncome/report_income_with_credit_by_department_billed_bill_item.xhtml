@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
 
     <ui:define name="content">
@@ -29,23 +30,26 @@
                         </p:calendar>
                         <h:outputLabel  value="Department" />
                         <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.department}" 
-                                        style="text-align: left; margin: px; padding: 0px;" 
+                                        style="text-align: left; margin: px; padding: 0px;" placeholder="Billed Department"
                                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
                                         itemLabel="#{dept.name}" forceSelection="true" rendered="true"
                                         requiredMessage="You must select a department" >
                         </p:autoComplete>
-                        <h:outputLabel  value="Only OPD Income" />
-                        <p:selectOneRadio value="#{commonReport1.radio}" >
-                            <f:selectItem itemLabel="All" itemValue="1" />
-                            <f:selectItem itemLabel="Only OPD" itemValue="2" />
-                            <f:selectItem itemLabel="Only Channel" itemValue="3" />
-                            <f:selectItem itemLabel="Only Pharmacy" itemValue="4" />
-                        </p:selectOneRadio>
+                        <h:outputLabel  value="Item" />
+                        <au:complete_opd_service_Investigation value="#{commonReport1.item}" />
+                        <h:outputLabel  value="Item Category" />
+                        <au:complete_opd_catagery_service_Investigation value="#{commonReport1.category}" />
+                        <h:outputLabel  value="Income Department" />
+                        <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.incomeDepartment}" 
+                                        style="text-align: left; margin: px; padding: 0px;" placeholder="Income Department"
+                                        completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" 
+                                        itemLabel="#{dept.name}" forceSelection="true" rendered="true"
+                                        requiredMessage="You must select a department" ></p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="5">
                         <p:spacer width="70" height="1"/>
                         <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" 
-                                         action="#{commonReport1.createWithCreditbyDepartmentBilled()}">
+                                         action="#{commonReport1.createWithCreditbyDepartmentBilledBillItem()}">
                         </p:commandButton>
                         <p:defaultCommand target="btnRefresh"/>
 
@@ -57,9 +61,7 @@
                         </p:commandButton>
                     </h:panelGrid>
                 </f:facet>
-                <p:dataTable id="tbl" value="#{commonReport1.biledBills}" var="b"  
-                             rowStyleClass="#{b.billClass eq 'class com.divudi.entity.RefundBill' ? 'redText' :b.billClass eq 'class com.divudi.entity.CancelledBill' ? 'greenText' :b.cancelled eq true ? 'blueText':''}"
-                             >
+                <p:dataTable id="tbl" value="#{commonReport1.billItems}" var="bi" >
 
                     <f:facet name="header">
                         <h:outputLabel value="Income Report With Credit By Department :"/>
@@ -78,24 +80,14 @@
                         <f:facet name="header">
                             <h:outputLabel value="BillId"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.insId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
-
-                        <p:outputLabel value="#{b.billedBill.insId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
-                    </p:column>
-                    <p:column headerText="BillId" >
-                        <f:facet name="header">
-                            <h:outputLabel value="BillId"/>
-                        </f:facet>
-                        <p:outputLabel value="#{b.deptId}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" />
-
-                        <p:outputLabel value="#{b.billedBill.deptId}" rendered="#{b.billClass ne 'class com.divudi.entity.BilledBill'}" />
+                        <p:outputLabel value="#{bi.bill.insId}" />
                     </p:column>
 
                     <p:column headerText="Date and Time" >
                         <f:facet name="header">
                             <h:outputLabel value="Date and Time"/>
                         </f:facet>
-                        <p:outputLabel value="#{b.createdAt}" >
+                        <p:outputLabel value="#{bi.bill.createdAt}" >
                             <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss a"/>
                         </p:outputLabel>
                     </p:column>
@@ -104,23 +96,35 @@
                         <f:facet name="header">
                             <h:outputLabel value="Name"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.patient.person.name}" ></h:outputLabel>
+                        <h:outputLabel value="#{bi.bill.patient.person.name}" ></h:outputLabel>
                     </p:column>
-                    <p:column headerText="Department" sortBy="#{b.toDepartment.name}">
+                    <p:column headerText="Item Name" sortBy="#{bi.item.name}" >
                         <f:facet name="header">
-                            <h:outputLabel value="Department"/>
+                            <h:outputLabel value="Item Name"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.toDepartment.name}" ></h:outputLabel>
+                        <h:outputLabel value="#{bi.item.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Item Cat." sortBy="#{bi.item.category.name}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Cat."/>
+                        </f:facet>
+                        <h:outputLabel value="#{bi.item.category.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Dep. Name" sortBy="#{bi.bill.toDepartment.name}" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Dep. Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bi.bill.toDepartment.name}" ></h:outputLabel>
                     </p:column>
                     <p:column headerText="Hospital Fee" style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Hospital Fee"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.total - b.staffFee}" >
+                        <h:outputLabel value="#{bi.hospitalFee}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{commonReport1.total-commonReport1.staffTotal}" >
+                            <h:outputLabel value="#{commonReport1.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -129,7 +133,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Dis."/>
                         </f:facet>
-                        <h:outputLabel value="#{b.discount}" >
+                        <h:outputLabel value="#{bi.discount}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
@@ -142,7 +146,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Prof. Fee"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.staffFee}" >
+                        <h:outputLabel value="#{bi.staffFee}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
@@ -155,7 +159,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Vat"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.vat}" >
+                        <h:outputLabel value="#{bi.vat}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
@@ -168,7 +172,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Net Total"/>
                         </f:facet>
-                        <h:outputLabel value="#{b.netTotal+b.vat}" >
+                        <h:outputLabel value="#{bi.netValue+bi.vat}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">

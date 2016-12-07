@@ -287,10 +287,12 @@ public class PatientReportBean {
 
         //Add Antibiotics
         List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
+        System.out.println("abs.size() = " + abs.size());
 
         for (Antibiotic a : abs) {
             System.err.println("*** " + a.getName());
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
+            System.out.println("*****ii = " + ii);
             PatientReportItemValue val;
             sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
                     + " and i.investigationItem=:inv";
@@ -325,39 +327,43 @@ public class PatientReportBean {
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
-        sql = "select ii from InvestigationItem ii where ii.item=:i and ii.name=:a and ii.retired=false and ii.ixItemType=:iit and ii.ixItemValueType=:iivt";
+        sql = "select ii from InvestigationItem ii where ii.item=:i "
+                + " and ii.name=:a "
+                + " and ii.retired=false "
+                + " and ii.ixItemType=:iit "
+                + " and ii.ixItemValueType=:iivt";
         m.put("i", i);
         m.put("a", a.getName());
         m.put("iit", InvestigationItemType.Value);
         m.put("iivt", InvestigationItemValueType.Varchar);
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
-        if (ii==null) {
-            System.out.println("-------a.getName() = " + a.getName());
+        System.out.println("-------");
+        System.out.println("ii = " + ii);
+        System.out.println("a.getName() = " + a.getName());
+        System.out.println("i.getName() = " + i.getName());
+        System.out.println("-------");
+
+        if (ii == null) {
+            ii = new InvestigationItem();
+            try {
+                getIiFacade().create(ii);
+            } catch (Exception e) {
+            }
+            ii.setName(a.getName());
+            ii.setItem(i);
+            ii.setIxItemType(InvestigationItemType.Value);
+            ii.setIxItemValueType(InvestigationItemValueType.Varchar);
+            ii.setCssTop("90%");
+            System.out.println("ii.getId() = " + ii.getId());
+            System.out.println("i.getId() = " + i.getId());
+            getIiFacade().edit(ii);
+            
+            i.getReportItems().add(ii);
+            getIxFacade().edit(i);
+
+        } else {
+            System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
         }
-//        if (ii == null) {
-//            //System.out.println("ii is null");
-//            try {
-//                ii = new InvestigationItem();
-//                ii.setName(a.getName());
-//                ii.setItem(i);
-//                ii.setIxItemType(InvestigationItemType.Value);
-//                ii.setIxItemValueType(InvestigationItemValueType.Varchar);
-//                ii.setCssTop("90%");
-//                System.out.println("ii.getId() = " + ii.getId());
-//                System.out.println("i.getId() = " + i.getId());
-//                if (ii.getId() == null || ii.getId()==0) {
-//                    getIiFacade().create(ii);
-//                }else{
-//                    getIiFacade().edit(ii);
-//                }
-//                i.getReportItems().add(ii);
-//                getIxFacade().edit(i);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            //System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
-//        }
         return ii;
     }
 
