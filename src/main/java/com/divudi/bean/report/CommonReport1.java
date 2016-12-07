@@ -16,9 +16,11 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
@@ -64,6 +66,9 @@ public class CommonReport1 implements Serializable {
     private BillType billType;
     private Institution creditCompany;
     PaymentScheme paymentScheme;
+    Item item;
+    Department incomeDepartment;
+    Category category;
     /////////////////////
     private BillsTotals billedBills;
     private BillsTotals cancellededBills;
@@ -1674,14 +1679,34 @@ public class CommonReport1 implements Serializable {
     public List<BillItem> getLabBillItemsOwnBilled() {
         List<BillType> billTypes = Arrays.asList(new BillType[]{BillType.OpdBill});
 
-        String sql = "select bi from BillItem bi join bi.bill b "
+        Map tm = new HashMap();
+        String sql;
+        
+        sql= "select bi from BillItem bi join bi.bill b "
                 + " where b.retired=false "
                 + " and b.billType in :billType "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.department=:dep "
-                + " order by bi.item.category.name, bi.bill.toDepartment.name";
+                + " and b.department=:dep ";
+        
+        if (category!=null) {
+            sql+=" and bi.item.category=:cat ";
+            tm.put("cat", category);
+        }
+        
+        if (item!=null) {
+            sql+=" and bi.item=:itm ";
+            tm.put("itm", item);
+        }
+        
+        if (incomeDepartment!=null) {
+            sql+=" and bi.bill.toDepartment=:indept ";
+            tm.put("indept", incomeDepartment);
+        }
+        
+        sql+=" order by bi.item.category.name, bi.bill.toDepartment.name";
+                
 
-        Map tm = new HashMap();
+        
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
         tm.put("billType", billTypes);
@@ -1999,6 +2024,30 @@ public class CommonReport1 implements Serializable {
 
     public void setVat(double vat) {
         this.vat = vat;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public Department getIncomeDepartment() {
+        return incomeDepartment;
+    }
+
+    public void setIncomeDepartment(Department incomeDepartment) {
+        this.incomeDepartment = incomeDepartment;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }
