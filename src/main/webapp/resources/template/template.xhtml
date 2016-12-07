@@ -681,6 +681,8 @@
                                 </p:submenu>
                                 <p:submenu styleClass="rightBordrOnly" label="EHR"  rendered="#{webUserController.hasPrivilege('Clinical')}">
                                     <p:menuitem ajax="false" action="/clinical/clinical_patient_for_receptionist" value="Patients"/>
+                                    <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration"/>
+                                    <p:menuitem ajax="false" action="/clinical/membership_registration" value="Membership"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_queue" value="Queue"/>
                                     <p:menuitem ajax="false" action="/clinical/clinical_reports_index" value="Reports"/>
                                     <p:menuitem ajax="false" action="/clinical/favourite_index" value="Favourites"/>

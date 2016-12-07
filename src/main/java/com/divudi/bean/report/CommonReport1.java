@@ -494,7 +494,7 @@ public class CommonReport1 implements Serializable {
 
     }
 
-    public void listBillItemsByReferringDoctorSummery() {
+    public void listBillItemsByReferringDoctorSummeryIncome() {
 
         Map m = new HashMap();
         String sql;

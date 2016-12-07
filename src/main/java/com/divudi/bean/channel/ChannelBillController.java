@@ -784,7 +784,7 @@ public class ChannelBillController implements Serializable {
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
                 if (cancelPaymentMethod == PaymentMethod.Agent) {
-                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()+bill.getVat()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
+                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal() + bill.getVat()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
                 }
             }
 
@@ -1784,15 +1784,18 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(f.getFee());
             }
 
-            if (f.getFeeType() == FeeType.Staff) {
-                bf.setFeeGrossValue(bf.getFeeValue());
-                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
-                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
-            } else {
-                bf.setFeeGrossValue(bf.getFeeValue());
-                bf.setFeeVat(0.0);
-                bf.setFeeVatPlusValue(bf.getFeeValue());
-            }
+            bf.setFeeGrossValue(bf.getFeeValue());
+            bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+            bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+//            if (f.getFeeType() == FeeType.Staff) {
+//                bf.setFeeGrossValue(bf.getFeeValue());
+//                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+//                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+//            } else {
+//                bf.setFeeGrossValue(bf.getFeeValue());
+//                bf.setFeeVat(0.0);
+//                bf.setFeeVatPlusValue(bf.getFeeValue());
+//            }
 
             if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
@@ -2013,7 +2016,7 @@ public class ChannelBillController implements Serializable {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal()+savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal() + savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
