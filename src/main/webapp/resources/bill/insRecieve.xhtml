@@ -182,7 +182,7 @@
                                  position: absolute;
                                  left: 10%;
                                  top: 25%;" >
-                                <h:dataTable value="#{cc.attrs.billController.billItems}" var="b" >                                               
+                                <h:dataTable value="#{cc.attrs.bill.billItems}" var="b" >                                               
                                     <p:column >                                                     
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.patientEncounter.bhtNo} - " rendered="#{b.patientEncounter ne null}"/>
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.referenceBill.insId}" rendered="#{b.patientEncounter eq null}"/>
