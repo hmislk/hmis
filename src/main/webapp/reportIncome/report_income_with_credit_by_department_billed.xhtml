@@ -106,6 +106,14 @@
                         </f:facet>
                         <h:outputLabel value="#{b.patient.person.name}" ></h:outputLabel>
                     </p:column>
+                    
+                    <p:column headerText="Cons. Name" sortBy="#{b.staff.person.name}" rendered="#{commonReport1.radio eq '3'}" >
+                        <f:facet name="header">
+                            <h:outputLabel value="Cons. Name"/>
+                        </f:facet>
+                        <h:outputLabel value="#{b.staff.person.name}" ></h:outputLabel>
+                    </p:column>
+                    
                     <p:column headerText="Department" sortBy="#{b.toDepartment.name}">
                         <f:facet name="header">
                             <h:outputLabel value="Department"/>
