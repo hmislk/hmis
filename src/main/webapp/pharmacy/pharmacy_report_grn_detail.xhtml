@@ -256,7 +256,13 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Referenace Institution"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
+                            <h:outputLabel value="#{b1.billedBill.referenceInstitution.name}"/>
+                        </p:column>
+                        <p:column headerText="Suplier" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Suplier"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{b1.fromInstitution.name}"/>
                         </p:column>
                         <p:column headerText="Cancelled At"   >
                             <f:facet name="header">  
@@ -406,7 +412,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Referenace Institution"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.referenceInstitution.name}"/>
+                            <h:outputLabel value="#{b.referenceBill.referenceInstitution.name}"/>
                         </p:column>
 
                         <p:column headerText="Return At"  >
@@ -422,7 +428,7 @@
                             <f:facet name="header">  
                                 <h:outputLabel value="Suplier Name"/>
                             </f:facet> 
-                            <h:outputLabel value="#{b.fromInstitution.name}"/>
+                            <h:outputLabel value="#{b.toInstitution.name}"/>
 
                         </p:column>                        
                         
