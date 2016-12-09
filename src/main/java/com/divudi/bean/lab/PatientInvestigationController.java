@@ -39,10 +39,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import static java.util.Collections.list;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,13 +70,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 /**
@@ -637,7 +628,7 @@ public class PatientInvestigationController implements Serializable {
     }
 //    ...............sendEmail...............................................
 
-    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, JRException {
+    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
 
         System.out.println("" + getCurrent());
         System.out.println("" + getCurrent());
