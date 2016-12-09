@@ -5,8 +5,20 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
+    <script type="text/javascript">
+        function handleLoginRequest(xhr, status, args) {
+            if (args.validationFailed || !args.loggedIn) {
+                PF('dlg1').jq.effect("shake", {times: 5}, 100);
+            }
+            else {
+                PF('dlg1').hide();
+                $('#loginLink').fadeOut();
+            }
+        }
+    </script>
 
     <h:body>
+
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -93,8 +105,9 @@
                                     <p:commandButton id="btnAddPt" 
                                                      style="float: right;" 
                                                      value="Add New Patient" process="btnAddPt" 
-                                                     update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                     action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" >
+                                                     update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail') } :#{p:component('pan1') } " 
+                                                     action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" 
+                                                     >
                                     </p:commandButton>
                                 </f:facet>
 
@@ -105,46 +118,20 @@
 
                                         <h:panelGrid id="patientDetail" columns="2" >
                                             <p:panel>
-                                                <h:panelGrid columns="3" style="margin-bottom:7px;" id="pan">
-                                                    <p:selectOneRadio id="memPck" >
-                                                        <f:selectItem itemLabel="Individual" itemValue="1"/>
-                                                        <f:selectItem itemLabel="Family" itemValue="2"/>
-                                                        <f:ajax event="change" execute="@this" render="pan2"/>
-                                                    </p:selectOneRadio>
+                                                <h:panelGrid columns="2" style="margin-bottom:7px;" id="pan">
+                                                    <h:selectOneRadio value="#{patientController.membershipTypeListner}" >
+                                                        <f:selectItem itemLabel="Individual" itemValue="1" />
+                                                        <f:selectItem itemLabel="Family" itemValue="2" />
+                                                        <f:ajax event="change" execute="@this" render="pan5 " listener="#{patientController.getMembershipTypeListner()}"/>  </h:selectOneRadio>
+                                                </h:panelGrid>
+                                                <h:panelGrid id="pan5">
+                                                    <p:commandButton  ajax="true" type="button" value="Add Family Members" onclick="dlg.show();" rendered="#{patientController.membershipTypeListner eq '2'}" actionListener="#{patientController.listnerFamilyMember()}" />
                                                 </h:panelGrid>
 
-                                                <p:commandButton id="btnFamily" type="button" value="Add Family Members" onclick="dlg.show();"  process="btnFamily" update="#{p:component('panDoc')}" rendered=""/>
 
-                                                <p:dialog id="panDoc" header="Add Members" widgetVar="dlg" resizable="false">
-                                                    <p:commandButton type="button" value="Add"/>
 
-                                                    <p:panel id="pan2">
-                                                        <p:panelGrid columns="2" id="panGrid2">
-                                                            <h:outputLabel value="Title"/>
-                                                            <p:selectOneMenu   value="#{patientController.current.person.title}"  >
-                                                                <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
-                                                            </p:selectOneMenu>
-                                                            <h:outputLabel value=" Full Name"/>
-                                                            <p:inputText autocomplete="off"  style="width: 200px;text-transform:uppercase;">
-                                                            </p:inputText>
-                                                            <h:outputLabel value="Gender"/>
-                                                            <p:selectOneMenu  value="#{patientController.current.person.sex}" style="width: 200px;">
-                                                                <f:selectItem itemLabel="Select Sex"/>
-                                                                <f:selectItems value="#{patientController.sexs}"/>
-                                                            </p:selectOneMenu>
-                                                            <h:outputLabel value="NIC"/>
-                                                            <p:inputMask mask="999999999V"/>
-                                                            <h:outputLabel value="Code"/>
-                                                            <p:inputText />
-                                                            <h:outputLabel value="Age"/>
-                                                            <p:inputText/>
-                                                            <h:outputLabel value="Date of Birth"/>
-                                                            <p:inputText/>
-                                                            
-                                                        </p:panelGrid>
-                                                    </p:panel>
-                                                </p:dialog> 
-                                            </p:panel><br></br>
+
+                                            </p:panel>
 
                                             <p:panel id="pan1">
 
@@ -194,27 +181,37 @@
                                                     <p:inputText autocomplete="off"  id="txtNewPtEmail" value="#{patientController.current.person.email}">
                                                     </p:inputText>
                                                     <h:outputLabel value="Membership Category"/>
-                                                        <p:inputText autocomplete="off"  >
-                                                        </p:inputText>
+                                                    <p:inputText autocomplete="off"  >
+                                                    </p:inputText>
                                                 </p:panelGrid>
-                                                
-                                               
-                                                <p:dataTable id="familyDetails">
+
+
+                                                <p:dataTable id="familyDetails" value="#{patientController.familyMembers}" var="fm">
                                                     <p:column headerText="Name">
-                                                        <h:outputLabel></h:outputLabel>
+                                                        <h:outputLabel value="#{fm.fullName}"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="Gender">
-                                                        <h:outputLabel></h:outputLabel>
+                                                        <h:outputLabel value="#{fm.sex}"></h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="DOB">
-                                                        <h:outputLabel></h:outputLabel>
+                                                        <h:outputLabel value="#{fm.dob}">
+                                                            <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                                    </h:outputLabel>
                                                     </p:column>
                                                     <p:column headerText="NIC">
-                                                        <h:outputLabel></h:outputLabel>
+                                                        <h:outputLabel value="#{fm.nic}"></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Serial NO">
+                                                        <h:outputLabel value="#{fm.serealNumber}"></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Modify">
+                                                        <p:panelGrid columns="2" styleClass="noBorder noBorderGrid ">
+                                                            <p:commandButton value="Remove" action="#{patientController.removeFamilyMember(fm)}" update="familyDetails"/>
+                                                        </p:panelGrid>
                                                     </p:column>
                                                 </p:dataTable>
-                                               
-                                                
+
+
                                             </p:panel>
 
                                         </h:panelGrid>
@@ -280,7 +277,53 @@
                     </p:panel>
 
                 </h:form>
+                <h:form id="form1">
+                    <p:growl id="growl" sticky="true" showDetail="true" life="3000" />
+                    <p:dialog   header="Add Members" widgetVar="dlg" resizable="false" >
 
+
+                        <p:panel id="pan2">
+                            <p:panelGrid columns="2" id="panGrid2">
+
+                                <h:outputLabel value=" Full Name"/>
+                                <p:inputText autocomplete="off"  style="width: 200px;text-transform:uppercase;" value="#{patientController.familyMember.fullName}"  requiredMessage="please enter full name">
+                                </p:inputText>
+                                <h:outputLabel value="Gender"/>
+                                <p:selectOneMenu value="#{patientController.familyMember.sex}" style="width: 200px;"  requiredMessage="please select gender">
+                                    <f:selectItem itemLabel="Select Sex"/>
+                                    <f:selectItems value="#{patientController.sexs}" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="NIC"/>
+                                <p:inputText value="#{patientController.familyMember.nic}"  requiredMessage="please enter NIC no"/>
+
+                                <h:outputLabel value="Date of Birth"/>
+                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="dd/MM/yyyy"  requiredMessage="please enter date of birth"/>
+
+                                <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:component('familyDetails')} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
+                                <p:commandButton value="Cancel" onclick="PF('dlg').hide()" actionListener="#{patientController.listnerFamilyMember()}" ajax="false"/>
+                                <p:commandButton value="CLEAR" actionListener="#{patientController.listnerFamilyMember()}" update="pan2"/>
+                            </p:panelGrid>
+                        </p:panel>
+
+                    </p:dialog> </h:form>
+
+                <script type="text/javascript">
+                    function handleLoginRequest(xhr, status, args) {
+                        if (!args.loggedIn) {
+                            PF('dlg').jq.effect("shake", {times: 5}, 100);
+                        }
+                        else {
+                            PF('dlg').hide();
+
+                        }
+                    }
+                </script>
+                <script>
+                    function reloadPage() {
+                        location.reload();
+                    }
+                </script>
             </ui:define>
 
 
