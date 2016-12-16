@@ -23,15 +23,18 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
+import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -53,12 +56,15 @@ public class PatientController implements Serializable {
     PracticeBookingController practiceBookingController;
 
     private Patient current;
-    
+    private Person familyMember;
+    private List<Person> familyMembers;
+    ;
     private List<Patient> items = null;
 
     @EJB
     private PersonFacade personFacade;
     private Date dob;
+    private String membershipTypeListner = "1";
 
     @Inject
     PatientEncounterController PatientEncounterController;
@@ -98,6 +104,63 @@ public class PatientController implements Serializable {
                 //   //System.out.println("ex = " + ex.getMessage());
             }
         }
+    }
+
+    public void createFamilymembers(ActionEvent event) {
+
+        RequestContext context = RequestContext.getCurrentInstance();
+        FacesMessage message = null;
+        boolean loggedIn;
+
+        if (familyMember.getFullName() == null || familyMember.getFullName().equals("")) {
+            loggedIn = false;
+            UtilityController.addErrorMessage("Please enter full name");
+            return;
+
+        }
+        if (familyMember.getSex() == null) {
+            loggedIn = false;
+            UtilityController.addErrorMessage("Please enter gender");
+            return;
+
+        }
+        if (familyMember.getNic() == null || familyMember.getNic().equals("")) {
+            loggedIn = false;
+            UtilityController.addErrorMessage("Please enter NIC no");
+            return;
+        }
+        if (familyMember.getDob() == null) {
+            loggedIn = false;
+            UtilityController.addErrorMessage("Please enter Date Of Birth");
+            return;
+        }
+        familyMember.setSerealNumber(familyMembers.size());
+        familyMembers.add(familyMember);
+        loggedIn = true;
+        System.out.println("familyMembers.size() = " + familyMembers.size());
+
+        familyMember = null;
+
+        context.addCallbackParam("loggedIn", loggedIn);
+    }
+
+    public void removeFamilyMember(Person p) {
+        
+        familyMembers.remove(p.getSerealNumber());
+        int i=0;
+        for (Person familyMember1 : familyMembers) {
+            familyMember1.setSerealNumber(i);
+            i++;
+        }
+    }
+
+    public void listnerFamilyMember() {
+        familyMember = null;
+
+    }
+
+    public void listnerMembershipType() {
+        membershipTypeListner = null;
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -166,13 +229,15 @@ public class PatientController implements Serializable {
     }
 
     public void prepareAddReg() {
-       prepareAdd();
-       current.setCode(null);
+        prepareAdd();
+        current.setCode(null);
     }
 
     public void prepareAdd() {
         current = null;
         yearMonthDay = null;
+        //familyMember=null;
+        familyMembers = new ArrayList<>();
         getCurrent();
 
         getYearMonthDay();
@@ -339,8 +404,6 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
- 
-
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
@@ -422,6 +485,36 @@ public class PatientController implements Serializable {
 
     public void setBarcode(StreamedContent barcode) {
         this.barcode = barcode;
+    }
+
+    public String getMembershipTypeListner() {
+        return membershipTypeListner;
+    }
+
+    public void setMembershipTypeListner(String membershipTypeListner) {
+        this.membershipTypeListner = membershipTypeListner;
+    }
+
+    public Person getFamilyMember() {
+        if (familyMember == null) {
+            familyMember = new Person();
+        }
+        return familyMember;
+    }
+
+    public void setFamilyMember(Person familyMember) {
+        this.familyMember = familyMember;
+    }
+
+    public List<Person> getFamilyMembers() {
+        if (familyMembers == null) {
+            familyMembers = new ArrayList<>();
+        }
+        return familyMembers;
+    }
+
+    public void setFamilyMembers(List<Person> familyMembers) {
+        this.familyMembers = familyMembers;
     }
 
     /**
@@ -579,7 +672,5 @@ public class PatientController implements Serializable {
             }
         }
     }
-
- 
 
 }

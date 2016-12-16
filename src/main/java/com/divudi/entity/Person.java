@@ -111,6 +111,8 @@ public class Person implements Serializable {
     String age;
     @Transient
     long ageInDays;
+    @Transient
+    int serealNumber;
     
     public boolean isForeigner() {
         return foreigner;
@@ -468,5 +470,13 @@ public class Person implements Serializable {
 
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
+    }
+
+    public int getSerealNumber() {
+        return serealNumber;
+    }
+
+    public void setSerealNumber(int serealNumber) {
+        this.serealNumber = serealNumber;
     }
 }
