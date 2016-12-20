@@ -23,6 +23,13 @@ import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.TestFlagFacade;
+import com.lowagie.text.DocumentException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,19 +40,23 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Named;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+import javax.faces.context.FacesContext;
+import java.net.URL;
 
 /**
  *
@@ -246,7 +257,7 @@ public class PatientReportController implements Serializable {
                 m.put("iii", priv.getInvestigationItem());
                 System.out.println("m = " + m);
                 System.out.println("sql = " + sql);
-                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql,m);
+                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql, m);
                 double result = 0;
                 System.out.println("ixcals size is " + ixCals.size());
                 calString = "";
@@ -574,6 +585,36 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
 
     }
+  
+    static final String pdf_url = "http://localhost:8080/temp/faces/lab_patient_report.xhtml";
+
+    public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
+//        long serialVersionUID = 626953318628565053L;
+        System.out.println("enter 1");
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        System.out.println("enter 2");
+        response.reset();
+        response.setHeader(pdf_url, "application/pdf");
+        System.out.println("enter 3");
+        OutputStream outputStream = response.getOutputStream();
+        System.out.println("enter 4");
+        URL url = new URL(pdf_url);
+        InputStream pdfInputStream = url.openStream();
+        System.out.println("enter 5");
+        byte[] byteBuffer = new byte[2048];
+        int byteRead;
+        System.out.println("enter 6");
+        while ((byteRead = pdfInputStream.read(byteBuffer)) > 0) {
+            outputStream.write(byteBuffer, 0, byteRead);
+        }
+        System.out.println("enter 7");
+        outputStream.flush();
+        pdfInputStream.close();
+
+        facesContext.responseComplete();
+
+    }
 
     public String getSelectText() {
         return selectText;
@@ -688,13 +729,14 @@ public class PatientReportController implements Serializable {
 //            cpt = getFacade().find(currentPatientReport.getId());
 //            currentPatientReport = cpt;
 //        }
+        System.out.println("currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
     }
 
     public PatientReport getLastPatientReport(Investigation ix) {
         System.err.println("getLastPatientReport");
         String j;
-        PatientReport pr ;
+        PatientReport pr;
         Map m = new HashMap();
         if (ix.getReportedAs() == null) {
             m.put("ix", ix);
@@ -714,6 +756,8 @@ public class PatientReportController implements Serializable {
 
     public void createNewReport(PatientInvestigation pi) {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
+        System.out.println("ix.getName() = " + ix.getName());
+        System.out.println("pi.getInvestigation().getName() = " + pi.getInvestigation().getName());
         currentReportInvestigation = ix;
         currentPtIx = pi;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
@@ -742,10 +786,13 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
+        
         this.currentPatientReport = currentPatientReport;
+        
         if (currentPatientReport != null) {
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
+            System.out.println("setcurrentPatientReport.currentPtIx = " + currentPtIx);
         }
     }
 

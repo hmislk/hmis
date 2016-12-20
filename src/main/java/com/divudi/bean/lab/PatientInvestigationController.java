@@ -604,32 +604,35 @@ public class PatientInvestigationController implements Serializable {
 
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
+//    ...............Create PDF.... Jasper.........
 
-//    ...............sendEmail...............................................
-
-    public void create() throws DocumentException, com.lowagie.text.DocumentException  {
-       String url = "http://localhost:8080/live/faces/newxhtml.xhtml";
+    public void create() throws DocumentException, com.lowagie.text.DocumentException {
+        String url = "http://localhost:8080/temp/faces/lab/lab_patient_report_print_email_pfd.xhtml";
         try {
-            
+
             final ITextRenderer iTextRenderer = new ITextRenderer();
 
             iTextRenderer.setDocument(url);
             iTextRenderer.layout();
 
             final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("D:\\ProJects\\LabReport\\LabReport.pdf"));
+                    = new FileOutputStream(new File("D:\\LabReport.pdf"));
 
             iTextRenderer.createPDF(fileOutputStream);
             fileOutputStream.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+//    ...............sendEmail...............................................
 
-    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException {
+    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
+
+        System.out.println("" + getCurrent());
+        System.out.println("" + getCurrent());
+
         final String username = "ravisarani@archmage.lk";
         final String password = "archmage121";
 
@@ -662,14 +665,12 @@ public class PatientInvestigationController implements Serializable {
             //4) create new MimeBodyPart object and set DataHandler object to this object      
             MimeBodyPart msbp2 = new MimeBodyPart();
 
-//            createPDFDataSource();
             create();
-
 //            ................Pdf......................
-            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
-            DataSource source = new FileDataSource(filename);
+//            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
+            DataSource source = new FileDataSource("D:\\LabReport.pdf");
             msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName(filename);
+            msbp2.setFileName("/Labreport.pdf");
 
             //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
             Multipart multipart = new MimeMultipart();
@@ -1063,8 +1064,6 @@ public class PatientInvestigationController implements Serializable {
     public void setSms(Sms sms) {
         this.sms = sms;
     }
-
-    
 
     /**
      *

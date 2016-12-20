@@ -368,7 +368,12 @@ public class StaffSalaryController implements Serializable {
             System.out.println("1.workedDays = " + workedDays);
             if (getCurrent().getStaff().getDateJoined() != null) {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
-                    long extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    long extraDays;
+                    if (getCurrent().getStaff().getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime()) {
+                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - getCurrent().getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                    } else {
+                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    }
                     System.out.println("New Come extraDays = " + extraDays);
                     extraDays -= (int) (extraDays / 7);
                     System.out.println("New Come extraDays(After) = " + extraDays);
@@ -1257,7 +1262,7 @@ public class StaffSalaryController implements Serializable {
 
 //        System.err.println("Late In 10 " + stfCurrent);
         List<StaffShift> staffShiftEarlyIn = staffLeaveFromLateAndEarlyController.fetchStaffShiftLateIn(stfCurrent, fromTime, toTime, shiftCount.intValue());
-        
+
         if (staffShiftEarlyIn == null) {
             return;
         }
@@ -1569,8 +1574,16 @@ public class StaffSalaryController implements Serializable {
                 if (s.isWithOutNotice()) {
                     System.err.println("s.getPerson().getName() = " + s.getPerson().getName());
                     JsfUtil.addErrorMessage("This Employe Resingned Without Notice."
-                                + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
+                            + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
                     continue;
+                }
+                if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
+                    double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
+                    System.out.println("workedDays = " + workedDays);
+                    if (workedDays==0.0) {
+                        continue;
+                    }
+                    
                 }
                 if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {

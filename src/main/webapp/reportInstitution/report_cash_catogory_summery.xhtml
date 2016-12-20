@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Consultant Wise Appoinment Totals And Count" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{bookKeepingSummery.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker">
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{bookKeepingSummery.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker">
+                        </p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pg1" >
+                        <h:outputLabel value="Select Institution"/>
+
+                        <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
+                                        forceSelection="true"
+                                        requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                        <h:outputLabel value="By Date"/> 
+                        <p:selectBooleanCheckbox value="#{bookKeepingSummery.byDate}" />
+                        <h:outputLabel value="With Out Pro"/> 
+                        <p:selectBooleanCheckbox value="#{bookKeepingSummery.withOutPro}" />
+                    </h:panelGrid> 
+                    <h:panelGrid columns="3">
+                        <p:commandButton action="#{bookKeepingSummery.createCashCategorySummery()}" value="Process" ajax="false" />
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton> 
+                        <p:commandButton value="Excel" ajax="false" style="float: right;">
+                            <pe:exporter type="xlsx" target="tbl1" fileName="Category_Summery"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                    <p:dataTable id="tbl1" value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="s">
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Doctor Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.categoryName}"/>
+                        </p:column>
+                        <p:columns value="#{bookKeepingSummery.columnModels}" var="column" styleClass="numberCol">
+                            <f:facet name="header">
+                                <h:outputText value="#{column.header}" />
+                            </f:facet>
+                            <h:outputText value="#{s.incomes[column.property]}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:columns>
+
+
+                    </p:dataTable>
+                    <!--                    <table border="1" style="border: 1px solid black;">
+                                            <tr>
+                                                <th>Consultant</th>-
+                                                <ui:repeat value="#{bookKeepingSummery.headers}" var="h" >
+                                                    <th style="white-space: nowrap;">
+                    #{h}
+                </th>
+            </ui:repeat>
+        </tr>
+        <ui:repeat value="#{bookKeepingSummery.bookKeepingSummeryRowsOpd}" var="b" >
+            <tr>
+                <td style="white-space: nowrap;">
+                    #{b.categoryName} 
+                </td>
+                <ui:repeat value="#{b.incomes}" var="c" >
+                    <td >
+                        <center>#{c}</center>
+                    </td>
+                </ui:repeat>
+            </tr>
+        </ui:repeat>
+    </table>-->
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

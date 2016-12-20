@@ -7,6 +7,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
@@ -393,9 +394,12 @@ public class BookingController implements Serializable {
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and pi.staff.speciality=:sp "
-                            + " order by pi.staff.person.name ";
-
+                            + " and pi.staff.speciality=:sp ";
+                    if (getSessionController().getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+                        sql+=" order by pi.staff.codeInterger , pi.staff.person.name ";
+                    } else {
+                        sql+= " order by pi.staff.person.name ";
+                    }
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
 
@@ -471,6 +475,7 @@ public class BookingController implements Serializable {
 //
 //            setStaff(null);
 //        }
+
         return consultants;
     }
 

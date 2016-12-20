@@ -648,6 +648,10 @@ body {
     color: green;
 }
 
+.blueText{    
+    color: blue;
+}
+
 .noBackround{
     background: white   !important ;
     background-color: red !important ;

@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>      
+
+                <p:panel header="Channel Report Of Consultants with Speciality wise">
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+
+                        </p:calendar>
+                    </h:panelGrid>
+
+
+                    <h:panelGroup id="pan1">
+                        <h:panelGrid >
+                            <p:commandButton action="#{channelReportTempController.createChannelReportDoctorWise()}" value="Count" ajax="false" />
+                        </h:panelGrid>
+                    </h:panelGroup>
+
+                </p:panel>
+                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+
+                    <p:dataTable value="#{channelReportTempController.channelReportSpecialityWiseSummeryRows}" var="s">
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Doctor Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.doctor.person.nameWithTitle}"/>
+                        </p:column>
+                        <p:columns value="#{channelReportTempController.columns}" var="column" >
+                            <f:facet name="header">
+                                <h:outputText value="#{column.header}" />
+                            </f:facet>
+                            <h:outputText value="#{s.counts[column.property]}" />
+                        </p:columns>
+                    
+                     
+                        </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

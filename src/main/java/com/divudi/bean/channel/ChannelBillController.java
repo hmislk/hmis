@@ -9,6 +9,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
@@ -143,6 +144,8 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelSearchController channelSearchController;
+     @Inject
+    private PaymentSchemeController paymentSchemeController;
     //////////////////////////////
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -784,7 +787,7 @@ public class ChannelBillController implements Serializable {
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
                 if (cancelPaymentMethod == PaymentMethod.Agent) {
-                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal()+bill.getVat()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
+                    updateBallance(cb.getCreditCompany(), Math.abs(bill.getNetTotal() + bill.getVat()), HistoryType.ChannelBooking, cb, cItem, cbs, cbs.getBillItem().getAgentRefNo());
                 }
             }
 
@@ -1394,6 +1397,14 @@ public class ChannelBillController implements Serializable {
                 }
             }
         }
+        if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
+           
+            errorText="*Please select Cheque Number,Bank and Cheque Date OR"+
+                    "*Please Fill Memo,Bank and Slip Date  OR"+
+                    "*Please Fill Credit Card Number and Bank";
+            return true;
+        }
+        
 
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
@@ -1498,7 +1509,7 @@ public class ChannelBillController implements Serializable {
     public void add() {
         errorText = "";
         if (errorCheck()) {
-            settleSucessFully = false;
+           settleSucessFully = false;
             return;
         }
 
@@ -1784,15 +1795,18 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(f.getFee());
             }
 
-            if (f.getFeeType() == FeeType.Staff) {
-                bf.setFeeGrossValue(bf.getFeeValue());
-                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
-                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
-            } else {
-                bf.setFeeGrossValue(bf.getFeeValue());
-                bf.setFeeVat(0.0);
-                bf.setFeeVatPlusValue(bf.getFeeValue());
-            }
+            bf.setFeeGrossValue(bf.getFeeValue());
+            bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+            bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+//            if (f.getFeeType() == FeeType.Staff) {
+//                bf.setFeeGrossValue(bf.getFeeValue());
+//                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+//                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+//            } else {
+//                bf.setFeeGrossValue(bf.getFeeValue());
+//                bf.setFeeVat(0.0);
+//                bf.setFeeVatPlusValue(bf.getFeeValue());
+//            }
 
             if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
@@ -1886,7 +1900,9 @@ public class ChannelBillController implements Serializable {
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
         bill.setPaymentMethod(paymentMethod);
-
+        
+        getBillBeanController().setPaymentMethodData(bill, paymentMethod, paymentMethodData);
+        
         System.out.println("getPatientTabId() = " + getPatientTabId());
 
         if (getPatientTabId().equals("tabNewPt")) {
@@ -1944,6 +1960,7 @@ public class ChannelBillController implements Serializable {
         if (deptId.equals("")) {
             return null;
         }
+        
         bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
@@ -2013,7 +2030,7 @@ public class ChannelBillController implements Serializable {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal()+savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal() + savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
@@ -2601,5 +2618,14 @@ public class ChannelBillController implements Serializable {
     public void setBillSessionTmp(BillSession billSessionTmp) {
         this.billSessionTmp = billSessionTmp;
     }
+
+    public PaymentSchemeController getPaymentSchemeController() {
+        return paymentSchemeController;
+    }
+
+    public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
+        this.paymentSchemeController = paymentSchemeController;
+    }
+    
 
 }

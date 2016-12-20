@@ -601,6 +601,7 @@ public class ReportItem implements Serializable {
 //                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
 //                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
         //TODO (Later) to add cssHeight, font styles, etc, Now 12
+        System.out.println("cssStyle = " + cssStyle);
         return cssStyle;
     }
 

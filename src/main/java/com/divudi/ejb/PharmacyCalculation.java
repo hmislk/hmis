@@ -189,10 +189,10 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-        
+
         return value;
     }
-    
+
     public double getBilledInwardPharmacyRequest(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
@@ -204,7 +204,7 @@ public class PharmacyCalculation implements Serializable {
         hm.put("btp", billType);
 
         double value = getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
-        
+
         return value;
     }
 
@@ -222,7 +222,7 @@ public class PharmacyCalculation implements Serializable {
 
         return value;
     }
-    
+
     public double getCancelledInwardPharmacyRequest(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
                 + " from BillItem p where p.creater is not null "
@@ -240,7 +240,7 @@ public class PharmacyCalculation implements Serializable {
 
         return value;
     }
-    
+
     public double getRefundedInwardPharmacyRequest(BillItem b, BillType billType) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
@@ -355,7 +355,16 @@ public class PharmacyCalculation implements Serializable {
 
         double returnBill = getTotalQty(bil, BillType.PharmacyPre, new RefundBill());
 
-        //System.err.println("RETURN " + returnBill);
+        System.err.println("RETURN " + returnBill);
+        System.err.println("bil.getQty() = " + bil.getQty());
+        return bil.getQty() - returnBill;
+    }
+
+    public double calQty4(BillItem bil) {
+
+        double returnBill = getTotalQty(bil, BillType.PharmacyBhtPre, new RefundBill());
+
+        System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
     }
 
@@ -780,7 +789,7 @@ public class PharmacyCalculation implements Serializable {
 
         m.put("bts", billTypes);
         m.put("sv", 0.0);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m,100);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, 100);
         for (Bill b : bills) {
             System.out.println("b.getSaleValue() = " + b.getSaleValue());
             System.out.println("b.getBillType() = " + b.getBillType());
