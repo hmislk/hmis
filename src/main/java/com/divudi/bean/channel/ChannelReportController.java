@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.hr.StaffController;
+import com.divudi.bean.report.BookKeepingSummery;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -37,6 +38,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.ArrivalRecord;
@@ -69,6 +71,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.joda.time.LocalDate;
 
 @Named
 @SessionScoped
@@ -171,6 +174,7 @@ public class ChannelReportController implements Serializable {
     BookingPastController bookingPastController;
     @Inject
     WebUserController webUserController;
+    
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -5395,43 +5399,39 @@ public class ChannelReportController implements Serializable {
     public void createCardSummery() {
         String sql = "";
         Map m = new HashMap();
-        grantNetTotal=0.0;
-        
-        
-        sql+="select b from Bill b where b.retired=false "
+        grantNetTotal = 0.0;
+
+        sql += "select b from Bill b where b.retired=false "
                 + " and b.paymentMethod=:pm ";
         m.put("pm", paymentMethod.Card);
-               
-        if (department!=null) {
-            sql+=" and b.department=:d ";
+
+        if (department != null) {
+            sql += " and b.department=:d ";
             m.put("d", department);
         }
-        
-        if(webUser !=null){
-        sql+=" and b.creater=:u ";
-        m.put("u", webUser);
+
+        if (webUser != null) {
+            sql += " and b.creater=:u ";
+            m.put("u", webUser);
         }
-        
-        sql+=" and (b.billType=:cc or b.billType=:cp) ";
+
+        sql += " and (b.billType=:cc or b.billType=:cp) ";
         m.put("cc", BillType.ChannelCash);
         m.put("cp", BillType.ChannelPaid);
-        
-        sql+=" and b.createdAt between :fd and :td ";
-        
+
+        sql += " and b.createdAt between :fd and :td ";
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        channelBills=billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        channelBills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("channelBills.size() = " + channelBills.size());
-        
+
         for (Bill b : channelBills) {
-            grantNetTotal+=b.getNetTotal()+b.getVat();
-            System.out.println("grantNetTotal = " + grantNetTotal);  
+            grantNetTotal += b.getNetTotal() + b.getVat();
+            System.out.println("grantNetTotal = " + grantNetTotal);
         }
-        
-        
-        
 
     }
 

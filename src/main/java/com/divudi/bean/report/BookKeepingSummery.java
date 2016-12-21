@@ -143,7 +143,7 @@ public class BookKeepingSummery implements Serializable {
     List<String> headers1;
     List<ColumnModel> columnModels;
     boolean byDate;
-    boolean withOutPro=true;
+    boolean withOutPro = true;
     @Inject
     SessionController sessionController;
     @Inject
@@ -4655,20 +4655,20 @@ public class BookKeepingSummery implements Serializable {
             BookKeepingSummeryRow row = new BookKeepingSummeryRow();
             System.out.println("c.getName() = " + c.getName());
             row.setCategoryName(c.getName());
-            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate,withOutPro));
+            row.setIncomes(fetchCategoryIncome(c, pms, fromDate, toDate, byDate, withOutPro));
             bookKeepingSummeryRowsOpd.add(row);
         }
-        
+
         BookKeepingSummeryRow row = new BookKeepingSummeryRow();
-        int i=bookKeepingSummeryRowsOpd.size();
-        int j=headers.size();
+        int i = bookKeepingSummeryRowsOpd.size();
+        int j = headers.size();
         row.setCategoryName("Total");
-        List<Double> list=new ArrayList<>();
+        List<Double> list = new ArrayList<>();
         System.out.println("Time 1 = " + new Date());
         for (int k = 0; k < j; k++) {
-            double total=0.0;
+            double total = 0.0;
             for (int l = 0; l < i; l++) {
-                total+=bookKeepingSummeryRowsOpd.get(l).getIncomes().get(k);
+                total += bookKeepingSummeryRowsOpd.get(l).getIncomes().get(k);
             }
             list.add(total);
         }
@@ -4686,7 +4686,7 @@ public class BookKeepingSummery implements Serializable {
         }
 
     }
-    
+
 //    sql  = "select c.name, "
 //            + " i.name, "
 //            + " count(bi.bill), "
@@ -4722,8 +4722,7 @@ public class BookKeepingSummery implements Serializable {
 //            
 //
 //    "pms", paymentMethods);
-
-    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate,boolean withoutpro) {
+    public List<Double> fetchCategoryIncome(Category c, List<PaymentMethod> paymentMethods, Date fDate, Date tDate, boolean byDate, boolean withoutpro) {
         List<Double> list = new ArrayList<>();
 
         Date nowDate = fDate;
@@ -4739,7 +4738,7 @@ public class BookKeepingSummery implements Serializable {
 //                System.out.println("fd = " + fd);
 //                System.out.println("nowDate = " + nowDate);
 
-                netTot = fetchCategoryTotal(paymentMethods, fd, td, c,withoutpro);
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c, withoutpro);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
             } else {
@@ -4749,7 +4748,7 @@ public class BookKeepingSummery implements Serializable {
 //                System.out.println("fd = " + fd);
 //                System.out.println("nowDate = " + nowDate);
 
-                netTot = fetchCategoryTotal(paymentMethods, fd, td, c,withoutpro);
+                netTot = fetchCategoryTotal(paymentMethods, fd, td, c, withoutpro);
                 System.out.println("netTot = " + netTot);
                 list.add(netTot);
             }
@@ -4770,7 +4769,7 @@ public class BookKeepingSummery implements Serializable {
         return list;
     }
 
-    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c,boolean withoutpro) {
+    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c, boolean withoutpro) {
 
         String sql;
         Map m = new HashMap();
@@ -4784,7 +4783,7 @@ public class BookKeepingSummery implements Serializable {
                 + " and bi.bill.paymentMethod in :pms "
                 + " and c=:cat ";
         if (withoutpro) {
-            sql+=" and bf.fee.feeType!=:ft";
+            sql += " and bf.fee.feeType!=:ft";
             m.put("ft", FeeType.Staff);
         }
 
@@ -4792,6 +4791,39 @@ public class BookKeepingSummery implements Serializable {
         m.put("fromDate", fd);
         m.put("cat", c);
         m.put("ins", institution);
+        m.put("bTp", BillType.OpdBill);
+        m.put("pms", paymentMethods);
+
+        double total = categoryFacade.findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("total = " + total);
+
+        return total;
+    }
+
+    public double fetchCategoryTotal(List<PaymentMethod> paymentMethods, Date fd, Date td, Category c, boolean withoutpro, Institution institution) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select sum(bf.feeValue) "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+                + " where bi.bill.billType= :bTp  "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms "
+                + " and c=:cat ";
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins "
+                    + " and bf.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+        if (withoutpro) {
+            sql += " and bf.fee.feeType!=:ft";
+            m.put("ft", FeeType.Staff);
+        }
+
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("cat", c);
         m.put("bTp", BillType.OpdBill);
         m.put("pms", paymentMethods);
 
@@ -4818,6 +4850,36 @@ public class BookKeepingSummery implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
         m.put("ins", institution);
+        m.put("bTp", BillType.OpdBill);
+        m.put("pms", paymentMethods);
+
+        cats = categoryFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("cats.size() = " + cats.size());
+
+        return cats;
+    }
+
+    public List<Category> fetchCategories(List<PaymentMethod> paymentMethods, Date fd, Date td,Institution institution) {
+        List<Category> cats = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(c) "
+                + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
+                + " where bi.bill.billType= :bTp  ";
+        if (institution != null) {
+            sql += " and bi.bill.institution=:ins "
+                    + " and bf.department.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        sql += " and bi.bill.createdAt between :fromDate and :toDate "
+                + " and bi.bill.paymentMethod in :pms"
+                + " order by c.name ";
+
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        
         m.put("bTp", BillType.OpdBill);
         m.put("pms", paymentMethods);
 
