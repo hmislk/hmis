@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <script type="text/javascript">
+
+                    google.charts.load('current', {packages: ['corechart', 'bar']});
+                    google.charts.setOnLoadCallback(drawBasic);
+
+                    function drawBasic() {
+
+                        var rowdata =#{googleChartController.drawChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+//                        var data = google.visualization.arrayToDataTable([
+//                            ['City', '2010 Population', ],
+//                            ['New York City, NY', 8175000],
+//                            ['Los Angeles, CA', 3792000],
+//                            ['Chicago, IL', 2695000],
+//                            ['Houston, TX', 2099000],
+//                            ['Philadelphia, PA', 1526000]
+//                        ]);
+
+//                        var options = {
+//                            title: 'Daily Channel Count',
+//                            chartArea: {width: '50%'},
+//                            hAxis: {
+//                                title: 'Total count',
+//                                minValue: 0
+//                            },
+//                            vAxis: {
+//                                title: 'Date'
+//                            }
+//                        };
+                        var options = {
+                            title: 'Daily Channel count',
+                            hAxis: {
+                                title: 'Date',
+                                format: 'h:mm a',
+                                viewWindow: {
+//                                    min: [7, 30, 0],
+//                                    max: [17, 30, 0]
+                                }
+                            },
+                            vAxis: {
+                                title: 'Channel Count'
+                            }
+
+                        };
+
+//                        var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawPiechartDailyIncome()}
+//                        var data = google.visualization.arrayToDataTable([
+//                            ['Task', 'Hours per Day'],
+//                            ['Work', 21],
+//                            ['Eat', 2],
+//                            ['Commute', 2],
+//                            ['Watch TV', 2],
+//                            ['Sleep', 7]
+//                        ]);
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'My Daily Activities',
+                            is3D: true,
+                        };
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
+                 <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawChannelingMethodsChart()}
+                        ////                        var data = google.visualization.arrayToDataTable([
+//                            ['Task', 'Hours per Day'],
+//                            ['Work', 21],
+//                            ['Eat', 2],
+//                            ['Commute', 2],
+//                            ['Watch TV', 2],
+//                            ['Sleep', 7]
+//                        ]);
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Channeling Methods',
+                            is3D: true,
+                        };
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart1'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
+                       <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawPharmacyIncomeChart()}
+                        ////                        var data = google.visualization.arrayToDataTable([
+//                            ['Task', 'Hours per Day'],
+//                            ['Work', 21],
+//                            ['Eat', 2],
+//                            ['Commute', 2],
+//                            ['Watch TV', 2],
+//                            ['Sleep', 7]
+//                        ]);
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Pharmacy Income',
+                            is3D: true,
+                        };
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
+                       <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawOpdIncomeChart()}       ////                        var data = google.visualization.arrayToDataTable([
+//                            ['Task', 'Hours per Day'],
+//                            ['Work', 21],
+//                            ['Eat', 2],
+//                            ['Commute', 2],
+//                            ['Watch TV', 2],
+//                            ['Sleep', 7]
+//                        ]);
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'OPD Income By Category',
+                            is3D: true,
+                        };
+
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart3'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
+                <h:panelGrid columns="3">
+                    <p:panel header="Daily Channel Count">
+                        <div id="chart_div" style="width: 500px; height: 500px;"></div>
+                    </p:panel>
+                    <p:panel header="Daily Channel Count">
+                        <div id="piechart" style="width: 500px; height: 500px;">
+                            pie chart
+                        </div>
+                    </p:panel>
+                    <p:panel header="Channeling Methods">
+                        <div id="piechart1" style="width: 500px; height: 500px;">
+                            pie chart
+                        </div>
+                    </p:panel>
+                    <p:panel header="Pharmacy Income">
+                        <div id="piechart2" style="width: 500px; height: 500px;">
+                            pie chart 
+                        </div>
+                    </p:panel>
+                    <p:panel header="Pharmacy Income">
+                        <div id="piechart3" style="width: 500px; height: 500px;">
+                            pie chart 
+                        </div>
+                    </p:panel>
+                </h:panelGrid>
+
+
+
+
+
+
+
+
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+    </h:body>
+</html>

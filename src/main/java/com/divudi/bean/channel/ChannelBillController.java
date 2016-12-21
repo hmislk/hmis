@@ -144,7 +144,7 @@ public class ChannelBillController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelSearchController channelSearchController;
-     @Inject
+    @Inject
     private PaymentSchemeController paymentSchemeController;
     //////////////////////////////
     @EJB
@@ -1398,13 +1398,12 @@ public class ChannelBillController implements Serializable {
             }
         }
         if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
-           
-            errorText="*Please select Cheque Number,Bank and Cheque Date OR"+
-                    "*Please Fill Memo,Bank and Slip Date  OR"+
-                    "*Please Fill Credit Card Number and Bank";
+
+            errorText = "*Please select Cheque Number,Bank and Cheque Date OR"
+                    + "*Please Fill Memo,Bank and Slip Date  OR"
+                    + "*Please Fill Credit Card Number and Bank";
             return true;
         }
-        
 
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
@@ -1509,7 +1508,7 @@ public class ChannelBillController implements Serializable {
     public void add() {
         errorText = "";
         if (errorCheck()) {
-           settleSucessFully = false;
+            settleSucessFully = false;
             return;
         }
 
@@ -1794,19 +1793,23 @@ public class ChannelBillController implements Serializable {
             } else {
                 bf.setFeeValue(f.getFee());
             }
+            // set vat for all bill fees
+//            bf.setFeeGrossValue(bf.getFeeValue());
+//            bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+//            bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+            // set vat for all bill fees
 
-            bf.setFeeGrossValue(bf.getFeeValue());
-            bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
-            bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
-//            if (f.getFeeType() == FeeType.Staff) {
-//                bf.setFeeGrossValue(bf.getFeeValue());
-//                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
-//                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
-//            } else {
-//                bf.setFeeGrossValue(bf.getFeeValue());
-//                bf.setFeeVat(0.0);
-//                bf.setFeeVatPlusValue(bf.getFeeValue());
-//            }
+            //only vat for doctor fee
+            if (f.getFeeType() == FeeType.Staff) {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+                bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+            } else {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(0.0);
+                bf.setFeeVatPlusValue(bf.getFeeValue());
+            }
+            //only vat for doctor fee
 
             if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
                 d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
@@ -1900,9 +1903,9 @@ public class ChannelBillController implements Serializable {
         bill.setTotal(getAmount());
         bill.setNetTotal(getAmount());
         bill.setPaymentMethod(paymentMethod);
-        
+
         getBillBeanController().setPaymentMethodData(bill, paymentMethod, paymentMethodData);
-        
+
         System.out.println("getPatientTabId() = " + getPatientTabId());
 
         if (getPatientTabId().equals("tabNewPt")) {
@@ -1960,7 +1963,7 @@ public class ChannelBillController implements Serializable {
         if (deptId.equals("")) {
             return null;
         }
-        
+
         bill.setDeptId(deptId);
 
         if (bill.getBillType().getParent() == BillType.ChannelCashFlow) {
@@ -2626,6 +2629,5 @@ public class ChannelBillController implements Serializable {
     public void setPaymentSchemeController(PaymentSchemeController paymentSchemeController) {
         this.paymentSchemeController = paymentSchemeController;
     }
-    
 
 }
