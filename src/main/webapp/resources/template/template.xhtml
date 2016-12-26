@@ -521,11 +521,11 @@
                                         <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
 
                                     </p:submenu>  
-                                    <p:submenu label="Cashier Transaction"  >
-                                        <p:menuitem  ajax="false"  value="Income"  action="/channel/channel_income_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Income Bill Search"  action="/channel/channel_income_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Expenses"  action="/channel/channel_expenses_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                    <p:submenu label="Cashier Transaction"  rendered="#{webUserController.hasPrivilege('ChannelCashierTransaction')}">
+                                        <p:menuitem  ajax="false"  value="Income"  action="/channel/channel_income_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionIncome')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Income Bill Search"  action="/channel/channel_income_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionIncomeSearch')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses"  action="/channel/channel_expenses_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionExpencess')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionExpencessSearch')}"></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
                                         <p:menuitem  ajax="false"  value="Credit Note"  action="/channel/channel_credit_note_bill" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
