@@ -11,7 +11,6 @@ package com.divudi.data;
 public enum Privileges {
 
     //Main Menu Privileges
-
     TheaterIssueBHT,
     Opd,
     Inward,
@@ -315,6 +314,21 @@ public enum Privileges {
     ChannelDebitNote,
     ChannelDebitNoteSearch,
     ChannelCashCancelRestriction,
+    ChannelBookingChange,
+    ChannelBookingBokking,
+    ChannelBookingReprint,
+    ChannelBookingCancel,
+    ChannelBookingRefund,
+    ChannelBookingSettle,
+    ChannelBookingSearch,
+    ChannelBookingViews,
+    ChannelBookingDocPay,
+    ChannelCashierTransaction,
+    ChannelCashierTransactionIncome,
+    ChannelCashierTransactionIncomeSearch,
+    ChannelCashierTransactionExpencess,
+    ChannelCashierTransactionExpencessSearch,
+    
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,
@@ -350,7 +364,6 @@ public enum Privileges {
     AllCashierSummery,
     //Administration
     SearchAll,
-    ChannelBookingChange,
     ChangePreferece,
 
 }

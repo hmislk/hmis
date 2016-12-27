@@ -246,13 +246,28 @@ public class StaffPaymentBillController implements Serializable {
                     + " b.retired=false"
                     + " and (b.bill.billType=:btp or b.bill.billType=:btpc) "
                     + " and b.bill.cancelled=false "
-                    + " and b.bill.refunded=false "
+//                    + " and b.bill.refunded=false "
                     + " and (b.feeValue - b.paidValue) > 0 "
                     + " and b.staff.id = " + currentStaff.getId();
             h.put("btp", BillType.OpdBill);
             h.put("btpc", BillType.CollectingCentreBill);
 
             dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+            
+            List<BillFee> removeingBillFees = new ArrayList<>();
+            for (BillFee bf : billFees) {
+                sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+                if (rbi != null) {
+                    removeingBillFees.add(bf);
+                }
+
+            }
+            System.out.println("dueBillFees.size() = " + dueBillFees.size());
+            System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+            dueBillFees.removeAll(removeingBillFees);
+            System.out.println("dueBillFees.size() = " + dueBillFees.size());
 
         }
     }

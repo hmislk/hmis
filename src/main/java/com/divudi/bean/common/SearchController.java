@@ -2723,6 +2723,19 @@ public class SearchController implements Serializable {
         temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees=new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            } 
+            
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Payment due search/(/faces/opd_search_professional_payment_due.xhtml or /faces/reportIncome/opd_professional_payment_due.xhtml)");
@@ -2735,7 +2748,7 @@ public class SearchController implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select b from BillFee b where b.retired=false and "
-                + " b.bill.billType=:btp "
+                + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 and"
                 + "  b.bill.createdAt between :fromDate"
@@ -2776,8 +2789,22 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.OpdBill);
+        temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees=new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            } 
+            
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, sartTime, "Doctor Payment Due Report(/faces/inward/inward_professional_payment_due.xhtml)");
