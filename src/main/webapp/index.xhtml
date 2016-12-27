@@ -5,13 +5,217 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
+    
     <h:body>
 
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+              
+                <p:panel >
+                    
+                    <script type="text/javascript">
 
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+
+                    function drawChart() {
+                        var rawdata =#{googleChartController.drawChannelAndScanCountChart()}
+                        var data = google.visualization.arrayToDataTable(rawdata);
+
+                        var options = {
+                            title: 'Monthly Channel Count',
+//                            curveType: 'function',
+
+                            legend: {position: 'bottom'},
+                            lineWidth: 3,
+                            colors: ['Green', 'Red']
+
+                        }
+                        ;
+
+                        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--daily income by doctor fee doctor vat-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawPiechartDailyIncome()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Daily Channel Income ',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--channel method chart-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawChannelingMethodsChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Count Channeling Methods',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart1'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--daily pharmacy income-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawPharmacyIncomeChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Pharmacy Income',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--daily opd income by category-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawOpdIncomeChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'OPD Income By Category',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart3'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--daily inward cash -->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawInwardCash()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Inward Cash Income By Category',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart5'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--daily inward credit-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawInwardCredit()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Inward Credit Income By Category',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart6'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--collection center investigations count-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['bar']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawCollectionCenterInvestigationCountChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            chart: {
+                                title: 'Counts Of Collection Centers',
+                                is3D: true
+                            }}
+                        ;
+                        var chart = new google.charts.Bar(document.getElementById('piechart4'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <!--total daily income by section-->
+                <script type="text/javascript">
+                    google.charts.load('current', {'packages': ['corechart']});
+                    google.charts.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        var rowdata =#{googleChartController.drawTotalIncomeBySectionChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+                        var options = {
+                            title: 'Income By Section',
+                            is3D: true
+                        };
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart7'));
+                        chart.draw(data, options);
+                    }
+                </script>
+                <h1 style="color: #107710">RUHUNU HOSPITAL DASHBOARD</h1>
+                <h3>Welcome <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}"/></h3>
+                <p:panelGrid columns="1" styleClass="noBorder noBorderGrid" style="width: 100%">
+                    <p:panel >
+                        <div id="chart_div" style="width: 1050px; height: 300px;"></div>
+                    </p:panel>
+                  
+                </p:panelGrid>
+                <h:panelGrid columns="4">
+                    <p:panel >
+                        <div id="piechart" style="width:262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart1" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart2" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart3" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart4" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart5" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart6" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+                    <p:panel >
+                        <div id="piechart7" style="width: 262px; height: 300px;">
+
+                        </div>
+                    </p:panel>
+
+                </h:panelGrid>
+                </p:panel>
+            
                 <p:panelGrid columns="4"  >
+                    
                     <p:panel header="Channelling" rendered="#{searchController.channelingPanelVisible}" >
                         <h:panelGroup >
                             <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
