@@ -420,7 +420,8 @@ public class BillController implements Serializable {
 
     public void feeChangeListener(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
-            return;
+            bf.setFeeGrossValue(0.0);
+//            return;
         }
 
         lstBillItems = null;
@@ -1514,6 +1515,15 @@ public class BillController implements Serializable {
             billSessions = new ArrayList<>();
         }
     }
+    
+    public void fillBillSessionsLstner() {
+        if (lastBillItem != null && lastBillItem.getItem() != null) {
+            billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
+        } else
+        if (billSessions == null || !billSessions.isEmpty()) {
+            billSessions = new ArrayList<>();
+        }
+    }
 
     public ServiceSessionFunctions getServiceSessionBean() {
         return serviceSessionBean;
@@ -2263,6 +2273,11 @@ public class BillController implements Serializable {
     BillItem lastBillItem;
 
     public BillItem getLastBillItem() {
+        if (lastBillItem==null) {
+            if (getCurrentBillItem()!=null) {
+                lastBillItem=getCurrentBillItem();
+            }
+        }
         return lastBillItem;
     }
 

@@ -277,7 +277,8 @@
                                 <h:panelGroup rendered="#{bip1.item.department.id eq cc.attrs.bill.toDepartment.id and bip1.billSession ne null }"  >
                                     <br/>
                                     <h:panelGroup rendered="#{bip1.item.sessionNumberType ne null}">
-                                        <h:outputLabel value="-" styleClass="nonPrintBlock" >
+                                        <h:outputLabel value="#{bip1.billSession.sessionDate}" style="margin: 4px; font-size: 9 px!important; font-weight: bold;" >
+                                            <f:convertDateTime pattern="yyyy-MMM-dd" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </h:panelGroup>

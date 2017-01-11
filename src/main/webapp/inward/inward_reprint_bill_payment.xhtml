@@ -92,7 +92,8 @@
                     </p:panel>
 
                     <h:panelGroup id="gpBillPreview">
-                        <bi:payment bill="#{inwardSearch.bill}" dup="true" />
+                        <bi:payment bill="#{inwardSearch.bill}" dup="true" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}" />
+                        <bi:payment_coop bill="#{inwardSearch.bill}" dup="true"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
                     </h:panelGroup>
                 </h:form>
             </ui:define>
