@@ -29,13 +29,14 @@
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                          completeMethod="#{roomFacilityChargeController.completeRoom}"
                                          var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
-                                         style="width: 400px;">                            
+                                         styleClass="mediuminput">                            
                         </p:autoComplete>
+                        <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
 
                         <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit" onclick="onSubmitButton();" />
                         <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>
                         <p:defaultCommand target="admt"/>
-                        
+
                         <p:watermark for="bh" value="BHT No"/>
                         <p:watermark for="cmbDoc" value="Room No"/>
 
@@ -50,7 +51,7 @@
                                 <p:tabView  id="tvPt"  style="height: 200px;"  >
                                     <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
                                     <p:tab  title="New Patient" id="tabNewPt">
-                                        
+
                                         <in:inputPatientDetail patient="#{admissionController.newPatient}"/>
 
                                     </p:tab>
@@ -58,7 +59,7 @@
                                         <h:panelGrid columns="1" >
                                             <in:searchPatient patient="#{admissionController.current.patient}"/>
                                         </h:panelGrid>
-                                        
+
                                     </p:tab>
                                 </p:tabView>
                             </p:panel>
