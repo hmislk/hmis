@@ -10,10 +10,12 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Appointment;
 import com.divudi.entity.Bill;
@@ -22,6 +24,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.AppointmentFacade;
@@ -545,6 +548,13 @@ public class AdmissionController implements Serializable {
         if (getPatientTabId().toString().trim().equals("tabSearchPt")) {
             if (getCurrent().getPatient() == null) {
                 UtilityController.addErrorMessage("Select Patient");
+                return true;
+            }
+        }
+        
+        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getInstitutionPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
+            if (getCurrent().getComments()==null || getCurrent().getComments().isEmpty()) {
+                UtilityController.addErrorMessage("Please Add Reference No");
                 return true;
             }
         }

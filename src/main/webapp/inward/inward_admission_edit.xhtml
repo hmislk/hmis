@@ -25,7 +25,7 @@
                                            var="admi"
                                            itemLabel="#{admi.bhtNo}"
                                            itemValue="#{admi}" ></f:selectItems>
-                            <f:ajax event="change" execute="@this" render="panelAdmissionDetails" ></f:ajax>
+                            <f:ajax event="change" execute="@this" render="panelAdmissionDetails :#{p:component('panPrint')}" ></f:ajax>
                         </p:selectOneMenu>
 
                     </p:panelGrid>
@@ -43,7 +43,7 @@
                         <p:outputLabel value="BHT" ></p:outputLabel>
                         <p:outputLabel id="bh" value="#{admissionController.current.bhtNo}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
                         <p:inputText id="bht" value="#{admissionController.current.bhtNo}" />
-                        
+
                         <p:autoComplete  converter="fac" forceSelection="true"  
                                          id="cmbDoc" 
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
@@ -56,6 +56,9 @@
                     </h:panelGrid>
                 </p:panel>
 
+                <p:panel id="panPrint">
+                    <bill:bht admission="#{admissionController.current}"/>
+                </p:panel>
             </h:panelGroup>
 
         </h:form>

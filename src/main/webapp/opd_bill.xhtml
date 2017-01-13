@@ -277,7 +277,7 @@
                                         <p:defaultCommand target="btnAddIx" />
                                         <p:panel header="Session"  >
                                             <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
-                                                <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" />
+                                                <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
                                             </p:calendar>
 
                                             <p:dataTable id="tblSs" value="#{billController.billSessions}" var="bs" emptyMessage="No Numbers Yet">

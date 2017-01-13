@@ -8,7 +8,9 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://java.sun.com/jsf/composite/patient"
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany"
-                xmlns:poue="http://primefaces.org/ui/extensions">
+                xmlns:poue="http://primefaces.org/ui/extensions"
+                xmlns:bill="http://java.sun.com/jsf/composite/inward"
+                >
 
 
     <ui:define name="content">
@@ -22,7 +24,7 @@
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" 
                                         size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="acPt" update="panSearch2"/>
+                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:component('panPrint')}"/>
                             <p:column>
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>
@@ -33,13 +35,13 @@
                         <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();">
 
                         </p:commandButton>
-                        
-                        
+
+
                         <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();">
                         </p:commandButton>
-                        
-                       
-                        
+
+
+
                         <h:panelGrid id="panSearch2" columns="2" style="min-width: 100%;" >
                             <p:panel>                                
                                 <p:panel header="Admission">
@@ -54,13 +56,13 @@
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
                                                              itemLabel="Claimable"/>
                                 </p:panel>
-                                
+
                                 <p:panel header="Patient Detail">  
-                                    
+
                                     <in:inputPatientDetail_1 patient="#{bhtEditController.current.patient}"/>
-                                    
+
                                 </p:panel>
-                                
+
                                 <p:panel header="Hospital">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Speciality"/>
@@ -99,7 +101,7 @@
 
                                 </p:panel>
 
-                                
+
                                 <p:panel header="Gardian Detal">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel   value="Name:" />
@@ -133,21 +135,24 @@
                                         </p:column> 
                                     </p:dataTable>
                                 </p:panel>
-                                
+
                             </p:panel>
                             <p:panel header="Cancel Admission" style="height: 200px;">
                                 <p:inputTextarea value="#{bhtEditController.comment}" id="com" style="margin-top: 20px;margin-left: 110px;float: top;">
                                 </p:inputTextarea>
-                                
+
                                 <p:watermark for="com" value="Comment"/>
                                 <p:commandButton  value="Cancel Admission" action="#{bhtEditController.cancelBht}" style="float: top;margin-top: 10px;margin-left: 110px;" ajax="false" onclick="onSubmitButton();">                            
                                 </p:commandButton>
                             </p:panel>
-                            
+
                         </h:panelGrid>
 
                     </p:panel>
 
+                </p:panel>
+                <p:panel id="panPrint">
+                    <bill:bht admission="#{bhtEditController.current}"/>
                 </p:panel>
             </h:form>
 
