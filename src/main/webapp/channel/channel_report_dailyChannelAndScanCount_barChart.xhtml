@@ -9,29 +9,49 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+
+
                 <!--monthly channel and scan count-->
                 <script type="text/javascript">
+                    google.charts.load('current', {packages: ['corechart', 'line']});
+                    google.charts.setOnLoadCallback(drawCurveTypes);
 
-                    google.charts.load('current', {'packages': ['corechart']});
-                    google.charts.setOnLoadCallback(drawChart);
-
-                    function drawChart() {
-                        var rawdata =#{googleChartController.drawChannelAndScanCountChart()}
-                        var data = google.visualization.arrayToDataTable(rawdata);
+                    function drawCurveTypes() {
+                        var rowdata =#{googleChartController.drawChannelAndScanCountChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+//                        data.addColumn('number', 'X');
+//                        data.addColumn('number', 'Dogs');
+//                        data.addColumn('number', 'Cats');
+//
+//                        data.addRows([
+//                            [0, 0, 0], [1, 10, 5], [2, 23, 15], [3, 17, 9], [4, 18, 10], [5, 9, 5],
+//                            [6, 11, 3], [7, 27, 19], [8, 33, 25], [9, 40, 32], [10, 32, 24], [11, 35, 27],
+//                            [12, 30, 22], [13, 40, 32], [14, 42, 34], [15, 47, 39], [16, 44, 36], [17, 48, 40],
+//                            [18, 52, 44], [19, 54, 46], [20, 42, 34], [21, 55, 47], [22, 56, 48], [23, 57, 49],
+//                            [24, 60, 52], [25, 50, 42], [26, 52, 44], [27, 51, 43], [28, 49, 41], [29, 53, 45],
+//                            [30, 55, 47], [31, 60, 52], [32, 61, 53], [33, 59, 51], [34, 62, 54], [35, 65, 57],
+//                            [36, 62, 54], [37, 58, 50], [38, 55, 47], [39, 61, 53], [40, 64, 56], [41, 65, 57],
+//                            [42, 63, 55], [43, 66, 58], [44, 67, 59], [45, 69, 61], [46, 69, 61], [47, 70, 62],
+//                            [48, 72, 64], [49, 68, 60], [50, 66, 58], [51, 65, 57], [52, 67, 59], [53, 70, 62],
+//                            [54, 71, 63], [55, 72, 64], [56, 73, 65], [57, 75, 67], [58, 70, 62], [59, 68, 60],
+//                            [60, 64, 56], [61, 60, 52], [62, 65, 57], [63, 67, 59], [64, 68, 60], [65, 69, 61],
+//                            [66, 70, 62], [67, 72, 64], [68, 75, 67], [69, 80, 72]
+//                        ]);
 
                         var options = {
-                            title: 'Monthly Channel Count',
-//                            curveType: 'function',
-
-                            legend: {position: 'bottom'},
-                            lineWidth: 3,
-                            colors: ['Green', 'Red']
-
-                        }
-                        ;
+                            hAxis: {
+                                title: 'Date'
+                            },
+                            vAxis: {
+                                title: 'Count'
+                            }
+//                            ,
+//                            series: {
+//                                1: {curveType: 'function'}
+//                            }
+                        };
 
                         var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-
                         chart.draw(data, options);
                     }
                 </script>
@@ -95,6 +115,52 @@
                         chart.draw(data, options);
                     }
                 </script>
+                <!--collection center investigations count-->
+                <script type="text/javascript">
+                    google.charts.load('current', {packages: ['corechart', 'bar']});
+                    google.charts.setOnLoadCallback(drawBasic);
+
+                    function drawBasic() {
+
+                        var rowdata =#{googleChartController.drawCollectionCenterInvestigationCountChart()}
+                        var data = google.visualization.arrayToDataTable(rowdata);
+//                        data.addColumn('timeofday', 'Time of Day');
+//                        data.addColumn('number', 'Motivation Level');
+//
+//                        data.addRows([
+//                            [{v: [8, 0, 0], f: '8 am'}, 1],
+//                            [{v: [9, 0, 0], f: '9 am'}, 2],
+//                            [{v: [10, 0, 0], f: '10 am'}, 3],
+//                            [{v: [11, 0, 0], f: '11 am'}, 4],
+//                            [{v: [12, 0, 0], f: '12 pm'}, 5],
+//                            [{v: [13, 0, 0], f: '1 pm'}, 6],
+//                            [{v: [14, 0, 0], f: '2 pm'}, 7],
+//                            [{v: [15, 0, 0], f: '3 pm'}, 8],
+//                            [{v: [16, 0, 0], f: '4 pm'}, 9],
+//                            [{v: [17, 0, 0], f: '5 pm'}, 10],
+//                        ]);
+
+                        var options = {
+                            title: 'Collecting Centers Investigation ',
+                            hAxis: {
+                                title: 'Collecting Center',
+//                                format: 'h:mm a',
+//                                viewWindow: {
+//                                    min: [7, 30, 0],
+//                                    max: [17, 30, 0]
+//                                }
+                            },
+                            vAxis: {
+                                title: 'Counts'
+                            }
+                        };
+
+                        var chart = new google.visualization.ColumnChart(
+                                document.getElementById('barChart'));
+
+                        chart.draw(data, options);
+                    }
+                </script>
                 <!--daily inward cash -->
                 <script type="text/javascript">
                     google.charts.load('current', {'packages': ['corechart']});
@@ -125,22 +191,7 @@
                         chart.draw(data, options);
                     }
                 </script>
-                <!--collection center investigations count-->
-                <script type="text/javascript">
-                    google.charts.load('current', {'packages': ['bar']});
-                    google.charts.setOnLoadCallback(drawChart);
-                    function drawChart() {
-                        var rowdata =#{googleChartController.drawCollectionCenterInvestigationCountChart()}
-                        var data = google.visualization.arrayToDataTable(rowdat a);
-                        var options = {
-                            chart: {
-                                title: 'Counts Of Collection Centers',
-                            }}
-                        ;
-                        var chart = new google.charts.Bar(document.getElementById('piechart4'));
-                        chart.draw(data, options);
-                    }
-                </script>
+
                 <!--total daily income by section-->
                 <script type="text/javascript">
                     google.charts.load('current', {'packages': ['corechart']});
@@ -162,7 +213,7 @@
                     <p:panel >
                         <div id="chart_div" style="width: 1000px; height: 400px;"></div>
                     </p:panel>
-                  <p:panel >
+                    <p:panel >
                         <div id="piechart" style="width:400px; height: 400px;">
 
                         </div>
@@ -174,7 +225,7 @@
                     </p:panel>
                 </h:panelGrid>
                 <h:panelGrid columns="3">
-                    
+
                     <p:panel >
                         <div id="piechart2" style="width: 400px; height: 300px;">
 
@@ -186,7 +237,7 @@
                         </div>
                     </p:panel>
                     <p:panel >
-                        <div id="piechart4" style="width: 400px; height: 300px;">
+                        <div id="barChart" style="width: 400px; height: 300px;">
 
                         </div>
                     </p:panel>
@@ -201,6 +252,7 @@
                         </div>
                     </p:panel>
                     <p:panel >
+
                         <div id="piechart7" style="width: 400px; height: 300px;">
 
                         </div>
