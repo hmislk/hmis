@@ -11,40 +11,64 @@
         <h:panelGroup>
             <p:panel header="Get Card Summery Report">
                 <h:form >
-                    <h:panelGrid columns="2">
-                        <h:outputLabel   value="From Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                        </p:calendar>
-                        <h:outputLabel   value="To Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                        </p:calendar>  
-                    </h:panelGrid>
-                    <h:panelGrid columns="2">
-                        <p:outputLabel value="Department:"/>
-                        <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{channelReportController.department}" 
-                                        style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
-                        </p:autoComplete>
-                    </h:panelGrid>
 
-                    <h:panelGrid columns="2">
+                    <p:panel id="pan1" >
+                        <h:panelGrid columns="2">
+                            <h:outputLabel   value="From Date" />
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            </p:calendar>
+                            <h:outputLabel   value="To Date" />
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            </p:calendar>  
 
-                        <h:outputLabel styleClass="noPrintButton" value=" User Name: "/>
-                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{channelReportController.webUser}" ></p:autoComplete>
-                    </h:panelGrid>
+                            <p:outputLabel value="Bank Vise"/>
+                            <p:selectBooleanCheckbox value="#{channelReportController.reportKeyWord.bool1}" >
+                                <f:ajax event="change" execute="@this" render="pan1" />
+                            </p:selectBooleanCheckbox>
 
-                    <p:commandButton value="Process" ajax="false" action="#{channelReportController.createCardSummery()}"/>
-                    <p:commandButton id="print" value="Print">
-                        <p:printer target="panelPrint" />
-                    </p:commandButton>
-                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                        <pe:exporter type="xlsx" target="tbl" fileName="card_summery" />
-                    </p:commandButton>
+                            <p:outputLabel value="Report Type" rendered="#{channelReportController.reportKeyWord.bool1}"/>
+                            <p:selectOneRadio id="console" value="#{channelReportController.reportKeyWord.string}" 
+                                              rendered="#{channelReportController.reportKeyWord.bool1}">
+                                <f:selectItem itemLabel="Summery" itemValue="0" />
+                                <f:selectItem itemLabel="Detail" itemValue="1" />
+                            </p:selectOneRadio>
+
+                            <p:outputLabel value="Bank" rendered="#{!channelReportController.reportKeyWord.bool1}"/>
+                            <p:selectOneMenu value="#{channelReportController.reportKeyWord.bank}" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                                <f:selectItem itemLabel="Select Bank"/>
+                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department" rendered="#{!channelReportController.reportKeyWord.bool1}"/>
+                            <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{channelReportController.department}" rendered="#{!channelReportController.reportKeyWord.bool1}"
+                                            style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
+                            </p:autoComplete>
+
+                            <h:outputLabel styleClass="noPrintButton" value=" User Name " rendered="#{!channelReportController.reportKeyWord.bool1}"/>
+                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                            forceSelection="true" rendered="#{!channelReportController.reportKeyWord.bool1}"
+                                            var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                            value="#{channelReportController.webUser}" ></p:autoComplete>
+                        </h:panelGrid>
+
+                        <p:commandButton value="Process" ajax="false" action="#{channelReportController.createCardSummery()}" rendered="#{!channelReportController.reportKeyWord.bool1}" />
+                        <p:commandButton value="Process" ajax="false" action="#{channelReportController.createCardSummeryBankVise()}" rendered="#{channelReportController.reportKeyWord.bool1}" />
+                        <p:commandButton id="print" value="Print">
+                            <p:printer target="panelPrint" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                            <pe:exporter type="xlsx" target="tbl" fileName="card_summery" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
+                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}" >
+                            <pe:exporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" subTable="true"/>
+                        </p:commandButton>
+                    </p:panel>
 
                     <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                        <p:dataTable id="tbl" value="#{channelReportController.channelBills}" var="b" rowIndexVar="i" >
+                        <p:dataTable id="tbl" value="#{channelReportController.channelBills}" var="b" rowIndexVar="i" rendered="#{!channelReportController.reportKeyWord.bool1}">
                             <p:column >
                                 <f:facet name="header">
                                     <p:outputLabel value="No"/>
@@ -143,6 +167,122 @@
                             </p:column>
 
 
+                        </p:dataTable>
+                        <p:dataTable id="tbl1" value="#{channelReportController.depBills}" 
+                                     rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}"
+                                     var="b" rowIndexVar="i" >
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bank"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.ins.name}"/>
+                            </p:column>
+
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Total"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.departmentBillTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportController.grantNetTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+
+                        </p:dataTable>
+                        <p:dataTable id="tbl2" value="#{channelReportController.depBills}" 
+                                     rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}"
+                                     var="a" rowIndexVar="i" >
+                            <p:columnGroup  type="header">
+                                <p:row>
+                                    <p:column headerText="Reciept No"/>
+                                    <p:column headerText="Patient Name" style="text-align: left;"/>
+                                    <p:column headerText="Department" style="text-align: left;"/>
+                                    <p:column headerText="User" style="text-align: left;"/>
+                                    <p:column headerText="Refered By" style="text-align: left;"/>
+                                    <p:column headerText="Created At" style="text-align: left;"/>
+                                    <p:column headerText="Doc. Fee" style="text-align: right;"/>
+                                    <p:column headerText="Hospital Fee" style="text-align: right;"/>
+                                    <p:column headerText="Vat" style="text-align: right;"/>
+                                    <p:column headerText="Total" style="text-align: right;"/>
+                                    <p:column headerText="Bank" style="text-align: left;"/>
+                                    <p:column headerText="Card No" style="text-align: left;"/>
+                                </p:row>
+                            </p:columnGroup> 
+                            <p:subTable value="#{a.bills}" var="b" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="#{a.ins.name}"/>
+                                    <p:outputLabel value="#{a.departmentBillTotal}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
+                                <p:column >
+                                    <p:outputLabel value="#{b.deptId}"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.patient.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{b.department.name}"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.createdAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.staffFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.netTotal-b.staffFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.vat}">
+                                        <f:convertNumber pattern="00.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column styleClass="numberCol">
+                                    <p:outputLabel value="#{b.netTotal+b.vat}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <p:outputLabel value="#{b.bank.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{b.creditCardRefNo}"/>
+                                </p:column>
+                            </p:subTable>
+                            <f:facet name="footer">
+                                <p:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                
+                                <p:outputLabel value="Total : " style="float: left;"/>
+                            </f:facet>
                         </p:dataTable>
                     </p:panel>
 
