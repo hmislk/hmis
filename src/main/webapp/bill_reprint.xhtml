@@ -254,6 +254,25 @@
                                                         </h:panelGroup>-->
 
                             </h:panelGroup>
+                            <h:panelGroup id="gpBillPreviewCC2" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false
+                                                                           and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
+                                                                           and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print Patient" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreviewCC2" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <bi:opdCCBillPrintRuhunu_1 bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+                                
+                                <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                    <bi:opdCCBillPrintRuhunu_1 bill="#{bill}" dup="true" />
+                                </ui:repeat>
+                                <!--  <br/>
+                                                        <h:panelGroup >
+                                                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
+                                                        </h:panelGroup>-->
+
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
 
