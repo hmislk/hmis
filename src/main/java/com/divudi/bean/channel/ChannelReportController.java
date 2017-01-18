@@ -129,6 +129,7 @@ public class ChannelReportController implements Serializable {
     boolean showPatient = false;
     PaymentMethod paymentMethod;
     ChannelTotal channelTotal;
+  
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
