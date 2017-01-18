@@ -314,37 +314,12 @@ public class ReportsTransfer implements Serializable {
     public void fillDepartmentTransfersReceive() {
         Date startTime = new Date();
 
-        Map m = new HashMap();
-        String sql;
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferReceive);
-        if (fromDepartment != null && toDepartment != null) {
-            m.put("fdept", fromDepartment);
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi "
-                    + " where bi.bill.fromDepartment=:fdept"
-                    + " and bi.bill.department=:tdept "
-                    + " and bi.bill.createdAt between :fd "
-                    + "and :td and bi.bill.billType=:bt order by bi.id";
-        } else if (fromDepartment == null && toDepartment != null) {
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:tdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        } else if (fromDepartment != null && toDepartment == null) {
-            m.put("fdept", fromDepartment);
-            sql = "select bi from BillItem bi where bi.bill.fromDepartment=:fdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        } else {
-            sql = "select bi from BillItem bi where bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        }
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = fetchBillItems(BillType.PharmacyTransferReceive);
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
-            purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
-            saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer receieve by bill item(/faces/pharmacy/pharmacy_report_transfer_receive_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_receive_bill_item.xhtml)");
@@ -353,38 +328,61 @@ public class ReportsTransfer implements Serializable {
     public void fillDepartmentTransfersIssueByBillItem() {
         Date startTime = new Date();
 
-        Map m = new HashMap();
-        String sql;
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("bt", BillType.PharmacyTransferIssue);
-        if (fromDepartment != null && toDepartment != null) {
-            m.put("fdept", fromDepartment);
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:fdept"
-                    + " and bi.bill.toDepartment=:tdept and bi.bill.createdAt between :fd "
-                    + "and :td and bi.bill.billType=:bt order by bi.id";
-        } else if (fromDepartment == null && toDepartment != null) {
-            m.put("tdept", toDepartment);
-            sql = "select bi from BillItem bi where bi.bill.toDepartment=:tdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        } else if (fromDepartment != null && toDepartment == null) {
-            m.put("fdept", fromDepartment);
-            sql = "select bi from BillItem bi where bi.bill.department=:fdept and bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        } else {
-            sql = "select bi from BillItem bi where bi.bill.createdAt "
-                    + " between :fd and :td and bi.bill.billType=:bt order by bi.id";
-        }
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = fetchBillItems(BillType.PharmacyTransferIssue);
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
-            purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
-            saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
+    }
+
+    public List<BillItem> fetchBillItems(BillType bt) {
+        List<BillItem> billItems = new ArrayList<>();
+
+        Map m = new HashMap();
+        String sql;
+        sql = "select bi from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType=:bt ";
+
+        if (bt == BillType.PharmacyTransferIssue) {
+            if (fromDepartment != null) {
+                sql += " and bi.bill.department=:fdept ";
+                m.put("fdept", fromDepartment);
+            }
+
+            if (toDepartment != null) {
+                sql += " and bi.bill.toDepartment=:tdept ";
+                m.put("tdept", toDepartment);
+            }
+        }
+        
+        if (bt == BillType.PharmacyTransferReceive) {
+            if (fromDepartment != null) {
+                sql += " and bi.bill.fromDepartment=:fdept ";
+                m.put("fdept", fromDepartment);
+            }
+
+            if (toDepartment != null) {
+                sql += " and bi.bill.department=:tdept ";
+                m.put("tdept", toDepartment);
+            }
+        }
+
+        sql += " order by bi.id";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", bt);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("billItems.size() = " + billItems.size());
+
+        return billItems;
     }
 
     public void fillDepartmentTransfersIssueByBill() {
@@ -439,7 +437,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillDepartmentBHTIssueByBill() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -461,7 +459,7 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMargin();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill.xhtml)");
     }
 
@@ -477,7 +475,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillDepartmentBHTIssueByBillItems() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -506,7 +504,7 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMarginValue();
             netTotalValues = netTotalValues + b.getNetValue();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem.xhtml)");
     }
 
@@ -934,22 +932,21 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (batch)(/faces/pharmacy/unit_report_by_item.xhtml)");
     }
 
     public void fillItemCountsWithOutMarginPharmacy() {
         Date startTime = new Date();
-        
+
         fillItemCountsWithOutMargin(BillType.PharmacyIssue);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (/faces/pharmacy/unit_report_by_item_1.xhtml)");
     }
 
     public void fillItemCountsWithOutMarginStore() {
         Date startTime = new Date();
         fillItemCountsWithOutMargin(BillType.StoreIssue);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_unit_report_by_item_1.xhtml)");
     }
 
@@ -1028,7 +1025,6 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.StoreIssue);
         billNetTotal = fetchBillNetTotal(BillType.StoreIssue);
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(batch)(/faces/store/store_unit_report_by_item.xhtml)");
     }
 
@@ -1439,7 +1435,7 @@ public class ReportsTransfer implements Serializable {
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
         Date startTime = new Date();
-        
+
         if (fromDepartment == null || toDepartment == null) {
             JsfUtil.addErrorMessage("Please Check From To Departments");
             return;
@@ -1493,7 +1489,7 @@ public class ReportsTransfer implements Serializable {
             count.setTotalBht(totalBHTValue);
             itemBHTIssueCountTrancerReciveCounts.add(count);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count.xhtml)");
 
     }

@@ -48,10 +48,6 @@
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"  
                                          value="#{reportsTransfer.transferItems}" var="i"  
-                                         rows="20"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100" 
                                          >
 
                                 <f:facet name="header">
@@ -75,6 +71,10 @@
                                           filterMatchMode="contains"
                                           >
                                     <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Ref. Bill No"
+                                          >
+                                    <h:outputLabel value="#{i.bill.backwardReferenceBill.deptId}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Date"
                                           sortBy="#{i.bill.createdAt}"
@@ -102,7 +102,7 @@
                                 </p:column>
 
                                 <p:column headerText="Qty" style="text-align: right;">
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                                                     </p:column>
@@ -113,17 +113,17 @@
                                 </p:column>
 
                                 <p:column headerText="Cost Value" style="text-align: right;">
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"  >
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="5"/>
+                                        <p:column colspan="6"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>
