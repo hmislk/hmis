@@ -397,7 +397,12 @@ public class GoogleChartController implements Serializable {
             mainJSONArray.put(subArray);
             subArray = new JSONArray();
         }
+        System.out.println("mainJSONArray.length = " + mainJSONArray.length());
+        if (mainJSONArray.length()<2) {
+            mainJSONArray = new JSONArray();
+        }
         System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
+        
         return mainJSONArray.toString();
     }
 
