@@ -27,6 +27,11 @@
                                 <f:selectItem itemLabel="Select Admission Type"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type  " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{bhtSummeryFinalizedController.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
@@ -106,6 +111,19 @@
                                 </h:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel  value="#{bhtSummeryFinalizedController.totalMed}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Room"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{bwv.room}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalRoom}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>
