@@ -55,7 +55,7 @@ public class ReportKeyWord {
     EmployeeStatus employeeStatus;
     boolean additionalDetails;
     WebUser webUser;
-    private String string;
+    private String string="0";
     boolean bool1;
     String address;
     @Transient
@@ -296,7 +296,7 @@ public class ReportKeyWord {
     public void setBool1(boolean bool1) {
         this.bool1 = bool1;
     }
-    
+
     public String getTransAddress1() {
         if (transAddress1==null) {
             split();

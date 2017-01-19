@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:panelGroup>
+
+            <h:form id="form1">
+                <p:panel header="Get Cancelled Or Refund Bill Report">
+
+                    <h:panelGrid columns="2">
+
+                        <h:outputLabel   value="From Date" />
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>
+
+                        <h:outputLabel   value="To Date" />
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        </p:calendar>  
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pan1">
+                        <p:outputLabel value="Select the Department:" />
+                        <h:selectOneRadio value="#{channelReportTempController.dept}" >
+                            <f:selectItem itemLabel="Channel" itemValue="1" />
+                            <f:selectItem itemLabel="OPDs" itemValue="2" />
+                            <f:selectItem itemLabel="Pharamacy" itemValue="3" />
+                        </h:selectOneRadio>
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pan2">
+                        <p:outputLabel value="Get total:" />
+                        <h:selectOneRadio value="#{channelReportTempController.billtype}" >
+                            <f:selectItem itemLabel="Cancelled Bill" itemValue="1" />
+                            <f:selectItem itemLabel="Refund Bill" itemValue="2" />
+                        </h:selectOneRadio>
+                    </h:panelGrid>
+                    <p:commandButton value="Process" ajax="false" action="#{channelReportTempController.createCanceledAndRefund()}"/>
+                    <p:commandButton id="print" value="Print">
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+                    <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="refundOrCancelledBill_summery" />
+                    </p:commandButton>
+                    <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                        <p:dataTable id="tbl" value="#{channelReportTempController.bills}" var="b" rowIndexVar="i">
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{i+1}"/>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill No"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.deptId}"/>
+                            </p:column>
+                            <p:column sortBy="#{b.department.name}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Department"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.department.name}"/>
+                            </p:column>
+                            <p:column sortBy="#{b.creater.webUserPerson.name}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="User"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.creater.webUserPerson.name}"/>
+                            </p:column>
+                           
+                            <p:column sortBy="#{b.paymentMethod}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Payment Method"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.paymentMethod}"/>
+                            </p:column>
+                            <p:column styleClass="numberCol">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Net Total"/>
+                                </f:facet>
+                                <p:outputLabel value="#{b.vat+b.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <p:outputLabel value="#{channelReportTempController.grantTot}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                        </p:dataTable>
+                       
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+
+
+</ui:composition>
+

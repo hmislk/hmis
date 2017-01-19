@@ -136,6 +136,8 @@ public class ChannelReportTempController implements Serializable {
     List<ColumnModel> columnModels;
     private List<PaymentMethod> paymentMethods;
     List<ChannelUserSummeryRow> channelUserSummeryRows;
+    private String dept = "1";
+    private String billtype = "1";
     //
     Date fromDate;
     Date toDate;
@@ -151,6 +153,7 @@ public class ChannelReportTempController implements Serializable {
     boolean agency;
     boolean scan;
     ChannelTotal channelTotal;
+    private double grantTot = 0.0;
 
     /**
      * Creates a new instance of ChannelReportTempController
@@ -2281,6 +2284,55 @@ public class ChannelReportTempController implements Serializable {
 
     }
 
+    public void createCanceledAndRefund() {
+        grantTot = 0.0;
+        bills = fetchCancelledOrRefundBills();
+        for (Bill bill : bills) {
+            grantTot += (bill.getVat()+bill.getNetTotal());
+        }
+    }
+
+    public List<Bill> fetchCancelledOrRefundBills() {
+        String sql = "";
+        Map m = new HashMap();
+
+        sql = "select b from Bill b where b.retired=false";
+        if (dept.equals("1")) {
+            sql += " and b.billType in :bt ";
+            ArrayList<BillType> bts = new ArrayList<>(
+                    Arrays.asList(BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent));
+            m.put("bt", bts);
+        }
+        if (dept.equals("2")) {
+            sql += " and b.billType =:bt ";
+            m.put("bt", BillType.OpdBill);
+        }
+        if (dept.equals("3")) {
+            sql += " and b.billType in :bt ";
+            ArrayList<BillType> bts = new ArrayList<>(
+                    Arrays.asList(BillType.PharmacySale));
+            m.put("bt", bts);
+        }
+        if (billtype.equals("1")) {
+            sql += " and type(b)=:class ";
+            m.put("class", CancelledBill.class);
+        }
+        if (billtype.equals("2")) {
+           sql += " and type(b)=:class ";
+            m.put("class", RefundBill.class);
+        }
+        sql += " and b.createdAt between :fd and :td ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("dept = " + dept);
+        System.out.println("billtype = " + billtype);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+
+        return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     public double fetchBillsVatTotal(PaymentMethod pm, Date fd, Date td) {
         String sql = "";
         Map m = new HashMap();
@@ -2565,6 +2617,30 @@ public class ChannelReportTempController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public String getDept() {
+        return dept;
+    }
+
+    public void setDept(String dept) {
+        this.dept = dept;
+    }
+
+    public String getBilltype() {
+        return billtype;
+    }
+
+    public void setBilltype(String billtype) {
+        this.billtype = billtype;
+    }
+
+    public double getGrantTot() {
+        return grantTot;
+    }
+
+    public void setGrantTot(double grantTot) {
+        this.grantTot = grantTot;
     }
 
     //inner Classes(Data Structures)

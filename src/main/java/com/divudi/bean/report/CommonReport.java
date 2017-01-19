@@ -5129,6 +5129,7 @@ public class CommonReport implements Serializable {
         Map m = new HashMap();
         String sql = "select distinct(b.fromInstitution) from Bill b "
                 + " where b.billType in :bTypes "
+                + " and b.retired=false "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.fromInstitution is not null "
                 + " order by b.fromInstitution.name ";
