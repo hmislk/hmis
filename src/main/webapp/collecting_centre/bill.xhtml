@@ -546,6 +546,13 @@
                                                      ajax="false">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
+                                    <p:commandButton value="Print Patient" 
+                                                     process="@this" 
+                                                     update="@all" 
+                                                     type="button"  
+                                                     ajax="false">
+                                        <p:printer target="gpBillPreview2" ></p:printer>
+                                    </p:commandButton>
 
                                     <p:commandButton value="New Bill" ajax="false" action="#{collectingCentreBillController.prepareNewBill()}" >
                                     </p:commandButton>
@@ -556,6 +563,11 @@
                                 <h:panelGroup id="gpBillPreview">
                                     <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">
                                         <bi:opdCCBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup id="gpBillPreview2">
+                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="bill">
+                                        <bi:opdCCBillPrintRuhunu_1 bill="#{bill}" dup="false"/>
                                     </ui:repeat>
                                 </h:panelGroup>
                             </h:panelGroup>
