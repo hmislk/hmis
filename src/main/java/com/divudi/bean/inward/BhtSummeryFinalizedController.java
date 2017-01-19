@@ -11,6 +11,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -164,6 +165,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     double creditCompanyPaymentTotal;
 
     boolean activeBackButton = false;
+    PaymentMethod paymentMethod;
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
@@ -436,6 +438,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     double totalMed;
     double totalDoc;
     double totalHos;
+    double totalRoom;
 
     public void createBhtInwardChargeTypeTable() {
         Date startTime = new Date();
@@ -473,12 +476,14 @@ public class BhtSummeryFinalizedController implements Serializable {
         totalMed = 0.0;
         totalDoc = 0.0;
         totalHos = 0.0;
-        for (PatientEncounter pe : patientEncounters(admissionType)) {
+        totalRoom = 0.0;
+        for (PatientEncounter pe : patientEncounters(admissionType,paymentMethod)) {
             bhtWithVat bwv = new bhtWithVat();
             double vat = 0.0;
             double med = 0.0;
             double doc = 0.0;
             double hos = 0.0;
+            double room = 0.0;
             for (BillItem bi : pe.getFinalBill().getBillItems()) {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     vat += bi.getNetValue();
@@ -490,8 +495,12 @@ public class BhtSummeryFinalizedController implements Serializable {
                     doc += bi.getNetValue();
                 }
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
-                        && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT) {
+                        && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.RoomCharges) {
                     hos += bi.getNetValue();
+                }
+                if (bi.getInwardChargeType() == InwardChargeType.RoomCharges) {
+                    room += bi.getNetValue();
                 }
             }
 
@@ -500,6 +509,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             bwv.setMedicine(med);
             bwv.setDoc(doc);
             bwv.setHos(hos);
+            bwv.setRoom(room);
 
             bhtWithVats.add(bwv);
 
@@ -510,6 +520,7 @@ public class BhtSummeryFinalizedController implements Serializable {
             totalMed += med;
             totalDoc += doc;
             totalHos += hos;
+            totalRoom += room;
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "BHT inward charged category report(/faces/inward/inward_report_bht_inward_charge_category.xhtml)");
@@ -535,7 +546,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         return patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public List<PatientEncounter> patientEncounters(AdmissionType admissionType) {
+    public List<PatientEncounter> patientEncounters(AdmissionType admissionType,PaymentMethod paymentMethod) {
         String sql;
         Map m = new HashMap();
 
@@ -547,6 +558,11 @@ public class BhtSummeryFinalizedController implements Serializable {
         if (admissionType != null) {
             sql += " and c.admissionType=:at ";
             m.put("at", admissionType);
+        }
+        
+        if (paymentMethod != null) {
+            sql = sql + " and c.paymentMethod=:pm ";
+            m.put("pm", paymentMethod);
         }
 
         sql += " order by c.bhtNo ";
@@ -1199,8 +1215,17 @@ public class BhtSummeryFinalizedController implements Serializable {
         PatientEncounter pe;
         double vat;
         double medicine;
+        double room;
         double doc;
         double hos;
+
+        public double getRoom() {
+            return room;
+        }
+
+        public void setRoom(double room) {
+            this.room = room;
+        }
 
         public PatientEncounter getPe() {
             return pe;
@@ -1455,6 +1480,22 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setTotalHos(double totalHos) {
         this.totalHos = totalHos;
+    }
+
+    public double getTotalRoom() {
+        return totalRoom;
+    }
+
+    public void setTotalRoom(double totalRoom) {
+        this.totalRoom = totalRoom;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }
