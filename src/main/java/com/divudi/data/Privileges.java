@@ -357,7 +357,6 @@ public enum Privileges {
     HrForms,
     HrLeaveForms,
     HrAdditionalForms,
-    HrAdmindfsd,
     
     Developers,
     //Cashier
@@ -365,5 +364,6 @@ public enum Privileges {
     //Administration
     SearchAll,
     ChangePreferece,
+    SendBulkSMS,
 
 }

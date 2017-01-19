@@ -500,8 +500,8 @@
                                                 </p:column>
                                                 <p:column>
                                                     <f:facet name="header">Fee</f:facet>
-                                                    <h:inputText autocomplete="off"  
-                                                                 id="txtFeeVal"
+                                                    <h:inputText autocomplete="off"  required="true" requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
+                                                                 id="txtFeeVal" 
                                                                  value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                         <f:ajax event="keyup" execute="@this" 
