@@ -13,7 +13,7 @@
     <cc:implementation>
         <p:autoComplete   forceSelection="true" id="staff"
                           value="#{cc.attrs.value}" 
-                          completeMethod="#{staffController.completeStaffCodeChannel}" 
+                          completeMethod="#{staffController.completeStaffCodeChannelWithOutResignOrRetierd}" 
                           var="mys" 
                           itemLabel="#{mys.person.nameWithTitle}" 
                           itemValue="#{mys}"

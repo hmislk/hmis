@@ -503,8 +503,24 @@ public class InstitutionController implements Serializable {
         }
         recreateModel();
         getItems();
+        fetchSelectedAgencys();
         current = null;
         getCurrent();
+    }
+    
+    public void deleteAgency() {
+
+        if (getAgency()!= null) {
+            getAgency().setRetired(true);
+            getAgency().setRetiredAt(new Date());
+            getAgency().setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(getAgency());
+            UtilityController.addSuccessMessage("Deleted Successfully");
+        } else {
+            UtilityController.addSuccessMessage("Nothing to Delete");
+        }
+        fetchSelectedAgencys();
+        prepareAddAgency();
     }
 
     private InstitutionFacade getFacade() {
