@@ -77,11 +77,11 @@ public class QuickBookReportController implements Serializable {
     }
 
     public void createQBFormatInwardIncome() {
-        
+        quickBookFormats=new ArrayList<>();
         for (Institution i : fetchCreditCompany(toDate, toDate)) {
-            fetchINwardListWithCreditCompany(fromDate, toDate,i);
+            quickBookFormats.addAll(fetchINwardListWithCreditCompany(fromDate, toDate, i));
         }
-        
+
     }
 
     public void fetchOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td) {
@@ -170,7 +170,7 @@ public class QuickBookReportController implements Serializable {
 
     }
 
-    public void fetchINwardListWithCreditCompany(Date fd, Date td,Institution i) {
+    public List<QuickBookFormat> fetchINwardListWithCreditCompany(Date fd, Date td, Institution i) {
         Map temMap = new HashMap();
 //        Bill b;
         grantTot = 0.0;
@@ -191,13 +191,12 @@ public class QuickBookReportController implements Serializable {
                 + " and bi.retired=false "
                 + " and bf.retired=false ";
 
-        if (i!=null) {
-             jpql += " and bi.bill.creditCompany=:cd ";
+        if (i != null) {
+            jpql += " and bi.bill.creditCompany=:cd ";
             temMap.put("cd", i);
 
         }
-           
-  
+
         jpql += " group by b.patientEncounter.bhtNo,c.name,i.name "
                 + " order by c.name,i.name";
         temMap.put("ft", FeeType.Staff);
@@ -212,62 +211,66 @@ public class QuickBookReportController implements Serializable {
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
         System.out.println("lobjs.size = " + lobjs.size());
-//        QuickBookFormat qbf = new QuickBookFormat();
-//        quickBookFormats = new ArrayList<>();
-//        List<QuickBookFormat> qbfs = new ArrayList<>();
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//        DecimalFormat df = new DecimalFormat("#.00");
+
+        QuickBookFormat qbf;
+        quickBookFormats = new ArrayList<>();
+        List<QuickBookFormat> formats = new ArrayList<>();
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+        SimpleDateFormat sdf;
+        DecimalFormat df = new DecimalFormat("#.00");
+        grantTot = 0.0;
         for (Object[] lobj : lobjs) {
-//            qbf = new QuickBookFormat();
-            PatientEncounter ind0 = (PatientEncounter) lobj[0];
-            String ind1 = (String) lobj[1];
-            Item ind2 = (Item) lobj[2];
-//            Service s=(Service) lobj[3];
-            System.out.println("bht = " + ind0.getBhtNo());
-            System.out.println("creditcom = " + ind1);
-            System.out.println("catgry = " + ind2.getName());
-//            System.out.println("sum = " + ind3);
+            qbf = new QuickBookFormat();
+            PatientEncounter pe = (PatientEncounter) lobj[0];
+            String cat = (String) lobj[1];
+            Item it = (Item) lobj[2];
+            double sum = (double) lobj[4];
+            System.out.println("bht = " + pe.getBhtNo());
+            System.out.println("creditcom = " + cat);
+            System.out.println("it = " + it.getName());
+            System.out.println("sum = " + sum);
+
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("INVOICE");
+            qbf.setAccnt(cat);
+            qbf.setName(i.getName());
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem(i.getName());
+            qbf.setAmount(0 - Double.parseDouble(df.format(sum)));
+            if (it.getDepartment() != null) {
+                System.out.println("si.getDepartment().getPrintingName()) " + it.getDepartment().getName());
+                qbf.setQbClass(it.getDepartment().getName());
+            } else {
+                qbf.setQbClass("No Department");
+            }
+
+            qbf.setMemo(it.getName());
+            qbf.setCustFld1(pe.getBhtNo());
+            sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+            qbf.setCustFld2(sdf.format(pe.getDateOfAdmission()));
+            qbf.setCustFld3(sdf.format(pe.getDateOfDischarge()));
+            grantTot += sum;
+            qbfs.add(qbf);
         }
-//            String cName = (String) lobj[0];
-//            Item i = (Item) lobj[1];
-//            double sum = (double) lobj[3];
-////            System.out.println("cName = " + cName);
-////            System.out.println("iName = " + i);
-////            System.out.println("fValue = " + sum);
-//            qbf.setRowType("SPL");
-//            qbf.setTrnsType("CASH SALE");
-//            qbf.setName("Cash");
-//            qbf.setAccnt(cName);
-//            qbf.setInvItemType("SERV");
-//            qbf.setInvItem(i.getName());
-//            qbf.setAmount(0 - Double.parseDouble(df.format(sum)));
-//            if (i.getDepartment() != null) {
-//                System.out.println("si.getDepartment().getPrintingName()) " + i.getDepartment().getName());
-//                qbf.setQbClass(i.getDepartment().getName());
-//            } else {
-//                qbf.setQbClass("No Department");
-//            }
-//
-//            qbf.setMemo(i.getName());
-//            grantTot += sum;
-//            qbfs.add(qbf);
-//        }
-//        qbf = new QuickBookFormat();
-//
-//        qbf.setRowType("TRNS");
-//        qbf.setTrnsType("CASH SALE");
-//        qbf.setDate(sdf.format(fromDate));
-//        qbf.setAccnt("Cash in Hand/Bank C/A");
-//        qbf.setName("Cash");
-//        qbf.setAmount(Double.parseDouble(df.format(grantTot)));
-//        qbf.setMemo("Sales");
-//        qbf.setDocNum(sdf.format(fromDate));
-//
-//        quickBookFormats.add(qbf);
-//        quickBookFormats.addAll(qbfs);
-//        qbf = new QuickBookFormat();
-//        qbf.setRowType("ENDTRNS");
-//        quickBookFormats.add(qbf);
+        sdf = new SimpleDateFormat("yyyy-MM-dd");
+        qbf = new QuickBookFormat();
+        qbf.setRowType("TRNS");
+        qbf.setTrnsType("INVOICE");
+        qbf.setDate("????");
+        qbf.setAccnt("Trade Debtors");
+        qbf.setName(i.getName());
+        qbf.setAmount(Double.parseDouble(df.format(grantTot)));
+        qbf.setMemo("");
+        qbf.setDocNum("????");
+
+        formats.add(qbf);
+        formats.addAll(qbfs);
+
+        qbf = new QuickBookFormat();
+        qbf.setRowType("ENDTRNS");
+        formats.add(qbf);
+
+        return formats;
 
     }
 
