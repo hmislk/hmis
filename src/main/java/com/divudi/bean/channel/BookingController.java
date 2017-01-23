@@ -395,10 +395,10 @@ public class BookingController implements Serializable {
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
                             + " and pi.staff.speciality=:sp ";
-                    if (getSessionController().getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
-                        sql+=" order by pi.staff.codeInterger , pi.staff.person.name ";
+                    if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                        sql += " order by pi.staff.codeInterger , pi.staff.person.name ";
                     } else {
-                        sql+= " order by pi.staff.person.name ";
+                        sql += " order by pi.staff.person.name ";
                     }
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
@@ -475,7 +475,6 @@ public class BookingController implements Serializable {
 //
 //            setStaff(null);
 //        }
-
         return consultants;
     }
 
@@ -685,7 +684,17 @@ public class BookingController implements Serializable {
         if (obj2 == null) {
             obj2 = 0.0;
         }
-        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+        double d = 0.0;
+        // who wat to get vat for selected sessions add institution institution to this methord and settle methord
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (item.isVatable()) {
+                d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+            } else {
+                d = obj + obj2;
+            }
+        } else {
+            d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+        }
 
         return d;
     }
@@ -832,7 +841,17 @@ public class BookingController implements Serializable {
         if (obj2 == null) {
             obj2 = 0.0;
         }
-        double d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+        double d = 0.0;
+        // who wat to get vat for selected sessions add institution institution to this methord and settle methord
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (item.isVatable()) {
+                d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+            } else {
+                d = obj + obj2;
+            }
+        } else {
+            d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
+        }
 
         return d;
     }
