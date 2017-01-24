@@ -61,16 +61,19 @@
                     </h:panelGroup>
 
 
-                    <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" >
+                    <h:panelGroup id="gpBillPreview" rendered="#{pharmacyBillSearch.printPreview}" >
+                        <p:commandButton value="Print" ajax="false" styleClass="noPrintButton">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
 <!--                        <pharmacy:grn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
-                        
+
                         <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
                             <pharmacy:grnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                        </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
-                                <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
-                            </h:panelGroup>
+                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                            <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
 

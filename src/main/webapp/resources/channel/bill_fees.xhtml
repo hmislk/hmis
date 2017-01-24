@@ -10,9 +10,9 @@
         <cc:attribute name="bill" />
     </cc:interface>
 
-    <!-- IMPLEMENTATION -->
+    <!-- IMPLEMENTATION -->        
     <cc:implementation>
-        <p:dataTable value="#{cc.attrs.bill.billFees}" var="bi">
+        <p:dataTable value="#{cc.attrs.bill.billFees}" var="bi" id="tbl">
 
             <p:column headerText="Fee Name">
                 <p:outputLabel value="#{bi.fee.name}"/>
@@ -20,25 +20,25 @@
             <p:column headerText="Fee Type">
                 <p:outputLabel value="#{bi.fee.feeType}"/>
             </p:column>
-            <p:column headerText="Fee Value" styleClass="numberCol">
-                <p:outputLabel value="#{bi.feeValue}">
+            <p:column headerText="Fee Value" styleClass="numberCol" >
+                <p:outputLabel value="#{bi.feeValue}" id="col1" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Fee Value" styleClass="numberCol">
-                <p:outputLabel value="#{bi.feeVat}">
+            <p:column headerText="Vat Value" styleClass="numberCol" >
+                <p:outputLabel value="#{bi.feeVat}" id="col2" >
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Fee Value" styleClass="numberCol">
-                <p:outputLabel value="#{bi.feeVatPlusValue}">
+            <p:column headerText="Net Value" styleClass="numberCol" >
+                <p:outputLabel value="#{bi.feeVatPlusValue}" id="col3" > 
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Paid Value" styleClass="numberCol">
-                <p:outputLabel value="#{bi.paidValue}">
-                    <f:convertNumber pattern="#,###0.00"  />
-                </p:outputLabel>
+            <p:column headerText="Change Value" styleClass="numberCol" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                <p:inputText value="#{bi.tmpSettleChangedValue}" disabled="#{!(!bookingController.selectedServiceSession.originatingSession.vatable and cc.attrs.bill.paymentMethod eq 'OnCall')}">
+                    <f:ajax execute="@this" render="col1 col2 col3" event="keyup" listener="#{channelBillController.calSettleTotal()}"/>
+                </p:inputText>
             </p:column>
 
         </p:dataTable>

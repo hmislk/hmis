@@ -614,6 +614,30 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
+    
+    public List<Staff> completeStaffCodeChannelWithOutResignOrRetierd(String query) {
+        List<Staff> suggestions;
+        String sql;
+        Map m=new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and (p.dateLeft is null or p.dateLeft>:cd)"
+                    + " and LENGTH(p.code) > 0 "
+                    + " and LENGTH(p.person.name) > 0 "
+                    + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or upper(p.code)='" + query.toUpperCase() + "' )"
+                    + " order by p.person.name";
+            
+            m.put("cd", new Date());
+
+            ////System.out.println(sql);
+            suggestions = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 20);
+        }
+        return suggestions;
+    }
 
     public void makeNull() {
         items = null;

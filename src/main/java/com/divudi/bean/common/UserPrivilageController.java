@@ -293,6 +293,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node6633 = new PrivilageNode("Opd MemberShip Report", node663, Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport);
         TreeNode node67 = new PrivilageNode("Only For Developers(Don't Add That)", node6, Privileges.Developers);
         TreeNode node68 = new PrivilageNode("Search All", node6, Privileges.SearchAll);
+        TreeNode node69 = new PrivilageNode("Send Bulk SMS", node6, Privileges.SendBulkSMS);
 
         TreeNode node9 = new PrivilageNode("Human Resource", tmproot);
         TreeNode node91 = new PrivilageNode("HR Menu", node9, Privileges.Hr);
@@ -427,22 +428,23 @@ public class UserPrivilageController implements Serializable {
         TreeNode node23010j = new PrivilageNode("Edit Credit Limit Administrator Level", node23010, Privileges.ChannellingEditCreditLimitAdminLevel);
         TreeNode node23010k = new PrivilageNode("Channel Reports", node23, Privileges.ChannelReports);
         TreeNode node23010l = new PrivilageNode("Channel Summery", node23, Privileges.ChannelSummery);
-        TreeNode node23010m = new PrivilageNode("Channel Mamagement", node23);
-        TreeNode node23010ma = new PrivilageNode("Channel Mamagement Menu", node23010m, Privileges.ChannelManagement);
-        TreeNode node23010mb = new PrivilageNode("Channel Agencies", node23010m, Privileges.ChannelAgencyAgencies);
-        TreeNode node23010mc = new PrivilageNode("Channel Agenciey Credit Limit Update", node23010m, Privileges.ChannelAgencyCreditLimitUpdate);
-        TreeNode node23010md = new PrivilageNode("Channel Agenciey Credit Limit Update (Bulk)", node23010m, Privileges.ChannelAgencyCreditLimitUpdateBulk);
-        TreeNode node23010me = new PrivilageNode("Add Channel Book To Agency", node23010m, Privileges.ChannelAddChannelBookToAgency);
-        TreeNode node23010mf = new PrivilageNode("Channel Management Specialities", node23010m, Privileges.ChannelManageSpecialities);
-        TreeNode node23010mg = new PrivilageNode("Channel Management Consultants", node23010m, Privileges.ChannelManageConsultants);
-        TreeNode node23010mh = new PrivilageNode("Channel Editing Appoinment Count", node23010m, Privileges.ChannelEditingAppoinmentCount);
-        TreeNode node23010mi = new PrivilageNode("Add Channelling Consultants To Institution ", node23010m, Privileges.ChannelAddChannelingConsultantToInstitutions);
-        TreeNode node23010mj = new PrivilageNode("Channel Fee Update", node23010m, Privileges.ChannelFeeUpdate);
-        TreeNode node23010mk = new PrivilageNode("Channel Credit Note", node23010m, Privileges.ChannelCrdeitNote);
-        TreeNode node23010ml = new PrivilageNode("Channel Credit Note Search", node23010m, Privileges.ChannelCrdeitNoteSearch);
-        TreeNode node23010mm = new PrivilageNode("Channel Debit Note", node23010m, Privileges.ChannelDebitNote);
-        TreeNode node23010mn = new PrivilageNode("Channel Debit Note Search", node23010m, Privileges.ChannelDebitNoteSearch);
-        TreeNode node23010mo = new PrivilageNode("Channel Cash Cancel Restriction", node23010m, Privileges.ChannelCashCancelRestriction);
+        TreeNode node23012 = new PrivilageNode("Channel Mamagement", node23);
+        TreeNode node23012a = new PrivilageNode("Channel Mamagement Menu", node23012, Privileges.ChannelManagement);
+        TreeNode node23012b = new PrivilageNode("Channel Agencies", node23012, Privileges.ChannelAgencyAgencies);
+        TreeNode node23012c = new PrivilageNode("Channel Agenciey Credit Limit Update", node23012, Privileges.ChannelAgencyCreditLimitUpdate);
+        TreeNode node23012d = new PrivilageNode("Channel Agenciey Credit Limit Update (Bulk)", node23012, Privileges.ChannelAgencyCreditLimitUpdateBulk);
+        TreeNode node23012e = new PrivilageNode("Add Channel Book To Agency", node23012, Privileges.ChannelAddChannelBookToAgency);
+        TreeNode node23012f = new PrivilageNode("Channel Management Specialities", node23012, Privileges.ChannelManageSpecialities);
+        TreeNode node23012g = new PrivilageNode("Channel Management Consultants", node23012, Privileges.ChannelManageConsultants);
+        TreeNode node23012h = new PrivilageNode("Channel Editing Appoinment Count", node23012, Privileges.ChannelEditingAppoinmentCount);
+        TreeNode node23012i = new PrivilageNode("Add Channelling Consultants To Institution ", node23012, Privileges.ChannelAddChannelingConsultantToInstitutions);
+        TreeNode node23012j = new PrivilageNode("Channel Fee Update", node23012, Privileges.ChannelFeeUpdate);
+        TreeNode node23012k = new PrivilageNode("Channel Credit Note", node23012, Privileges.ChannelCrdeitNote);
+        TreeNode node23012l = new PrivilageNode("Channel Credit Note Search", node23012, Privileges.ChannelCrdeitNoteSearch);
+        TreeNode node23012m = new PrivilageNode("Channel Debit Note", node23012, Privileges.ChannelDebitNote);
+        TreeNode node23012n = new PrivilageNode("Channel Debit Note Search", node23012, Privileges.ChannelDebitNoteSearch);
+        TreeNode node23012o = new PrivilageNode("Channel Cash Cancel Restriction", node23012, Privileges.ChannelCashCancelRestriction);
+        TreeNode node23012p = new PrivilageNode("Channel Active Vat", node23012, Privileges.ChannelActiveVat);
 
         return tmproot;
     }

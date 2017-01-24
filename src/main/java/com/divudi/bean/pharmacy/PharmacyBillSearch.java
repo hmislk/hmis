@@ -1966,9 +1966,12 @@ public class PharmacyBillSearch implements Serializable {
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         //System.err.println("Batch " + pharmaceuticalBillItem.getItemBatch());
         double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
-        //System.err.println("Stock Qty" + stockQty);
-        //System.err.println("Ph Qty" + pharmaceuticalBillItem.getQtyInUnit());
-        if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()) > stockQty) {
+        System.err.println("Stock Qty" + stockQty);
+        System.err.println("Ph Qty" + pharmaceuticalBillItem.getQtyInUnit());
+        System.err.println("Ph Qty" + pharmaceuticalBillItem.getQty());
+        System.err.println("Ph Qty" + pharmaceuticalBillItem.getFreeQty());
+        System.err.println("Ph Qty" + pharmaceuticalBillItem.getFreeQtyInUnit());
+        if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()+pharmaceuticalBillItem.getFreeQtyInUnit()) > stockQty) {
             System.err.println("Check Item : " + pharmaceuticalBillItem.getBillItem().getItem());
             System.err.println("Item Qty : " + pharmaceuticalBillItem.getQtyInUnit());
             return true;
@@ -2002,6 +2005,7 @@ public class PharmacyBillSearch implements Serializable {
                 UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't cancel ");
                 return;
             }
+            
 
             if (getBill().getPaidAmount() != 0) {
                 UtilityController.addErrorMessage("Payments for this GRN Already Given ");

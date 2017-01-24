@@ -311,6 +311,8 @@ public class BillFee implements Serializable {
 
     @Transient
     private Double tmpChangedValue;
+    @Transient
+    private Double tmpSettleChangedValue;
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         if (tmpChangedValue == null) {
@@ -585,6 +587,14 @@ public class BillFee implements Serializable {
 
     public void setTmpChangedValue(Double tmpChangedValue) {
         this.tmpChangedValue = tmpChangedValue;
+    }
+
+    public Double getTmpSettleChangedValue() {
+        return tmpSettleChangedValue;
+    }
+
+    public void setTmpSettleChangedValue(Double tmpSettleChangedValue) {
+        this.tmpSettleChangedValue = tmpSettleChangedValue;
     }
 
     public BillFee getReferenceBillFee() {

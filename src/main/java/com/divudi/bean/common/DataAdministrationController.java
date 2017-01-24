@@ -15,10 +15,10 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
-import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Service;
+import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientReport;
@@ -41,6 +41,7 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
@@ -109,6 +110,8 @@ public class DataAdministrationController {
     StaffFacade staffFacade;
     @EJB
     PersonFacade personFacade;
+    @EJB
+    ServiceSessionFacade serviceSessionFacade;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -740,7 +743,7 @@ public class DataAdministrationController {
         }
         if (vatableStatus == true) {
             for (Item i : selectedItems) {
-               
+
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(true);
                 itemFacade.edit(i);
@@ -749,7 +752,7 @@ public class DataAdministrationController {
             JsfUtil.addSuccessMessage("Succesfully Removed VAT For " + selectedItems.size() + " records with vat status ");
         } else {
             for (Item i : selectedItems) {
-              
+
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(false);
                 itemFacade.edit(i);
@@ -782,8 +785,45 @@ public class DataAdministrationController {
         return false;
     }
 
+    public void createAllSessionAsVatable() {
+        for (ServiceSession s : fetchAllSessions()) {
+            s.setVatable(true);
+            serviceSessionFacade.edit(s);
+        }
+    }
+    public void createAllSessionAsNotVatable() {
+        for (ServiceSession s : fetchAllSessions()) {
+            s.setVatable(false);
+            serviceSessionFacade.edit(s);
+        }
+    }
 
-    
+    public List<ServiceSession> fetchAllSessions() {
+        String sql;
+        Map m = new HashMap();
+        List<ServiceSession> sessions = new ArrayList<>();
+        sql = "Select s From ServiceSession s "
+                + " where s.retired=false "
+                + " and s.originatingSession is null "
+                + " and type(s)=:class ";
+        m.put("class", ServiceSession.class);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        
+        sessions=serviceSessionFacade.findBySQL(sql, m);
+        System.out.println("sessions.size() = " + sessions.size());
+        
+        sql = "Select s From ServiceSession s where s.retired=false "
+                + " and s.originatingSession is not null "
+                + " and s.sessionDate >=:cd "
+                + " and type(s)=:class ";
+        m.put("cd", new Date());
+        
+        sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
+        System.out.println("sessions.size() = " + sessions.size());
+
+        return sessions;
+    }
 
     public void itemChangeListener() {
         itemCategory = null;
