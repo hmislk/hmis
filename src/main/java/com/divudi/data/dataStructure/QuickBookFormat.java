@@ -27,6 +27,9 @@ public class QuickBookFormat {
     private String custFld1;
     private String custFld2;
     private String custFld3;
+    
+    private boolean editAccnt;
+    private boolean editQbClass;
 
     public String getRowType() {
         return rowType;
@@ -147,10 +150,21 @@ public class QuickBookFormat {
     public void setCustFld3(String custFld3) {
         this.custFld3 = custFld3;
     }
-    
-    
-    
-    
-    
+
+    public boolean isEditAccnt() {
+        return editAccnt;
+    }
+
+    public void setEditAccnt(boolean editAccnt) {
+        this.editAccnt = editAccnt;
+    }
+
+    public boolean isEditQbClass() {
+        return editQbClass;
+    }
+
+    public void setEditQbClass(boolean editQbClass) {
+        this.editQbClass = editQbClass;
+    }
     
 }

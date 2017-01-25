@@ -11,13 +11,18 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.QuickBookFormat;
+import com.divudi.data.inward.AdmissionTypeEnum;
+import com.divudi.data.table.String1Value2;
+import com.divudi.data.table.String3Value2;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Service;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.InstitutionFacade;
@@ -35,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
 /**
@@ -58,6 +64,10 @@ public class QuickBookReportController implements Serializable {
     BillFacade billFacade;
     @EJB
     CommonFunctions commonFunctions;
+
+    @Inject
+    BillBeanController billBeanController;
+
     private List<QuickBookFormat> quickBookFormats;
     private List<Category> categorys;
     private List<Institution> creditCompanies;
@@ -72,22 +82,55 @@ public class QuickBookReportController implements Serializable {
 
     public void createQBFormatOpdDayIncome() {
 
+        grantTot = 0.0;
+        quickBookFormats = new ArrayList<>();
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+
         List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card);
-        fetchOPdListWithProDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(fromDate));
+        qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(fromDate)));
+        qbfs.addAll(createPharmacySale(BillType.PharmacySale, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(fromDate)));
+        qbfs.addAll(createInwardCollection(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(fromDate)));
+        qbfs.addAll(createAgencyAndCollectionCenterTotal(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(fromDate)));
+
+        QuickBookFormat qbf = new QuickBookFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        qbf.setRowType("TRNS");
+        qbf.setTrnsType("CASH SALE");
+        qbf.setDate(sdf.format(fromDate));
+        qbf.setAccnt("Cash in Hand");
+        qbf.setName("Cash");
+        qbf.setAmount(grantTot);
+        qbf.setMemo("Sales");
+        sdf = new SimpleDateFormat("yyyyMMdd");
+        qbf.setDocNum(sdf.format(fromDate));
+        qbf.setEditQbClass(false);
+        qbf.setEditAccnt(true);
+
+        quickBookFormats.add(qbf);
+        quickBookFormats.addAll(qbfs);
+        qbf = new QuickBookFormat();
+        qbf.setRowType("ENDTRNS");
+        qbf.setEditQbClass(false);
+        qbf.setEditAccnt(false);
+        quickBookFormats.add(qbf);
     }
 
     public void createQBFormatInwardIncome() {
-        quickBookFormats=new ArrayList<>();
+        quickBookFormats = new ArrayList<>();
         for (Institution i : fetchCreditCompany(toDate, toDate)) {
             quickBookFormats.addAll(fetchINwardListWithCreditCompany(fromDate, toDate, i));
         }
+        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
 
     }
 
-    public void fetchOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td) {
+    public List<QuickBookFormat> fetchOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td) {
+        List<QuickBookFormat> qbfs = new ArrayList<>();
         Map temMap = new HashMap();
-        grantTot = 0.0;
-        String jpql = "select c.name, "
+        String jpql;
+
+        jpql = "select c.name, "
                 + " i, "
                 + " count(bi.bill), "
                 + " sum(bf.feeValue) "
@@ -119,13 +162,11 @@ public class QuickBookReportController implements Serializable {
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
         System.out.println("lobjs.size = " + lobjs.size());
-        QuickBookFormat qbf = new QuickBookFormat();
-        quickBookFormats = new ArrayList<>();
-        List<QuickBookFormat> qbfs = new ArrayList<>();
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        DecimalFormat df = new DecimalFormat("#.00");
+
         for (Object[] lobj : lobjs) {
-            qbf = new QuickBookFormat();
+            QuickBookFormat qbf = new QuickBookFormat();
             System.out.println("lobj = " + lobj[0]);
             String cName = (String) lobj[0];
             Item i = (Item) lobj[1];
@@ -139,34 +180,21 @@ public class QuickBookReportController implements Serializable {
             qbf.setAccnt(cName);
             qbf.setInvItemType("SERV");
             qbf.setInvItem(i.getName());
-            qbf.setAmount(0 - Double.parseDouble(df.format(sum)));
+            qbf.setAmount(0 - sum);
             if (i.getDepartment() != null) {
                 System.out.println("si.getDepartment().getPrintingName()) " + i.getDepartment().getName());
                 qbf.setQbClass(i.getDepartment().getName());
             } else {
                 qbf.setQbClass("No Department");
             }
-
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
             qbf.setMemo(i.getName());
             grantTot += sum;
             qbfs.add(qbf);
         }
-        qbf = new QuickBookFormat();
 
-        qbf.setRowType("TRNS");
-        qbf.setTrnsType("CASH SALE");
-        qbf.setDate(sdf.format(fromDate));
-        qbf.setAccnt("Cash in Hand/Bank C/A");
-        qbf.setName("Cash");
-        qbf.setAmount(Double.parseDouble(df.format(grantTot)));
-        qbf.setMemo("Sales");
-        qbf.setDocNum(sdf.format(fromDate));
-
-        quickBookFormats.add(qbf);
-        quickBookFormats.addAll(qbfs);
-        qbf = new QuickBookFormat();
-        qbf.setRowType("ENDTRNS");
-        quickBookFormats.add(qbf);
+        return qbfs;
 
     }
 
@@ -175,7 +203,7 @@ public class QuickBookReportController implements Serializable {
 //        Bill b;
         grantTot = 0.0;
         String jpql = "select b.patientEncounter,"
-                + "c.name,"
+                + " c.name, "
                 + " i, "
                 + " count(b), "
                 + " sum(bf.feeValue) "
@@ -302,7 +330,163 @@ public class QuickBookReportController implements Serializable {
         System.out.println("temMap = " + temMap);
 
         creditCompanies = getInstitutionFacade().findBySQL(jpql, temMap, TemporalType.DATE);
+        System.out.println("creditCompanies.size() = " + creditCompanies.size());
         return creditCompanies;
+    }
+
+    public List<QuickBookFormat> createPharmacySale(BillType bt, Date fd, Date td) {
+
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+        List<Object[]> list = getBillBeanController().fetchDepartmentSale(fd, td, getInstitution(), bt);
+
+        for (Object[] obj : list) {
+
+            Department department = ((Department) obj[0]);
+            Double value = (Double) obj[1];
+
+            if (value != null) {
+                QuickBookFormat qbf = new QuickBookFormat();
+                qbf.setRowType("SPL");
+                qbf.setTrnsType("CASH SALE");
+                qbf.setName("Cash");
+                qbf.setAccnt("Pharmacy Opd Sale");
+                qbf.setInvItemType("SERV");
+
+                qbf.setAmount(0 - value);
+                if (department != null) {
+                    System.out.println("department.getPrintingName()) " + department.getName());
+                    qbf.setQbClass(department.getName());
+                    qbf.setInvItem(department.getName());
+                    qbf.setMemo(department.getName());
+                } else {
+                    qbf.setQbClass("No Department");
+                    qbf.setInvItem("No Department");
+                }
+                qbf.setEditQbClass(false);
+                qbf.setEditAccnt(false);
+                grantTot += value;
+                qbfs.add(qbf);
+            }
+        }
+        System.out.println("qbfs.size() = " + qbfs.size());
+        return qbfs;
+
+    }
+
+    public List<QuickBookFormat> createInwardCollection(Date fd, Date td) {
+
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+        List<Object[]> list = getBillBeanController().calInwardPaymentTotal(fd, td, getInstitution());
+
+        for (Object[] obj : list) {
+            AdmissionType admissionType = (AdmissionType) obj[0];
+            PaymentMethod paymentMethod = (PaymentMethod) obj[1];
+            double grantDbl = (Double) obj[2];
+
+            String3Value2 newRow = new String3Value2();
+            newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
+            newRow.setSummery(true);
+            System.out.println("admissionType.getName()  paymentMethod = " + admissionType.getName() + " " + paymentMethod);
+
+            if (paymentMethod != PaymentMethod.Credit) {
+                QuickBookFormat qbf = new QuickBookFormat();
+                qbf.setRowType("SPL");
+                qbf.setTrnsType("CASH SALE");
+                qbf.setName("Cash");
+                if (admissionType.getAdmissionTypeEnum() == AdmissionTypeEnum.DayCase) {
+                    qbf.setAccnt("Patient Deposit:OPD Patient Deposit");
+                } else {
+                    qbf.setAccnt("Patient Deposit:Indoor Patient Deposit");
+                }
+                qbf.setInvItemType("SERV");
+
+                qbf.setQbClass(admissionType.getName());
+                qbf.setInvItem(admissionType.getName());
+                qbf.setMemo(paymentMethod.toString());
+                qbf.setAmount(0 - grantDbl);
+                qbf.setEditQbClass(true);
+                qbf.setEditAccnt(false);
+
+                grantTot += grantDbl;
+                qbfs.add(qbf);
+            }
+        }
+        return qbfs;
+    }
+
+    public List<QuickBookFormat> createAgencyAndCollectionCenterTotal(Date fd, Date td) {
+
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+
+        double agent = getBillBeanController().calBillTotal(BillType.AgentPaymentReceiveBill, fd, td, getInstitution());
+        double cc = getBillBeanController().calBillTotal(BillType.CollectingCentrePaymentReceiveBill, fd, td, getInstitution());
+
+        QuickBookFormat qbf = new QuickBookFormat();
+        qbf.setRowType("SPL");
+        qbf.setTrnsType("CASH SALE");
+        qbf.setName("Cash");
+        qbf.setAccnt("Channel Advance");
+        qbf.setInvItemType("SERV");
+
+        qbf.setQbClass("Channel");
+        qbf.setInvItem("Channel Advance");
+        qbf.setMemo("");
+        qbf.setAmount(0 - agent);
+
+        grantTot += agent;
+        qbfs.add(qbf);
+
+        qbf = new QuickBookFormat();
+        qbf.setRowType("SPL");
+        qbf.setTrnsType("CASH SALE");
+        qbf.setName("Cash");
+        qbf.setAccnt("Collecting Center Deposit");
+        qbf.setInvItemType("SERV");
+
+        qbf.setQbClass("RHD");
+        qbf.setInvItem("Collecting Center Deposit");
+        qbf.setMemo("");
+        qbf.setAmount(0 - cc);
+        qbf.setEditQbClass(false);
+        qbf.setEditAccnt(false);
+
+        grantTot += cc;
+        qbfs.add(qbf);
+
+        return qbfs;
+    }
+
+    private List<Bill> getBills(Bill billClass, BillType billType, Department dep, Institution ins, Date fd, Date td) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
+                + " and b.retired=false and "
+                + " b.billType = :btp "
+                + " and b.department=:d "
+                + " and b.institution=:ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (institution != null) {
+            sql += " and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
+
+//        if (getReferenceInstitution() != null) {
+//            sql += " and b.referenceInstitution=:ins ";
+//            temMap.put("ins", getReferenceInstitution());
+//        }
+        sql += " order by b.id  ";
+
+        temMap.put("fromDate", fd);
+        temMap.put("toDate", td);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("btp", billType);
+        temMap.put("d", dep);
+        temMap.put("ins", ins);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
     }
 
     public BillFacade getBillFacade() {
@@ -375,6 +559,14 @@ public class QuickBookReportController implements Serializable {
 
     public void setInstitutionFacade(InstitutionFacade institutionFacade) {
         this.institutionFacade = institutionFacade;
+    }
+
+    public BillBeanController getBillBeanController() {
+        return billBeanController;
+    }
+
+    public void setBillBeanController(BillBeanController billBeanController) {
+        this.billBeanController = billBeanController;
     }
 
 }

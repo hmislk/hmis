@@ -50,7 +50,7 @@
                 </f:facet>
             </p:panel>
 
-<!--            <p:panel styleClass="noBorder summeryBorder">
+            <p:panel styleClass="noBorder summeryBorder">
             <p:dataTable value="#{quickBookReportController.quickBookFormats}" var="qbf" >
                 <p:columnGroup  type="header">
                     <p:row>
@@ -106,82 +106,79 @@
                     </p:row>
                 </p:columnGroup> 
                 <p:column>
-
-                    <p:outputLabel value="#{qbf.rowType}"></p:outputLabel>
+                    <p:outputLabel value="#{qbf.rowType}" />
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value="#{qbf.trnsType}" ></p:outputLabel>
+                    <p:outputLabel value="#{qbf.trnsType}" />
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value="#{qbf.date}"/> 
+                    <p:outputLabel value="#{qbf.date}" /> 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.accnt}"></p:outputLabel>
-
-                </p:column>
-                <p:column>
-
-                    <p:outputLabel value=" #{qbf.name}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.accnt}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.invItemType}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.name}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.invItem}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.invItemType}" />
 
                 </p:column>
                 <p:column>
 
+                    <p:outputLabel value=" #{qbf.invItem}" />
+
+                </p:column>
+                <p:column>
                     <p:outputLabel value=" #{qbf.amount}">
-                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
+                </p:column>
+                <p:column>
+
+                    <p:outputLabel value=" #{qbf.docNum}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.docNum}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.poNum}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.poNum}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.qbClass}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.qbClass}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.memo}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.memo}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.custFld1}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.custFld1}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.custFld2}" />
 
                 </p:column>
                 <p:column>
 
-                    <p:outputLabel value=" #{qbf.custFld2}"></p:outputLabel>
-
-                </p:column>
-                <p:column>
-
-                    <p:outputLabel value=" #{qbf.custFld3}"></p:outputLabel>
+                    <p:outputLabel value=" #{qbf.custFld3}" />
 
                 </p:column>
 
             </p:dataTable>
-            </p:panel>-->
+            </p:panel>
         </h:form>
     </ui:define>
 
