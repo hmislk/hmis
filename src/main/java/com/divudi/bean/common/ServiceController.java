@@ -569,7 +569,7 @@ public class ServiceController implements Serializable {
         return items;
     }
 
-    private List<ItemFee> getFees(Item i) {
+    public List<ItemFee> getFees(Item i) {
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
 
         return getItemFeeFacade().findBySQL(sql);
