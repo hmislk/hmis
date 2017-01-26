@@ -5,13 +5,12 @@
  */
 package com.divudi.data.dataStructure;
 
-import java.util.Date;
-
 /**
  *
  * @author archmage
  */
 public class QuickBookFormat {
+
     private String rowType;
     private String trnsType;
     private String date;
@@ -27,10 +26,51 @@ public class QuickBookFormat {
     private String custFld1;
     private String custFld2;
     private String custFld3;
-    
-    private boolean editAccnt;
-    private boolean editQbClass;
+    private String custFld4;
+    private String custFld5;
 
+    private boolean editRowType = false;
+    private boolean editTrnsType = false;
+    private boolean editDate = false;
+    private boolean editAccnt = false;
+    private boolean editName = false;
+    private boolean editInvItemType = false;
+    private boolean editInvItem = false;
+    private boolean editAmount = false;
+    private boolean editDocNum = false;
+    private boolean editPoNum = false;
+    private boolean editQbClass = false;
+    private boolean editMemo = false;
+    private boolean editCustFld1 = false;
+    private boolean editCustFld2 = false;
+    private boolean editCustFld3 = false;
+    private boolean editCustFld4 = false;
+    private boolean editCustFld5 = false;
+
+    public QuickBookFormat() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public QuickBookFormat(String rowType, String trnsType, String date, String accnt, String name, String invItemType, String invItem, double amount, String docNum, String poNum, String qbClass, String memo, String custFld1, String custFld2, String custFld3, String custFld4, String custFld5) {
+        this.rowType = rowType;
+        this.trnsType = trnsType;
+        this.date = date;
+        this.accnt = accnt;
+        this.name = name;
+        this.invItemType = invItemType;
+        this.invItem = invItem;
+        this.amount = amount;
+        this.docNum = docNum;
+        this.poNum = poNum;
+        this.qbClass = qbClass;
+        this.memo = memo;
+        this.custFld1 = custFld1;
+        this.custFld2 = custFld2;
+        this.custFld3 = custFld3;
+        this.custFld4 = custFld4;
+        this.custFld5 = custFld5;
+    }
+    
     public String getRowType() {
         return rowType;
     }
@@ -166,5 +206,141 @@ public class QuickBookFormat {
     public void setEditQbClass(boolean editQbClass) {
         this.editQbClass = editQbClass;
     }
-    
+
+    public boolean isEditRowType() {
+        return editRowType;
+    }
+
+    public void setEditRowType(boolean editRowType) {
+        this.editRowType = editRowType;
+    }
+
+    public boolean isEditTrnsType() {
+        return editTrnsType;
+    }
+
+    public void setEditTrnsType(boolean editTrnsType) {
+        this.editTrnsType = editTrnsType;
+    }
+
+    public boolean isEditDate() {
+        return editDate;
+    }
+
+    public void setEditDate(boolean editDate) {
+        this.editDate = editDate;
+    }
+
+    public boolean isEditName() {
+        return editName;
+    }
+
+    public void setEditName(boolean editName) {
+        this.editName = editName;
+    }
+
+    public boolean isEditInvItemType() {
+        return editInvItemType;
+    }
+
+    public void setEditInvItemType(boolean editInvItemType) {
+        this.editInvItemType = editInvItemType;
+    }
+
+    public boolean isEditInvItem() {
+        return editInvItem;
+    }
+
+    public void setEditInvItem(boolean editInvItem) {
+        this.editInvItem = editInvItem;
+    }
+
+    public boolean isEditAmount() {
+        return editAmount;
+    }
+
+    public void setEditAmount(boolean editAmount) {
+        this.editAmount = editAmount;
+    }
+
+    public boolean isEditDocNum() {
+        return editDocNum;
+    }
+
+    public void setEditDocNum(boolean editDocNum) {
+        this.editDocNum = editDocNum;
+    }
+
+    public boolean isEditPoNum() {
+        return editPoNum;
+    }
+
+    public void setEditPoNum(boolean editPoNum) {
+        this.editPoNum = editPoNum;
+    }
+
+    public boolean isEditMemo() {
+        return editMemo;
+    }
+
+    public void setEditMemo(boolean editMemo) {
+        this.editMemo = editMemo;
+    }
+
+    public boolean isEditCustFld1() {
+        return editCustFld1;
+    }
+
+    public void setEditCustFld1(boolean editCustFld1) {
+        this.editCustFld1 = editCustFld1;
+    }
+
+    public boolean isEditCustFld2() {
+        return editCustFld2;
+    }
+
+    public void setEditCustFld2(boolean editCustFld2) {
+        this.editCustFld2 = editCustFld2;
+    }
+
+    public boolean isEditCustFld3() {
+        return editCustFld3;
+    }
+
+    public void setEditCustFld3(boolean editCustFld3) {
+        this.editCustFld3 = editCustFld3;
+    }
+
+    public boolean isEditCustFld4() {
+        return editCustFld4;
+    }
+
+    public void setEditCustFld4(boolean editCustFld4) {
+        this.editCustFld4 = editCustFld4;
+    }
+
+    public boolean isEditCustFld5() {
+        return editCustFld5;
+    }
+
+    public void setEditCustFld5(boolean editCustFld5) {
+        this.editCustFld5 = editCustFld5;
+    }
+
+    public String getCustFld4() {
+        return custFld4;
+    }
+
+    public void setCustFld4(String custFld4) {
+        this.custFld4 = custFld4;
+    }
+
+    public String getCustFld5() {
+        return custFld5;
+    }
+
+    public void setCustFld5(String custFld5) {
+        this.custFld5 = custFld5;
+    }
+
 }

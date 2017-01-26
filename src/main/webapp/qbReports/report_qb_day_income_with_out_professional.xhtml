@@ -18,24 +18,28 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary Without Pro (DAY)"  styleClass="noPrintButton" />
                     <h:panelGrid columns="2"  styleClass="noPrintButton">
+                        <h:outputLabel value="Report"/>
+                        <p:selectOneMenu value="#{quickBookReportController.report}" >
+                            <f:selectItem itemLabel="Select Report"/>
+                            <f:selectItem itemLabel="Daily Return" itemValue="1"/>
+                            <f:selectItem itemLabel="Pharmacy GRN and Purchase Bills" itemValue="2"/>
+                            <f:selectItem itemLabel="Store GRN and Purchase Bills" itemValue="3"/>
+                            <f:ajax event="change" execute="@this" render="tbl" listener="#{quickBookReportController.listnerReportNameChange}" />
+                        </p:selectOneMenu>
                         <h:outputLabel value="Date"/>
-                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" >
-                        </p:calendar>
-
-
-
+                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" />
                         <h:outputLabel value="Select Institution"/>
-
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
                                         forceSelection="true"
-                                        requiredMessage="Please Select Institution" value="#{quickBookReportController.institution}"
+                                        requiredMessage="Please Select Institution" 
+                                        value="#{quickBookReportController.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
                     </h:panelGrid>
 
                     <h:panelGrid columns="5">
                         <p:spacer width="110" height="1"/>
                         <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"
-                                         action="#{quickBookReportController.createQBFormatOpdDayIncome()}"/>
+                                         action="#{quickBookReportController.createQBFormat()}"/>
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
@@ -67,6 +71,8 @@
                             <p:column headerText="CUSTFLD1"/>
                             <p:column headerText="CUSTFLD2"/>
                             <p:column headerText="CUSTFLD3"/>
+                            <p:column headerText="CUSTFLD4"/>
+                            <p:column headerText="CUSTFLD5"/>
                             <p:column headerText=""/>
                         </p:row>
                         <p:row>
@@ -85,6 +91,8 @@
                             <p:column headerText="CUSTFLD1"/>
                             <p:column headerText="CUSTFLD2"/>
                             <p:column headerText="CUSTFLD3"/>
+                            <p:column headerText="CUSTFLD4"/>
+                            <p:column headerText="CUSTFLD5"/>
                             <p:column headerText=""/>
                         </p:row>
                         <p:row>
@@ -104,16 +112,42 @@
                             <p:column headerText=""/>
                             <p:column headerText=""/>
                             <p:column headerText=""/>
+                            <p:column headerText=""/>
+                            <p:column headerText=""/>
                         </p:row>
                     </p:columnGroup> 
                     <p:column>
-                        <p:outputLabel value="#{qbf.rowType}" />
+                        <p:cellEditor rendered="#{qbf.editRowType}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.rowType}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.rowType}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.rowType}" rendered="#{!qbf.editRowType}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.trnsType}" />
+                        <p:cellEditor rendered="#{qbf.editTrnsType}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.trnsType}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.trnsType}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.trnsType}" rendered="#{!qbf.editTrnsType}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.date}" /> 
+                        <p:cellEditor rendered="#{qbf.editDate}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.date}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.date}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.date}" rendered="#{!qbf.editDate}"/>
                     </p:column>
                     <p:column>
                         <p:cellEditor rendered="#{qbf.editAccnt}">  
@@ -127,25 +161,76 @@
                         <p:outputLabel value="#{qbf.accnt}" rendered="#{!qbf.editAccnt}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value=" #{qbf.name}" />
+                        <p:cellEditor rendered="#{qbf.editName}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.name}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.name}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.name}" rendered="#{!qbf.editName}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value=" #{qbf.invItemType}" />
+                        <p:cellEditor rendered="#{qbf.editInvItemType}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.invItemType}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.invItemType}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.invItemType}" rendered="#{!qbf.editInvItemType}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value=" #{qbf.invItem}" />
+                        <p:cellEditor rendered="#{qbf.editInvItem}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.invItem}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.invItem}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.invItem}" rendered="#{!qbf.editInvItem}"/>
                     </p:column>
                     <p:column styleClass="numberCol" >
+                        <p:cellEditor rendered="#{qbf.editAmount}">  
+                            <f:facet name="output"> 
+                                <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </p:outputLabel>
+                                <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.amount}" />
+                            </f:facet>  
+                        </p:cellEditor>  
                         <p:outputLabel value="#{qbf.amount}" rendered="#{qbf.amount ne 0.0}">
                             <f:convertNumber pattern="#,##0.00" />
                         </p:outputLabel>
                         <p:outputLabel value="" rendered="#{qbf.amount eq 0.0}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value=" #{qbf.docNum}" />
+                        <p:cellEditor rendered="#{qbf.editDocNum}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.docNum}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.docNum}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.docNum}" rendered="#{!qbf.editDocNum}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value=" #{qbf.poNum}" />
+                        <p:cellEditor rendered="#{qbf.editPoNum}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.poNum}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.poNum}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.poNum}" rendered="#{!qbf.editPoNum}"/>
                     </p:column>
                     <p:column>
                         <p:cellEditor rendered="#{qbf.editQbClass}">  
@@ -159,19 +244,76 @@
                         <p:outputLabel value="#{qbf.qbClass}" rendered="#{!qbf.editQbClass}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.memo}" />
+                        <p:cellEditor rendered="#{qbf.editMemo}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.memo}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.memo}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.memo}" rendered="#{!qbf.editMemo}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.custFld1}" />
+                        <p:cellEditor rendered="#{qbf.editCustFld1}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld1}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld1}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.custFld1}" rendered="#{!qbf.editCustFld1}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.custFld2}" />
+                        <p:cellEditor rendered="#{qbf.editCustFld2}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld2}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld2}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.custFld2}" rendered="#{!qbf.editCustFld2}"/>
                     </p:column>
                     <p:column>
-                        <p:outputLabel value="#{qbf.custFld3}" />
+                        <p:cellEditor rendered="#{qbf.editCustFld3}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld3}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld3}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.custFld3}" rendered="#{!qbf.editCustFld3}"/>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor rendered="#{qbf.editCustFld4}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld4}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld4}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.custFld4}" rendered="#{!qbf.editCustFld4}"/>
+                    </p:column>
+                    <p:column>
+                        <p:cellEditor rendered="#{qbf.editCustFld5}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld5}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld5}" />
+                            </f:facet>  
+                        </p:cellEditor>  
+                        <p:outputLabel value="#{qbf.custFld5}" rendered="#{!qbf.editCustFld5}"/>
                     </p:column>
                     <p:column style="width:6%" exportable="false">  
-                        <p:rowEditor rendered="#{qbf.editQbClass or qbf.editAccnt}"> 
+                        <p:rowEditor rendered="#{qbf.editQbClass or qbf.editAccnt or qbf.editAmount or qbf.editCustFld1 or qbf.editCustFld2 
+                                                 or qbf.editCustFld3 or qbf.editCustFld4 or qbf.editCustFld5 or qbf.editDate or qbf.editDocNum
+                                                 or qbf.editInvItem or qbf.editInvItemType or qbf.editMemo or qbf.editName or qbf.editPoNum
+                                                 or qbf.editRowType or qbf.editTrnsType}"> 
                         </p:rowEditor>
                     </p:column>  
                 </p:dataTable>
