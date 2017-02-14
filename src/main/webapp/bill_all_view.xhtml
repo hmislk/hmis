@@ -543,22 +543,38 @@
                     </p:panel>
                     <h:panelGroup id="gpBillPreview" >
 
-                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
+                        <p:panel rendered="#{billSearch.billSearch.billType eq 'PaymentBill'}">
+                            <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}">
-                                <bi:staffBill_1  controller="#{channelSearchController}" bill="#{billSearch.billSearch}" />
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}">
+                                    <bi:staffBill_1  controller="#{billSearch}" bill="#{billSearch.billSearch}" />
+                                </h:panelGroup>
                             </h:panelGroup>
-                        </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                <bi:paymentReciptPosDouble controller="#{channelSearchController}" bill="#{billSearch.billSearch}" />
+                        </p:panel>
+                        <p:panel id="gpBillPreviewCC" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
+                            <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+
+                                <div class="nonPrintBlock">
+                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                        <p:printer target="gpBillPreviewCC" ></p:printer>
+                                    </p:commandButton>
+                                </div>
+                                <h:panelGroup  rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false
+                                                                             and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
+                                                                             and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
+                                    <bi:opdBillPrintRuhunu bill="#{billSearch.billSearch}" dup="false" />
+
+                                </h:panelGroup>
+
                             </h:panelGroup>
-                        </h:panelGroup>
+
+                            
+                        </p:panel>
                     </h:panelGroup>
 
                 </h:form>

@@ -89,6 +89,13 @@
                                 </f:facet>
                                 <h:outputLabel value="#{ix.category.name}"/>
                             </p:column>
+                            
+                            <p:column headerText="Account Name" filterBy="#{ix.category.name}" filterMatchMode="contains"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Account Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.category.description}"/>
+                            </p:column>
 
                             <p:column headerText="Service Code" filterBy="#{ix.code}" filterMatchMode="contains" >                                          
                                 <f:facet name="header">

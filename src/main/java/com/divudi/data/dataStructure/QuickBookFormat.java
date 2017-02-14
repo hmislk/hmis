@@ -48,7 +48,6 @@ public class QuickBookFormat {
     private boolean editCustFld5 = false;
 
     public QuickBookFormat() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public QuickBookFormat(String rowType, String trnsType, String date, String accnt, String name, String invItemType, String invItem, double amount, String docNum, String poNum, String qbClass, String memo, String custFld1, String custFld2, String custFld3, String custFld4, String custFld5) {
@@ -70,7 +69,18 @@ public class QuickBookFormat {
         this.custFld4 = custFld4;
         this.custFld5 = custFld5;
     }
-    
+
+    public QuickBookFormat(String accnt, String name, String invItem, double amount, String qbClass) {
+        this.rowType = "SPL";
+        this.trnsType = "INVOICE";
+        this.accnt = accnt;
+        this.name = name;
+        this.invItemType = "SERV";
+        this.invItem = invItem;
+        this.amount = amount;
+        this.qbClass = qbClass;
+    }
+
     public String getRowType() {
         return rowType;
     }
