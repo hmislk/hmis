@@ -203,7 +203,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                
+
 
                                 <p:column headerText="Address" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
@@ -213,7 +213,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                
+
 
                                 <p:column styleClass="averageNumericColumn" headerText="Final Bill Total" rendered="#{inwardReportController.finalBillTotal or inwardReportController.developers}">
                                     <f:facet name="header">
@@ -302,7 +302,13 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
+                                    <h:commandLink value="#{i.bhtNo}" action="/inward/inward_report_bht_income_by_caregories_bht" 
+                                                   actionListener="#{inwardReportControllerBht.process()}" 
+                                                   rendered="#{webUserController.hasPrivilege('Developers')}" target="_blank" >
+                                        <f:setPropertyActionListener value="#{i}" target="#{inwardReportControllerBht.patientEncounter}" />
+                                    </h:commandLink>
+                                    <h:outputLabel value="#{i.bhtNo}" rendered="#{!webUserController.hasPrivilege('Developers')}" >
+                                    </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>

@@ -628,6 +628,10 @@ public class BillSearch implements Serializable {
             return "";
 
         }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            UtilityController.addErrorMessage("Final Payment is Finalized You can't Return");
+            return"";
+        }
 //        if (refundAmount == 0.0) {
 //            UtilityController.addErrorMessage("There is no item to Refund");
 //            return "";

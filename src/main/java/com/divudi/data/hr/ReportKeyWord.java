@@ -56,6 +56,7 @@ public class ReportKeyWord {
     boolean additionalDetails;
     WebUser webUser;
     private String string="0";
+    private String string1="0";
     boolean bool1;
     String address;
     @Transient
@@ -388,8 +389,17 @@ public class ReportKeyWord {
         employeeStatus = null;
         additionalDetails = false;
         webUser = null;
-        string="";
+        string="0";
+        string1="0";
         bool1=false;
+    }
+
+    public String getString1() {
+        return string1;
+    }
+
+    public void setString1(String string1) {
+        this.string1 = string1;
     }
 
 }
