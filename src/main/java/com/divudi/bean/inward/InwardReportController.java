@@ -545,7 +545,7 @@ public class InwardReportController implements Serializable {
         billItems = null;
     }
 
-    public void updateOutSideBill() {
+    public void updateOutSideBill(BillItem bi) {
         //System.out.println("In");
         //System.out.println("Bill ID -" + getBill().getId());
         //System.out.println("Bill Creater -" + getSessionController().getLoggedUser());

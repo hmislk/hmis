@@ -119,6 +119,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node188 = new PrivilageNode("Inward Check", node18, Privileges.InwardCheck);
         TreeNode node189 = new PrivilageNode("Inward Uncheck", node18, Privileges.InwardUnCheck);
         TreeNode node1810 = new PrivilageNode("Inward Final Bill Cancel With Out Check Date Range", node18, Privileges.InwardFinalBillCancel);
+        TreeNode node1811 = new PrivilageNode("Inward Out Side Bill Mark as Un-Paid", node18, Privileges.InwardOutSideMarkAsUnPaid);
 
         TreeNode node1a = new PrivilageNode("Theatre", tmproot);
         TreeNode node1a0 = new PrivilageNode("Theatre Menu", node1a, Privileges.Theatre);

@@ -73,6 +73,7 @@ public enum Privileges {
     InwardCheck,
     InwardUnCheck,
     InwardFinalBillCancel,
+    InwardOutSideMarkAsUnPaid,
     ShowInwardFee,
     InwardPharmacyMenu,
     InwardPharmacyIssueRequest,
