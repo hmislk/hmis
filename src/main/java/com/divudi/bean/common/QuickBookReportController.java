@@ -854,7 +854,11 @@ public class QuickBookReportController implements Serializable {
                     qbf.setEditAccnt(true);
                 }
                 qbf.setInvItemType("SERV");
-                qbf.setInvItem(i.getName());
+                if (i.getName().length() > 30) {
+                    qbf.setInvItem(i.getName().substring(0, 30));
+                } else {
+                    qbf.setInvItem(i.getName());
+                }
                 qbf.setAmount(0 - sum);
                 if (bclass == BillClassType.BilledBill) {
                     qbf.setCustFld5(String.valueOf(d));
@@ -925,7 +929,11 @@ public class QuickBookReportController implements Serializable {
                         qbf.setEditAccnt(true);
                     }
                     qbf.setInvItemType("SERV");
-                    qbf.setInvItem(i.getName());
+                    if (i.getName().length() > 30) {
+                        qbf.setInvItem(i.getName().substring(0, 30));
+                    } else {
+                        qbf.setInvItem(i.getName());
+                    }
                     qbf.setAmount(0 - sum);
                     if (bclass == BillClassType.BilledBill) {
                         qbf.setCustFld5(String.valueOf(d));
