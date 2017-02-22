@@ -56,7 +56,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -113,6 +112,8 @@ public class PharmacySaleBhtController implements Serializable {
     Bill printBill;
     Bill bill;
     BillItem billItem;
+    Stock replacableStock;
+    Item selectedAvailableAmp;
     //BillItem removingBillItem;
     BillItem editingBillItem;
     Double qty;
@@ -348,6 +349,43 @@ public class PharmacySaleBhtController implements Serializable {
         billPreview = false;
         makeNull();
         department = null;
+        replaceableStocks=new ArrayList<>();
+        itemsWithoutStocks=new ArrayList<>();
+    }
+    
+    public void selectReplaceableStocksNew() {
+        if (selectedAvailableAmp == null || !(selectedAvailableAmp instanceof Amp)) {
+            replaceableStocks = new ArrayList<>();
+            return;
+        }
+        fillReplaceableStocksForAmp((Amp) selectedAvailableAmp);
+    }
+    
+    public void makeStockAsBillItemStock() {
+        //System.out.println("replacableStock = " + replacableStock);
+        setStock(replacableStock);
+        getBillItem().getPharmaceuticalBillItem().setStock(getStock());
+        calculateRates(billItem);
+        //System.out.println("getStock() = " + getStock());
+    }
+
+    public void fillReplaceableStocksForAmp(Amp ampIn) {
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        Amp amp = (Amp) ampIn;
+        m.put("d", getDepartment());
+        m.put("s", d);
+        m.put("vmp", amp.getVmp());
+        m.put("a", amp);
+        sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp "
+                + "where i.stock >:s and "
+                + "i.department=:d and "
+                + "amp.vmp=:vmp "
+                + "and amp<>:a "
+                + "order by i.itemBatch.item.name";
+        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        System.out.println("replaceableStocks.size() = " + replaceableStocks.size());
     }
 
     public List<Item> completeRetailSaleItems(String qry) {
@@ -521,7 +559,7 @@ public class PharmacySaleBhtController implements Serializable {
             if (onEdit(tbi)) {//If any issue in Stock Bill Item will not save & not include for total
                 continue;
             }
-            
+
             System.out.println("tbi.getDiscount() = " + tbi.getDiscount());
 
             tbi.setInwardChargeType(InwardChargeType.Medicine);
@@ -699,6 +737,11 @@ public class PharmacySaleBhtController implements Serializable {
             UtilityController.addErrorMessage("Sorry Patient is Discharged!!!");
             return true;
         }
+        
+        if (getPatientEncounter().isPaymentFinalized()) {
+            UtilityController.addErrorMessage("Sorry this BHT was Settled !!!");
+            return true;
+        }
 
         if (checkAllBillItem()) {
             //  UtilityController.addErrorMessage("Please Set Room 33");
@@ -863,16 +906,20 @@ public class PharmacySaleBhtController implements Serializable {
     public void addBillItem() {
 
         if (billItem == null) {
+            System.err.println("1");
             return;
         }
         if (billItem.getPharmaceuticalBillItem() == null) {
+            System.err.println("2");
             return;
         }
         if (getStock() == null) {
+            System.err.println("3");
             UtilityController.addErrorMessage("Item?");
             return;
         }
         if (getQty() == null) {
+            System.err.println("4");
             UtilityController.addErrorMessage("Quentity?");
             return;
         }
@@ -880,16 +927,19 @@ public class PharmacySaleBhtController implements Serializable {
         Stock fetchStock = getStockFacade().find(getStock().getId());
 
         if (getQty() > fetchStock.getStock()) {
+            System.err.println("5");
             UtilityController.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         if (checkItemBatch()) {
+            System.err.println("6");
             UtilityController.addErrorMessage("Already added this item batch");
             return;
         }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
+            System.err.println("7");
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
@@ -939,12 +989,12 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setTotal(grossTot);
         getPreBill().setGrantTotal(grossTot);
         getPreBill().setDiscount(discount);
-        
+
         System.out.println("getPreBill().getNetTotal() = " + getPreBill().getNetTotal());
         System.out.println("getPreBill().getTotal() = " + getPreBill().getTotal());
         System.out.println("getPreBill().getGrantTotal() = " + getPreBill().getGrantTotal());
         System.out.println("getPreBill().getDiscount() = " + getPreBill().getDiscount());
-        
+
     }
 
     @EJB
@@ -1083,8 +1133,9 @@ public class PharmacySaleBhtController implements Serializable {
         } else {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-//        itemsWithoutStocks = completeRetailSaleItems(qry);
-        ////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        itemsWithoutStocks = completeRetailSaleItems(qry);
+        System.out.println("itemsWithoutStocks.size() = " + itemsWithoutStocks.size());
+        
         return getStockFacade().findBySQL(sql, m, 20);
     }
 
@@ -1404,6 +1455,22 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public Stock getReplacableStock() {
+        return replacableStock;
+    }
+
+    public void setReplacableStock(Stock replacableStock) {
+        this.replacableStock = replacableStock;
+    }
+
+    public Item getSelectedAvailableAmp() {
+        return selectedAvailableAmp;
+    }
+
+    public void setSelectedAvailableAmp(Item selectedAvailableAmp) {
+        this.selectedAvailableAmp = selectedAvailableAmp;
     }
 
 }
