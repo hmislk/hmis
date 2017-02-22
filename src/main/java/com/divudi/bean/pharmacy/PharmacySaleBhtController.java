@@ -1180,6 +1180,7 @@ public class PharmacySaleBhtController implements Serializable {
 
                 billItem.setItem(sq.getStock().getItemBatch().getItem());
                 billItem.setQty(sq.getQty());
+                billItem.setDescreption(i.getBillItem().getDescreption());
 
                 billItem.getPharmaceuticalBillItem().setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                 billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);

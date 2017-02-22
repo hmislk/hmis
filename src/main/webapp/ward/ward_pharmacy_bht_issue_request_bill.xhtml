@@ -177,6 +177,17 @@
                                                                     </f:facet>  
                                                                 </p:cellEditor> 
                                                             </p:column>
+                                                            <p:column headerText="Descreption">
+                                                                <p:cellEditor>  
+                                                                    <f:facet name="output">  
+                                                                        <h:outputText value="#{bi.descreption}" >
+                                                                        </h:outputText>
+                                                                    </f:facet>  
+                                                                    <f:facet name="input">  
+                                                                        <p:inputText autocomplete="off" id="ipTblDis" value="#{bi.descreption}" style="width:96%"/>  
+                                                                    </f:facet>  
+                                                                </p:cellEditor> 
+                                                            </p:column>
 
                                                             <p:column style="width:6%">  
                                                                 <p:rowEditor />  
