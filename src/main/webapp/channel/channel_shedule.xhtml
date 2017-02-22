@@ -142,8 +142,8 @@
                         <p:outputLabel value="Refundable"/>
                         <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
                         
-                        <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
-                        <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}" />
+                        <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}"/>
 
                         <p:outputLabel value="Credit Numbers"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>

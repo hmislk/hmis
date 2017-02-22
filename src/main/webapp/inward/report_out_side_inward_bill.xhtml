@@ -15,14 +15,12 @@
                 </f:facet>
                 <h:panelGrid columns="2">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{inwardReportController.makeBillNull}"/>
-                    </p:calendar>
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{inwardReportController.fromDate}" 
+                                navigator="false" pattern="dd MMMM yyyy hh mm ss a" />
 
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{inwardReportController.makeBillNull}"/>
-                    </p:calendar>
+                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{inwardReportController.toDate}" 
+                                navigator="false" pattern="dd MMMM yyyy hh mm ss a" />
 
                     <h:outputLabel value="Institution"/>
                     <p:autoComplete id="ins" value="#{inwardReportController.institution}"
@@ -33,13 +31,13 @@
                             #{ix.name}
                         </p:column>
                     </p:autoComplete>
-                    
+
                     <h:outputLabel value="Date"/>
                     <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}">
                         <f:selectItem itemLabel="Discharge Date" itemValue="0" />
                         <f:selectItem itemLabel="Added Date" itemValue="1" />
                     </p:selectOneRadio>
-                    
+
                     <h:outputLabel value="Paid Type"/>
                     <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string1}">
                         <f:selectItem itemLabel="Not Paid" itemValue="0" />
@@ -48,14 +46,13 @@
                     </p:selectOneRadio>
 
                     <p:commandButton ajax="false" value="Process" 
-                                     action="#{inwardReportController.createOutSideBills()}"
-                                     />
-<!--                    <p:commandButton ajax="false" value="Process By Added Date" 
-                                     action="#{inwardReportController.createOutSideBillsByAddedDate()}"
-                                     />
-                    <p:commandButton ajax="false" value="Process By Discharge Date" 
-                                     action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
-                                     />-->
+                                     action="#{inwardReportController.createOutSideBills()}"/>
+                    <!--                    <p:commandButton ajax="false" value="Process By Added Date" 
+                                                         action="#{inwardReportController.createOutSideBillsByAddedDate()}"
+                                                         />
+                                        <p:commandButton ajax="false" value="Process By Discharge Date" 
+                                                         action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
+                                                         />-->
 
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();">
                         <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
@@ -82,6 +79,9 @@
                                 <p:outputLabel value="Serial No" />
                             </f:facet>
                             <p:outputLabel value="#{i+1}" />
+                            <f:facet name="footer">
+                                <p:outputLabel value="Total" />
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Institution">
                             <f:facet name="header">
@@ -165,6 +165,11 @@
                             <h:outputLabel value="#{bi.bill.netTotal}" style="text-align: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{inwardReportController.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="Paid" style="text-align: right;">
                             <f:facet name="header">
@@ -173,36 +178,24 @@
                             <p:outputLabel value="Paid" rendered="#{bi.bill.paid eq true}"/>
                             <p:outputLabel value="Not Paid" rendered="#{bi.bill.paid eq false}"/>
                         </p:column>
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header">
+                                <p:outputLabel value="Memo" />
+                            </f:facet>
+                            <p:inputText value="#{bi.descreption}" autocomplete="off" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}"/>
+                        </p:column>
                         <p:column headerText="Paid" style="text-align: right;">
                             <f:facet name="header">
                                 <p:outputLabel value="Paid" />
                             </f:facet>
-                            <p:selectBooleanCheckbox value="#{bi.bill.paid}" ></p:selectBooleanCheckbox>
+                            <p:selectBooleanCheckbox value="#{bi.bill.paid}" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}" ></p:selectBooleanCheckbox>
                         </p:column>
                         <p:column headerText="Update" style="text-align: right;">
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton value="Update" action="#{inwardReportController.updateOutSideBill()}" ajax="false">
-                                <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardReportController.bill}" />
-                            </p:commandButton>
+                            <p:commandButton value="Update" action="#{inwardReportController.updateOutSideBill(bi)}" ajax="false" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}"/>
                         </p:column>
-                        <p:columnGroup type="footer">
-                            <p:row>
-                                <p:column  colspan="11" footerText="Total">
-                                    <f:facet name="footer">
-                                        <p:outputLabel value="Total" />
-                                    </f:facet>
-                                </p:column>
-                                <p:column style="text-align: right;" footerText="#{inwardReportController.total}">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.total}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-                            </p:row>
-                        </p:columnGroup>
                     </p:dataTable>
                 </p:panel>
             </p:panel>

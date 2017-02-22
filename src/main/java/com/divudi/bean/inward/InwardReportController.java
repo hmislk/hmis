@@ -545,15 +545,29 @@ public class InwardReportController implements Serializable {
         billItems = null;
     }
 
-    public void updateOutSideBill() {
-        //System.out.println("In");
-        //System.out.println("Bill ID -" + getBill().getId());
-        //System.out.println("Bill Creater -" + getSessionController().getLoggedUser());
-        getBill().setEditor(getSessionController().getLoggedUser());
-        getBill().setEditedAt(new Date());
-        getBillFacade().edit(getBill());
-        UtilityController.addSuccessMessage("Updated");
-        //System.out.println("Out");
+    public void updateOutSideBill(BillItem bi) {
+        if (bi.getBill().isPaid()) {
+            if (bi.getDescreption() == null || bi.getDescreption().equals("")) {
+                UtilityController.addErrorMessage("Please Enter Memo");
+                return;
+            }
+            if (bi.getBill().getEditedAt() == null && bi.getBill().getEditor() == null) {
+                bi.getBill().setEditor(getSessionController().getLoggedUser());
+                bi.getBill().setEditedAt(new Date());
+                getBillFacade().edit(bi.getBill());
+                getBillItemFacade().edit(bi);
+                UtilityController.addSuccessMessage("This Bill Mark as Paid");
+            } else {
+                UtilityController.addErrorMessage("Alreddy Mark as Paid");
+            }
+        } else {
+            bi.getBill().setEditor(null);
+            bi.getBill().setEditedAt(null);
+            getBillFacade().edit(bi.getBill());
+            bi.setDescreption("");
+            getBillItemFacade().edit(bi);
+            UtilityController.addSuccessMessage("This Bill Mark as Un Paid");
+        }
     }
 
     public void createOutSideBills() {

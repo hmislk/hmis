@@ -597,7 +597,7 @@ public class BhtSummeryController implements Serializable {
     public double discountSet(ChargeItemTotal cit) {
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient());
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), membershipScheme, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
-
+        System.out.println("cit.getInwardChargeType() = " + cit.getInwardChargeType());
         if (pm == null || pm.getDiscountPercent() == 0 || cit.getTotal() == 0
                 || cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
                 || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
@@ -733,6 +733,8 @@ public class BhtSummeryController implements Serializable {
                 bf.setDiscount(0.0);
                 bf.setNetValue(value);
                 getBillItemFacade().edit(bf);
+                updateServiceBillFeesWithOutMatrix(inwardChargeType);
+                updatePatientItemsWithOutMatrix(inwardChargeType);
             }
             return 0;
         }
