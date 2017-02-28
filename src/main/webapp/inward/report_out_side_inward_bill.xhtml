@@ -178,23 +178,23 @@
                             <p:outputLabel value="Paid" rendered="#{bi.bill.paid eq true}"/>
                             <p:outputLabel value="Not Paid" rendered="#{bi.bill.paid eq false}"/>
                         </p:column>
-                        <p:column style="text-align: right;">
+                        <p:column style="text-align: right;" >
                             <f:facet name="header">
                                 <p:outputLabel value="Memo" />
                             </f:facet>
-                            <p:inputText value="#{bi.descreption}" autocomplete="off" />
+                            <p:inputText value="#{bi.descreption}" autocomplete="off" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}"/>
                         </p:column>
                         <p:column headerText="Paid" style="text-align: right;">
                             <f:facet name="header">
                                 <p:outputLabel value="Paid" />
                             </f:facet>
-                            <p:selectBooleanCheckbox value="#{bi.bill.paid}" ></p:selectBooleanCheckbox>
+                            <p:selectBooleanCheckbox value="#{bi.bill.paid}" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}" ></p:selectBooleanCheckbox>
                         </p:column>
                         <p:column headerText="Update" style="text-align: right;">
                             <f:facet name="header">
                                 <p:outputLabel value="Update" />
                             </f:facet>
-                            <p:commandButton value="Update" action="#{inwardReportController.updateOutSideBill(bi)}" ajax="false" />
+                            <p:commandButton value="Update" action="#{inwardReportController.updateOutSideBill(bi)}" ajax="false" disabled="#{bi.bill.paid and !webUserController.hasPrivilege('InwardOutSideMarkAsUnPaid')}"/>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
