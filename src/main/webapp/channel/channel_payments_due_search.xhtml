@@ -69,10 +69,45 @@
 
                             </p:column>
 
-                            <p:column headerText="Charge" >                                
+                            <p:column headerText="Charge" rendered="#{webUserController.hasPrivilege('Developers')}">                                
                                 <h:outputLabel value="#{bf.billItem.staffFee}" ></h:outputLabel>                                    
                             </p:column>
-
+                            <p:column headerText="paidValue" rendered="#{webUserController.hasPrivilege('Developers')}">                                
+                                <h:outputLabel value="#{bf.paidValue}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="feeValue" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.feeValue}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="paidAmount" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.paidAmount}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="appointmentAt" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.appointmentAt}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="billClass" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.billClass}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="retired" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.retired}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="feeType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.fee.feeType}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="refunded" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.refunded}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="cancelled" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.cancelled}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="billType" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.billType}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="absent" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.singleBillSession.absent}" ></h:outputLabel>                                    
+                            </p:column>
+                            <p:column headerText="bill" rendered="#{webUserController.hasPrivilege('Developers')}" >                                
+                                <h:outputLabel value="#{bf.bill.insId}" ></h:outputLabel>                                    
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>

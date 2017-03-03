@@ -565,6 +565,10 @@ public class BillBhtController implements Serializable {
             return;
         }
 
+        if (getCurrentBillItem().getQty()==null) {
+            getCurrentBillItem().setQty(1.0);
+        }
+        
         for (int i = 0; i < getCurrentBillItem().getQty(); i++) {
             BillEntry addingEntry = new BillEntry();
             BillItem bItem = new BillItem();

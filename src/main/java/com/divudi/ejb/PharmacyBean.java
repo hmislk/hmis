@@ -617,13 +617,16 @@ public class PharmacyBean {
         Map m = new HashMap();
         m.put("i", item);
         m.put("d", department);
-        m.put("q", 0.0);
+        m.put("q", 1.0);
         sql = "select s from Stock s where s.itemBatch.item=:i "
-                + " and s.department=:d and s.stock >:q order by s.itemBatch.dateOfExpire desc";
+                + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
         List<Stock> stocks = getStockFacade().findBySQL(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
+            System.out.println("s.getItemBatch().getItem().getName() = " + s.getItemBatch().getItem().getName());
+            System.out.println("s.getStock() = " + s.getStock());
+            System.out.println("toAddQty = " + toAddQty);
             if (s.getStock() >= toAddQty) {
                 list.add(new StockQty(s, toAddQty));
                 break;

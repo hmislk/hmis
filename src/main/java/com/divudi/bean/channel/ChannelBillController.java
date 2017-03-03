@@ -403,6 +403,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return ;
+        }
         calRefundTotal();
         System.out.println("getRefundableTotal() = " + getRefundableTotal());
         if (getRefundableTotal() == 0.0) {
@@ -437,6 +441,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return;
+        }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
 
@@ -466,6 +474,10 @@ public class ChannelBillController implements Serializable {
         if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
+        }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return ;
         }
 
         if (getBillSession().getBill().getBillFees() != null) {
@@ -640,10 +652,17 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean checkPaid() {
-        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();
+        System.out.println("getBillSession().getBill().getInsId() = " + getBillSession().getBill().getInsId());
+        System.out.println("getBillSession().getBill().getPaidBill().getInsId() = " + getBillSession().getBill().getPaidBill().getInsId());
+        String sql;
+        if (getBillSession().getBill().equals(getBillSession().getBill().getPaidBill())) {
+            sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();
+        } else {
+            sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getPaidBill().getId();
+        }
         List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
-
         for (BillFee f : tempFe) {
+            System.out.println("f.getPaidValue() = " + f.getPaidValue());
             if (f.getPaidValue() != 0.0) {
                 return true;
             }
@@ -798,6 +817,10 @@ public class ChannelBillController implements Serializable {
         }
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
             return;
         }
 

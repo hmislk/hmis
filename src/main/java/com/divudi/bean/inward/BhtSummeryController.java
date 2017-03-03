@@ -13,6 +13,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.memberShip.MembershipSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -21,6 +22,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.ChargeItemTotal;
 import com.divudi.data.dataStructure.DepartmentBillItems;
 import com.divudi.data.dataStructure.InwardBillItem;
+import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import static com.divudi.data.inward.InwardChargeType.AdministrationCharge;
 import static com.divudi.data.inward.InwardChargeType.AdmissionFee;
@@ -109,6 +111,8 @@ public class BhtSummeryController implements Serializable {
 
     @EJB
     private BillNumberGenerator billNumberBean;
+    @Inject
+    WebUserController webUserController;
     @Inject
     PriceMatrixController priceMatrixController;
     @Inject
@@ -1471,11 +1475,11 @@ public class BhtSummeryController implements Serializable {
             return "";
         }
 
-//        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
-//            if (checkBill()) {
-//                return "";
-//            }
-//        }
+        if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+            if (checkBill()) {
+                return "";
+            }
+        }
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
                 UtilityController.addErrorMessage("Payment method is Credit So Please Select Credit Company");
@@ -2472,6 +2476,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
     }
 
 }

@@ -7,6 +7,7 @@ package com.divudi.data.hr;
 
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
+import com.divudi.entity.Area;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -21,6 +22,7 @@ import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
+import com.divudi.entity.inward.AdmissionType;
 import javax.persistence.Transient;
 
 /**
@@ -55,10 +57,13 @@ public class ReportKeyWord {
     EmployeeStatus employeeStatus;
     boolean additionalDetails;
     WebUser webUser;
-    private String string="0";
-    private String string1="0";
+    private String string = "0";
+    private String string1 = "0";
     boolean bool1;
+    boolean bool2;
     String address;
+    AdmissionType admissionType;
+    Area area;
     @Transient
     String transAddress1;
     @Transient
@@ -299,7 +304,7 @@ public class ReportKeyWord {
     }
 
     public String getTransAddress1() {
-        if (transAddress1==null) {
+        if (transAddress1 == null) {
             split();
         }
         return transAddress1;
@@ -332,26 +337,26 @@ public class ReportKeyWord {
     public void setTransAddress4(String transAddress4) {
         this.transAddress4 = transAddress4;
     }
-    
+
     public void split() {
-        if(address == null){
+        if (address == null) {
             return;
         }
-        
+
         String arr[] = address.split(",");
         //System.out.println(arr);
-        if(arr==null){
+        if (arr == null) {
             return;
         }
-       try{
-            transAddress1=arr[0];
-            transAddress2=arr[1];
-            transAddress3=arr[2];
-            transAddress4=arr[3];
-       }catch(Exception e){
-           //System.out.println(e.getMessage());
-       }
-        
+        try {
+            transAddress1 = arr[0];
+            transAddress2 = arr[1];
+            transAddress3 = arr[2];
+            transAddress4 = arr[3];
+        } catch (Exception e) {
+            //System.out.println(e.getMessage());
+        }
+
     }
 
     public String getAddress() {
@@ -389,9 +394,9 @@ public class ReportKeyWord {
         employeeStatus = null;
         additionalDetails = false;
         webUser = null;
-        string="0";
-        string1="0";
-        bool1=false;
+        string = "0";
+        string1 = "0";
+        bool1 = false;
     }
 
     public String getString1() {
@@ -400,6 +405,30 @@ public class ReportKeyWord {
 
     public void setString1(String string1) {
         this.string1 = string1;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
+
+    public boolean isBool2() {
+        return bool2;
+    }
+
+    public void setBool2(boolean bool2) {
+        this.bool2 = bool2;
     }
 
 }

@@ -1585,12 +1585,15 @@ public class ChannelReportTempController implements Serializable {
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
-                td = commonFunctions.getEndOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(nowDate));
 
                 DateFormat df = new SimpleDateFormat("yy MM");
                 formatedDate = df.format(fd);
                 System.out.println("formatedDate = " + formatedDate);
             }
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
             double tmpTot = fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     - (fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
@@ -1740,12 +1743,20 @@ public class ChannelReportTempController implements Serializable {
     public void fetchStaffWiseChannelCount() {
 
         channelDoctorCountsRows = new ArrayList<>();
-        for (Staff s : fetchBillsStaffs(null, Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
+        if (getReportKeyWord().getStaff() != null) {
             ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
-            row.setStaff(s);
-            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
+            row.setStaff(getReportKeyWord().getStaff());
+            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, getReportKeyWord().getStaff(), byDate, null));
             System.out.println("row.getCounts().size() = " + row.getCounts().size());
             channelDoctorCountsRows.add(row);
+        } else {
+            for (Staff s : fetchBillsStaffs(getReportKeyWord().getSpeciality(), Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
+                ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+                row.setStaff(s);
+                row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
+                System.out.println("row.getCounts().size() = " + row.getCounts().size());
+                channelDoctorCountsRows.add(row);
+            }
         }
 
     }
@@ -2288,7 +2299,7 @@ public class ChannelReportTempController implements Serializable {
         grantTot = 0.0;
         bills = fetchCancelledOrRefundBills();
         for (Bill bill : bills) {
-            grantTot += (bill.getVat()+bill.getNetTotal());
+            grantTot += (bill.getVat() + bill.getNetTotal());
         }
     }
 
@@ -2318,7 +2329,7 @@ public class ChannelReportTempController implements Serializable {
             m.put("class", CancelledBill.class);
         }
         if (billtype.equals("2")) {
-           sql += " and type(b)=:class ";
+            sql += " and type(b)=:class ";
             m.put("class", RefundBill.class);
         }
         sql += " and b.createdAt between :fd and :td ";

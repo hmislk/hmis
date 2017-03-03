@@ -381,7 +381,14 @@
 
                                     <p:column>
                                         <f:facet name="header">Paid Value</f:facet>
-                                        <h:outputLabel value="#{bip.paidValue}"/>
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.paidValue}"/>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.paidValue}"/>
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
                                     <p:column headerText="Payee">

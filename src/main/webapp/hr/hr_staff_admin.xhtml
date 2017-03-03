@@ -161,12 +161,8 @@
                                             <p:outputLabel value="Resigned With Notice Date"/>
                                             <p:calendar id="cal" value="#{staffController.current.dateWithOutNotice}" pattern="dd MM yyyy" disabled="#{staffController.current.withOutNotice}" />
 
-                                            <p:outputLabel value="Date Resigned "/>
-                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
-                                            </p:calendar>
-
                                             <p:outputLabel value="Date Retired "/>
-                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" disabled="true" >
+                                            <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" disabled="#{webUserController.hasPrivilege('HrEditRetiedDate')}" >
                                             </p:calendar>
 
                                             <p:outputLabel value="Speciality" />

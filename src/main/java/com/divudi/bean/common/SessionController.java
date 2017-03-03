@@ -743,10 +743,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
-            searchController.createInwardBHTForIssueTable();
-            System.out.println("searchController.bills.size() = " + searchController.getBills().size());
-            if (searchController.getBills().size() > 0) {
-                UtilityController.addSuccessMessage("This Phrmacy Has " + searchController.getBills().size() + " BHT Request.");
+            long i=searchController.createInwardBHTForIssueBillCount();
+            if (i > 0) {
+                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
             }
         }
 

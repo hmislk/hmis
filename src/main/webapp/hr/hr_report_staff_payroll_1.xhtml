@@ -105,6 +105,8 @@
                         <th>Code</th>
                         <th>EPF</th>
                         <th>Join</th>
+                        <th>Resign</th>
+                        <th>Retierd</th>
                         <th>Satff </th>
                         <th>Des</th>
                         <th>Basic Val</th>
@@ -145,6 +147,14 @@
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.codeInterger}" /></td>
                             <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.epfNo}" /></td>
                             <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.dateJoined}" >
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputLabel>
+                            </td>
+                            <td style="white-space: nowrap;color: red;" ><h:outputLabel value="#{scc.staff.dateLeft}" >
+                                    <f:convertDateTime pattern="dd MM yy" />
+                                </h:outputLabel>
+                            </td>
+                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.dateRetired}" >
                                     <f:convertDateTime pattern="dd MM yy" />
                                 </h:outputLabel>
                             </td>
@@ -266,7 +276,7 @@
                         </tr>
                     </ui:repeat>
                     <tr>
-                        <td colspan="5"><h:outputLabel value="Totals"/></td>
+                        <td colspan="7"><h:outputLabel value="Totals"/></td>
                         <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.basicVal}" >

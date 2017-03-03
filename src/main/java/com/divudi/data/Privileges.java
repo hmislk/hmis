@@ -78,6 +78,7 @@ public enum Privileges {
     InwardPharmacyMenu,
     InwardPharmacyIssueRequest,
     InwardPharmacyIssueRequestSearch,
+    InwardBillSettleWithoutCheck,
     LabBilling,
     LabBillCancelSpecial,
     LabBillRefundSpecial,
@@ -359,6 +360,7 @@ public enum Privileges {
     HrForms,
     HrLeaveForms,
     HrAdditionalForms,
+    HrEditRetiedDate,
     
     Developers,
     //Cashier

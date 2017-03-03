@@ -242,8 +242,8 @@
                                 </center> -->
 
                 <p:panel rendered="#{sessionController.department.departmentType eq 'Pharmacy'}">
-                    <p:outputLabel value="This Phrmacy Has #{searchController.bills.size()} BHT Request." style="color: red;text-align: center;"
-                                   rendered="#{searchController.bills.size()>0}" />
+                    <p:outputLabel value="This Phrmacy Has #{searchController.createInwardBHTForIssueBillCount()} BHT Request Today." style="color: red;text-align: center;"
+                                    />
                 </p:panel>
 
 

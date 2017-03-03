@@ -120,6 +120,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node189 = new PrivilageNode("Inward Uncheck", node18, Privileges.InwardUnCheck);
         TreeNode node1810 = new PrivilageNode("Inward Final Bill Cancel With Out Check Date Range", node18, Privileges.InwardFinalBillCancel);
         TreeNode node1811 = new PrivilageNode("Inward Out Side Bill Mark as Un-Paid", node18, Privileges.InwardOutSideMarkAsUnPaid);
+        TreeNode node1812 = new PrivilageNode("Inward Bill Settle With Out Check", node18, Privileges.InwardBillSettleWithoutCheck);
 
         TreeNode node1a = new PrivilageNode("Theatre", tmproot);
         TreeNode node1a0 = new PrivilageNode("Theatre Menu", node1a, Privileges.Theatre);
@@ -132,7 +133,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode node1a7 = new PrivilageNode("Theatre Transfer Report", node1a, Privileges.TheaterTransferReport);
         TreeNode node1a8 = new PrivilageNode("Theatre Show Reports Menu Item", node1a, Privileges.TheaterReports);
         TreeNode node1a9 = new PrivilageNode("Theatre Show Summery Menu Item", node1a, Privileges.TheaterSummeries);
-        TreeNode node1a10 = new PrivilageNode("Theatre BHT Issue", node1a, Privileges.TheaterIssue);
+        TreeNode node1a10 = new PrivilageNode("Theatre BHT Issue", node1a);
+        TreeNode node1a100 = new PrivilageNode("Theatre BHT Issue", node1a10, Privileges.TheaterIssue);
         TreeNode node1a101 = new PrivilageNode("Pharmacy BHT Issue", node1a10, Privileges.TheaterIssuePharmacy);
         TreeNode node1a102 = new PrivilageNode("General BHT Issue", node1a10, Privileges.TheaterIssueStore);
         TreeNode node1a1021 = new PrivilageNode("Inward BHT Billing", node1a102, Privileges.TheaterIssueStoreBhtBilling);
@@ -320,6 +322,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node98 = new PrivilageNode("HR Administration", node9);
         TreeNode node980 = new PrivilageNode("HR Administration Menu", node98, Privileges.HrAdmin);
         TreeNode node981 = new PrivilageNode("HR Delete Late Leave", node98, Privileges.hrDeleteLateLeave);
+        TreeNode node982 = new PrivilageNode("Edit Retied Date", node98, Privileges.HrEditRetiedDate);
         
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);

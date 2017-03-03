@@ -33,11 +33,25 @@
                             <f:selectItem itemLabel="All BHT Types" />                           
                             <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                         </p:selectOneMenu>
-                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4'}"/>
-                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4'}"/>
+                        <p:outputLabel value="Admission Type" rendered="#{quickBookReportController.report eq '4'}"/>
+                        <p:selectOneMenu value="#{quickBookReportController.reportKeyWord.admissionType}" rendered="#{quickBookReportController.report eq '4'}">
+                            <f:selectItem itemLabel="All Admission Type"/>
+                            <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                            itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' and quickBookReportController.report ne '1'}"/>
+                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
                         <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" />
-                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4'}"/>
-                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" rendered="#{quickBookReportController.report eq '4'}"/>
+                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
+                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
+                        <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
+                        <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
+                          <f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />
+                        </p:selectBooleanCheckbox>
+                        <h:outputLabel value="Green Sheet" rendered="#{quickBookReportController.report eq '4'}" />
+                        <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool2}" rendered="#{quickBookReportController.report eq '4'}" >
+                          <f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool2Change()}" />
+                        </p:selectBooleanCheckbox>
                         <h:outputLabel value="Select Institution"/>
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
                                         forceSelection="true"
@@ -72,11 +86,11 @@
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />
-                            <p:column headerText="INVITEMTYPE" />
-                            <p:column headerText="INVITEM" />
+                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '2'}"/>
+                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '2'}" />
                             <p:column headerText="AMOUNT" />
                             <p:column headerText="DOCNUM" />
-                            <p:column headerText="PONUM"/>
+                            <!--<p:column headerText="PONUM"/>-->
                             <p:column headerText="CLASS" />
                             <p:column headerText="MEMO"/>
                             <p:column headerText="CUSTFLD1"/>
@@ -92,11 +106,11 @@
                             <p:column headerText="DATE" />
                             <p:column headerText="ACCNT" />
                             <p:column headerText="NAME" />
-                            <p:column headerText="INVITEMTYPE" />
-                            <p:column headerText="INVITEM" />
+                            <p:column headerText="INVITEMTYPE" rendered="#{quickBookReportController.report ne '2'}"/>
+                            <p:column headerText="INVITEM" rendered="#{quickBookReportController.report ne '2'}"/>
                             <p:column headerText="AMOUNT" />
                             <p:column headerText="DOCNUM" />
-                            <p:column headerText="PONUM"/>
+                            <!--<p:column headerText="PONUM"/>-->
                             <p:column headerText="CLASS" />
                             <p:column headerText="MEMO"/>
                             <p:column headerText="CUSTFLD1"/>
@@ -117,7 +131,7 @@
                             <p:column headerText="" />
                             <p:column headerText="" />
                             <p:column headerText=""/>
-                            <p:column headerText="" />
+                            <!--<p:column headerText="" />-->
                             <p:column headerText=""/>
                             <p:column headerText=""/>
                             <p:column headerText=""/>
@@ -182,7 +196,7 @@
                         </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.name}" />
                     </p:column>
-                    <p:column>
+                    <p:column rendered="#{quickBookReportController.report ne '2'}">
 <!--                        <p:cellEditor rendered="#{qbf.editInvItemType}">  
                             <f:facet name="output"> 
                                 <h:outputLabel value="#{qbf.invItemType}" />
@@ -193,7 +207,7 @@
                         </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.invItemType}" />
                     </p:column>
-                    <p:column>
+                    <p:column rendered="#{quickBookReportController.report ne '2'}">
 <!--                        <p:cellEditor rendered="#{qbf.editInvItem}">  
                             <f:facet name="output"> 
                                 <h:outputLabel value="#{qbf.invItem}" />
@@ -232,17 +246,17 @@
                         </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.docNum}" />
                     </p:column>
-                    <p:column>
-<!--                        <p:cellEditor rendered="#{qbf.editPoNum}">  
-                            <f:facet name="output"> 
-                                <h:outputLabel value="#{qbf.poNum}" />
-                            </f:facet>  
-                            <f:facet name="input">  
-                                <p:inputText value="#{qbf.poNum}" />
-                            </f:facet>  
-                        </p:cellEditor>  -->
-                        <p:outputLabel value="#{qbf.poNum}"/>
-                    </p:column>
+                    <!--                    <p:column>
+                                            <p:cellEditor rendered="#{qbf.editPoNum}">  
+                                                <f:facet name="output"> 
+                                                    <h:outputLabel value="#{qbf.poNum}" />
+                                                </f:facet>  
+                                                <f:facet name="input">  
+                                                    <p:inputText value="#{qbf.poNum}" />
+                                                </f:facet>  
+                                            </p:cellEditor>  
+                                            <p:outputLabel value="#{qbf.poNum}"/>
+                                        </p:column>-->
                     <p:column>
 <!--                        <p:cellEditor rendered="#{qbf.editQbClass}">  
                             <f:facet name="output"> 
@@ -320,13 +334,13 @@
                         </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.custFld5}" />
                     </p:column>
-<!--                    <p:column style="width:6%" exportable="false">  
-                        <p:rowEditor rendered="#{qbf.editQbClass or qbf.editAccnt or qbf.editAmount or qbf.editCustFld1 or qbf.editCustFld2 
-                                                 or qbf.editCustFld3 or qbf.editCustFld4 or qbf.editCustFld5 or qbf.editDate or qbf.editDocNum
-                                                 or qbf.editInvItem or qbf.editInvItemType or qbf.editMemo or qbf.editName or qbf.editPoNum
-                                                 or qbf.editRowType or qbf.editTrnsType}"> 
-                        </p:rowEditor>
-                    </p:column>  -->
+                    <!--                    <p:column style="width:6%" exportable="false">  
+                                            <p:rowEditor rendered="#{qbf.editQbClass or qbf.editAccnt or qbf.editAmount or qbf.editCustFld1 or qbf.editCustFld2 
+                                             or qbf.editCustFld3 or qbf.editCustFld4 or qbf.editCustFld5 or qbf.editDate or qbf.editDocNum
+                                             or qbf.editInvItem or qbf.editInvItemType or qbf.editMemo or qbf.editName or qbf.editPoNum
+                                             or qbf.editRowType or qbf.editTrnsType}"> 
+                    </p:rowEditor>
+                </p:column>  -->
                 </p:dataTable>
             </p:panel>
         </h:form>

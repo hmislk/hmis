@@ -614,11 +614,11 @@ public class StaffController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<Staff> completeStaffCodeChannelWithOutResignOrRetierd(String query) {
         List<Staff> suggestions;
         String sql;
-        Map m=new HashMap();
+        Map m = new HashMap();
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
@@ -630,7 +630,7 @@ public class StaffController implements Serializable {
                     + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
                     + " or upper(p.code)='" + query.toUpperCase() + "' )"
                     + " order by p.person.name";
-            
+
             m.put("cd", new Date());
 
             ////System.out.println(sql);
@@ -1073,7 +1073,16 @@ public class StaffController implements Serializable {
             }
             if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
                 System.out.println("dor.get(Calendar.YEAR) = " + dor.get(Calendar.YEAR));
-                getCurrent().setDateRetired(dor.getTime());
+                System.out.println("dor.getTime = " + dor.getTime());
+                System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
+                if (getCurrent().getDateRetired() != null) {
+                    if (dor.getTime().after(getCurrent().getDateRetired())) {
+                        getCurrent().setDateRetired(dor.getTime());
+                    }
+                } else {
+                    getCurrent().setDateRetired(dor.getTime());
+                }
+
                 System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
             }
         }
@@ -1089,7 +1098,7 @@ public class StaffController implements Serializable {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(current.getPerson());
-
+            
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -1192,8 +1201,8 @@ public class StaffController implements Serializable {
         }
 
     }
-    
-    public void listenerWithNotice(){
+
+    public void listenerWithNotice() {
         if (getCurrent().isWithOutNotice()) {
             getCurrent().setDateWithOutNotice(null);
         }

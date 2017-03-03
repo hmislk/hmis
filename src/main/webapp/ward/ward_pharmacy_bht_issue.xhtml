@@ -69,10 +69,10 @@
 
                 <h:panelGroup   id="gpBillPreview">
 
-                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                    <h:panelGroup id="gpBillPreviewDouble"> 
 
                         <div >
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                            <h:panelGroup > 
                                 <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
                         </div>
