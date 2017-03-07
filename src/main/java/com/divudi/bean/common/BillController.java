@@ -1581,31 +1581,33 @@ public class BillController implements Serializable {
         double qty = getCurrentBillItem().getQty();
         System.out.println("qty = " + qty);
         for (int i = 0; i < qty; i++) {
-            getCurrentBillItem().setSessionDate(sessionDate);
+            BillItem bi=new BillItem();
+            bi.copy(getCurrentBillItem());
+            bi.setSessionDate(sessionDate);
 //        New Session
             //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
             System.out.println("to get current bill items");
-            lastBillItem = getCurrentBillItem();
+            lastBillItem = bi;
             BillEntry addingEntry = new BillEntry();
-            addingEntry.setBillItem(getCurrentBillItem());
-            addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
-            addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));
+            addingEntry.setBillItem(bi);
+            addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+            addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
             getLstBillEntries().add(addingEntry);
-            getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
-            getCurrentBillItem().setQty(1.0);
-            getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
+            bi.setRate(getBillBean().billItemRate(addingEntry));
+            bi.setQty(1.0);
+            bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
 
-            if (getCurrentBillItem().getItem().isVatable()) {
-                getCurrentBillItem().setVat(getCurrentBillItem().getNetValue() * getCurrentBillItem().getItem().getVatPercentage() / 100);
+            if (bi.getItem().isVatable()) {
+                bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
             }
 
-            getCurrentBillItem().setVatPlusNetValue(getCurrentBillItem().getNetValue() + getCurrentBillItem().getVat());
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
 
             System.out.println("to cal totals");
             calTotals();
 
-            if (getCurrentBillItem().getNetValue() == 0.0) {
+            if (bi.getNetValue() == 0.0) {
                 UtilityController.addErrorMessage("Please enter the rate");
                 return;
             }

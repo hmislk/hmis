@@ -245,7 +245,7 @@
                 <p:commandButton value="Back" ajax="false" action="#{staffSalaryController.recreateModel()}" >                    
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreviewAll">
-                    <div style="page-break-after: always;">
+                    <div >
                         <ui:repeat value="#{staffSalaryController.getSelectedStaffSalaryList}" var="b">
                             <salary:pay_slip_2 bill="#{b}"></salary:pay_slip_2>                        
                         </ui:repeat>

@@ -5328,12 +5328,13 @@ public class SearchController implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelAgent,
             BillType.ChannelStaff,
+            BillType.ChannelPaid,
             BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
         sql = "SELECT bi FROM BillItem bi WHERE bi.retired = false "
-                + " and bi.bill.billType=:bt "
+                    + " and bi.bill.billType=:bt "
                 + " and type(bi.bill)=:class "
                 + " and bi.paidForBillFee.bill.billType in :bts "
                 + " and bi.createdAt between :fromDate and :toDate ";

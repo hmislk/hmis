@@ -39,11 +39,12 @@
                             <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                             itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                         </p:selectOneMenu>
-                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' and quickBookReportController.report ne '1'}"/>
-                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
+                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' and quickBookReportController.report ne '1'and quickBookReportController.report ne '2'}"/>
+                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '2'}"/>
                         <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" />
-                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
-                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1'}"/>
+                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1' or quickBookReportController.report eq '2'}"/>
+                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" 
+                                    rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1' or quickBookReportController.report eq '2'}"/>
                         <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
                         <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
                           <f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />
