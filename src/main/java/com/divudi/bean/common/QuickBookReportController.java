@@ -1090,7 +1090,7 @@ public class QuickBookReportController implements Serializable {
         QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
                 "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
                 0 - d, "OPD");
-        
+
         grantTot += d;
 
         if (qbf.getAmount() != 0.0) {
@@ -1765,7 +1765,7 @@ public class QuickBookReportController implements Serializable {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
                 qbf = new QuickBookFormat("INCOME ACCOUNTS:" + "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName() + " Green Sheet", pe.getCreditCompany().getChequePrintingName(), InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
             } else {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), name, InwardChargeType.AdmissionFee.getLabel(), d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
             }
         } else {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
