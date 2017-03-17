@@ -183,7 +183,7 @@ public class QuickBookReportController implements Serializable {
             QuickBookFormat qbf = new QuickBookFormat();
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
             qbf.setRowType("TRNS");
-            qbf.setTrnsType("CREDIT SALE");
+            qbf.setTrnsType("INVOICE");
             qbf.setDate(sdf.format(fromDate));
             qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
             qbf.setName("CREDIT COMPANY:" + i.getName());
@@ -912,14 +912,14 @@ public class QuickBookReportController implements Serializable {
                 System.err.println("if");
                 qbf.setRowType("SPL");
                 if (creditCompany != null) {
-                    qbf.setTrnsType("CREDIT SALE");
+                    qbf.setTrnsType("INVOICE");
                     if (creditCompany != null) {
                         qbf.setName("CREDIT COMPANY:" + creditCompany.getName());
                     } else {
                         qbf.setName("Credit");
                     }
                 } else {
-                    qbf.setTrnsType("Cash Sale");
+                    qbf.setTrnsType("INVOICE");
                     qbf.setName("Cash AR");
                 }
 
@@ -992,14 +992,14 @@ public class QuickBookReportController implements Serializable {
                     qbf = new QuickBookFormat();
                     qbf.setRowType("SPL");
                     if (creditCompany != null) {
-                        qbf.setTrnsType("CREDIT SALE");
+                        qbf.setTrnsType("INVOICE");
                         if (creditCompany != null) {
                             qbf.setName("CREDIT COMPANY:" + creditCompany.getName());
                         } else {
                             qbf.setName("Credit");
                         }
                     } else {
-                        qbf.setTrnsType("Cash Sale");
+                        qbf.setTrnsType("INVOICE");
                         qbf.setName("Cash AR");
                     }
                     if (Investigation.class == i.getClass()) {
