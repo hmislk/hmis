@@ -56,7 +56,7 @@
                 </p:panel>
 
                 <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
-                             rowKey=""
+                             rowKey="#{b}" 
                              rows="#{searchController.rows}"
                              selection="#{searchController.selectedTelephoneNumbers}"
                              paginator="true"

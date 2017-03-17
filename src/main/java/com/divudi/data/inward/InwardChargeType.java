@@ -16,7 +16,7 @@ public enum InwardChargeType {
     BloodTransfusioncharges("Blood Transfusion Charges"),
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
-    Equipment("Equipment"),
+    Equipment("Equipment Charges"),
     ECG_EEG("ECG/EEG/ECHO/EXECG"),
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
@@ -54,6 +54,8 @@ public enum InwardChargeType {
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
     VAT("VAT (15%)"),
+    AccessoryCharges("Accessory Charges"),
+    EyeLence("Eye Lence"),
     
     @Deprecated
     Investigations("Investigations"),

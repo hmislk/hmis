@@ -22,7 +22,7 @@
                     </p:commandButton>
                 </f:facet>
 
-                <p:panel>
+                <p:panel id="pan1">
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker"  >
@@ -30,26 +30,34 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker" >
                         </p:calendar>
-                        <h:outputLabel value="Staff"/>
+                        <h:outputLabel value="Staff" rendered="#{!channelReportTempController.paid}"/>
                         <p:autoComplete minQueryLength="2"  style="width: 400px;"
                                         forceSelection="true" placeholder="Staff"
                                         value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                        converter="stfcon"   >                                            
+                                        converter="stfcon" rendered="#{!channelReportTempController.paid}"   >                                            
                         </p:autoComplete>
-                        <h:outputLabel value="Specility"/>
-                        <au:completeSpeciality value="#{channelReportTempController.reportKeyWord.speciality}" />
+                        <h:outputLabel value="Specility" rendered="#{!channelReportTempController.paid}"/>
+                        <au:completeSpeciality value="#{channelReportTempController.reportKeyWord.speciality}" rendered="#{!channelReportTempController.paid}" />
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pg1" >
                         <h:outputLabel value="By Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />
+                        <h:outputLabel value="By Specility"/> 
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.paid}" >
+                            <f:ajax event="change" execute="@this" render="pan1" />
+                        </p:selectBooleanCheckbox>
                     </h:panelGrid> 
-                    <h:panelGrid columns="2">
-                        <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentCountNew}" value="Count" ajax="false" />
+                    <h:panelGrid columns="3">
+                        <p:commandButton action="#{channelReportTempController.createStaffWiseAppoinmentCountNew}" rendered="#{!channelReportTempController.paid}" value="Count" ajax="false" />
+                        <p:commandButton action="#{channelReportTempController.createSpecilityWiseAppoinmentCountNew()}" rendered="#{channelReportTempController.paid}" value="Count" ajax="false" />
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
-                        </p:commandButton> 
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="Channel_Count"  />
+                        </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" >
@@ -76,12 +84,19 @@
         </ui:repeat>
     </table>-->
                     <p:dataTable id="tbl1" value="#{channelReportTempController.channelDoctorCountsRows}" var="s">
-                        <p:column>
+                        <p:column rendered="#{!channelReportTempController.paid}">
                             <f:facet name="header">
                                 <h:outputText value="Doctor Name"/>
                             </f:facet>
                             <h:outputText value="#{s.staff.person.name}" rendered="#{s.staff ne null}"/>
                             <h:outputText value="Total" rendered="#{s.staff eq null}"/>
+                        </p:column>
+                        <p:column rendered="#{channelReportTempController.paid}">
+                            <f:facet name="header">
+                                <h:outputText value="Specility Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.speciality.name}" rendered="#{s.speciality ne null}"/>
+                            <h:outputText value="Total" rendered="#{s.speciality eq null}"/>
                         </p:column>
                         <p:columns value="#{channelReportTempController.columnModels}" var="column" styleClass="numberCol">
                             <f:facet name="header">

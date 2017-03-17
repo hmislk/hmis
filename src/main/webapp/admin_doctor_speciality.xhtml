@@ -52,7 +52,7 @@
                                     <h:outputText id="lblName" value="Speciality Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{doctorSpecialityController.current.name}" required="true" ></h:inputText>
                                     <h:outputText id="lblDescription" value="Income Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" ></h:inputText>
+                                    <h:inputTextarea  id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{doctorSpecialityController.saveSelected()}" styleClass="buttons">

@@ -39,19 +39,37 @@
                             <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                             itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                         </p:selectOneMenu>
-                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' and quickBookReportController.report ne '1'and quickBookReportController.report ne '2'}"/>
-                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '2'}"/>
+                        <p:outputLabel value="Income Account" rendered="#{quickBookReportController.report eq '4'}"/>
+                        <p:selectOneRadio id="console" value="#{quickBookReportController.reportKeyWord.string}" rendered="#{quickBookReportController.report eq '4'}" >
+                            <f:selectItem itemLabel="Normal Admission" itemValue="0" />
+                            <f:selectItem itemLabel="Green Sheet" itemValue="1" />
+                            <f:selectItem itemLabel="Dialysis" itemValue="2" />
+                        </p:selectOneRadio>
+                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' 
+                                                                and quickBookReportController.report ne '1' 
+                                                                and quickBookReportController.report ne '5' 
+                                                                and quickBookReportController.report ne '2'}"/>
+                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' 
+                                                                     or quickBookReportController.report eq '1' 
+                                                                     or quickBookReportController.report eq '5' 
+                                                                     or quickBookReportController.report eq '2'}"/>
                         <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" />
-                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1' or quickBookReportController.report eq '2'}"/>
+                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' 
+                                                                   or quickBookReportController.report eq '1' 
+                                                                   or quickBookReportController.report eq '5' 
+                                                                   or quickBookReportController.report eq '2'}"/>
                         <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" 
-                                    rendered="#{quickBookReportController.report eq '4' or quickBookReportController.report eq '1' or quickBookReportController.report eq '2'}"/>
+                                    rendered="#{quickBookReportController.report eq '4' 
+                                                or quickBookReportController.report eq '1' 
+                                                or quickBookReportController.report eq '5' 
+                                                or quickBookReportController.report eq '2'}"/>
                         <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
                         <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
-                          <f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />
+                            <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />-->
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="Green Sheet" rendered="#{quickBookReportController.report eq '4'}" />
                         <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool2}" rendered="#{quickBookReportController.report eq '4'}" >
-                          <f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool2Change()}" />
+                            <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool2Change()}" />-->
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="Select Institution"/>
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}" required="true" 
@@ -99,6 +117,7 @@
                             <p:column headerText="CUSTFLD3"/>
                             <p:column headerText="CUSTFLD4"/>
                             <p:column headerText="CUSTFLD5"/>
+                            <p:column headerText="CUSTFLD6"/>
                             <p:column headerText=""/>
                         </p:row>
                         <p:row>
@@ -119,6 +138,7 @@
                             <p:column headerText="CUSTFLD3"/>
                             <p:column headerText="CUSTFLD4"/>
                             <p:column headerText="CUSTFLD5"/>
+                            <p:column headerText="CUSTFLD6"/>
                             <p:column headerText=""/>
                         </p:row>
                         <p:row>
@@ -133,6 +153,7 @@
                             <p:column headerText="" />
                             <p:column headerText=""/>
                             <!--<p:column headerText="" />-->
+                            <p:column headerText=""/>
                             <p:column headerText=""/>
                             <p:column headerText=""/>
                             <p:column headerText=""/>
@@ -334,6 +355,17 @@
                             </f:facet>  
                         </p:cellEditor>  -->
                         <p:outputLabel value="#{qbf.custFld5}" />
+                    </p:column>
+                    <p:column>
+<!--                        <p:cellEditor rendered="#{qbf.editCustFld6}">  
+                            <f:facet name="output"> 
+                                <h:outputLabel value="#{qbf.custFld6}" />
+                            </f:facet>  
+                            <f:facet name="input">  
+                                <p:inputText value="#{qbf.custFld6}" />
+                            </f:facet>  
+                        </p:cellEditor>  -->
+                        <p:outputLabel value="#{qbf.custFld6}" />
                     </p:column>
                     <!--                    <p:column style="width:6%" exportable="false">  
                                             <p:rowEditor rendered="#{qbf.editQbClass or qbf.editAccnt or qbf.editAmount or qbf.editCustFld1 or qbf.editCustFld2 

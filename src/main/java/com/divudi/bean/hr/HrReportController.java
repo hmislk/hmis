@@ -3042,6 +3042,7 @@ public class HrReportController implements Serializable {
             monthEnd.setLeave_medical(humanResourceBean.calStaffLeave(stf, LeaveType.Medical, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             monthEnd.setLeave_nopay(humanResourceBean.calStaffLeave(stf, LeaveType.No_Pay, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             monthEnd.setLeave_dutyLeave(humanResourceBean.calStaffLeave(stf, LeaveType.DutyLeave, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
+            monthEnd.setLeave_maternity(humanResourceBean.calStaffLeaveMaternity(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             monthEnd.setExtraDutyDays(fetchExtraDutyDays(stf, getReportKeyWord().getSalaryCycle().getSalaryFromDate(), getReportKeyWord().getSalaryCycle().getSalaryToDate()));
             monthEnd.setLatedays(fetchLateDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             monthEnd.setLateNoPays(humanResourceBean.calStaffLeaveSystem(stf, LeaveType.No_Pay, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
@@ -3051,6 +3052,31 @@ public class HrReportController implements Serializable {
             monthEnd.setPoyaDaysLeave(fetchWorkedDays(stf, DayType.Poya, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
             monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
             monthEnd.setMerhchantileDaysLeave(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
+            //mr.lahiru request 
+            monthEnd.setWorkedDaysBefore(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate())));
+            monthEnd.setWorkedDaysThis(fetchWorkedDays(stf, commonFunctions.getStartOfDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate()), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
+            if (stf.getDateJoined() != null) {
+                if ((getReportKeyWord().getSalaryCycle().getSalaryFromDate().getTime() <= stf.getDateJoined().getTime()
+                        && getReportKeyWord().getSalaryCycle().getSalaryToDate().getTime() >= stf.getDateJoined().getTime())) {
+                    long extraDays;
+                    if (stf.getDateJoined().getTime() > getReportKeyWord().getSalaryCycle().getDayOffPhToDate().getTime()) {
+                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime()
+                                - stf.getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                    } else {
+                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime() 
+                                - getReportKeyWord().getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    }
+                    System.out.println("New Come extraDays = " + extraDays);
+                    extraDays -= (int) (extraDays / 7);
+                    System.out.println("New Come extraDays(After) = " + extraDays);
+                    monthEnd.setWorkedDaysAditional(extraDays);
+                } else {
+                    monthEnd.setWorkedDaysAditional(0.0);
+                }
+
+                
+            }
+
             monthEndRecords.add(monthEnd);
         }
 

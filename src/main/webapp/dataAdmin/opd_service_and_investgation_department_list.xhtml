@@ -23,11 +23,14 @@
                             <p:printer target="panIx" />
                         </p:commandButton>
                         
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                        <p:commandButton id="btnRefresh" ajax="false" value="OPD"
                                          styleClass="noPrintButton" 
                                          action="#{itemController.createOpdSeviceInvestgationList()}">                            
                         </p:commandButton>
-                        <p:defaultCommand target="btnRefresh"/>
+                        <p:commandButton id="btnRefresh2" ajax="false" value="Inward"
+                                         styleClass="noPrintButton" 
+                                         action="#{itemController.createInwardList()}">                            
+                        </p:commandButton>
 
                         <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
                             <pe:exporter type="xlsx" target="tblBills" fileName="DepartmentIncome"

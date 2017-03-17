@@ -1730,6 +1730,36 @@ public class HumanResourceBean {
 
         return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
+    
+    public double calStaffLeaveMaternity(Staff staff, Date frmDate, Date toDate) {
+        double d= 0.0;
+        String sql = "Select sum(s.qty) From StaffLeave s"
+                + " where s.retired=false "
+                + " and s.staff=:st "
+                + " and s.leaveType in :ltp "
+                + " and (s.leaveDate between :frm and :to)";
+        HashMap hm = new HashMap();
+        hm.put("st", staff);
+        hm.put("ltp", Arrays.asList(new LeaveType[]{LeaveType.Maternity1st,LeaveType.Maternity2nd,LeaveType.Maternity1stHalf,LeaveType.Maternity2ndHalf}));
+        hm.put("frm", frmDate);
+        hm.put("to", toDate);
+//        System.out.println("hm = " + hm);
+//        List<StaffLeave> leaves=getStaffLeaveFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+//        
+//        System.out.println("leaves.size() = " + leaves.size());
+//        
+//        for (StaffLeave l : leaves) {
+//            System.out.println("l.getLeaveDate() = " + l.getLeaveDate());
+//            System.out.println("l.getForm().getFromTime() = " + l.getForm().getFromTime());
+//            System.out.println("l.getForm().getToTime() = " + l.getForm().getToTime());
+//            
+//        }
+//        
+//        
+//        return d;
+
+        return getStaffLeaveFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
+    }
 
     public double calStaffLeave(Staff staff, LeaveType leaveType, Date frmDate) {
 

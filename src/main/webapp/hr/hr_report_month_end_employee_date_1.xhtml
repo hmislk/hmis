@@ -68,7 +68,8 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
                         <p:panel id="gpBillPreview" style="font-size: 12px;"  >                     
-                            <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss" styleClass="noBorder summeryBorder">
+                            <p:dataTable id="tb1" value="#{hrReportController.monthEndRecords}" var="ss" styleClass="noBorder summeryBorder" 
+                                         rowStyleClass="#{ss.workedDays lt 6 ? 'redText':ss.workedDays lt 11 ? 'blueText':''}">
                                 <f:facet name="header">
                                     <h:outputLabel value="Employee Salary Detail Report"/>
                                     <br/>
@@ -143,6 +144,24 @@
                                     </f:facet>
                                     <p:outputLabel value="#{ss.workedDays}" style="font-size: 12px;"/>
                                 </p:column>
+                                <p:column headerText="Worked Days Before" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Days Before" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.workedDaysBefore}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column headerText="Worked Days This" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Days This" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.workedDaysThis}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column headerText="Worked Days Aditional" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Worked Days Aditional" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.workedDaysAditional}" style="font-size: 12px;"/>
+                                </p:column>
                                 <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Annual Leave" style="text-align: right;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Annual Leave" />
@@ -160,6 +179,12 @@
                                         <p:outputLabel value="Medical Leave" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.leave_medical}" style="font-size: 12px;"/>
+                                </p:column>
+                                <p:column rendered="#{!hrReportController.reportKeyWord.additionalDetails}" headerText="Medical Leave" style="text-align: right;">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Maternity Leave" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.leave_maternity}" style="font-size: 12px;"/>
                                 </p:column>
                                 <p:column headerText="No Pay Leave" style="text-align: right;">
                                     <f:facet name="header" >

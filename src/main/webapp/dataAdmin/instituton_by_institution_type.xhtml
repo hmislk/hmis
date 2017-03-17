@@ -44,6 +44,12 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.name}" ></h:outputLabel>
                                 </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Printing Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.chequePrintingName}" ></h:outputLabel>
+                                </p:column>
                                 <p:column sortBy="#{i.institutionCode}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
@@ -61,12 +67,20 @@
 
                                 <p:column >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Tel"/>
+                                        <h:outputLabel value="Tel 1"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.mobile}"  >
                                     </h:outputLabel>
                                 </p:column>
-
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel 2"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.phone}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
                                 <p:column >
                                     <f:facet name="header">
                                         <h:outputLabel value="Fax"/>

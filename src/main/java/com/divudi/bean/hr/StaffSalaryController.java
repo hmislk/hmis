@@ -1581,10 +1581,87 @@ public class StaffSalaryController implements Serializable {
                     double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
                     System.out.println("workedDays = " + workedDays);
                     if (workedDays==0.0) {
+                        JsfUtil.addErrorMessage("No Working Days - "+ s.getPerson().getName());
                         continue;
                     }
                     
                 }
+                if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
+                    if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
+                        DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");
+                        String rd = df.format(getCurrent().getStaff().getDateLeft());
+                        String ad = df.format(lastAnalyseDate);
+                        JsfUtil.addErrorMessage("Last Analysed Date ( " + ad + " ) is less Than Resigned Date ( " + rd + " )."
+                                + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
+                        continue;
+                    }
+                    resetAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getCurrent().getStaff().getDateLeft());
+                    generateAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getCurrent().getStaff().getDateLeft());
+                    fetchAndSetBankData();
+                    addSalaryComponent();
+                } else {
+                    resetAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+                    generateAutoLeave(s, getSalaryCycle().getDayOffPhFromDate(), getSalaryCycle().getDayOffPhToDate());
+                    fetchAndSetBankData();
+                    addSalaryComponent();
+                }
+
+//                resetAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+//                generateAutoLeave(s, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
+                //issue #311
+//                save();
+            } else {
+                // Allready in database
+
+            }
+
+            getCurrent().calculateComponentTotal();
+            getCurrent().calcualteEpfAndEtf();
+            getItems().add(current);
+            current = null;
+
+        }
+
+        //   createStaffSalaryTable();
+    }
+    
+    public void generateSpecial() {
+        if (getStaffController().getSelectedList() == null) {
+            return;
+        }
+        
+        if (getStaffController().getSelectedList().size()>1) {
+            JsfUtil.addErrorMessage("Sorry. You Can't Process More than One Staff this Special Salary Genrate.");
+            return;
+        }
+
+        if (dateCheck()) {
+            return;
+        }
+
+        items = null;
+        int i = 0;
+        for (Staff s : getStaffController().getSelectedList()) {
+            setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
+            if (getCurrent().getId() == null) {
+                Date lastAnalyseDate = fetchLastAnalysDate(s);
+                System.out.println("****lastAnalyseDate = " + lastAnalyseDate);
+                System.out.println("****s.getDateLeft() = " + s.getDateLeft());
+                System.out.println("getCurrent().getStaff().getDateLeft() = " + getCurrent().getStaff().getDateLeft());
+                if (s.isWithOutNotice()) {
+                    System.err.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    JsfUtil.addErrorMessage("This Employe Resingned Without Notice."
+                            + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
+                    continue;
+                }
+//                if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
+//                    double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
+//                    System.out.println("workedDays = " + workedDays);
+//                    if (workedDays==0.0) {
+//                        continue;
+//                    }
+//                    
+//                }
                 if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
                         DateFormat df = new SimpleDateFormat("yyyy-MMM-dd");

@@ -111,15 +111,26 @@
                         <th>Des</th>
                         <th>Basic Val</th>
                         <th>Basic+BR</th>
+                        <th>Sal. Gen. days</th>
+                        <th>Wor. Days</th>
+                        <th>Wor. Days Befo.</th>
+                        <th>Wor. Days This</th>
+                        <th>Wor. Days Adit.</th>
                         <th>Mer Val</th>
                         <th>Merchan</th>
+                        <th>Mer Cou</th>
                         <th>Poya Val</th>
                         <th>Poya</th>
+                        <th>Poya Cou</th>
                         <th>Day Off</th>
                         <th>Day Val</th>
+                        <th>Day Cou</th>
                         <th>Basic Adjust</th>
                         <th>Total Salary</th>
                         <th>No Pay Basic</th>
+                        <th>No Pay Val</th>
+                        <th>No Pay Cou</th>
+                        <th>Late No Pay Cou</th>
                         <th>EPF/ETF Diductable Salary</th>
                         <th>Per Val</th>
                         <th>Per percent</th>
@@ -168,11 +179,35 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                   
                             </td>
+                            <td style="text-align: right;" ><h:outputText value="#{scc.basicValue/(scc.basicVal/26)}" class="#{scc.basicValue/(scc.basicVal/26) lt 25.9 ? 'redText':''}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
+                            <td style="text-align: right;color: #8060b0;" ><h:outputText value="#{scc.workingDays}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
+                            <td style="text-align: right;color: #8060b0;" ><h:outputText value="#{scc.workingDaysBefore}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
+                            <td style="text-align: right;color: #8060b0;" ><h:outputText value="#{scc.workingDaysThis}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
+                            <td style="text-align: right;" ><h:outputText value="#{scc.workingDaysAditional}" class="#{scc.workingDaysAditional gt 0 ? 'redText':''}"  >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
                             <td style="text-align: right;color: green;"><h:outputText value="#{(scc.basicVal/26)*2}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
                             <td style="text-align: right;;"><h:outputText value="#{scc.merchantileAllowanceValue}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;;"><h:outputText value="#{scc.merchantileCount}" class="#{scc.merchantileCount gt 0 ? 'blueText':''}"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -184,11 +219,19 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
+                            <td style="text-align: right;"><h:outputText value="#{scc.poyaCount}" class="#{scc.poyaCount gt 0 ? 'blueText':''}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
                             <td style="text-align: right;color: green;"><h:outputText value="#{(scc.basicVal/26)*2}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
                             <td style="text-align: right;;"><h:outputText value="#{scc.dayOffAllowance+scc.sleepingDayAllowance}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;;"><h:outputText value="#{scc.dayOffCount}" class="#{scc.dayOffCount gt 0 ? 'blueText':''}"  >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -201,6 +244,18 @@
                                 </h:outputText>
                             </td>
                             <td style="text-align: right;;"><h:outputText value="#{scc.noPayValueBasic}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;color: green;"><h:outputText value="#{(scc.basicVal/26)}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;;"><h:outputText value="#{scc.noPayCount-scc.lateNoPayCount}" class="#{(scc.noPayCount-scc.lateNoPayCount) gt 0 ? 'blueText':''}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                            <td style="text-align: right;;"><h:outputText value="#{scc.lateNoPayCount}" class="#{scc.lateNoPayCount gt 0 ? 'blueText':''}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -283,12 +338,13 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
-                        <td ><h:outputLabel value=""/></td>
+                        <td colspan="6" ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.mercAll}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
+                        <td ><h:outputLabel value=""/></td>
                         <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.poyaAll}" >
@@ -296,11 +352,13 @@
                             </h:outputText>
                         </td>
                         <td ><h:outputLabel value=""/></td>
+                        <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.dayOffAll}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
+                        <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.adjstBasic}" >
                                 <f:convertNumber pattern="#,##0.00" />
@@ -316,6 +374,9 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
+                        <td ><h:outputLabel value=""/></td>
+                        <td ><h:outputLabel value=""/></td>
+                        <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.epfDeduct}" >
                                 <f:convertNumber pattern="#,##0.00" />

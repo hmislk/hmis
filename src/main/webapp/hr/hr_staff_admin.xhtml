@@ -150,8 +150,13 @@
                                             </p:calendar>
 
                                             <p:outputLabel value="Date Resigned "/>
-                                            <p:calendar value="#{staffController.current.dateLeft}" pattern="dd MM yyyy" >
-                                            </p:calendar>
+                                            <h:panelGroup >
+                                                <p:calendar value="#{staffController.tempRetireDate}" pattern="dd MM yyyy" >
+                                                </p:calendar>
+                                                <p:outputLabel value="#{staffController.current.dateLeft}" >
+                                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                                </p:outputLabel>
+                                            </h:panelGroup>
 
                                             <p:outputLabel value="Resigned Without Notice"/>
                                             <p:selectBooleanCheckbox value="#{staffController.current.withOutNotice}" >
@@ -237,7 +242,6 @@
                                         </p:panel>
 
                                     </p:tab>
-
                                     <p:tab title="Administartion" >
 
                                         <p:panelGrid columns="2" id="gridAdmin" >
@@ -323,7 +327,24 @@
                                         </p:panelGrid>
 
                                     </p:tab>
-
+                                    <p:tab title="Aditional Details" >
+                                        <h:panelGrid id="tabDetails2" columns="2">
+                                            <p:outputLabel  value="Staff Id" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.id}"  />
+                                            <p:outputLabel  value="Creater" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.creater.webUserPerson.name}"  />
+                                            <p:outputLabel  value="Created At" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.createdAt}" >
+                                                <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            </p:outputLabel>
+                                            <p:outputLabel  value="Editer" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.person.editer.webUserPerson.name}"  />
+                                            <p:outputLabel  value="Created At" ></p:outputLabel>
+                                            <p:outputLabel value="#{staffController.current.person.editedAt}" >
+                                                <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            </p:outputLabel>
+                                        </h:panelGrid>
+                                    </p:tab>
                                 </p:tabView>
 
                             </h:panelGrid>

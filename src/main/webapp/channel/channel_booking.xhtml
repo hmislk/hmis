@@ -489,7 +489,7 @@
                     <h:panelGrid columns="3" style="min-width: 100%;">
 
 
-                        <p:commandButton   id="btnAdd" 
+                        <p:commandButton   id="btnAdd" disabled="#{webUserController.hasPrivilege('ChannelBookingRestric')}"
                                            value="Add" process=":#{p:component('tabNewPt')} 
                                            :#{p:component('tabSearchPt')} btnAdd 
                                            :#{p:component('pgNewBookingDetail')}" 

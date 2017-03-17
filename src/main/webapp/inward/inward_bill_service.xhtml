@@ -24,6 +24,7 @@
                     <p:defaultCommand target="btnSettle"/>
 
                     <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
+                    <p:commandButton value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
 
 
                     <h:panelGrid columns="2" >
@@ -36,7 +37,7 @@
                                                     value="#{billBhtController.patientEncounter}" 
                                                     completeMethod="#{admissionController.completePatient}"
                                                     var="apt2" itemLabel="#{amp2.bhtNo}"
-                                                    itemValue="#{apt2}" size="30"  style="width: 400px;" required="true" requiredMessage="Please select the patient">
+                                                    itemValue="#{apt2}" size="30"  style="width: 400px;" >
                                         <p:ajax event="itemSelect" process="acPt2" update="panSearch2"/>
                                         <p:column >
                                             <h:outputLabel value="#{apt2.bhtNo}"/> 

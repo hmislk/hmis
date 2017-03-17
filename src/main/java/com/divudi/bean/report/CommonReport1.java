@@ -386,12 +386,29 @@ public class CommonReport1 implements Serializable {
                 + " and b.referredBy is not null "
                 + " and bi.retired=false "
                 + " and (bi.refunded=false or bi.refunded is null) "
-                + " and b.createdAt between :fromDate and :toDate  "
-                + " and b.billType=:bt ";
+                + " and b.createdAt between :fromDate and :toDate  ";
+
+        if (radio.equals("0")) {
+            sql += " and (b.billType=:bt1 or b.billType=:bt2) ";
+            m.put("bt1", BillType.OpdBill);
+            m.put("bt2", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("1")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("2")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.OpdBill);
+        }
+
         if (department != null) {
             sql += " and i.department=:dept ";
             m.put("dept", department);
         }
+
         if (referringDoctor != null) {
             m.put("rd", referringDoctor);
             sql = sql + " and b.referredBy=:rd ";
@@ -400,7 +417,6 @@ public class CommonReport1 implements Serializable {
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        m.put("bt", BillType.OpdBill);
         //System.out.println("sql = " + sql);
         //System.out.println("temMap = " + temMap);
         referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -413,7 +429,7 @@ public class CommonReport1 implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "lab/summeries/monthly summeries/report reffering doctor(/faces/reportLab/report_lab_by_refering_doctor.xhtml)");
 
     }
-    
+
     List<Bill> bill;
 
     public List<Bill> getBill() {
@@ -423,25 +439,23 @@ public class CommonReport1 implements Serializable {
     public void setBill(List<Bill> bill) {
         this.bill = bill;
     }
-    
-    
+
     public void listBillItemsByReferringDoctorIncome() {
 
         Date startTime = new Date();
 
 //        referralBillItems = new ArrayList<>();
         Map m = new HashMap();
-        
+
         String sql;
 
-       sql = "SELECT b FROM Bill b "
+        sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.referredBy is not null "
                 + " and (b.refunded=false or b.refunded is null) "
                 + " and b.createdAt between :fromDate and :toDate  "
                 + " and b.billType=:bt ";
-       
-       
+
         if (department != null) {
             sql += " and b.department=:dept ";
             m.put("dept", department);
@@ -459,7 +473,6 @@ public class CommonReport1 implements Serializable {
         //System.out.println("temMap = " + temMap);
 //        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        
 
         biledBillsTotal = 0.0;
         for (Bill bilst : bill) {
@@ -471,6 +484,55 @@ public class CommonReport1 implements Serializable {
     }
 
     public void listBillItemsByReferringDoctorSummery() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals = new ArrayList<>();
+
+        sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.referredBy is not null "
+                + " and b.createdAt between :fromDate and :toDate ";
+        
+        if (radio.equals("0")) {
+            sql += " and (b.billType=:bt1 or b.billType=:bt2) ";
+            m.put("bt1", BillType.OpdBill);
+            m.put("bt2", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("1")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("2")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.OpdBill);
+        }
+        
+        sql += " group by b.referredBy "
+                + " order by b.referredBy.person.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+
+        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        biledBillsTotal = 0.0;
+        for (Object[] o : objects) {
+            Doctor d = (Doctor) o[0];
+            double tot = (double) o[1];
+            DocTotal row = new DocTotal();
+            row.setDoctor(d);
+            row.setTotal(tot);
+            docTotals.add(row);
+            biledBillsTotal += tot;
+        }
+        System.out.println("docTotals.size() = " + docTotals.size());
+
+    }
+
+    public void listBillItemsByReferringDoctorSummeryIncome() {
 
         Map m = new HashMap();
         String sql;
@@ -495,40 +557,6 @@ public class CommonReport1 implements Serializable {
             Doctor d = (Doctor) o[0];
             double tot = (double) o[1];
             DocTotal row = new DocTotal();
-            row.setDoctor(d);
-            row.setTotal(tot);
-            docTotals.add(row);
-            biledBillsTotal += tot;
-        }
-        System.out.println("docTotals.size() = " + docTotals.size());
-
-    }
-
-    public void listBillItemsByReferringDoctorSummeryIncome() {
-
-        Map m = new HashMap();
-        String sql;
-        docTotals=new ArrayList<>();
-
-        sql = "SELECT b.referredBy,sum(b.netTotal+b.vat) FROM Bill b "
-                + " WHERE b.retired=false "
-                + " and b.referredBy is not null "
-                + " and b.createdAt between :fromDate and :toDate  "
-                + " and b.billType=:bt "
-                + " group by b.referredBy "
-                + " order by b.referredBy.person.name ";
-
-        m.put("fromDate", getFromDate());
-        m.put("toDate", getToDate());
-        m.put("bt", BillType.OpdBill);
-
-        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("objects.size() = " + objects.size());
-        biledBillsTotal = 0.0;
-        for (Object[] o : objects) {
-            Doctor d= (Doctor) o[0];
-            double tot = (double) o[1];
-            DocTotal row=new DocTotal();
             row.setDoctor(d);
             row.setTotal(tot);
             docTotals.add(row);
@@ -1706,20 +1734,20 @@ public class CommonReport1 implements Serializable {
         total = 0.0;
         discount = 0.0;
         staffTotal = 0.0;
-        vat=0.0;
+        vat = 0.0;
         netTotal = 0.0;
         for (BillItem bi : billItems) {
             for (BillFee bf : bi.getBillFees()) {
                 if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    bi.setStaffFee(bi.getStaffFee()+bf.getFeeValue());
-                    staffTotal+=bf.getFeeValue();
+                    bi.setStaffFee(bi.getStaffFee() + bf.getFeeValue());
+                    staffTotal += bf.getFeeValue();
                 } else {
-                    bi.setHospitalFee(bi.getHospitalFee()+bf.getFeeValue());
-                    total+=bf.getFeeValue();
+                    bi.setHospitalFee(bi.getHospitalFee() + bf.getFeeValue());
+                    total += bf.getFeeValue();
                 }
-                vat+=bf.getFeeVat();
-                discount+=bf.getFeeDiscount();
-                netTotal+=bf.getFeeValue();
+                vat += bf.getFeeVat();
+                discount += bf.getFeeDiscount();
+                netTotal += bf.getFeeValue();
             }
         }
 //        getLabBillsOwnBilledTotals();
@@ -1771,32 +1799,30 @@ public class CommonReport1 implements Serializable {
 
         Map tm = new HashMap();
         String sql;
-        
-        sql= "select bi from BillItem bi join bi.bill b "
+
+        sql = "select bi from BillItem bi join bi.bill b "
                 + " where b.retired=false "
                 + " and b.billType in :billType "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.department=:dep ";
-        
-        if (category!=null) {
-            sql+=" and bi.item.category=:cat ";
+
+        if (category != null) {
+            sql += " and bi.item.category=:cat ";
             tm.put("cat", category);
         }
-        
-        if (item!=null) {
-            sql+=" and bi.item=:itm ";
+
+        if (item != null) {
+            sql += " and bi.item=:itm ";
             tm.put("itm", item);
         }
-        
-        if (incomeDepartment!=null) {
-            sql+=" and bi.bill.toDepartment=:indept ";
+
+        if (incomeDepartment != null) {
+            sql += " and bi.bill.toDepartment=:indept ";
             tm.put("indept", incomeDepartment);
         }
-        
-        sql+=" order by bi.item.category.name, bi.bill.toDepartment.name";
-                
 
-        
+        sql += " order by bi.item.category.name, bi.bill.toDepartment.name";
+
         tm.put("fromDate", fromDate);
         tm.put("toDate", toDate);
         tm.put("billType", billTypes);
