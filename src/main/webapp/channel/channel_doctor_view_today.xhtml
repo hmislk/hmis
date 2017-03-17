@@ -22,6 +22,8 @@
                         <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
                         </p:commandButton>
+                        <p:commandButton value="Process(Scan)" action="#{channelReportController.createTotalDoctorScan()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
+                        </p:commandButton>
                         <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />
                         </p:commandButton>
