@@ -45,24 +45,12 @@
                             <f:selectItem itemLabel="Green Sheet" itemValue="1" />
                             <f:selectItem itemLabel="Dialysis" itemValue="2" />
                         </p:selectOneRadio>
-                        <h:outputLabel value="Date" rendered="#{quickBookReportController.report ne '4' 
-                                                                and quickBookReportController.report ne '1' 
-                                                                and quickBookReportController.report ne '5' 
-                                                                and quickBookReportController.report ne '2'}"/>
-                        <h:outputLabel value="From Date" rendered="#{quickBookReportController.report eq '4' 
-                                                                     or quickBookReportController.report eq '1' 
-                                                                     or quickBookReportController.report eq '5' 
-                                                                     or quickBookReportController.report eq '2'}"/>
-                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MM yyyy" />
-                        <h:outputLabel value="To Date" rendered="#{quickBookReportController.report eq '4' 
-                                                                   or quickBookReportController.report eq '1' 
-                                                                   or quickBookReportController.report eq '5' 
-                                                                   or quickBookReportController.report eq '2'}"/>
-                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MM yyyy" 
-                                    rendered="#{quickBookReportController.report eq '4' 
-                                                or quickBookReportController.report eq '1' 
-                                                or quickBookReportController.report eq '5' 
-                                                or quickBookReportController.report eq '2'}"/>
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  
+                                    pattern="dd MM yyyy" />
+                        <h:outputLabel value="To Date" />
+                        <p:calendar id="toDate" value="#{quickBookReportController.toDate}" navigator="true"  
+                                    pattern="dd MM yyyy"/>
                         <h:outputLabel value="Dialysis" rendered="#{quickBookReportController.report eq '4'}" />
                         <p:selectBooleanCheckbox value="#{quickBookReportController.reportKeyWord.bool1}" rendered="#{quickBookReportController.report eq '4'}" >
                             <!--<f:ajax event="change" execute="@this" render="pan" listener="#{quickBookReportController.listnerBool1Change()}" />-->

@@ -611,16 +611,16 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
-            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
+            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
         }
 
         System.out.println("billsBilled.size() = " + billsBilled.size());
@@ -646,11 +646,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -664,14 +665,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -701,11 +702,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName() + " / " + b.getBilledBill().getDeptId());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
             }
@@ -719,14 +721,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -757,11 +759,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getToInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getToInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -775,14 +778,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -813,11 +816,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -831,14 +835,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()),b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
