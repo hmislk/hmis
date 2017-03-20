@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Institution Report (#{creditCompanyController.institutionType})" >
+
+                        <h:panelGrid columns="2">
+                            <h:outputText id="lblType" value=" Institution Type" ></h:outputText>
+                            <p:selectOneMenu value="#{creditCompanyController.institutionType}">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{institutionController.institutionTypes}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" value="Fill" action="#{creditCompanyController.fillInstitutions()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                    <pe:exporter type="xlsx" target="tbl" fileName="Detailed_#{creditCompanyController.institutionType}_List"  />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder summeryBorder" value="#{creditCompanyController.institutions}" var="i"  >
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Printing Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.chequePrintingName}" ></h:outputLabel>
+                                </p:column>
+                                <p:column sortBy="#{i.institutionCode}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.institutionCode}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Address"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.address}" ></h:outputLabel>
+                                </p:column>
+
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel 1"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.mobile}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel 2"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.phone}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fax"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fax}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Email"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.email}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Contact Person Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.contactPerson.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Contact Person Tel"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.contactPerson.mobile}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Contact Person Email"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.contactPerson.email}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Creater"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

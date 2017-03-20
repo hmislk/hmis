@@ -275,6 +275,32 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
+    
+    public double getRefundAmount(Bill b) {
+        String sql = "Select sum(b.netTotal+b.vat) "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and b.billedBill=:b ";
+
+        HashMap hm = new HashMap();
+        hm.put("b", b);
+
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+
+    }
+    
+    public Object[] getRefundAmounts(Bill b) {
+        String sql = "Select sum(b.netTotal),sum(b.vat) "
+                + " From Bill b "
+                + " where b.retired=false "
+                + " and b.billedBill=:b ";
+
+        HashMap hm = new HashMap();
+        hm.put("b", b);
+
+        return getBillItemFacade().findSingleAggregate(sql, hm);
+
+    }
 
     public List<Bill> getPaidBills(Bill b, BillType billType) {
         String sql = "Select b.bill From BillItem b "

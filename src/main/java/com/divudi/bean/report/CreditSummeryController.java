@@ -16,6 +16,7 @@ import com.divudi.data.dataStructure.DailyCredit;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.table.String1Value2;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -33,7 +34,6 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +72,8 @@ public class CreditSummeryController implements Serializable {
     /////////////
     @EJB
     private CommonFunctions commonFunctions;
+    @EJB
+    CreditBean creditBean;
 //    @Inject
 //    private SessionController sessionController;
     @EJB
@@ -99,13 +101,13 @@ public class CreditSummeryController implements Serializable {
      */
     public void makeNull() {
         Date startTime = new Date();
-        Date fromDate  = null;
+        Date fromDate = null;
         Date toDate = null;
 
         dailyCash = null;
         dailyCredit = null;
         //   categoryWithItem = null;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(/faces/reportInstitution/report_opd_daily_summery_credit_department_by_bill.xhtml)");
     }
 
@@ -274,7 +276,7 @@ public class CreditSummeryController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double getFeeWithOut(ItemWithFee i, FeeType feeType) {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp "
@@ -305,7 +307,7 @@ public class CreditSummeryController implements Serializable {
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double getFeeVatTotal() {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp "
@@ -364,7 +366,7 @@ public class CreditSummeryController implements Serializable {
 
         return tmp;
     }
-    
+
     public double getDepartmentTotalByBillWithVat() {
         double tmp = 0.0;
         for (DailyCredit d : getDailyCreditByBill()) {
@@ -389,7 +391,7 @@ public class CreditSummeryController implements Serializable {
         if (!getDailyCredit().isEmpty()) {
             dailyCashSummery.addAll(getDailyCredit());
         }
-        
+
         opdCreditVatTotal = getFeeVatTotal();
         createVatTables();
 
@@ -518,7 +520,7 @@ public class CreditSummeryController implements Serializable {
 
         //     return tmp;
     }
-    
+
     private double getVatTotal(Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -567,29 +569,53 @@ public class CreditSummeryController implements Serializable {
 
     public void createCreditDueTable() {
         Date startTime = new Date();
-        
+
         creditBills = new ArrayList<>();
         creditBills = billController.getCreditBills(institution, fromDate, toDate);
         total = 0.0;
+        List<Bill> bills=new ArrayList<>();
         for (Bill b : creditBills) {
             b.setVatCalulatedAmount(0.0);
+            double refAmount = 0.0;
+            Object[] objects = getCreditBean().getRefundAmounts(b);
+            if (objects != null) {
+                double vat = 0.0;
+                double net = 0.0;
+                if (objects[0] != null) {
+                    net = (double) objects[0];
+                }
+                if (objects[1] != null) {
+                    vat = (double) objects[1];
+                }
+                refAmount = net + vat;
+                System.err.println("refAmount = " + refAmount);
+                if ((b.getNetTotal() + b.getVat()) - (Math.abs(getCreditBean().getPaidAmount(b, BillType.CashRecieveBill)) -refAmount) == 0.0) {
+                    bills.add(b);
+                    continue;
+                }
+                b.setNetTotal(b.getNetTotal() - net);
+                b.setVat(b.getVat() - vat);
+            }
+
             for (BillItem bi : b.getBillItems()) {
-                if (bi.getVat()>0) {
-                    b.setVatCalulatedAmount(b.getVatCalulatedAmount()+bi.getNetValue());
+                if (bi.getVat() > 0) {
+                    b.setVatCalulatedAmount(b.getVatCalulatedAmount() + bi.getNetValue());
                 }
             }
             total += b.getNetTotal();
             totalVat += b.getVat();
             totalVatCalculatedValue += b.getVatCalulatedAmount();
         }
-        
+        creditBills.removeAll(bills);
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Institution reports/Credit company/Report by bill(with letter)(/faces/reportInstitution/report_opd_credit_bill_by_credit_company_with_letter.xhtml)");
 
     }
+
     private void createVatTables() {
         vatTableOpdCredit = new ArrayList<>();
         String1Value2 dd = new String1Value2();
-        
+
         dd = new String1Value2();
         dd.setString("Credit VAT Collection");
         dd.setValue1(opdCreditVatTotal);
@@ -773,6 +799,14 @@ public class CreditSummeryController implements Serializable {
 
     public void setVatTableOpdCredit(List<String1Value2> vatTableOpdCredit) {
         this.vatTableOpdCredit = vatTableOpdCredit;
+    }
+
+    public CreditBean getCreditBean() {
+        return creditBean;
+    }
+
+    public void setCreditBean(CreditBean creditBean) {
+        this.creditBean = creditBean;
     }
 
 }

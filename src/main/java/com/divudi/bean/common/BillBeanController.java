@@ -1112,6 +1112,32 @@ public class BillBeanController implements Serializable {
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
     
+    public List<Bill> fetchBills(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
+        String sql;
+        HashMap temMap = new HashMap();
+
+        sql = "SELECT distinct(b.bill) FROM BillItem b"
+                + " WHERE b.bill.institution=:ins"
+                + " and b.bill.billType=:btp"
+                + " and b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (isOpd) {
+            sql += " and b.referenceBill.billType=:refTp";
+            temMap.put("refTp", BillType.OpdBill);
+        } else {
+            sql += " and b.patientEncounter is not null ";
+        }
+
+
+        temMap.put("fromDate", fromDate);
+        temMap.put("toDate", toDate);
+        temMap.put("btp", billType);
+        temMap.put("ins", institution);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+    
     public List<BillItem> fetchBillItemsPharmacy(BillType billType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         HashMap temMap = new HashMap();

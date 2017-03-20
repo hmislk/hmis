@@ -50,6 +50,8 @@ public class ServiceSessionFunctions {
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
+        System.out.println("i.getSessionNumberType() = " + i.getSessionNumberType());
+        System.out.println("d = " + d);
         switch (i.getSessionNumberType()) {
             case ByCategory:
                 //   //System.out.println("by cat");
@@ -244,7 +246,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
-         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
+        countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
         return countLong;
     }
 

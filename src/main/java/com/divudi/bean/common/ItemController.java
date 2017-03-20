@@ -73,12 +73,15 @@ public class ItemController implements Serializable {
     ItemForItemController itemForItemController;
     @Inject
     ItemFeeController itemFeeController;
+    @Inject
+    ServiceController serviceController;
 
     /**
      * Properties
      */
     private Item current;
     private List<Item> items = null;
+    private List<Item> itemlist;
     List<Item> allItems;
     List<ItemFee> allItemFees;
     List<Item> selectedList;
@@ -583,7 +586,7 @@ public class ItemController implements Serializable {
         return suggestions;
 
     }
-    
+
     public List<Item> completeInvestigation(String query) {
         List<Item> suggestions;
         String sql;
@@ -592,7 +595,7 @@ public class ItemController implements Serializable {
         sql = "select c from Item c where c.retired=false and type(c)=:cls"
                 + " and upper(c.name) like :q order by c.name";
 
-        hm.put("cls",Investigation.class);
+        hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
         suggestions = getFacade().findBySQL(sql, hm, 20);
 
@@ -811,7 +814,7 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
-        
+
 //        System.out.println(sql);
 //        System.out.println("m = " + m);
         mySuggestions = getFacade().findBySQL(sql, m, 20);
@@ -948,6 +951,46 @@ public class ItemController implements Serializable {
 
     }
 
+    public void createOpdSeviceInvestgationList() {
+        itemlist = getItems();
+        System.out.println("itemlist.size() = " + itemlist.size());
+        for (Item i : itemlist) {
+            List<ItemFee> tmp = serviceController.getFees(i);
+            System.out.println("tmp.size() = " + tmp.size());
+            for (ItemFee itf : tmp) {
+                i.setItemFee(itf);
+                if (itf.getFeeType() == FeeType.OwnInstitution) {
+                    i.setHospitalFee(i.getHospitalFee() + itf.getFee());
+                    i.setHospitalFfee(i.getHospitalFfee() + itf.getFfee());
+                } else if (itf.getFeeType() == FeeType.Staff) {
+                    i.setProfessionalFee(i.getProfessionalFee() + itf.getFee());
+                    i.setProfessionalFfee(i.getProfessionalFfee() + itf.getFfee());
+                }
+            }
+        }
+        System.out.println("itemlist.size() = " + itemlist.size());
+    }
+    
+    public void createInwardList() {
+        itemlist = getInwardItems();
+        System.out.println("itemlist.size() = " + itemlist.size());
+        for (Item i : itemlist) {
+            List<ItemFee> tmp = serviceController.getFees(i);
+            System.out.println("tmp.size() = " + tmp.size());
+            for (ItemFee itf : tmp) {
+                i.setItemFee(itf);
+                if (itf.getFeeType() == FeeType.OwnInstitution) {
+                    i.setHospitalFee(i.getHospitalFee() + itf.getFee());
+                    i.setHospitalFfee(i.getHospitalFfee() + itf.getFfee());
+                } else if (itf.getFeeType() == FeeType.Staff) {
+                    i.setProfessionalFee(i.getProfessionalFee() + itf.getFee());
+                    i.setProfessionalFfee(i.getProfessionalFfee() + itf.getFfee());
+                }
+            }
+        }
+        System.out.println("itemlist.size() = " + itemlist.size());
+    }
+
     /**
      *
      */
@@ -1030,6 +1073,15 @@ public class ItemController implements Serializable {
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
+        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        return items;
+    }
+    
+    public List<Item> getInwardItems() {
+        String temSql;
+        HashMap h = new HashMap();
+        temSql = "SELECT i FROM Item i where type(i)=:t1 and i.retired=false order by i.department.name";
+        h.put("t1", InwardService.class);
         items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
         return items;
     }
@@ -1185,6 +1237,14 @@ public class ItemController implements Serializable {
 
     public void setItemFeeManager(ItemFeeManager itemFeeManager) {
         this.itemFeeManager = itemFeeManager;
+    }
+
+    public List<Item> getItemlist() {
+        return itemlist;
+    }
+
+    public void setItemlist(List<Item> itemlist) {
+        this.itemlist = itemlist;
     }
 
     @FacesConverter(forClass = Item.class)

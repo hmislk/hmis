@@ -31,6 +31,11 @@
                         <h:outputText id="item" value="#{bItm.item.name}" >                                   
                         </h:outputText>
                     </p:column>  
+                    
+                    <p:column headerText="Descreption" style="width: 50px!important;"  >                     
+                        <h:outputText id="dis" value="#{bItm.descreption}" >                                   
+                        </h:outputText>
+                    </p:column>  
 
                     <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">  
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
@@ -64,10 +69,10 @@
 
                 <h:panelGroup   id="gpBillPreview">
 
-                    <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.institutionPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                    <h:panelGroup id="gpBillPreviewDouble"> 
 
                         <div >
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
+                            <h:panelGroup > 
                                 <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
                         </div>

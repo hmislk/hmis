@@ -247,6 +247,8 @@ public class EnumController implements Serializable {
             InwardChargeType.ExerciseECG,
             InwardChargeType.TheaterConsumbale,
             InwardChargeType.VAT,
+            InwardChargeType.EyeLence,
+            InwardChargeType.AccessoryCharges,
             InwardChargeType.OtherCharges};
 
         return b;
@@ -426,6 +428,11 @@ public class EnumController implements Serializable {
     public PaymentMethod[] getPaymentMethodsForChannelAgentSettle() {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
+    }
+    
+    public BillType[] getChannelType(){
+        BillType [] bt={BillType.Channel,BillType.XrayScan};
+        return bt;
     }
 
 //    public boolean checkPaymentScheme(PaymentScheme scheme, String paymentMathod) {

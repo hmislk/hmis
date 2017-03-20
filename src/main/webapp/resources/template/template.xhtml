@@ -7,6 +7,9 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:poue="http://primefaces.org/ui/extensions">
     <h:head>
+        <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+
+        <!--<script src="resources/js/snowstorm.js" type="text/javascript"></script>-->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <ui:insert name="title"   >
             <title>
@@ -520,11 +523,11 @@
                                         <p:menuitem  ajax="false"  value="Pay Agent"  action="/channel/channel_payment_agent_bill" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" ></p:menuitem>
 
                                     </p:submenu>  
-                                    <p:submenu label="Cashier Transaction"  >
-                                        <p:menuitem  ajax="false"  value="Income"  action="/channel/channel_income_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Income Bill Search"  action="/channel/channel_income_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Expenses"  action="/channel/channel_expenses_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" ></p:menuitem>
+                                    <p:submenu label="Cashier Transaction"  rendered="#{webUserController.hasPrivilege('ChannelCashierTransaction')}">
+                                        <p:menuitem  ajax="false"  value="Income"  action="/channel/channel_income_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionIncome')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Income Bill Search"  action="/channel/channel_income_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionIncomeSearch')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses"  action="/channel/channel_expenses_bill" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionExpencess')}"></p:menuitem>
+                                        <p:menuitem  ajax="false"  value="Expenses Bill Search"  action="/channel/channel_expenses_bill_search_own" actionListener="#{incomeExpensessBillController.prepareNewBill()}" rendered="#{webUserController.hasPrivilege('ChannelCashierTransactionExpencessSearch')}"></p:menuitem>
                                     </p:submenu>
                                     <p:submenu label="Credit/Debit Note" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}" >
                                         <p:menuitem  ajax="false"  value="Credit Note"  action="/channel/channel_credit_note_bill" rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
@@ -673,6 +676,8 @@
                                                  actionListener="#{staffSalaryController.clear}"/>
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
                                                  actionListener="#{staffSalaryController.clear}"/>
+                                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_special" value="Staff Salary Special"  rendered="#{webUserController.hasPrivilege('HrGenerateSalarySpecial')}" 
+                                                 actionListener="#{staffSalaryController.clear}"/>
 
                                     <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
                                                  actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
@@ -754,6 +759,7 @@
 
                                     </p:submenu>
                                     <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/admin/bill_contact_numbers.xhtml" value="Send Bulk SMS" rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" ></p:menuitem>
 
                                 </p:submenu>
 
@@ -839,6 +845,7 @@
                 <p:panel rendered ="#{sessionController.logged and sessionController.department eq null}" 
                          styleClass="verticalAndHorizontalCentering">
                     <h:form id="formDept" >
+                        
                         <p:panel header="Select Department" >
                             <h:panelGrid columns="3" >
                                 <h:outputText value="Department" ></h:outputText>

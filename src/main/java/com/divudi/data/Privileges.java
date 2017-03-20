@@ -11,7 +11,6 @@ package com.divudi.data;
 public enum Privileges {
 
     //Main Menu Privileges
-
     TheaterIssueBHT,
     Opd,
     Inward,
@@ -74,10 +73,12 @@ public enum Privileges {
     InwardCheck,
     InwardUnCheck,
     InwardFinalBillCancel,
+    InwardOutSideMarkAsUnPaid,
     ShowInwardFee,
     InwardPharmacyMenu,
     InwardPharmacyIssueRequest,
     InwardPharmacyIssueRequestSearch,
+    InwardBillSettleWithoutCheck,
     LabBilling,
     LabBillCancelSpecial,
     LabBillRefundSpecial,
@@ -315,6 +316,23 @@ public enum Privileges {
     ChannelDebitNote,
     ChannelDebitNoteSearch,
     ChannelCashCancelRestriction,
+    ChannelBookingChange,
+    ChannelBookingBokking,
+    ChannelBookingReprint,
+    ChannelBookingCancel,
+    ChannelBookingRefund,
+    ChannelBookingSettle,
+    ChannelBookingSearch,
+    ChannelBookingViews,
+    ChannelBookingDocPay,
+    ChannelBookingRestric,
+    ChannelCashierTransaction,
+    ChannelCashierTransactionIncome,
+    ChannelCashierTransactionIncomeSearch,
+    ChannelCashierTransactionExpencess,
+    ChannelCashierTransactionExpencessSearch,
+    ChannelActiveVat,
+    
     MemberShip,
     MembershipSchemes,
     MemberShipInwardMemberShip,
@@ -333,6 +351,7 @@ public enum Privileges {
     EmployeeHistoryReport,
     hrDeleteLateLeave,
     HrGenerateSalary,
+    HrGenerateSalarySpecial,
     HrAdvanceSalary,
     HrPrintSalary,
     HrWorkingTime,
@@ -343,14 +362,14 @@ public enum Privileges {
     HrForms,
     HrLeaveForms,
     HrAdditionalForms,
-    HrAdmindfsd,
+    HrEditRetiedDate,
     
     Developers,
     //Cashier
     AllCashierSummery,
     //Administration
     SearchAll,
-    ChannelBookingChange,
     ChangePreferece,
+    SendBulkSMS,
 
 }

@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:dataTable id="#{cc.id}"
+                     value="#{bookKeepingSummery.creditCompanyCollectionsInward}"
+                     var="c"
+                     rendered="#{bookKeepingSummery.creditCompanyCollectionsInward.size()>0}">
+            <f:facet name="header">
+                <h:outputLabel value="Credit Company Collection  - Inward "/>    
+            </f:facet>                               
+            <p:column style="width: 200px;" headerText="BHT">                  
+                <h:outputLabel value="#{c.patientEncounter.bhtNo}" />
+            </p:column>                                    
+            <p:column headerText="Patient Name" style="width: 40%;">                
+                <h:outputLabel value="#{c.patientEncounter.patient.person.name}" />
+            </p:column>  
+            <p:column/>
+            <p:column/>
+            <p:column headerText="Total" style="width: 200px;text-align: right;">
+                <h:outputLabel value="#{c.netValue}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+            </p:column> 
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="5" footerText="Credit Company Collection Total"/>
+                    <p:column style="text-align: right;" footerText="#{bookKeepingSummery.creditCompanyTotalInward}" >
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{bookKeepingSummery.creditCompanyTotalInward}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                </p:row>
+            </p:columnGroup>
+
+        </p:dataTable>
+    </cc:implementation>
+</html>

@@ -88,8 +88,6 @@ public class ChannelReportController implements Serializable {
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     private List<AvalabelChannelDoctorRow> acdrs;// created 2016.8.10
-   
-    
 
     double netTotal;
     double netTotalDoc;
@@ -131,6 +129,7 @@ public class ChannelReportController implements Serializable {
     boolean showPatient = false;
     PaymentMethod paymentMethod;
     ChannelTotal channelTotal;
+
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -4458,8 +4457,77 @@ public class ChannelReportController implements Serializable {
         sql = "Select bs.bill From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
-                + " and bs.sessionDate= :ssDate "
-                + " order by bs.bill.staff.person.name ";
+                + " and bs.sessionDate= :ssDate ";
+        
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+            sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            m.put("bt", BillType.Channel);
+        }
+
+        sql += " order by bs.bill.staff.person.name ";
+
+        m.put("ssDate", Calendar.getInstance().getTime());
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("bills = " + bills.size());
+        Set<Staff> consultant = new HashSet();
+        for (Bill b : bills) {
+            consultant.add(b.getStaff());
+        }
+
+        for (Staff c : consultant) {
+            ChannelDoctor cd = new ChannelDoctor();
+            cd.setConsultant(c);
+            channelDoctors.add(cd);
+        }
+
+        for (ChannelDoctor cd : channelDoctors) {
+            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+            for (Bill b : bills) {
+                System.out.println("b = " + b.getStaff().getPerson().getName());
+                System.out.println("b = " + b.getBillClass());
+                if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
+                    if (b.getBillType() == BillType.ChannelCash
+                            || b.getBillType() == BillType.ChannelPaid
+                            || (b.getBillType() == BillType.ChannelAgent
+                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            || (b.getBillType() == BillType.ChannelAgent
+                            && agncy)) {
+                        if (b instanceof BilledBill) {
+                            cd.setBillCount(cd.getBillCount() + 1);
+                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof CancelledBill) {
+                            cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
+                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof RefundBill) {
+                            cd.setRefundedCount(cd.getRefundedCount() + 1);
+                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        calTotal();
+
+    }
+    
+    public void createTotalDoctorScan() {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select bs.bill From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate= :ssDate ";
+        
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+            sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            m.put("bt", BillType.XrayScan);
+        }
+
+        sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
@@ -5395,44 +5463,113 @@ public class ChannelReportController implements Serializable {
     public void createCardSummery() {
         String sql = "";
         Map m = new HashMap();
-        grantNetTotal=0.0;
-        
-        
-        sql+="select b from Bill b where b.retired=false "
+        grantNetTotal = 0.0;
+
+        sql += "select b from Bill b where b.retired=false "
                 + " and b.paymentMethod=:pm ";
         m.put("pm", paymentMethod.Card);
-               
-        if (department!=null) {
-            sql+=" and b.department=:d ";
+
+        if (department != null) {
+            sql += " and b.department=:d ";
             m.put("d", department);
         }
-        
-        if(webUser !=null){
-        sql+=" and b.creater=:u ";
-        m.put("u", webUser);
+        if (reportKeyWord.getBank() != null) {
+            sql += " and b.bank=:b ";
+            m.put("b", reportKeyWord.getBank());
         }
-        
-        sql+=" and (b.billType=:cc or b.billType=:cp) ";
+
+        if (webUser != null) {
+            sql += " and b.creater=:u ";
+            m.put("u", webUser);
+        }
+
+        sql += " and (b.billType=:cc or b.billType=:cp) ";
         m.put("cc", BillType.ChannelCash);
         m.put("cp", BillType.ChannelPaid);
-        
-        sql+=" and b.createdAt between :fd and :td ";
-        
+
+        sql += " and b.createdAt between :fd and :td ";
+
         m.put("fd", fromDate);
         m.put("td", toDate);
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        channelBills=billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        channelBills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("channelBills.size() = " + channelBills.size());
-        
-        for (Bill b : channelBills) {
-            grantNetTotal+=b.getNetTotal()+b.getVat();
-            System.out.println("grantNetTotal = " + grantNetTotal);  
-        }
-        
-        
-        
 
+        for (Bill b : channelBills) {
+            grantNetTotal += b.getNetTotal() + b.getVat();
+            System.out.println("grantNetTotal = " + grantNetTotal);
+        }
+
+    }
+
+    public void createCardSummeryBankVise() {
+        depBills = new ArrayList<>();
+        String sql = "";
+        Map m = new HashMap();
+        sql = "select b.bank,sum(b.netTotal+b.vat) from Bill b where "
+                + " b.retired=false "
+                + " and b.paymentMethod=:pm"
+                + " and (b.billType=:cc or b.billType=:cp) "
+                + " and b.createdAt between :fd and :td "
+                + " group by b.bank "
+                + " order by b.bank.name ";
+        m.put("cc", BillType.ChannelCash);
+        m.put("cp", BillType.ChannelPaid);
+        m.put("pm", paymentMethod.Card);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Object[]> objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        grantNetTotal = 0.0;
+        for (Object[] o : objects) {
+            DepartmentBill db = new DepartmentBill();
+            Institution i = (Institution) o[0];
+            db.setIns(i);
+            System.out.println("b.getName() = " + i.getName());
+            if (getReportKeyWord().getString().equals("1")) {
+                List<Bill> bills = fetchCardTransactionBills(i);
+                System.out.println("bills.size() = " + bills.size());
+                db.setBills(bills);
+            }
+            double d = (double) o[1];
+            grantNetTotal += d;
+            db.setDepartmentBillTotal(d);
+            System.out.println("d = " + d);
+            depBills.add(db);
+        }
+
+//        objects=getBillFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+//        System.out.println("objects.size() = " + objects.size());
+    }
+
+    public List<Bill> fetchCardTransactionBills(Institution i) {
+        String sql = "";
+        Map m = new HashMap();
+
+        sql += "select b from Bill b where "
+                + " b.retired=false "
+                + " and b.paymentMethod=:pm "
+                + " and b.bank=:bank "
+                + " and (b.billType=:cc or b.billType=:cp) "
+                + " and b.createdAt between :fd and :td "
+                + " group by b.bank "
+                + " order by b.bank.name ";
+
+        m.put("cc", BillType.ChannelCash);
+        m.put("cp", BillType.ChannelPaid);
+        m.put("pm", paymentMethod.Card);
+        m.put("bank", i);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("bills.size() = " + bills.size());
+
+        return bills;
     }
 
     public void checkCumilativeTotal(List<AgentHistory> agentHistorys) {
@@ -6237,8 +6374,17 @@ public class ChannelReportController implements Serializable {
     public class DepartmentBill {
 
         Department billDepartment;
+        Institution ins;
         List<Bill> bills;
         double departmentBillTotal;
+
+        public Institution getIns() {
+            return ins;
+        }
+
+        public void setIns(Institution ins) {
+            this.ins = ins;
+        }
 
         public Department getBillDepartment() {
             return billDepartment;

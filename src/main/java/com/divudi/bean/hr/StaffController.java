@@ -27,6 +27,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
+import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
 import com.divudi.entity.hr.StaffEmployment;
@@ -39,6 +40,7 @@ import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.SalaryCycleFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -95,6 +97,8 @@ public class StaffController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    SalaryCycleFacade salaryCycleFacade;
     List<Staff> selectedItems;
     List<Staff> selectedList;
     private List<Staff> filteredStaff;
@@ -111,6 +115,7 @@ public class StaffController implements Serializable {
     Category formCategory;
     private List<CommonReportItem> formItems = null;
     List<Staff> itemsToRemove;
+    Date tempRetireDate=null;
 
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
@@ -615,6 +620,30 @@ public class StaffController implements Serializable {
         return suggestions;
     }
 
+    public List<Staff> completeStaffCodeChannelWithOutResignOrRetierd(String query) {
+        List<Staff> suggestions;
+        String sql;
+        Map m = new HashMap();
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select p from Staff p "
+                    + " where p.retired=false "
+                    + " and (p.dateLeft is null or p.dateLeft>:cd)"
+                    + " and LENGTH(p.code) > 0 "
+                    + " and LENGTH(p.person.name) > 0 "
+                    + " and (upper(p.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " or upper(p.code)='" + query.toUpperCase() + "' )"
+                    + " order by p.person.name";
+
+            m.put("cd", new Date());
+
+            ////System.out.println(sql);
+            suggestions = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 20);
+        }
+        return suggestions;
+    }
+
     public void makeNull() {
         items = null;
         selectedStaff = null;
@@ -954,6 +983,7 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
+        tempRetireDate=null;
     }
 
     public void delete() {
@@ -988,6 +1018,7 @@ public class StaffController implements Serializable {
     private void recreateModel() {
         items = null;
         formItems = null;
+        tempRetireDate=null;
     }
 
     public void saveSelected() {
@@ -1024,6 +1055,18 @@ public class StaffController implements Serializable {
             return;
         }
 
+        if (tempRetireDate != null && checkDateBetwenSalaryCycle(tempRetireDate)) {
+            UtilityController.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
+            tempRetireDate=null;
+            return;
+        }
+        
+        if(tempRetireDate != null){
+            System.err.println("asdfasfas");
+            current.setDateLeft(tempRetireDate);
+        }
+        
+
         //System.out.println("current.getId() = " + current.getId());
         //System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
 //        if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
@@ -1049,7 +1092,16 @@ public class StaffController implements Serializable {
             }
             if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
                 System.out.println("dor.get(Calendar.YEAR) = " + dor.get(Calendar.YEAR));
-                getCurrent().setDateRetired(dor.getTime());
+                System.out.println("dor.getTime = " + dor.getTime());
+                System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
+                if (getCurrent().getDateRetired() != null) {
+                    if (dor.getTime().after(getCurrent().getDateRetired())) {
+                        getCurrent().setDateRetired(dor.getTime());
+                    }
+                } else {
+                    getCurrent().setDateRetired(dor.getTime());
+                }
+
                 System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
             }
         }
@@ -1058,6 +1110,8 @@ public class StaffController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            current.getPerson().setEditer(getSessionController().getLoggedUser());
+            current.getPerson().setEditedAt(new Date());
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Staff Details Updated");
@@ -1168,8 +1222,8 @@ public class StaffController implements Serializable {
         }
 
     }
-    
-    public void listenerWithNotice(){
+
+    public void listenerWithNotice() {
         if (getCurrent().isWithOutNotice()) {
             getCurrent().setDateWithOutNotice(null);
         }
@@ -1214,6 +1268,7 @@ public class StaffController implements Serializable {
 
     public void changeStaff() {
         formItems = null;
+        tempRetireDate=null;
         listFormItems();
     }
 
@@ -1337,6 +1392,36 @@ public class StaffController implements Serializable {
 
     public void setSelectedList(List<Staff> selectedList) {
         this.selectedList = selectedList;
+    }
+
+    public Date getTempRetireDate() {
+        return tempRetireDate;
+    }
+
+    public void setTempRetireDate(Date tempRetireDate) {
+        this.tempRetireDate = tempRetireDate;
+    }
+
+    private boolean checkDateBetwenSalaryCycle(Date tempReDate) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from SalaryCycle c "
+                + " where c.retired=false "
+                + " and c.salaryFromDate<=:d "
+                + " and c.salaryToDate>=:d ";
+
+        m.put("d", tempReDate);
+
+        List<SalaryCycle> cycles = salaryCycleFacade.findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("cycles.size() = " + cycles.size());
+
+        if (cycles.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     /**

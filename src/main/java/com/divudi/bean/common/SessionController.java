@@ -8,6 +8,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
 import com.divudi.ejb.CashTransactionBean;
@@ -80,7 +81,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     SecurityController securityController;
     @Inject
     ApplicationController applicationController;
-
+    @Inject
+    SearchController searchController;
     /**
      * Properties
      */
@@ -695,12 +697,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                         selectDepartment();
                         UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
                     } else {
-                        
-                        
-                        UtilityController.addSuccessMessage("Logged successfully!!!." +"\n Please select a department.");
 
-                        UtilityController.addSuccessMessage(setGreetingMsg() +" "+ loggedUser.getWebUserPerson().getName());
-                        
+                        UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
+
+                        UtilityController.addSuccessMessage(setGreetingMsg() + " " + loggedUser.getWebUserPerson().getName());
 
                     }
                     if (getApplicationController().isLogged(u) != null) {
@@ -738,6 +738,16 @@ public class SessionController implements Serializable, HttpSessionListener {
         m = new HashMap();
         m.put("dep", department);
         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
+
+        System.out.println("getDepartment().getName() = " + getDepartment().getName());
+        System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
+
+        if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
+            long i=searchController.createInwardBHTForIssueBillCount();
+            if (i > 0) {
+                UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
+            }
+        }
 
         if (insPre == null) {
             sql = "select p from UserPreference p where p.institution =:ins order by p.id ";

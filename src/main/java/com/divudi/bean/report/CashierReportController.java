@@ -1516,7 +1516,7 @@ public class CashierReportController implements Serializable {
                 + " and b.billType in :btp "
                 + " and b.createdAt between :fromDate and :toDate "
                 + " group by us "
-                + " having sum(b.netTotal)!=0 ";
+                + " having sum(b.netTotal+b.vat)!=0 ";
         temMap.put("pm", PaymentMethod.Agent);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());

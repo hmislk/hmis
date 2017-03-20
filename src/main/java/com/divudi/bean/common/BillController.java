@@ -420,7 +420,8 @@ public class BillController implements Serializable {
 
     public void feeChangeListener(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
-            return;
+            bf.setFeeGrossValue(0.0);
+//            return;
         }
 
         lstBillItems = null;
@@ -488,7 +489,7 @@ public class BillController implements Serializable {
                     + " and b.billType in :btps "
                     + " and b.paymentMethod= :pm "
                     + " and b.institution=:ins "
-//                    + " and b.department=:dep "
+                    //                    + " and b.department=:dep "
                     + " and b.retired=false "
                     + " and b.refunded=false "
                     + " and b.cancelled=false "
@@ -657,7 +658,7 @@ public class BillController implements Serializable {
 
         return bill;
     }
-    
+
     public List<Bill> getCreditBillsPharmacy(Institution institution) {
         String sql;
         HashMap hash = new HashMap();
@@ -672,7 +673,7 @@ public class BillController implements Serializable {
                 + " and b.paymentMethod=:pm  "
                 + " and b.toInstitution=:company "
                 + " and b.institution=:ins "
-//                + " and b.department=:dep "
+                //                + " and b.department=:dep "
                 + " order by b.id ";
         hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
         hash.put("pm", PaymentMethod.Credit);
@@ -1515,6 +1516,14 @@ public class BillController implements Serializable {
         }
     }
 
+    public void fillBillSessionsLstner() {
+        if (lastBillItem != null && lastBillItem.getItem() != null) {
+            billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
+        } else if (billSessions == null || !billSessions.isEmpty()) {
+            billSessions = new ArrayList<>();
+        }
+    }
+
     public ServiceSessionFunctions getServiceSessionBean() {
         return serviceSessionBean;
     }
@@ -1565,35 +1574,43 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
-
-        getCurrentBillItem().setSessionDate(sessionDate);
-
-//        New Session
-        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-        System.out.println("to get current bill items");
-        lastBillItem = getCurrentBillItem();
-        BillEntry addingEntry = new BillEntry();
-        addingEntry.setBillItem(getCurrentBillItem());
-        addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(getCurrentBillItem()));
-        addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(getCurrentBillItem()));
-        getLstBillEntries().add(addingEntry);
-        getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
-        getCurrentBillItem().setQty(1.0);
-        getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
-
-        if (getCurrentBillItem().getItem().isVatable()) {
-            getCurrentBillItem().setVat(getCurrentBillItem().getNetValue() * getCurrentBillItem().getItem().getVatPercentage() / 100);
+        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
+        if (getCurrentBillItem().getQty() == null) {
+            getCurrentBillItem().setQty(1.0);
         }
+        double qty = getCurrentBillItem().getQty();
+        System.out.println("qty = " + qty);
+        for (int i = 0; i < qty; i++) {
+            BillItem bi=new BillItem();
+            bi.copy(getCurrentBillItem());
+            bi.setSessionDate(sessionDate);
+//        New Session
+            //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
+            System.out.println("to get current bill items");
+            lastBillItem = bi;
+            BillEntry addingEntry = new BillEntry();
+            addingEntry.setBillItem(bi);
+            addingEntry.setLstBillComponents(getBillBean().billComponentsFromBillItem(bi));
+            addingEntry.setLstBillFees(getBillBean().billFeefromBillItem(bi));
+            addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
+            getLstBillEntries().add(addingEntry);
+            bi.setRate(getBillBean().billItemRate(addingEntry));
+            bi.setQty(1.0);
+            bi.setNetValue(bi.getRate() * bi.getQty()); // Price == Rate as Qty is 1 here
 
-        getCurrentBillItem().setVatPlusNetValue(getCurrentBillItem().getNetValue() + getCurrentBillItem().getVat());
+            if (bi.getItem().isVatable()) {
+                bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
+            }
 
-        System.out.println("to cal totals");
-        calTotals();
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
 
-        if (getCurrentBillItem().getNetValue() == 0.0) {
-            UtilityController.addErrorMessage("Please enter the rate");
-            return;
+            System.out.println("to cal totals");
+            calTotals();
+
+            if (bi.getNetValue() == 0.0) {
+                UtilityController.addErrorMessage("Please enter the rate");
+                return;
+            }
         }
         clearBillItemValues();
         //UtilityController.addSuccessMessage("Item Added");
@@ -1875,6 +1892,7 @@ public class BillController implements Serializable {
         //TODO: Need to add Logic
         ////System.out.println(getIndex());
         if (getIndex() != null) {
+            System.out.println("getIndex() = " + getIndex());
             //  boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
             ////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
@@ -2256,6 +2274,7 @@ public class BillController implements Serializable {
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
+            currentBillItem.setQty(1.0);
         }
 
         return currentBillItem;
@@ -2263,6 +2282,11 @@ public class BillController implements Serializable {
     BillItem lastBillItem;
 
     public BillItem getLastBillItem() {
+        if (lastBillItem == null) {
+            if (getCurrentBillItem() != null) {
+                lastBillItem = getCurrentBillItem();
+            }
+        }
         return lastBillItem;
     }
 

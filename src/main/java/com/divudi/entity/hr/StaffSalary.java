@@ -181,6 +181,14 @@ public class StaffSalary implements Serializable {
     double perVal;
     @Transient
     double perPercentage;
+    @Transient
+    double WorkingDays;
+    @Transient
+    double WorkingDaysBefore;
+    @Transient
+    double WorkingDaysThis;
+    @Transient
+    double WorkingDaysAditional;
     String comments;
 
     public String getChequeNumberSalary() {
@@ -1233,6 +1241,38 @@ public class StaffSalary implements Serializable {
 
     public void setPerPercentage(double perPercentage) {
         this.perPercentage = perPercentage;
+    }
+
+    public double getWorkingDays() {
+        return WorkingDays;
+    }
+
+    public void setWorkingDays(double WorkingDays) {
+        this.WorkingDays = WorkingDays;
+    }
+
+    public double getWorkingDaysBefore() {
+        return WorkingDaysBefore;
+    }
+
+    public void setWorkingDaysBefore(double WorkingDaysBefore) {
+        this.WorkingDaysBefore = WorkingDaysBefore;
+    }
+
+    public double getWorkingDaysThis() {
+        return WorkingDaysThis;
+    }
+
+    public void setWorkingDaysThis(double WorkingDaysThis) {
+        this.WorkingDaysThis = WorkingDaysThis;
+    }
+
+    public double getWorkingDaysAditional() {
+        return WorkingDaysAditional;
+    }
+
+    public void setWorkingDaysAditional(double WorkingDaysAditional) {
+        this.WorkingDaysAditional = WorkingDaysAditional;
     }
 
 }

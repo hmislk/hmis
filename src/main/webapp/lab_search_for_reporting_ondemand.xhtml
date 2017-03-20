@@ -36,24 +36,30 @@
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-
                                     <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                                     value="#{searchController.patientEncounter}"
-                                                    completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                                    completeMethod="#{admissionController.completePatientAll}" 
                                                     var="myItem" itemValue="#{myItem}" 
                                                     itemLabel="#{myItem.bhtNo}" 
-                                                    size="30"  >                                
+                                                    size="30"  >
                                         <p:column>
-                                            #{myItem.bhtNo}
+                                            <p:outputLabel value="#{myItem.bhtNo}" />
                                         </p:column>
                                         <p:column>
-                                            #{myItem.patient.person.nameWithTitle}
+                                            <p:outputLabel value="#{myItem.patient.person.nameWithTitle}" />
+
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="Discharged"  rendered="#{myItem.paymentFinalized}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
                                         </p:column>
                                     </p:autoComplete>
 

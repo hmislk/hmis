@@ -245,6 +245,11 @@ public class BhtIssueReturnController implements Serializable {
 //            UtilityController.addErrorMessage("Checked Bill. Can not Return");
 //            return;
 //        }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            UtilityController.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        
         saveReturnBill();
         saveComponent();
 

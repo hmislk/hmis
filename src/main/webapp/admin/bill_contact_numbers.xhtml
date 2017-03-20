@@ -25,7 +25,23 @@
                             </p:calendar>
                             <p:outputLabel value="Consider Date Range" />
                             <p:selectBooleanCheckbox value="#{searchController.patientPanelVisible}" />
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createAllBillContacts()}" />
+                            <p:outputLabel value="Bill Type" />
+                            <p:selectOneRadio id="console" value="#{searchController.reportKeyWord.string}" >
+                                <f:selectItem itemLabel="All" itemValue="0" />
+                                <f:selectItem itemLabel="Channel Only" itemValue="1" />
+                                <f:selectItem itemLabel="OPD Only" itemValue="2" />
+                                <f:selectItem itemLabel="Pharmacy Only" itemValue="3" />
+                                <f:ajax event="change" execute="@this" render="acnp" listener="#{searchController.listnerBillTypeChange()}" />
+                            </p:selectOneRadio>
+                            <p:outputLabel value="Area" />
+                            <p:autoComplete styleClass="mediuminput" widgetVar="np" id="acnp" forceSelection="true" 
+                                            value="#{searchController.reportKeyWord.area}" 
+                                            completeMethod="#{areaController.completeArea}" 
+                                            var="npt" itemLabel="#{npt.name}"
+                                            disabled="#{searchController.reportKeyWord.string ne '1'}"
+                                            itemValue="#{npt}" size="30"  style="width: 40px;"></p:autoComplete>
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                             action="#{searchController.createAllBillContacts()}" />
                             <p:outputLabel />
                             <p:outputLabel value="Message" />
                             <p:inputMask mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputMask>
@@ -34,13 +50,13 @@
                             <p:inputMask mask="999-9999999" maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputMask>
 
                             <p:commandButton id="btnSend" ajax="false" value="Send" action="#{searchController.sendSms()}"  />
-                            <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}" disabled="true" />
+                            <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />
                         </h:panelGrid>
                     </f:facet>
                 </p:panel>
 
                 <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
-                             rowKey=""
+                             rowKey="#{b}" 
                              rows="#{searchController.rows}"
                              selection="#{searchController.selectedTelephoneNumbers}"
                              paginator="true"

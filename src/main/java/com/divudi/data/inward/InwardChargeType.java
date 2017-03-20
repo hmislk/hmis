@@ -12,11 +12,11 @@ public enum InwardChargeType {
 
     AdmissionFee("Admission Fee"),
     AmbulanceCharges("Ambulance Charges"),
-    AdministrationCharge("Administration Charge"),//GOES WITH ROOM CHARGE
+    AdministrationCharge("Administration Fee"),//GOES WITH ROOM CHARGE
     BloodTransfusioncharges("Blood Transfusion Charges"),
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
-    Equipment("Equipment"),
+    Equipment("Equipment Charges"),
     ECG_EEG("ECG/EEG/ECHO/EXECG"),
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
@@ -33,7 +33,7 @@ public enum InwardChargeType {
     MOCharges("MO Charges"),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges"),//GOES WITH PATIENT ROOM    
     DoctorAndNurses("Assisting Charge"),//Set Doctor && Nurse Fees
-    NursingCharges("Nursing Charges"),//GOES WITH PATIENT ROOM
+    NursingCharges("Nursing Care"),//GOES WITH PATIENT ROOM
     OxygenCharges("Oxygen Charges"),
     OtherCharges("Other Charges"),
     OperationTheatreCharges("Operation Theatre Charges"),
@@ -54,6 +54,8 @@ public enum InwardChargeType {
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
     VAT("VAT (15%)"),
+    AccessoryCharges("Accessory Charges"),
+    EyeLence("Eye Lence"),
     
     @Deprecated
     Investigations("Investigations"),

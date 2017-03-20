@@ -16,7 +16,9 @@ import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -35,13 +37,14 @@ public class CreditCompanyController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController; 
+    CommonController commonController;
     @EJB
     private InstitutionFacade ejbFacade;
     List<Institution> selectedItems;
     private Institution current;
     Item service;
     Category category;
+    InstitutionType institutionType;
 
     private List<Institution> items = null;
     List<Institution> institutions;
@@ -139,6 +142,23 @@ public class CreditCompanyController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Credit Company/credit card companies(/faces/dataAdmin/credit_companies.xhtml)");
     }
 
+    public void fillInstitutions() {
+
+        String sql;
+        Map m=new HashMap();
+        
+        sql= "select i from Institution i "
+                + " where i.retired=false ";
+        
+        if (institutionType != null) {
+            sql += " and i.institutionType=:insT";
+            m.put("insT", institutionType);
+        }
+        
+        institutions = getEjbFacade().findBySQL(sql,m);
+
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -210,7 +230,14 @@ public class CreditCompanyController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
+    public InstitutionType getInstitutionType() {
+        return institutionType;
+    }
+
+    public void setInstitutionType(InstitutionType institutionType) {
+        this.institutionType = institutionType;
+    }
 
     /**
      *

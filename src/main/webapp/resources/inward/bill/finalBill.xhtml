@@ -89,14 +89,16 @@
                                 <h:outputLabel value="" />
                             </td>
                             <td >
-                                <h:outputLabel value="Time of Admission" />
+                                <h:outputLabel value="Time of Admission" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
+                                <h:outputLabel value="Date of Admission" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                             </td>
                             <td>
                                 <h:outputLabel value=":" />
                             </td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime}" >
-                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
+                                    <f:convertDateTime pattern="dd MM yyyy" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -114,14 +116,16 @@
                                 <h:outputLabel value="" />
                             </td>
                             <td >
-                                <h:outputLabel value="Time of Discharged" />
+                                <h:outputLabel value="Time of Discharged" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
+                                <h:outputLabel value="Date of Discharged" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                             </td>
                             <td>
                                 <h:outputLabel value=":" />
                             </td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
-                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" />
+                                    <f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
+                                    <f:convertDateTime pattern="dd MM yyyy" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                                 </h:outputLabel>
                             </td>
                         </tr>                       
