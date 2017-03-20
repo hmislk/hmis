@@ -103,6 +103,10 @@
                                                      value="Active Vat For All Channel Sessions" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" 
                                                      action="#{dataAdministrationController.createAllSessionAsVatable()}" 
                                                      onclick="onSubmitButton();" />
+                                    <p:commandButton styleClass="linkButton" ajax="false"
+                                                     value="Mark All Channel Sessions as Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" 
+                                                     action="#{dataAdministrationController.createAllSessionAsChannel()}" 
+                                                     onclick="onSubmitButton();" />
                                 </h:panelGrid>
                             </p:panel>
 

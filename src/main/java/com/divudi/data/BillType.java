@@ -126,7 +126,12 @@ public enum BillType {
     ChannelOnCallOld,
     ChannelStaffOld,
     ChannelIncomeBill,
-    ChannelExpenesBill,;
+    ChannelExpenesBill,
+    // channel Session sperate X-ray scan or channel
+    Channel,
+    XrayScan,
+    
+    ;
 
     public String getLabel() {
         switch (this) {
@@ -227,6 +232,10 @@ public enum BillType {
                 return "Channel Income Bill";
             case ChannelExpenesBill:
                 return "Channel Expenses Bill";
+            case Channel:
+                return "Channel";
+            case XrayScan:
+                return "X-Ray and Scan";
 
         }
 

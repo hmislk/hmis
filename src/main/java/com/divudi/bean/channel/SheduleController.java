@@ -6,6 +6,8 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
@@ -419,6 +421,12 @@ public class SheduleController implements Serializable {
             return true;
         }
 
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                && current.getForBillType() == null) {
+            UtilityController.addErrorMessage("Plaese Select Channel Type");
+            return true;
+        }
+
         return false;
     }
 
@@ -548,9 +556,9 @@ public class SheduleController implements Serializable {
         prepareAdd();
         getItems();
     }
-    
-    public void createFutureSessionsManually(){
-        if (currentStaff==null) {
+
+    public void createFutureSessionsManually() {
+        if (currentStaff == null) {
             JsfUtil.addErrorMessage("Pease Select Doctor");
             return;
         }
@@ -626,25 +634,25 @@ public class SheduleController implements Serializable {
         List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
         System.out.println("serviceSessionsAll.size() = " + serviceSessionsAll.size());
         for (ServiceSession s : serviceSessionsAll) {
-            
+
         }
         List<ServiceSession> tmpList = new ArrayList<>();
         tmpList.addAll(serviceSessionsAll);
         tmpList.removeAll(fetchSessionByFee("On-Call Fee", FeeType.OwnInstitution));
         createFeesForServiceSessionList(tmpList, "On-Call Fee", FeeType.OwnInstitution);
-        
+
         tmpList.addAll(serviceSessionsAll);
         tmpList.removeAll(fetchSessionByFee("Scan Fee", FeeType.Service));
         createFeesForServiceSessionList(tmpList, "Scan Fee", FeeType.Service);
-        
+
         tmpList.addAll(serviceSessionsAll);
         tmpList.removeAll(fetchSessionByFee("Agency Fee", FeeType.OtherInstitution));
         createFeesForServiceSessionList(tmpList, "Agency Fee", FeeType.OtherInstitution);
-        
+
         tmpList.addAll(serviceSessionsAll);
         tmpList.removeAll(fetchSessionByFee("Hospital Fee", FeeType.OwnInstitution));
         createFeesForServiceSessionList(tmpList, "Hospital Fee", FeeType.OwnInstitution);
-        
+
         tmpList.addAll(serviceSessionsAll);
         tmpList.removeAll(fetchSessionByFee("Doctor Fee", FeeType.Staff));
         createFeesForServiceSessionList(tmpList, "Doctor Fee", FeeType.Staff);

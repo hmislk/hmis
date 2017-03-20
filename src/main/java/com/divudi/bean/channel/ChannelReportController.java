@@ -129,7 +129,7 @@ public class ChannelReportController implements Serializable {
     boolean showPatient = false;
     PaymentMethod paymentMethod;
     ChannelTotal channelTotal;
-  
+
     /////
     private List<ChannelDoctor> channelDoctors;
     List<AgentHistory> agentHistorys;
@@ -4457,8 +4457,77 @@ public class ChannelReportController implements Serializable {
         sql = "Select bs.bill From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
-                + " and bs.sessionDate= :ssDate "
-                + " order by bs.bill.staff.person.name ";
+                + " and bs.sessionDate= :ssDate ";
+        
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+            sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            m.put("bt", BillType.Channel);
+        }
+
+        sql += " order by bs.bill.staff.person.name ";
+
+        m.put("ssDate", Calendar.getInstance().getTime());
+        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        System.out.println("bills = " + bills.size());
+        Set<Staff> consultant = new HashSet();
+        for (Bill b : bills) {
+            consultant.add(b.getStaff());
+        }
+
+        for (Staff c : consultant) {
+            ChannelDoctor cd = new ChannelDoctor();
+            cd.setConsultant(c);
+            channelDoctors.add(cd);
+        }
+
+        for (ChannelDoctor cd : channelDoctors) {
+            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+            for (Bill b : bills) {
+                System.out.println("b = " + b.getStaff().getPerson().getName());
+                System.out.println("b = " + b.getBillClass());
+                if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
+                    if (b.getBillType() == BillType.ChannelCash
+                            || b.getBillType() == BillType.ChannelPaid
+                            || (b.getBillType() == BillType.ChannelAgent
+                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            || (b.getBillType() == BillType.ChannelAgent
+                            && agncy)) {
+                        if (b instanceof BilledBill) {
+                            cd.setBillCount(cd.getBillCount() + 1);
+                            cd.setBillFee(cd.getBillFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof CancelledBill) {
+                            cd.setBillCanncelCount(cd.getBillCanncelCount() + 1);
+                            cd.setBillCanncelFee(cd.getBillCanncelFee() + getBillFees(b, FeeType.Staff));
+                        } else if (b instanceof RefundBill) {
+                            cd.setRefundedCount(cd.getRefundedCount() + 1);
+                            cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        calTotal();
+
+    }
+    
+    public void createTotalDoctorScan() {
+
+        channelDoctors = new ArrayList<ChannelDoctor>();
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select bs.bill From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate= :ssDate ";
+        
+        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+            sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            m.put("bt", BillType.XrayScan);
+        }
+
+        sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
@@ -5435,7 +5504,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createCardSummeryBankVise() {
-        depBills=new ArrayList<>();
+        depBills = new ArrayList<>();
         String sql = "";
         Map m = new HashMap();
         sql = "select b.bank,sum(b.netTotal+b.vat) from Bill b where "
@@ -5456,17 +5525,17 @@ public class ChannelReportController implements Serializable {
         System.out.println("objects.size() = " + objects.size());
         grantNetTotal = 0.0;
         for (Object[] o : objects) {
-            DepartmentBill db=new DepartmentBill();
+            DepartmentBill db = new DepartmentBill();
             Institution i = (Institution) o[0];
             db.setIns(i);
             System.out.println("b.getName() = " + i.getName());
             if (getReportKeyWord().getString().equals("1")) {
-                List<Bill> bills=fetchCardTransactionBills(i);
+                List<Bill> bills = fetchCardTransactionBills(i);
                 System.out.println("bills.size() = " + bills.size());
                 db.setBills(bills);
             }
             double d = (double) o[1];
-            grantNetTotal+=d;
+            grantNetTotal += d;
             db.setDepartmentBillTotal(d);
             System.out.println("d = " + d);
             depBills.add(db);
