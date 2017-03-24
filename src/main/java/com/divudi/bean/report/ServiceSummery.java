@@ -1614,9 +1614,10 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select bi FROM BillItem bi "
-                + " where  bi.bill.institution=:ins"
+                + " where  bi.bill.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
-                + " and bi.item.category=:cat";
+                + " and bi.item.category=:cat "
+                + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
             if (credit) {
@@ -1699,7 +1700,8 @@ public class ServiceSummery implements Serializable {
                 + " where bi.bill.billType=:bType "
                 + " and bi.item.category=:cat "
                 + " and type(bi.bill)=:billClass "
-                + " and bi.bill.toInstitution=:ins ";
+                + " and bi.bill.toInstitution=:ins "
+                + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
             if (credit) {
@@ -1743,10 +1745,11 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins"
+                + " where  bi.bill.institution=:ins "
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
-                + " and bi.billItem.item.category=:cat";
+                + " and bi.billItem.item.category=:cat "
+                + " and bi.retired=false ";
 
         if (billType != BillType.InwardBill) {
             if (credit) {

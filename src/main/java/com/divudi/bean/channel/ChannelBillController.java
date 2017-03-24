@@ -652,8 +652,12 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean checkPaid() {
-        System.out.println("getBillSession().getBill().getInsId() = " + getBillSession().getBill().getInsId());
-        System.out.println("getBillSession().getBill().getPaidBill().getInsId() = " + getBillSession().getBill().getPaidBill().getInsId());
+//        System.out.println("getBillSession().getBill().getInsId() = " + getBillSession().getBill().getInsId());
+//        System.out.println("getBillSession().getBill().getPaidBill().getInsId() = " + getBillSession().getBill().getPaidBill().getInsId());
+        if (getBillSession().getBill().getPaidBill()==null) {
+            return false;
+        }
+        
         String sql;
         if (getBillSession().getBill().equals(getBillSession().getBill().getPaidBill())) {
             sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();

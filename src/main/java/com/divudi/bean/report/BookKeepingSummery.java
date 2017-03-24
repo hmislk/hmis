@@ -3981,9 +3981,9 @@ public class BookKeepingSummery implements Serializable {
         agentCollections = getBillBean().fetchBills(BillType.AgentPaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
         collectingCentreCollections = getBillBean().fetchBills(BillType.CollectingCentrePaymentReceiveBill, getFromDate(), getToDate(), getInstitution());
 //        creditCompanyCollections = getBillBean().fetchBillItems(BillType.CashRecieveBill, true, fromDate, toDate, institution);
-//        creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
+        creditCompanyCollectionsInward = getBillBean().fetchBillItems(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyCollectionsBill = getBillBean().fetchBills(BillType.CashRecieveBill, true, fromDate, toDate, institution);
-        creditCompanyCollectionsInwardBill = getBillBean().fetchBills(BillType.CashRecieveBill, false, fromDate, toDate, institution);
+//        creditCompanyCollectionsInwardBill = getBillBean().fetchBills(BillType.CashRecieveBill, false, fromDate, toDate, institution);
         creditCompanyCollectionsPharmacy = getBillBean().fetchBillItemsPharmacy(BillType.CashRecieveBill, fromDate, toDate, institution);
         creditCompanyCollectionsPharmacyOld = getBillBean().fetchBillItemsPharmacyOld(BillType.CashRecieveBill, fromDate, toDate, institution);
         ///////////////////

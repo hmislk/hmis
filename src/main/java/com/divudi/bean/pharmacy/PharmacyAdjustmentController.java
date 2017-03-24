@@ -110,6 +110,7 @@ public class PharmacyAdjustmentController implements Serializable {
     private YearMonthDay yearMonthDay;
 
     List<BillItem> billItems;
+    List<Stock> stocks;
     private boolean printPreview;
 
     public Department getFromDepartment() {
@@ -795,11 +796,26 @@ public class PharmacyAdjustmentController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");
     }
+    
+    public void listnerItemSelect(){
+        List<Stock> items;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        m.put("i", getStock().getItemBatch().getItem());
+        sql = "select i from Stock i where i.department=:d "
+                + "and i.itemBatch.item=:i "
+                + " order by i.stock desc";
+        items = getStockFacade().findBySQL(sql, m);
+    }
 
-    private void clearBill() {
+    public void clearBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
         comment = "";
+        stocks=new ArrayList<>();
+        stock=null;
     }
 
     private void clearBillItem() {
@@ -1013,6 +1029,14 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public List<Stock> getStocks() {
+        return stocks;
+    }
+
+    public void setStocks(List<Stock> stocks) {
+        this.stocks = stocks;
     }
 
 }

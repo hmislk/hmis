@@ -15,6 +15,7 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Payment;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -253,13 +254,22 @@ public class StaffPaymentBillController implements Serializable {
             h.put("btpc", BillType.CollectingCentreBill);
 
             dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
-            
+
             List<BillFee> removeingBillFees = new ArrayList<>();
-            for (BillFee bf : billFees) {
-                sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-                BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            for (BillFee bf : dueBillFees) {
+                h = new HashMap();
+                sql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false"
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                h.put("class",RefundBill.class);
+                BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
 
                 if (rbi != null) {
+                    System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
+                    System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                    System.out.println("rbi.getBill().getDeptId() = " + rbi.getBill().getDeptId());
                     removeingBillFees.add(bf);
                 }
 
@@ -474,8 +484,8 @@ public class StaffPaymentBillController implements Serializable {
         getBillItemFacade().create(i);
         b.getBillItems().add(i);
     }
-    
-    private void saveBillItemForPaymentBill(Bill b, BillFee bf,Payment p) {
+
+    private void saveBillItemForPaymentBill(Bill b, BillFee bf, Payment p) {
         BillItem i = new BillItem();
         i.setReferanceBillItem(bf.getBillItem());
         i.setReferenceBill(bf.getBill());
@@ -589,7 +599,7 @@ public class StaffPaymentBillController implements Serializable {
         bfp.setPayment(p);
         getBillFeePaymentFacade().create(bfp);
     }
-    
+
     public void saveBillFee(BillItem bi, Payment p) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
@@ -597,9 +607,9 @@ public class StaffPaymentBillController implements Serializable {
         bf.setBillItem(bi);
         bf.setPatienEncounter(bi.getBill().getPatientEncounter());
         bf.setPatient(bi.getBill().getPatient());
-        bf.setFeeValue(0-bi.getNetValue());
-        bf.setFeeGrossValue(0-bi.getGrossValue());
-        bf.setSettleValue(0-bi.getNetValue());
+        bf.setFeeValue(0 - bi.getNetValue());
+        bf.setFeeGrossValue(0 - bi.getGrossValue());
+        bf.setSettleValue(0 - bi.getNetValue());
         bf.setCreatedAt(new Date());
         bf.setDepartment(getSessionController().getDepartment());
         bf.setInstitution(getSessionController().getInstitution());
@@ -808,5 +818,4 @@ public class StaffPaymentBillController implements Serializable {
         this.BillFeePaymentFacade = BillFeePaymentFacade;
     }
 
-    
 }
