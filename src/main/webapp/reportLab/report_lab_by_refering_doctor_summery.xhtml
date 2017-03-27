@@ -26,6 +26,12 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{commonReport1.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
+                        <p:outputLabel value="select Bill Type" />
+                        <p:selectOneRadio value="#{commonReport1.radio}">
+                            <f:selectItem itemLabel="All" itemValue="0" />
+                            <f:selectItem itemLabel="Collecting Center Only" itemValue="1" />
+                            <f:selectItem itemLabel="OPD Only" itemValue="2" />
+                        </p:selectOneRadio>
 
                     </h:panelGrid>
                     <h:panelGrid columns="4">

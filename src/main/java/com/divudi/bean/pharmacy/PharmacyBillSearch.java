@@ -1704,6 +1704,11 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
 
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            UtilityController.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        
         if (getBill().getCheckedBy() != null) {
             UtilityController.addErrorMessage("Checked Bill. Can not cancel");
             return;
@@ -1830,6 +1835,11 @@ public class PharmacyBillSearch implements Serializable {
 
             if (getBill().getCheckedBy() != null) {
                 UtilityController.addErrorMessage("Checked Bill. Can not cancel");
+                return;
+            }
+            
+            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+                UtilityController.addErrorMessage("This BHT Already Discharge..");
                 return;
             }
 

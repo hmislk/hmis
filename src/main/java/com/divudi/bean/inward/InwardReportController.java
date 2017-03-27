@@ -10,6 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -120,6 +121,8 @@ public class InwardReportController implements Serializable {
     boolean developers = false;
     // for disscharge book
     boolean withoutCancelBHT = true;
+
+    private ReportKeyWord reportKeyWord;
 
     public List<PatientEncounter> getPatientEncounters() {
         return patientEncounters;
@@ -542,18 +545,32 @@ public class InwardReportController implements Serializable {
         billItems = null;
     }
 
-    public void updateOutSideBill() {
-        //System.out.println("In");
-        //System.out.println("Bill ID -" + getBill().getId());
-        //System.out.println("Bill Creater -" + getSessionController().getLoggedUser());
-        getBill().setEditor(getSessionController().getLoggedUser());
-        getBill().setEditedAt(new Date());
-        getBillFacade().edit(getBill());
-        UtilityController.addSuccessMessage("Updated");
-        //System.out.println("Out");
+    public void updateOutSideBill(BillItem bi) {
+        if (bi.getBill().isPaid()) {
+            if (bi.getDescreption() == null || bi.getDescreption().equals("")) {
+                UtilityController.addErrorMessage("Please Enter Memo");
+                return;
+            }
+            if (bi.getBill().getEditedAt() == null && bi.getBill().getEditor() == null) {
+                bi.getBill().setEditor(getSessionController().getLoggedUser());
+                bi.getBill().setEditedAt(new Date());
+                getBillFacade().edit(bi.getBill());
+                getBillItemFacade().edit(bi);
+                UtilityController.addSuccessMessage("This Bill Mark as Paid");
+            } else {
+                UtilityController.addErrorMessage("Alreddy Mark as Paid");
+            }
+        } else {
+            bi.getBill().setEditor(null);
+            bi.getBill().setEditedAt(null);
+            getBillFacade().edit(bi.getBill());
+            bi.setDescreption("");
+            getBillItemFacade().edit(bi);
+            UtilityController.addSuccessMessage("This Bill Mark as Un Paid");
+        }
     }
 
-    public void createOutSideBillsByAddedDate() {
+    public void createOutSideBills() {
         Date startTime = new Date();
 
         makeListNull();
@@ -561,9 +578,28 @@ public class InwardReportController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BillItem b"
                 + " where b.bill.billType = :billType "
-                + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.retired=false "
                 + " and b.bill.retired=false ";
+
+        if (reportKeyWord.getString().equals("0")) {
+            sql += " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+            temMap.put("toDate", toDate);
+            temMap.put("fromDate", fromDate);
+        }
+
+        if (reportKeyWord.getString().equals("1")) {
+            sql += " and b.bill.createdAt between :fromDate and :toDate ";
+            temMap.put("toDate", toDate);
+            temMap.put("fromDate", fromDate);
+        }
+
+        if (reportKeyWord.getString1().equals("0")) {
+            sql += " and b.bill.paid!=true ";
+        }
+
+        if (reportKeyWord.getString1().equals("1")) {
+            sql += " and b.bill.paid=true ";
+        }
 
         if (institution != null) {
             sql += " and b.bill.fromInstitution=:ins ";
@@ -571,63 +607,96 @@ public class InwardReportController implements Serializable {
         }
 
         temMap.put("billType", BillType.InwardOutSideBill);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
 
         billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
         if (billItems == null) {
             billItems = new ArrayList<>();
-
         }
 
-        setTotal(0.0);
+        total = 0.0;
         for (BillItem b : billItems) {
-            setTotal(getTotal() + b.getBill().getNetTotal());
+            total += b.getBill().getNetTotal();
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Outside bill report(/faces/inward/report_out_side_inward_bill.xhtml)");
 
     }
 
-    public void createOutSideBillsByDischargeDate() {
-
-        Date startTime = new Date();
-
-        makeListNull();
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BillItem b"
-                + " where b.bill.billType = :billType "
-                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                + " and b.retired=false "
-                + " and b.bill.retired=false ";
-
-        if (institution != null) {
-            sql += " and b.bill.fromInstitution=:ins ";
-            temMap.put("ins", institution);
-        }
-
-        temMap.put("billType", BillType.InwardOutSideBill);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-        if (billItems == null) {
-            billItems = new ArrayList<>();
-
-        }
-
-        setTotal(0.0);
-        for (BillItem b : billItems) {
-            setTotal(getTotal() + b.getBill().getNetTotal());
-        }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Time server report(/faces/inward/report_out_side_inward_bill.xhtml)");
-
-    }
-
+//    public void createOutSideBillsByAddedDate() {
+//        Date startTime = new Date();
+//
+//        makeListNull();
+//        String sql;
+//        Map temMap = new HashMap();
+//        sql = "select b from BillItem b"
+//                + " where b.bill.billType = :billType "
+//                + " and b.bill.createdAt between :fromDate and :toDate "
+//                + " and b.retired=false "
+//                + " and b.bill.retired=false ";
+//
+//        if (institution != null) {
+//            sql += " and b.bill.fromInstitution=:ins ";
+//            temMap.put("ins", institution);
+//        }
+//
+//        temMap.put("billType", BillType.InwardOutSideBill);
+//        temMap.put("toDate", toDate);
+//        temMap.put("fromDate", fromDate);
+//
+//        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//
+//        if (billItems == null) {
+//            billItems = new ArrayList<>();
+//
+//        }
+//
+//        setTotal(0.0);
+//        for (BillItem b : billItems) {
+//            setTotal(getTotal() + b.getBill().getNetTotal());
+//        }
+//
+//        commonController.printReportDetails(fromDate, toDate, startTime, "Outside bill report(/faces/inward/report_out_side_inward_bill.xhtml)");
+//
+//    }
+//
+//    public void createOutSideBillsByDischargeDate() {
+//
+//        Date startTime = new Date();
+//
+//        makeListNull();
+//        String sql;
+//        Map temMap = new HashMap();
+//        sql = "select b from BillItem b"
+//                + " where b.bill.billType = :billType "
+//                + " and b.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+//                + " and b.retired=false "
+//                + " and b.bill.retired=false ";
+//
+//        if (institution != null) {
+//            sql += " and b.bill.fromInstitution=:ins ";
+//            temMap.put("ins", institution);
+//        }
+//
+//        temMap.put("billType", BillType.InwardOutSideBill);
+//        temMap.put("toDate", toDate);
+//        temMap.put("fromDate", fromDate);
+//
+//        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//
+//        if (billItems == null) {
+//            billItems = new ArrayList<>();
+//
+//        }
+//
+//        setTotal(0.0);
+//        for (BillItem b : billItems) {
+//            setTotal(getTotal() + b.getBill().getNetTotal());
+//        }
+//
+//        commonController.printReportDetails(fromDate, toDate, startTime, "Time server report(/faces/inward/report_out_side_inward_bill.xhtml)");
+//
+//    }
     public void createPatientInvestigationsTableAll() {
         Date startTime = new Date();
 
@@ -1286,6 +1355,17 @@ public class InwardReportController implements Serializable {
 
     public void setWithFooter(boolean withFooter) {
         this.withFooter = withFooter;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
     public class IncomeByCategoryRecord {

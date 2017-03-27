@@ -489,7 +489,7 @@
                     <h:panelGrid columns="3" style="min-width: 100%;">
 
 
-                        <p:commandButton   id="btnAdd" 
+                        <p:commandButton   id="btnAdd" disabled="#{webUserController.hasPrivilege('ChannelBookingRestric')}"
                                            value="Add" process=":#{p:component('tabNewPt')} 
                                            :#{p:component('tabSearchPt')} btnAdd 
                                            :#{p:component('pgNewBookingDetail')}" 
@@ -1208,6 +1208,8 @@
                                         <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                         <p:commandButton value="All Doctor" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctor()}" ajax="false" onclick="onSubmitButton();">                                        
+                                        </p:commandButton>
+                                        <p:commandButton value="All Doctor(Scan)" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctorScan()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
                                         <p:commandButton value="Doctor Arraival List" action="channel_doctor_view_today_1" actionListener="#{channelReportController.createDoctorArrival()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>

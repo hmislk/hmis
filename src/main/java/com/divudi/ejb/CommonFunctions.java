@@ -14,8 +14,6 @@ import javax.ejb.Singleton;
 @Singleton
 public class CommonFunctions {
 
-    
-
     public DateRange getDateRangeForOT(Date date) {
         DateRange dateRange = new DateRange();
         Date startOfThisMonth = com.divudi.java.CommonFunctions.getStartOfMonth(date);
@@ -241,7 +239,7 @@ public class CommonFunctions {
     public static Date getStartOfDay() {
         return getStartOfDay(new Date());
     }
-    
+
     public static Date getStartOfDay(Date date) {
         if (date == null) {
             date = new Date();
@@ -259,7 +257,7 @@ public class CommonFunctions {
     public static Date getStartOfMonth() {
         return getStartOfMonth(new Date());
     }
-    
+
     public static Date getStartOfMonth(Date date) {
         if (date == null) {
             date = new Date();
@@ -276,7 +274,7 @@ public class CommonFunctions {
     public static Date getEndOfDay() {
         return getEndOfDay(new Date());
     }
-    
+
     public static Date getEndOfDay(Date date) {
         if (date == null) {
             date = new Date();
@@ -295,7 +293,7 @@ public class CommonFunctions {
     public static Date getEndOfMonth() {
         return getStartOfMonth(new Date());
     }
-    
+
     public static Date getEndOfMonth(Date date) {
         if (date == null) {
             date = new Date();
@@ -303,11 +301,14 @@ public class CommonFunctions {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.MONTH, 1);
+
+        System.out.println("1.calendar.getTime() = " + calendar.getTime());
+        calendar.add(Calendar.DATE, -1);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DATE);
-        calendar.set(year, month, 1, 0, 0, 0);
-        System.out.println("calendar.getTime() = " + calendar.getTime());
+        calendar.set(year, month, day, 23, 59, 59);
+        System.out.println("2.calendar.getTime() = " + calendar.getTime());
         return calendar.getTime();
     }
 
@@ -319,9 +320,9 @@ public class CommonFunctions {
         ////System.out.println("First : " + cal.getTime());
         return cal.getTime();
     }
-    
+
     public Date getFirstDayOfYear() {
-        Date date=new Date();
+        Date date = new Date();
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(cal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
@@ -337,9 +338,9 @@ public class CommonFunctions {
         ////System.out.println("Last : " + cal.getTime());
         return cal.getTime();
     }
-    
+
     public Date getLastDayOfYear() {
-        Date date=new Date();
+        Date date = new Date();
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.MONTH, 11);
@@ -348,8 +349,6 @@ public class CommonFunctions {
         System.out.println("Last : " + cal.getTime());
         return cal.getTime();
     }
-
-    
 
     public Date getFirstDayOfWeek(Date date) {
         // get today and clear time of day
@@ -394,6 +393,21 @@ public class CommonFunctions {
 //        ////System.out.println("... in milliseconds:      " + cal.getTimeInMillis());
         return cal.getTime();
     }
+    
+    public static Date getStartOfBeforeDay(Date date) {
+        if (date == null) {
+            date = new Date();
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, -1);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+        calendar.set(year, month, day, 0, 0, 0);
+        //System.out.println("calendar.getTime() = " + calendar.getTime());
+        return calendar.getTime();
+    }
 
     public static Date removeTime(Date date) {
         Calendar cal;
@@ -407,14 +421,14 @@ public class CommonFunctions {
         return cal.getTime();
     }
 
-    public static double roundToTwoDecimalPlaces(double num){
+    public static double roundToTwoDecimalPlaces(double num) {
         return roundToTwoDecimalPlaces(num, 2);
     }
-    
-    public static double roundToTwoDecimalPlaces(double num, int decimalPlaces){
+
+    public static double roundToTwoDecimalPlaces(double num, int decimalPlaces) {
         double mul = Math.pow(10, decimalPlaces);
         double roundOff = (double) Math.round(num * mul) / mul;
         return roundOff;
     }
-    
+
 }

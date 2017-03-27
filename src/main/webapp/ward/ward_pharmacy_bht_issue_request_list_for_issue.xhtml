@@ -18,9 +18,13 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createInwardBHTForIssueTable}"
-                                        actionListener="#{transferIssueController.makeNull()}"/>
-                        <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                        <p:commandButton id="btnSearch1" ajax="false" value="Search All" 
+                                         action="#{searchController.createInwardBHTForIssueTableAll}" />
+                        <p:commandButton id="btnSearch2" ajax="false" value="Search Not Issued" 
+                                         action="#{searchController.createInwardBHTForNotIssueTable}" />
+                        <p:commandButton id="btnSearch3" ajax="false" value="Search Isssued Only" 
+                                         action="#{searchController.createInwardBHTForIssueOnlyTable}" />
+                        <p:spacer height="30"/><h:outputLabel/><h:outputLabel/>
 
                         <h:outputLabel value="Request No"/>   
                         <h:outputLabel value="BHT No"/> 
@@ -110,7 +114,7 @@
                             </p:column> 
                             <p:column >
                                 <h:outputLabel value="#{b.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0" />
                                 </h:outputLabel>                                  
                             </p:column>
                             <p:column>

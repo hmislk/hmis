@@ -46,7 +46,7 @@
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
 
                                 <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{timedItemController.saveSelected()}" styleClass="buttons" 
-                                               ajax="false" onclick="onSubmitButton();"  >
+                                                 ajax="false" onclick="onSubmitButton();"  >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
@@ -83,8 +83,8 @@
                                         <f:selectItem itemLabel="Please select a Department"/>
                                         <f:selectItems value="#{timedItemController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>
-                                    
-                                     <h:outputText value="Department Type" ></h:outputText>
+
+                                    <h:outputText value="Department Type" ></h:outputText>
                                     <h:selectOneListbox size="1" 
                                                         value="#{timedItemController.current.departmentType}" >
                                         <f:selectItem itemLabel="Please select a Department Type"/>
@@ -95,6 +95,11 @@
                                     <p:selectOneMenu id="cmbInward" value="#{timedItemController.current.inwardChargeType}" >
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputText value="Category" ></h:outputText>
+                                    <p:selectOneMenu id="cmbCat" value="#{timedItemController.current.category}" >
+                                        <f:selectItem itemLabel="Please select a Category"/>
+                                        <f:selectItems value="#{timedItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
 
                                     <h:outputText value="" ></h:outputText>

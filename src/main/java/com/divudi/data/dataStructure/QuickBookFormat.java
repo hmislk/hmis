@@ -28,6 +28,7 @@ public class QuickBookFormat {
     private String custFld3;
     private String custFld4;
     private String custFld5;
+    private String custFld6;
 
     private boolean editRowType = false;
     private boolean editTrnsType = false;
@@ -46,9 +47,9 @@ public class QuickBookFormat {
     private boolean editCustFld3 = false;
     private boolean editCustFld4 = false;
     private boolean editCustFld5 = false;
+    private boolean editCustFld6 = false;
 
     public QuickBookFormat() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public QuickBookFormat(String rowType, String trnsType, String date, String accnt, String name, String invItemType, String invItem, double amount, String docNum, String poNum, String qbClass, String memo, String custFld1, String custFld2, String custFld3, String custFld4, String custFld5) {
@@ -70,7 +71,23 @@ public class QuickBookFormat {
         this.custFld4 = custFld4;
         this.custFld5 = custFld5;
     }
-    
+
+    public QuickBookFormat(String accnt, String name, String invItem, double amount, String qbClass) {
+        this.rowType = "SPL";
+        this.trnsType = "INVOICE";
+        this.accnt = accnt;
+        this.name = name;
+        this.invItemType = "SERV";
+        if (invItem.length() > 30) {
+            this.invItem = invItem.substring(0, 30);
+        } else {
+            this.invItem = invItem;
+        }
+        this.amount = amount;
+        this.qbClass = qbClass;
+        this.memo=invItem;// invItem name limit for 30 characters
+    }
+
     public String getRowType() {
         return rowType;
     }
@@ -341,6 +358,22 @@ public class QuickBookFormat {
 
     public void setCustFld5(String custFld5) {
         this.custFld5 = custFld5;
+    }
+
+    public String getCustFld6() {
+        return custFld6;
+    }
+
+    public void setCustFld6(String custFld6) {
+        this.custFld6 = custFld6;
+    }
+
+    public boolean isEditCustFld6() {
+        return editCustFld6;
+    }
+
+    public void setEditCustFld6(boolean editCustFld6) {
+        this.editCustFld6 = editCustFld6;
     }
 
 }

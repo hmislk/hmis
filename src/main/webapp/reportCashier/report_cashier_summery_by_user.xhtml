@@ -33,7 +33,7 @@
                                 <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
                             </h:outputLabel>
                             <br/>
-                            <h:outputLabel value="Cachier : #{sessionController.loggedUser.webUserPerson.name} " />
+                            <h:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} " />
                             
                             <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"

@@ -26,9 +26,9 @@ root {
         border: none!important;
         line-height: 2!important;
         /*font-family: sans-serif!important;*/ 
-         
+
     }
-    
+
     .posbillA4{
         page-break-after:always!important; 
         font-family:Arial, Helvetica, sans-serif!important;
@@ -40,12 +40,12 @@ root {
         height: 100%!important;
         /*padding-left:0.5%!important;*/
         font-size: 100%;
-/*        border: none!important;*/
+        /*        border: none!important;*/
         line-height: 2!important;
         /*font-family: sans-serif!important;*/ 
-         
+
     }
-    
+
     .a4HalfPaysheet{
         page-break-after:always!important; 
         font-family:Arial, Helvetica, sans-serif!important;
@@ -54,13 +54,13 @@ root {
         margin: 1px!important; 
         padding: 1px!important;
         width: 100%!important;
-        height: 100%!important;
+        height: 50%!important;
         /*padding-left:0.5%!important;*/
         font-size: 100%;
         border: none!important;
         line-height: 2!important;
         /*font-family: sans-serif!important;*/ 
-         
+
     }
 }
 
@@ -81,37 +81,42 @@ root {
         font-size: 100%;
         line-height: 2!important;
     }
-    
+
     .posbillA4{
         position: relative!important;
         /*padding-left: 0.5%!important;*/
         height:800px!important;
         width:1100px!important; 
-/*        overflow:hidden!important; */
+        /*        overflow:hidden!important; */
         font-family: monospace!important; 
         font-size: 12px!important; 
         margin:1px!important; 
         padding: 1px!important;
         background-size: 100% auto!important; 
-/*        border: 1px solid!important;*/
+        /*        border: 1px solid!important;*/
         font-size: 100%;
         line-height: 2!important;
     }
-    
+
     .a4HalfPaysheet{
         position: relative!important;
         /*padding-left: 0.5%!important;*/
-        height:400px!important;
-        width:550px!important; 
-        overflow:hidden!important; 
-        font-family: monospace!important; 
-        font-size: 12px!important; 
-        margin:1px!important; 
-        padding: 1px!important;
+        /*        height:400px!important;
+                width:550px!important; */
+        height:13.3cm!important;
+        width:24cm!important; 
+        /*overflow:hidden!important;*/ 
+        /*font-family: monospace!important;*/ 
+        font-family: Times New Roman!important; 
+        font-size: 10px!important;
+        /*font-size: 12px!important;*/ 
+        /*margin:1px!important;*/ 
+        /*padding: 1px!important;*/
+        letter-spacing: 0px;
         background-size: 100% auto!important; 
         border: 1px solid!important;
-        font-size: 100%;
-        line-height: 2!important;
+        /*font-size: 100%;*/
+        /*line-height: 2!important;*/
     }
 
 
@@ -125,7 +130,7 @@ root {
 }
 .institutionContact{
     text-align: center!important;   
-    
+
 }
 
 
@@ -178,11 +183,11 @@ root {
 }
 
 .textAlignRight{
-   text-align: right!important; 
+    text-align: right!important; 
 }
 
 #textAlignRight{
-   text-align: right!important; 
+    text-align: right!important; 
 }
 
 .textAlignLeft{

@@ -17,6 +17,9 @@ public class MonthEndRecord {
     Department department;
     Staff staff;
     double workedDays;
+    double workedDaysBefore;
+    double workedDaysThis;
+    double workedDaysAditional;
     double extraDutyDays;
     double poyaDays;
     double poyaDaysLeave;
@@ -28,14 +31,13 @@ public class MonthEndRecord {
     double leave_nopay;
     double leave_lieuleave;
     double leave_dutyLeave;
+    double leave_maternity;
     double overtime;
     double latedays;
     double lateNoPays;
     double absent;
     double dayoff;
     double sleepingDays;
-
-    
     
     public double getLateNoPays() {
         return lateNoPays;
@@ -45,8 +47,6 @@ public class MonthEndRecord {
         this.lateNoPays = lateNoPays;
     }
     
-    
-
     public double getSleepingDays() {
         return sleepingDays;
     }
@@ -55,8 +55,6 @@ public class MonthEndRecord {
         this.sleepingDays = sleepingDays;
     }
     
-    
-
     public double getPoyaDays() {
         return poyaDays;
     }
@@ -73,10 +71,6 @@ public class MonthEndRecord {
         this.merhchantileDays = merhchantileDays;
     }
     
-    
-    
-    
-
     public double getLeave_dutyLeave() {
         return leave_dutyLeave;
     }
@@ -85,8 +79,6 @@ public class MonthEndRecord {
         this.leave_dutyLeave = leave_dutyLeave;
     }
     
-    
-
     public Department getDepartment() {
         return department;
     }
@@ -205,6 +197,38 @@ public class MonthEndRecord {
 
     public void setMerhchantileDaysLeave(double merhchantileDaysLeave) {
         this.merhchantileDaysLeave = merhchantileDaysLeave;
+    }
+
+    public double getWorkedDaysBefore() {
+        return workedDaysBefore;
+    }
+
+    public void setWorkedDaysBefore(double workedDaysBefore) {
+        this.workedDaysBefore = workedDaysBefore;
+    }
+
+    public double getWorkedDaysThis() {
+        return workedDaysThis;
+    }
+
+    public void setWorkedDaysThis(double workedDaysThis) {
+        this.workedDaysThis = workedDaysThis;
+    }
+
+    public double getWorkedDaysAditional() {
+        return workedDaysAditional;
+    }
+
+    public void setWorkedDaysAditional(double workedDaysAditional) {
+        this.workedDaysAditional = workedDaysAditional;
+    }
+
+    public double getLeave_maternity() {
+        return leave_maternity;
+    }
+
+    public void setLeave_maternity(double leave_maternity) {
+        this.leave_maternity = leave_maternity;
     }
 
 }

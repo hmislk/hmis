@@ -49,8 +49,8 @@
                 <h:panelGrid columns="2" class="poDetail" >
                     <h:outputLabel value="Location From : #{cc.attrs.bill.department.name}"/>
                     <h:outputLabel value="Location To : #{cc.attrs.bill.toDepartment.name}"/>
-                    <h:outputLabel value="Requested Person : #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}"/>
-                    <h:outputLabel value="Issued Person : #{cc.attrs.bill.creater.staff.code}"/>
+                    <h:outputLabel value="Requested Person : #{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}"/>
+                    <h:outputLabel value="Issued Person : #{cc.attrs.bill.creater.webUserPerson.name} - #{cc.attrs.bill.creater.staff.code}"/>
                     <h:outputLabel value="Issue No : #{cc.attrs.bill.deptId}"/>
                     <h:outputLabel value="Request No : #{cc.attrs.bill.backwardReferenceBill.deptId}"/>
                     <h:panelGroup >

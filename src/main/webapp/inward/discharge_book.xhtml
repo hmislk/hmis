@@ -120,13 +120,13 @@
                                 <p:column>
                                     #{in+1}
                                 </p:column>
-                                <p:column headerText="BHT No" rendered="#{inwardReportController.bhtNo or inwardReportController.developers}">
+                                <p:column headerText="BHT No" sortBy="#{i.bhtNo}" rendered="#{inwardReportController.bhtNo or inwardReportController.developers}">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discharge Date" rendered="#{inwardReportController.dischargeDate}">
+                                <p:column headerText="Discharge Date" sortBy="#{i.dateOfDischarge}" rendered="#{inwardReportController.dischargeDate}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
@@ -134,7 +134,7 @@
                                         <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discharge By" rendered="#{inwardReportController.billedBy}">
+                                <p:column headerText="Discharge By" sortBy="#{i.finalBill.creater.webUserPerson.name}" rendered="#{inwardReportController.billedBy}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge By"/>
                                     </f:facet>                                    
@@ -142,7 +142,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Admitted Date" rendered="#{inwardReportController.addmitDetails}">
+                                <p:column headerText="Admitted Date" sortBy="#{i.dateOfAdmission}" rendered="#{inwardReportController.addmitDetails}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
@@ -150,21 +150,21 @@
                                         <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Admitted By" rendered="#{inwardReportController.addmitDetails}">
+                                <p:column headerText="Admitted By" sortBy="#{i.creater.webUserPerson.name}" rendered="#{inwardReportController.addmitDetails}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Payment Method" rendered="#{inwardReportController.paymentMethord}" >
+                                <p:column headerText="Payment Method" sortBy="#{i.paymentMethod}" rendered="#{inwardReportController.paymentMethord}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Payment Method"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.paymentMethod}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Credit Company Name" rendered="#{inwardReportController.creditCompany}">
+                                <p:column headerText="Credit Company Name" sortBy="#{i.creditCompany.name}" rendered="#{inwardReportController.creditCompany}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company Name"/>
                                     </f:facet>                                    
@@ -178,7 +178,7 @@
                                     <h:outputLabel value="#{i.patient.person.mobile}"  >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Room" rendered="#{inwardReportController.room}">
+                                <p:column headerText="Room" sortBy="#{i.currentPatientRoom.roomFacilityCharge.room.name}" rendered="#{inwardReportController.room}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Room"/>
                                     </f:facet>
@@ -187,7 +187,7 @@
                                 </p:column>
 
 
-                                <p:column headerText="Patient Name" rendered="#{inwardReportController.person}">
+                                <p:column headerText="Patient Name" sortBy="#{i.patient.person.name}" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>                                    
@@ -195,7 +195,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Referring Consultant" rendered="#{inwardReportController.person}">
+                                <p:column headerText="Referring Consultant" sortBy="#{i.referringDoctor.person.nameWithTitle}" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Referring Consultant"/>
                                     </f:facet>                                    
@@ -203,7 +203,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                
+
 
                                 <p:column headerText="Address" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
@@ -213,9 +213,9 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                
 
-                                <p:column styleClass="averageNumericColumn" headerText="Final Bill Total" rendered="#{inwardReportController.finalBillTotal or inwardReportController.developers}">
+
+                                <p:column styleClass="averageNumericColumn" sortBy="#{i.finalBill.netTotal}" headerText="Final Bill Total" rendered="#{inwardReportController.finalBillTotal or inwardReportController.developers}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill Total"/>
                                     </f:facet>                                    
@@ -285,7 +285,7 @@
                                     </f:facet>
                                 </p:column>
 
-                                <p:column styleClass="averageNumericColumn" headerText="Difference Amount" rendered="#{inwardReportController.differentAmount or inwardReportController.developers}">
+                                <p:column styleClass="averageNumericColumn" sortBy="#{i.finalBill.netTotal-i.transTotal}" headerText="Difference Amount" rendered="#{inwardReportController.differentAmount or inwardReportController.developers}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Differece Amount"/>
                                     </f:facet>                                    
@@ -302,7 +302,13 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
+                                    <h:commandLink value="#{i.bhtNo}" action="/inward/inward_report_bht_income_by_caregories_bht" 
+                                                   actionListener="#{inwardReportControllerBht.process()}" 
+                                                   rendered="#{webUserController.hasPrivilege('Developers')}" target="_blank" >
+                                        <f:setPropertyActionListener value="#{i}" target="#{inwardReportControllerBht.patientEncounter}" />
+                                    </h:commandLink>
+                                    <h:outputLabel value="#{i.bhtNo}" rendered="#{!webUserController.hasPrivilege('Developers')}" >
+                                    </h:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>

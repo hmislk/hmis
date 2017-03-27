@@ -791,6 +791,12 @@ public class DataAdministrationController {
             serviceSessionFacade.edit(s);
         }
     }
+    public void createAllSessionAsChannel() {
+        for (ServiceSession s : fetchAllSessions()) {
+            s.setForBillType(BillType.Channel);
+            serviceSessionFacade.edit(s);
+        }
+    }
     public void createAllSessionAsNotVatable() {
         for (ServiceSession s : fetchAllSessions()) {
             s.setVatable(false);

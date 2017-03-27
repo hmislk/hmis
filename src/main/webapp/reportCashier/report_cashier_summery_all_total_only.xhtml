@@ -35,7 +35,7 @@
                             <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_report" subTable="true"/>
                         </p:commandButton>  
                         <br/>
-                        <h:outputLabel value="All #{cashierReportController.header} Summary"/>
+                        <h:outputLabel value="All #{cashierReportController.header} Summary (#{sessionController.institution.name})"/>
                         <br/>
                         <h:outputLabel value="From :"/>
                         <h:outputLabel value="#{cashierReportController.fromDate}">

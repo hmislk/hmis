@@ -5,12 +5,14 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
@@ -30,11 +32,13 @@ import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.inward.Admission;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -76,6 +80,8 @@ public class SearchController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     BillSessionFacade billSessionFacade;
+    @EJB
+    StockFacade stockFacade;
 
     /**
      * Inject
@@ -88,6 +94,8 @@ public class SearchController implements Serializable {
     TransferController transferController;
     @Inject
     private CommonController commonController;
+    @Inject
+    PharmacySaleBhtController pharmacySaleBhtController;
 
     /**
      * Properties
@@ -129,6 +137,7 @@ public class SearchController implements Serializable {
     boolean inwardPanelVisible;
     boolean labPanelVisile;
     boolean patientPanelVisible;
+    ReportKeyWord reportKeyWord;
 
     List<Bill> channellingBills;
     List<BillSession> billSessions;
@@ -139,6 +148,7 @@ public class SearchController implements Serializable {
     List<Patient> patients;
     List<String> telephoneNumbers;
     List<String> selectedTelephoneNumbers;
+    List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
 
     BillSession selectedBillSession;
 
@@ -1682,7 +1692,7 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
 
     }
-    
+
     public void createInwardBHTRequestTable() {
         Date startTime = new Date();
 
@@ -1719,8 +1729,20 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
 
     }
-    
-    public void createInwardBHTForIssueTable() {
+
+    public void createInwardBHTForIssueTableAll() {
+        createInwardBHTForIssueTable(null);
+    }
+
+    public void createInwardBHTForNotIssueTable() {
+        createInwardBHTForIssueTable(true);
+    }
+
+    public void createInwardBHTForIssueOnlyTable() {
+        createInwardBHTForIssueTable(false);
+    }
+
+    public void createInwardBHTForIssueTable(Boolean bool) {
         Date startTime = new Date();
 
         String sql;
@@ -1747,13 +1769,54 @@ public class SearchController implements Serializable {
 
         sql += " order by b.createdAt desc  ";
 
-        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP, 100);
 
         for (Bill b : bills) {
             b.setListOfBill(getBHTIssudBills(b));
         }
 
+        if (bool != null) {
+            List<Bill> bs = new ArrayList<>();
+            for (Bill b : bills) {
+                if (pharmacySaleBhtController.checkBillComponent(b)) {
+                    bs.add(b);
+                }
+            }
+            System.out.println("bs.size() = " + bs.size());
+            System.out.println("Before bills.size() = " + bills.size());
+            if (bool) {
+                bills = bs;
+            } else {
+                bills.removeAll(bs);
+            }
+            System.out.println("After bills.size() = " + bills.size());
+        }
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/Issue(/faces/pharmacy/pharmacy_transfer_request_list.xhtml)");
+
+    }
+
+    public long createInwardBHTForIssueBillCount() {
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("toDep", getSessionController().getDepartment());
+        tmp.put("bTp", BillType.InwardPharmacyRequest);
+
+        sql = "Select COUNT(b) From Bill b "
+                + " where b.retired=false "
+                + " and b.toDepartment=:toDep "
+                + " and b.cancelled=false "
+                + " and b.billType= :bTp "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        long count = 0l;
+        count = getBillFacade().countBySql(sql, tmp, TemporalType.TIMESTAMP);
+        System.out.println("count = " + count);
+
+        return count;
 
     }
 
@@ -2083,6 +2146,129 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Search adjustment bills(/faces/pharmacy/pharmacy_search_adjustment_bill_item.xhtml)");
 
+    }
+
+    public void createPharmacyAdjustmentBillItemTableForStockTaking() {
+        pharmacyAdjustmentRows = new ArrayList<>();
+
+        if (getReportKeyWord().getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department");
+            return;
+        }
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select bi from BillItem bi"
+                + " where  type(bi.bill)=:class "
+                + " and bi.bill.institution=:ins "
+                + " and bi.bill.department=:dep "
+                + " and bi.bill.billType=:bType  "
+                + " and bi.createdAt between :fromDate and :toDate ";
+
+        sql += " order by bi.item.name, bi.pharmaceuticalBillItem.stock.itemBatch.id ";
+
+        m.put("toDate", toDate);
+        m.put("fromDate", fromDate);
+        m.put("bType", BillType.PharmacyAdjustment);
+        m.put("ins", getSessionController().getInstitution());
+        m.put("dep", getReportKeyWord().getDepartment());
+        m.put("class", PreBill.class);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("billItems.size() = " + billItems.size());
+
+        dueTotal = 0.0;
+        doneTotal = 0.0;
+        netTotal = 0.0;
+
+        if (getReportKeyWord().isAdditionalDetails()) {
+            createAdjustmentRow(null, null, billItems);
+        } else {
+            m = new HashMap();
+            sql = "select s from Stock s "
+                    + " where s.department=:d "
+                    + " and s.stock>=0 "
+                    + "  order by s.itemBatch.item.name,s.itemBatch.id ";
+            m.put("d", getReportKeyWord().getDepartment());
+            List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+            System.out.println("stocks.size() = " + stocks.size());
+            for (Stock s : stocks) {
+                boolean flag = true;
+                System.out.println("s.getId() = " + s.getId());
+                System.out.println("s.getItemBatch().getItem().getName() = " + s.getItemBatch().getItem().getName());
+                int i = 1;
+                for (BillItem bi : billItems) {
+                    if (s.equals(bi.getPharmaceuticalBillItem().getStock())) {
+                        System.out.println("************bi.getItem().getName() = " + bi.getItem().getName());
+                        System.out.println("************bi.getPharmaceuticalBillItem().getStock().getId() = " + bi.getPharmaceuticalBillItem().getStock().getId());
+                        createAdjustmentRow(null, bi, null);
+                        flag = false;
+                        i++;
+                        break;
+                    }
+                    System.out.println(i + ".bi.getItem().getName(end) = " + bi.getItem().getName());
+                    i++;
+                }
+                if (flag) {
+                    if (s.getStock()>0) {
+                        createAdjustmentRow(s, null, null);
+                    } else {
+                        System.err.println("Zero stock");
+                    }
+                }
+            }
+
+        }
+        System.out.println("pharmacyAdjustmentRows.size() = " + pharmacyAdjustmentRows.size());
+
+    }
+
+    public void createAdjustmentRow(Stock s, BillItem bi, List<BillItem> billItems) {
+        PharmacyAdjustmentRow row;
+        if (s != null) {
+            row = new PharmacyAdjustmentRow(s.getItemBatch().getItem(),
+                    s.getItemBatch().getPurcahseRate(),
+                    s.getItemBatch().getRetailsaleRate(),
+                    s.getStock(),
+                    s.getStock(),
+                    0,
+                    s.getItemBatch().getBatchNo(),
+                    s.getItemBatch().getDateOfExpire());
+            dueTotal += row.getBefoerVal();
+            doneTotal += row.getAfterVal();
+            netTotal += row.getAdjusetedVal();
+            pharmacyAdjustmentRows.add(row);
+        }
+        if (bi != null) {
+            row = new PharmacyAdjustmentRow(bi.getItem(),
+                    bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate(),
+                    bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate(),
+                    bi.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                    bi.getQty(),
+                    bi.getQty() - bi.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                    bi.getPharmaceuticalBillItem().getStock().getItemBatch().getBatchNo(),
+                    bi.getPharmaceuticalBillItem().getStock().getItemBatch().getDateOfExpire());
+            dueTotal += row.getBefoerVal();
+            doneTotal += row.getAfterVal();
+            netTotal += row.getAdjusetedVal();
+            pharmacyAdjustmentRows.add(row);
+        }
+        if (billItems != null) {
+            for (BillItem bii : billItems) {
+                row = new PharmacyAdjustmentRow(bii.getItem(),
+                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate(),
+                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate(),
+                        bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                        bii.getQty(),
+                        bii.getQty() - bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getBatchNo(),
+                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getDateOfExpire());
+                dueTotal += row.getBefoerVal();
+                doneTotal += row.getAfterVal();
+                netTotal += row.getAdjusetedVal();
+                pharmacyAdjustmentRows.add(row);
+            }
+        }
     }
 
     public void createStoreAdjustmentBillItemTable() {
@@ -2650,7 +2836,7 @@ public class SearchController implements Serializable {
         hm.put("btp", BillType.PharmacyTransferIssue);
         return getBillFacade().findBySQL(sql, hm);
     }
-    
+
     private List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
@@ -2724,15 +2910,15 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         System.out.println("billFees.size() = " + billFees.size());
-        List<BillFee> removeingBillFees=new ArrayList<>();
+        List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
-            } 
-            
+            }
+
         }
         System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
         billFees.removeAll(removeingBillFees);
@@ -2793,15 +2979,15 @@ public class SearchController implements Serializable {
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         System.out.println("billFees.size() = " + billFees.size());
-        List<BillFee> removeingBillFees=new ArrayList<>();
+        List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
-            } 
-            
+            }
+
         }
         System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
         billFees.removeAll(removeingBillFees);
@@ -5272,6 +5458,7 @@ public class SearchController implements Serializable {
             BillType.ChannelCash,
             BillType.ChannelAgent,
             BillType.ChannelStaff,
+            BillType.ChannelPaid,
             BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
@@ -5493,7 +5680,7 @@ public class SearchController implements Serializable {
         createAgentPaymentTable(BillType.AgentDebitNoteBill);
 
     }
-    
+
     public void createCollectingCenterCreditNoteTable() {
 
         createAgentPaymentTable(BillType.CollectingCentreCreditNoteBill);
@@ -6330,6 +6517,28 @@ public class SearchController implements Serializable {
             temMap.put("td", toDate);
         }
 
+        if (getReportKeyWord().getString().equals("0")) {
+        }
+        if (getReportKeyWord().getString().equals("1")) {
+            BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelPaid};
+            sql += " and b.billType in :bts ";
+            temMap.put("bts", Arrays.asList(billTypes));
+        }
+        if (getReportKeyWord().getString().equals("2")) {
+            BillType[] billTypes = {BillType.OpdBill};
+            sql += " and b.billType in :bts ";
+            temMap.put("bts", Arrays.asList(billTypes));
+        }
+        if (getReportKeyWord().getString().equals("3")) {
+            BillType[] billTypes = {BillType.PharmacySale};
+            sql += " and b.billType in :bts ";
+            temMap.put("bts", Arrays.asList(billTypes));
+        }
+        if (getReportKeyWord().getArea() != null) {
+            sql += " and b.patient.person.area=:a ";
+            temMap.put("a", getReportKeyWord().getArea());
+        }
+
         sql += " order by b.patient.person.phone ";
 //
 
@@ -6402,11 +6611,11 @@ public class SearchController implements Serializable {
 
     public void sendSmsAll() {
         System.out.println("selectedTelephoneNumbers.size() = " + selectedTelephoneNumbers.size());
-        if (selectedTelephoneNumbers==null) {
+        if (selectedTelephoneNumbers == null) {
             JsfUtil.addErrorMessage("Please Select Numbers");
             return;
         }
-        if (selectedTelephoneNumbers.size()>10000) {
+        if (selectedTelephoneNumbers.size() > 10000) {
             JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
             return;
         }
@@ -6448,7 +6657,7 @@ public class SearchController implements Serializable {
                 ex.printStackTrace();
                 return;
             }
-
+            JsfUtil.addSuccessMessage("Done.");
         }
 
     }
@@ -6503,7 +6712,131 @@ public class SearchController implements Serializable {
 //        return bills;
 //
 //    }
+    public void listnerBillTypeChange() {
+        reportKeyWord.setArea(null);
+    }
+
     public SearchController() {
+    }
+
+    public class PharmacyAdjustmentRow {
+
+        Item itm;
+        double purchaseRate;
+        double saleRate;
+        double befoerQty;
+        double afterQty;
+        double adjusetedQty;
+        double befoerVal;
+        double afterVal;
+        double adjusetedVal;
+        String batchNo;
+        Date expiry;
+
+        public PharmacyAdjustmentRow() {
+        }
+
+        public PharmacyAdjustmentRow(Item itm, double purchaseRate, double saleRate, double befoerQty, double afterQty, double adjusetedQty, String batchNo, Date expiry) {
+            this.itm = itm;
+            this.purchaseRate = purchaseRate;
+            this.saleRate = saleRate;
+            this.befoerQty = befoerQty;
+            this.afterQty = afterQty;
+            this.adjusetedQty = adjusetedQty;
+            this.batchNo = batchNo;
+            this.expiry = expiry;
+            this.adjusetedVal = adjusetedQty * purchaseRate;
+            this.befoerVal = befoerQty * purchaseRate;
+            this.afterVal = afterQty * purchaseRate;
+        }
+
+        public Item getItm() {
+            return itm;
+        }
+
+        public void setItm(Item itm) {
+            this.itm = itm;
+        }
+
+        public double getPurchaseRate() {
+            return purchaseRate;
+        }
+
+        public void setPurchaseRate(double purchaseRate) {
+            this.purchaseRate = purchaseRate;
+        }
+
+        public double getSaleRate() {
+            return saleRate;
+        }
+
+        public void setSaleRate(double saleRate) {
+            this.saleRate = saleRate;
+        }
+
+        public double getBefoerQty() {
+            return befoerQty;
+        }
+
+        public void setBefoerQty(double befoerQty) {
+            this.befoerQty = befoerQty;
+        }
+
+        public double getAfterQty() {
+            return afterQty;
+        }
+
+        public void setAfterQty(double afterQty) {
+            this.afterQty = afterQty;
+        }
+
+        public double getAdjusetedQty() {
+            return adjusetedQty;
+        }
+
+        public void setAdjusetedQty(double adjusetedQty) {
+            this.adjusetedQty = adjusetedQty;
+        }
+
+        public String getBatchNo() {
+            return batchNo;
+        }
+
+        public void setBatchNo(String batchNo) {
+            this.batchNo = batchNo;
+        }
+
+        public Date getExpiry() {
+            return expiry;
+        }
+
+        public void setExpiry(Date expiry) {
+            this.expiry = expiry;
+        }
+
+        public double getBefoerVal() {
+            return befoerVal;
+        }
+
+        public void setBefoerVal(double befoerVal) {
+            this.befoerVal = befoerVal;
+        }
+
+        public double getAfterVal() {
+            return afterVal;
+        }
+
+        public void setAfterVal(double afterVal) {
+            this.afterVal = afterVal;
+        }
+
+        public double getAdjusetedVal() {
+            return adjusetedVal;
+        }
+
+        public void setAdjusetedVal(double adjusetedVal) {
+            this.adjusetedVal = adjusetedVal;
+        }
     }
 
     public Date getToDate() {
@@ -6947,6 +7280,33 @@ public class SearchController implements Serializable {
 
     public void setUniqueSmsText(String uniqueSmsText) {
         this.uniqueSmsText = uniqueSmsText;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public StockFacade getStockFacade() {
+        return stockFacade;
+    }
+
+    public void setStockFacade(StockFacade stockFacade) {
+        this.stockFacade = stockFacade;
+    }
+
+    public List<PharmacyAdjustmentRow> getPharmacyAdjustmentRows() {
+        return pharmacyAdjustmentRows;
+    }
+
+    public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
+        this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
 }

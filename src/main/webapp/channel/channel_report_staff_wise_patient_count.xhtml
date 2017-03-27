@@ -40,6 +40,9 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="Staff_Wise_Patient_Count"  />
+                        </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">

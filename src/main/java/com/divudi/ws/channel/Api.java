@@ -16,6 +16,7 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -46,6 +47,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -108,6 +110,8 @@ public class Api {
     private BillNumberGenerator billNumberBean;
     @EJB
     private ServiceSessionBean serviceSessionBean;
+    @EJB
+    FinalVariables finalVariables;
 
     @Inject
     private BillBeanController billBeanController;
@@ -230,7 +234,7 @@ public class Api {
             List<ServiceSession> sessions = sessionsList(doc_code, null, null);
             if (!sessions.isEmpty()) {
                 for (ServiceSession s : sessions) {
-                    object=new JSONObject();
+                    object = new JSONObject();
                     object.put("session_id", s.getId());
                     object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
                     object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
@@ -239,8 +243,9 @@ public class Api {
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()));
+                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
@@ -322,6 +327,8 @@ public class Api {
                 jSONObjectOut.put("make_booking", s);
                 jSONObjectOut.put("error", "1");
                 jSONObjectOut.put("error_description", "No Data.");
+                json = jSONObjectOut.toString();
+                return json;
             }
             ServiceSession ss = serviceSessionFacade.find(ss_id);
             if (ss != null) {
@@ -334,7 +341,7 @@ public class Api {
                 ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
                 ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             } else {
-                jSONObjectOut.put("make_booking", s);
+                jSONObjectOut.put("make_booking", "Invalid Session Id");
                 jSONObjectOut.put("error", "1");
                 jSONObjectOut.put("error_description", "No Data.");
                 return jSONObjectOut.toString();
@@ -349,6 +356,7 @@ public class Api {
             jSONObjectOut.put("error", "0");
             jSONObjectOut.put("error_description", "");
         } catch (Exception e) {
+            e.printStackTrace();
             jSONObjectOut.put("make_booking", bill);
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
@@ -540,11 +548,27 @@ public class Api {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
-        
+        List<ServiceSession> reList=new ArrayList<>();
         for (ServiceSession session : sessions) {
             System.out.println("session.getId() = " + session.getId());
+            System.out.println("session.getId() = " + session.getStartingTime());
+            Calendar date=Calendar.getInstance();
+            date.setTime(session.getSessionDate());
+            System.out.println("date.getTime() = " + date.getTime());
+            Calendar time=Calendar.getInstance();
+            time.setTime(session.getStartingTime());
+            System.out.println("time.getTime() = " + time.getTime());
+            time.set(Calendar.YEAR, date.get(Calendar.YEAR));
+            time.set(Calendar.MONTH, date.get(Calendar.MONTH));
+            time.set(Calendar.DATE, date.get(Calendar.DATE));
+            System.out.println("time.getTime() = " + time.getTime());
+            if (time.getTime().before(new Date())) {
+                reList.add(session);
+            }
         }
-
+        System.out.println("reList.size() = " + reList.size());
+        sessions.removeAll(reList);
+        System.out.println("sessions.size() = " + sessions.size());
 
 //        List<Object[]> objects = new ArrayList<>();
 //        for (ServiceSession s : sessions) {
@@ -565,7 +589,6 @@ public class Api {
 //            }
 //        }
 //        System.out.println("objects.size() = " + objects.size());
-
         return sessions;
     }
 
@@ -639,7 +662,9 @@ public class Api {
                 map.put("bill_session_date", getCommonController().getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
                 map.put("bill_session_start_time", getCommonController().getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", getCommonController().getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
-                map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+                map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", getCommonController().getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -746,6 +771,34 @@ public class Api {
         return obj;
     }
 
+    double fetchLocalFeeVat(long id, PaymentMethod paymentMethod, boolean forign) {
+        String jpql;
+        Map m = new HashMap();
+        FeeType[] fts = {FeeType.Staff};
+        List<FeeType> feeTypes = Arrays.asList(fts);
+        if (forign) {
+            jpql = "Select sum(f.ffee)";
+        } else {
+            jpql = "Select sum(f.fee)";
+        }
+
+        jpql += " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item.id=:ses "
+                + " and f.feeType in :fts ";
+        m.put("fts", feeTypes);
+
+        m.put("ses", serviceSessionFacade.find(id).getOriginatingSession().getId());
+
+        Double obj = ItemFeeFacade.findDoubleByJpql(jpql, m);
+        System.out.println("obj = " + obj);
+        if (obj == null) {
+            return 0;
+        }
+
+        return obj * 0.15;
+    }
+
     String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
         String s = "";
         if (name == null || "".equals(name)) {
@@ -754,6 +807,10 @@ public class Api {
         }
         if (phone == null || "".equals(phone)) {
             s = "Please Enter Phone Number";
+            return s;
+        }
+        if (phone.length() != 10) {
+            s = "Please Enter Phone Number Length";
             return s;
         }
         if ("".equals(doc)) {
@@ -766,6 +823,11 @@ public class Api {
         }
         if ("".equals(agent)) {
             s = "Please Enter Agency";
+            return s;
+        }
+        Institution institution = institutionFacade.find(agent);
+        if (institution == null) {
+            s = "Incorrect Agency Id";
             return s;
         }
         if ("".equals(agent_ref)) {
@@ -808,7 +870,7 @@ public class Api {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal()+savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
@@ -839,7 +901,7 @@ public class Api {
         Patient p = new Patient();
         p.setPerson(new Person());
         p.getPerson().setName(name);
-        p.getPerson().setPhone(phone);
+        p.getPerson().setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
         getPersonFacade().create(p.getPerson());
         bill.setPatient(p);
         getPatientFacade().create(p);
@@ -938,6 +1000,9 @@ public class Api {
     private List<BillFee> createBillFee(Bill bill, BillItem billItem, ServiceSession ss) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
+        double tmpTotalNet = 0;
+        double tmpTotalVat = 0;
+        double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
         System.out.println("ss.getOriginatingSession().getItemFees() = " + ss.getOriginatingSession().getItemFees().size());
         for (ItemFee f : ss.getOriginatingSession().getItemFees()) {
@@ -979,26 +1044,39 @@ public class Api {
             }
 
             bf.setPatient(bill.getPatient());
+            bf.setFeeValue(f.getFee());
 
             if (f.getFeeType() == FeeType.Staff) {
                 bf.setStaff(f.getStaff());
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(bf.getFeeValue() * 0.15);
+                bf.setFeeVatPlusValue(bf.getFeeValue() * 1.15);
+                bf.setFeeDiscount(0.0);
+            }else{
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(0.0);
+                bf.setFeeVatPlusValue(bf.getFeeValue());
+                bf.setFeeDiscount(0.0);
             }
 
             if (f.getFeeType() == FeeType.OwnInstitution) {
                 bf.setInstitution(bill.getInstitution());
             }
-            bf.setFeeValue(f.getFee());
 
-            bf.setFeeGrossValue(bf.getFeeValue());
-            bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-
-            tmpTotal += bf.getFeeValue();
+            tmpTotal += bf.getFeeGrossValue();
+            tmpTotalVat += bf.getFeeVat();
+            tmpTotalVatPlusNet += bf.getFeeVatPlusValue();
+            tmpTotalNet += bf.getFeeValue();
+            tmpDiscount += bf.getFeeDiscount();
 
             billFeeFacade.create(bf);
             billFeeList.add(bf);
         }
+        bill.setDiscount(tmpDiscount);
+        bill.setNetTotal(tmpTotalNet);
         bill.setTotal(tmpTotal);
-        bill.setNetTotal(tmpTotal);
+        bill.setVat(tmpTotalVat);
+        bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
         System.out.println("tmpDiscount = " + tmpDiscount);
         System.out.println("tmpTotal = " + tmpTotal);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
@@ -1006,7 +1084,10 @@ public class Api {
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
-        billItem.setNetValue(tmpTotal);
+        billItem.setGrossValue(tmpTotal);
+        billItem.setNetValue(tmpTotalNet);
+        billItem.setVat(tmpTotalVat);
+        billItem.setVatPlusNetValue(tmpTotalVatPlusNet);
         System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
         getBillItemFacade().edit(billItem);
 

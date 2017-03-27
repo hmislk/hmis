@@ -970,6 +970,26 @@ public class ItemController implements Serializable {
         }
         System.out.println("itemlist.size() = " + itemlist.size());
     }
+    
+    public void createInwardList() {
+        itemlist = getInwardItems();
+        System.out.println("itemlist.size() = " + itemlist.size());
+        for (Item i : itemlist) {
+            List<ItemFee> tmp = serviceController.getFees(i);
+            System.out.println("tmp.size() = " + tmp.size());
+            for (ItemFee itf : tmp) {
+                i.setItemFee(itf);
+                if (itf.getFeeType() == FeeType.OwnInstitution) {
+                    i.setHospitalFee(i.getHospitalFee() + itf.getFee());
+                    i.setHospitalFfee(i.getHospitalFfee() + itf.getFfee());
+                } else if (itf.getFeeType() == FeeType.Staff) {
+                    i.setProfessionalFee(i.getProfessionalFee() + itf.getFee());
+                    i.setProfessionalFfee(i.getProfessionalFfee() + itf.getFfee());
+                }
+            }
+        }
+        System.out.println("itemlist.size() = " + itemlist.size());
+    }
 
     /**
      *
@@ -1053,6 +1073,15 @@ public class ItemController implements Serializable {
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
+        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        return items;
+    }
+    
+    public List<Item> getInwardItems() {
+        String temSql;
+        HashMap h = new HashMap();
+        temSql = "SELECT i FROM Item i where type(i)=:t1 and i.retired=false order by i.department.name";
+        h.put("t1", InwardService.class);
         items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
         return items;
     }

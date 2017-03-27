@@ -12,6 +12,7 @@ import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DateType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.HumanResourceBean;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -59,6 +60,8 @@ public class SalaryCycleController implements Serializable {
     private SalaryCycleFacade facade;
     @EJB
     RosterFacade rosterFacade;
+    @EJB
+    CommonFunctions commonFunctions;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -67,6 +70,8 @@ public class SalaryCycleController implements Serializable {
     StaffSalaryController staffSalaryController;
     @Inject
     CommonController commonController;
+    @Inject
+    HrReportController hrReportController;
     List<SalaryCycle> salaryCycles;
     List<String> headersAdd;
     List<Double> footerAdd;
@@ -977,6 +982,33 @@ public class SalaryCycleController implements Serializable {
                     }
                 }
             }
+            s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            
+            
+            if (s.getStaff().getDateJoined() != null) {
+                if ((s.getSalaryCycle().getSalaryFromDate().getTime() <= s.getStaff().getDateJoined().getTime()
+                        && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
+                    long extraDays;
+                    if (s.getStaff().getDateJoined().getTime() > s.getSalaryCycle().getDayOffPhToDate().getTime()) {
+                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
+                                - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                    } else {
+                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime() 
+                                - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    }
+                    System.out.println("New Come extraDays = " + extraDays);
+                    extraDays -= (int) (extraDays / 7);
+                    System.out.println("New Come extraDays(After) = " + extraDays);
+                    s.setWorkingDaysAditional(extraDays);
+                } else {
+                    s.setWorkingDaysAditional(0.0);
+                }
+
+                
+            }
+            
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {

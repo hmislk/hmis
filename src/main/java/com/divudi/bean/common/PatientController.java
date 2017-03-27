@@ -145,9 +145,9 @@ public class PatientController implements Serializable {
     }
 
     public void removeFamilyMember(Person p) {
-        
+
         familyMembers.remove(p.getSerealNumber());
-        int i=0;
+        int i = 0;
         for (Person familyMember1 : familyMembers) {
             familyMember1.setSerealNumber(i);
             i++;
@@ -408,12 +408,13 @@ public class PatientController implements Serializable {
         if (current == null) {
             Person p = new Person();
             current = new Patient();
-            current.setCode(getCountPatientCode());
+//            current.setCode(getCountPatientCode());
             current.setPerson(p);
 
         }
         return current;
     }
+    
 
     public void setCurrent(Patient current) {
         this.current = current;

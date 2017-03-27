@@ -126,6 +126,15 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Machine Name" rendered="#{webUserController.hasPrivilege('Developers')}"
+                                      sortBy="#{c.investigation.machine.name}" 
+                                      filterBy="#{c.investigation.machine.name}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Machine Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{c.investigation.machine.name}"  />
+                            </p:column>
                             <p:column headerText="Count" style="text-align:right" 
                                       sortBy="#{c.count}">
                                 <f:facet name="header">

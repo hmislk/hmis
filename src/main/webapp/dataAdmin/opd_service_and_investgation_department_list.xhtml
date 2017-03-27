@@ -23,11 +23,14 @@
                             <p:printer target="panIx" />
                         </p:commandButton>
                         
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh"
+                        <p:commandButton id="btnRefresh" ajax="false" value="OPD"
                                          styleClass="noPrintButton" 
                                          action="#{itemController.createOpdSeviceInvestgationList()}">                            
                         </p:commandButton>
-                        <p:defaultCommand target="btnRefresh"/>
+                        <p:commandButton id="btnRefresh2" ajax="false" value="Inward"
+                                         styleClass="noPrintButton" 
+                                         action="#{itemController.createInwardList()}">                            
+                        </p:commandButton>
 
                         <p:commandButton value="Excel" ajax="false" onclick="onSubmitButton();">
                             <pe:exporter type="xlsx" target="tblBills" fileName="DepartmentIncome"
@@ -88,6 +91,13 @@
                                     <h:outputLabel value="Sub Category"/>
                                 </f:facet>
                                 <h:outputLabel value="#{ix.category.name}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Account Name" filterBy="#{ix.category.name}" filterMatchMode="contains"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Account Name"/>
+                                </f:facet>
+                                <h:outputLabel value="#{ix.category.description}"/>
                             </p:column>
 
                             <p:column headerText="Service Code" filterBy="#{ix.code}" filterMatchMode="contains" >                                          

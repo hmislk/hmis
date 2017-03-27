@@ -50,16 +50,18 @@
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{serviceCategoryController.current.name}"  ></h:inputText>
+                                    <h:outputText id="lblNameIn" value="Income Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{serviceCategoryController.current.description}"  ></h:inputText>
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    
+
                                     <h:commandButton id="btnSave" value="Save" action="#{serviceCategoryController.saveSelected()}" styleClass="buttons">
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                         </f:ajax>
                                     </h:commandButton>                                    
                                     <p:defaultCommand target="btnSave"/>
-                                    
+
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>

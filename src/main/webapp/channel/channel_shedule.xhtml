@@ -142,9 +142,15 @@
                         <p:outputLabel value="Refundable"/>
                         <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
                         
-                        <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
-                        <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
-
+                        <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}" />
+                        <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}"/>
+                        
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                            <f:selectItem itemLabel="Please Select a Type"/>
+                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                        </p:selectOneMenu>
+                        
                         <p:outputLabel value="Credit Numbers"/>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>
                         <p:outputLabel value="Cash Numbers"/>
@@ -157,6 +163,12 @@
                         <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
                         <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
+                        <p:outputLabel value="creater"></p:outputLabel>
+                        <p:outputLabel value="#{sheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
+                        <p:outputLabel value="created At"></p:outputLabel>
+                        <p:outputLabel value="#{sheduleController.current.createdAt}">
+                            <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                        </p:outputLabel>
 
                     </p:panelGrid>
                     <br/>

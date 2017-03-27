@@ -39,7 +39,7 @@
 
                                     <!--                                    <p:commandButton ajax="false" value="Process" >
                                                                         </p:commandButton>-->
-
+                                    <!--<p:commandButton value="process" action="#{staffPaymentBillController.calculateDueFees}" ajax="false" />-->
                                 </h:panelGrid>
 
 
@@ -65,6 +65,13 @@
                                             <h:outputLabel value="Bill Id"/>
                                         </f:facet>    
                                         <h:outputLabel value="#{bf.bill.insId}">
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill Id">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bill Id"/>
+                                        </f:facet>    
+                                        <h:outputLabel value="#{bf.billItem.refunded}">
                                         </h:outputLabel>
                                     </p:column>
                                     

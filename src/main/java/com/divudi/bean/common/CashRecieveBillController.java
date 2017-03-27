@@ -82,6 +82,10 @@ public class CashRecieveBillController implements Serializable {
         for (Bill b : list) {
             getCurrentBillItem().setReferenceBill(b);
             selectBillListener();
+            if (getCurrentBillItem().getNetValue() == 0.0) {
+                System.err.println("quit");
+                continue;
+            }
             addToBill();
         }
 //        if (billItems != null) {
@@ -89,7 +93,7 @@ public class CashRecieveBillController implements Serializable {
 //        }
         calTotal();
     }
-    
+
     public void selectInstitutionListenerPharmacy() {
         Institution ins = institution;
         makeNull();
@@ -191,11 +195,14 @@ public class CashRecieveBillController implements Serializable {
 
     private double getReferenceBallance(BillItem billItem) {
         double refBallance = 0;
-        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal()+billItem.getReferenceBill().getVat());
+        double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
+        System.out.println("neTotal = " + neTotal);
+        double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
+        System.err.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
-
-        refBallance = neTotal - (paidAmt);
-
+        System.out.println("paidAmt = " + paidAmt);
+        refBallance = neTotal - (paidAmt + refAmount);
+        System.out.println("refBallance = " + refBallance);
         return refBallance;
     }
 
@@ -256,9 +263,9 @@ public class CashRecieveBillController implements Serializable {
 
         return false;
     }
-    
+
     private boolean errorCheckForAddingPharmacy() {
-        if (getCurrentBillItem().getReferenceBill().getToInstitution()== null) {
+        if (getCurrentBillItem().getReferenceBill().getToInstitution() == null) {
             UtilityController.addErrorMessage("U cant add without credit company name");
             return true;
         }
@@ -352,7 +359,7 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
 
     }
-    
+
     public void addToBillPharmacy() {
         if (errorCheckForAddingPharmacy()) {
             return;
@@ -401,11 +408,11 @@ public class CashRecieveBillController implements Serializable {
 
     public void calTotal() {
         double n = 0.0;
-        System.out.println("getBillItems().size() = " + getBillItems().size());
-        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+//        System.out.println("getBillItems().size() = " + getBillItems().size());
+//        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
         for (BillItem b : selectedBillItems) {
-            System.out.println("b.getNetValue() = " + b.getNetValue());
-            System.out.println("b.getSearialNo() = " + b.getSearialNo());
+//            System.out.println("b.getNetValue() = " + b.getNetValue());
+//            System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -460,7 +467,7 @@ public class CashRecieveBillController implements Serializable {
 
         return false;
     }
-    
+
     private boolean errorCheckPharmacy() {
         if (getSelectedBillItems().isEmpty()) {
             UtilityController.addErrorMessage("No Bill Item ");
@@ -476,8 +483,6 @@ public class CashRecieveBillController implements Serializable {
             UtilityController.addErrorMessage("Select same credit company as BillItem ");
             return true;
         }
-        
-        
 
 //        if (getCurrent().getPaymentScheme() == null) {
 //            return true;
@@ -644,7 +649,7 @@ public class CashRecieveBillController implements Serializable {
         //   savePayments();
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Inward/By OPD bill(/faces/credit/credit_compnay_bill_inward.xhtml)");
 
     }

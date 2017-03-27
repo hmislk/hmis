@@ -351,15 +351,15 @@ public class ChannelBillController implements Serializable {
         double tmpTotalVat = 0;
         double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
-        double docFee=0.0;
+        double docFee = 0.0;
         for (BillFee bf : getBillSession().getBill().getBillFees()) {
             getBillFeeFacade().edit(bf);
             tmpTotal += bf.getFeeGrossValue();
             tmpTotalVat += bf.getFeeVat();
             tmpTotalVatPlusNet += bf.getFeeVatPlusValue();
             tmpTotalNet += bf.getFeeValue();
-            if (bf.getFee().getFeeType()==FeeType.Staff) {
-                docFee+=bf.getFeeValue();
+            if (bf.getFee().getFeeType() == FeeType.Staff) {
+                docFee += bf.getFeeValue();
                 System.out.println("bf.getFeeValue() = " + bf.getFeeValue());
             }
         }
@@ -367,14 +367,14 @@ public class ChannelBillController implements Serializable {
         System.out.println("tmpTotalVat = " + tmpTotalVat);
         System.out.println("tmpTotalVatPlusNet = " + tmpTotalVatPlusNet);
         System.out.println("tmpTotalNet = " + tmpTotalNet);
-        
+
         getBillSession().getBillItem().setDiscount(tmpDiscount);
         getBillSession().getBillItem().setGrossValue(tmpTotal);
         getBillSession().getBillItem().setNetValue(tmpTotalNet);
         getBillSession().getBillItem().setVat(tmpTotalVat);
         getBillSession().getBillItem().setVatPlusNetValue(tmpTotalVatPlusNet);
         getBillItemFacade().edit(getBillSession().getBillItem());
-        
+
         getBillSession().getBill().setDiscount(tmpDiscount);
         getBillSession().getBill().setNetTotal(tmpTotalNet);
         getBillSession().getBill().setTotal(tmpTotal);
@@ -382,7 +382,7 @@ public class ChannelBillController implements Serializable {
         getBillSession().getBill().setVatPlusNetTotal(tmpTotalVatPlusNet);
         getBillSession().getBill().setStaffFee(docFee);
         getBillFacade().edit(getBillSession().getBill());
-        
+
     }
 
     public void refundCashFlowBill() {
@@ -402,6 +402,10 @@ public class ChannelBillController implements Serializable {
         if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
+        }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return ;
         }
         calRefundTotal();
         System.out.println("getRefundableTotal() = " + getRefundableTotal());
@@ -437,6 +441,10 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
         }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return;
+        }
 
         refund(getBillSession().getBill(), getBillSession().getBillItem(), getBillSession().getBill().getBillFees(), getBillSession());
 
@@ -466,6 +474,10 @@ public class ChannelBillController implements Serializable {
         if (getCommentR() == null || getCommentR().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
             return;
+        }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
+            return ;
         }
 
         if (getBillSession().getBill().getBillFees() != null) {
@@ -640,10 +652,21 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean checkPaid() {
-        String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();
+//        System.out.println("getBillSession().getBill().getInsId() = " + getBillSession().getBill().getInsId());
+//        System.out.println("getBillSession().getBill().getPaidBill().getInsId() = " + getBillSession().getBill().getPaidBill().getInsId());
+        if (getBillSession().getBill().getPaidBill()==null) {
+            return false;
+        }
+        
+        String sql;
+        if (getBillSession().getBill().equals(getBillSession().getBill().getPaidBill())) {
+            sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getId();
+        } else {
+            sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getPaidBill().getId();
+        }
         List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
-
         for (BillFee f : tempFe) {
+            System.out.println("f.getPaidValue() = " + f.getPaidValue());
             if (f.getPaidValue() != 0.0) {
                 return true;
             }
@@ -798,6 +821,10 @@ public class ChannelBillController implements Serializable {
         }
         if (getComment() == null || getComment().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a comment");
+            return;
+        }
+        if (checkPaid()) {
+            UtilityController.addErrorMessage("Doctor Payment has paid");
             return;
         }
 
@@ -1882,17 +1909,33 @@ public class ChannelBillController implements Serializable {
             // set vat for all bill fees
 
             //only vat for doctor fee
-            if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                    || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
                 System.out.println("getbookingController().getSelectedServiceSession().isVatable() = " + getbookingController().getSelectedServiceSession().isVatable());
                 System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable() = " + getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable());
-                if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable() && f.getFeeType() == FeeType.Staff) {
-                    bf.setFeeGrossValue(bf.getFeeValue());
-                    bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
-                    bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
-                } else {
-                    bf.setFeeGrossValue(bf.getFeeValue());
-                    bf.setFeeVat(0.0);
-                    bf.setFeeVatPlusValue(bf.getFeeValue());
+                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+                    if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable() && f.getFeeType() == FeeType.Staff) {
+                        bf.setFeeGrossValue(bf.getFeeValue());
+                        bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+                        bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+                    } else {
+                        bf.setFeeGrossValue(bf.getFeeValue());
+                        bf.setFeeVat(0.0);
+                        bf.setFeeVatPlusValue(bf.getFeeValue());
+                    }
+                }
+                //or arogya add vat for full bill,is not forign,and vatable marked
+                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+                    if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable()
+                            && !isForiegn()) {
+                        bf.setFeeGrossValue(bf.getFeeValue());
+                        bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
+                        bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+                    } else {
+                        bf.setFeeGrossValue(bf.getFeeValue());
+                        bf.setFeeVat(0.0);
+                        bf.setFeeVatPlusValue(bf.getFeeValue());
+                    }
                 }
             } else {
                 if (f.getFeeType() == FeeType.Staff) {

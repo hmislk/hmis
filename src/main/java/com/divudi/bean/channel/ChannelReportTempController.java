@@ -456,6 +456,32 @@ public class ChannelReportTempController implements Serializable {
         return getStaffFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public List<Speciality> fetchBillsSpecilities(List<BillType> billTypes) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select distinct(b.staff.speciality) from Bill b "
+                + " where b.retired=false "
+                + " and ((b.createdAt between :fromDate and :toDate) "
+                + " or (b.singleBillSession.sessionDate between :fromDate and :toDate)) "
+                + " and b.staff is not null ";
+
+        if (billTypes != null) {
+            sql += " and b.billType in :bts ";
+            m.put("bts", billTypes);
+        }
+        sql += " order by b.staff.speciality.name ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        System.err.println("Sql " + sql);
+        System.out.println("m = " + m);
+
+        return getSpecialityFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+    }
 
     public double fetchBillsCount(Staff s, BillType bt) {
 
@@ -1585,12 +1611,15 @@ public class ChannelReportTempController implements Serializable {
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
-                td = commonFunctions.getEndOfMonth(nowDate);
+                td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(nowDate));
 
                 DateFormat df = new SimpleDateFormat("yy MM");
                 formatedDate = df.format(fd);
                 System.out.println("formatedDate = " + formatedDate);
             }
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
+            System.out.println("fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
             double tmpTot = fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     - (fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
@@ -1740,10 +1769,32 @@ public class ChannelReportTempController implements Serializable {
     public void fetchStaffWiseChannelCount() {
 
         channelDoctorCountsRows = new ArrayList<>();
-        for (Staff s : fetchBillsStaffs(null, Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
+        if (getReportKeyWord().getStaff() != null) {
             ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
-            row.setStaff(s);
-            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
+            row.setStaff(getReportKeyWord().getStaff());
+            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, getReportKeyWord().getStaff(), byDate, null));
+            System.out.println("row.getCounts().size() = " + row.getCounts().size());
+            channelDoctorCountsRows.add(row);
+        } else {
+            for (Staff s : fetchBillsStaffs(getReportKeyWord().getSpeciality(), Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
+                ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+                row.setStaff(s);
+                row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
+                System.out.println("row.getCounts().size() = " + row.getCounts().size());
+                channelDoctorCountsRows.add(row);
+            }
+        }
+
+    }
+
+    public void fetchSpecilityWiseChannelCount() {
+
+        channelDoctorCountsRows = new ArrayList<>();
+
+        for (Speciality s : fetchBillsSpecilities( Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
+            ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+            row.setSpeciality(s);
+            row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, null, byDate, s));
             System.out.println("row.getCounts().size() = " + row.getCounts().size());
             channelDoctorCountsRows.add(row);
         }
@@ -2109,6 +2160,36 @@ public class ChannelReportTempController implements Serializable {
         }
     }
 
+    public void createSpecilityWiseAppoinmentCountNew() {
+        columnModels = new ArrayList<>();
+        fetchChannelHeaders();
+        fetchSpecilityWiseChannelCount();
+        ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
+        int i = channelDoctorCountsRows.size();
+        int j = headers.size();
+//        row.setCategoryName("Total");
+        List<Long> list = new ArrayList<>();
+        System.out.println("Time 1 = " + new Date());
+        for (int k = 0; k < j; k++) {
+            double total = 0.0;
+            for (int l = 0; l < i; l++) {
+                total += channelDoctorCountsRows.get(l).getCounts().get(k);
+            }
+            list.add((long) total);
+        }
+        row.setCounts(list);
+        System.out.println("Time 2 = " + new Date());
+        channelDoctorCountsRows.add(row);
+        Long l = 0l;
+        for (String h : headers) {
+            ColumnModel c = new ColumnModel();
+            c.setHeader(h);
+            c.setProperty(l.toString());
+            columnModels.add(c);
+            l++;
+        }
+    }
+
     public void createStaffWiseAppoinmentTotal() {
         Date startTime = new Date();
         fetchStaffWiseChannelTotalOrCount();
@@ -2125,7 +2206,7 @@ public class ChannelReportTempController implements Serializable {
         channelReportSpecialityWiseSummeryRows = new ArrayList<>();
         ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();;
         ColumnModel c = new ColumnModel();
-        List<Staff> doctors = fetchBillsStaffs(null, null);
+        List<Staff> doctors = fetchBillsStaffs(null, Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelPaid}));
         System.out.println("doctors.size() = " + doctors.size());
 
         for (Staff s : doctors) {
@@ -2288,7 +2369,7 @@ public class ChannelReportTempController implements Serializable {
         grantTot = 0.0;
         bills = fetchCancelledOrRefundBills();
         for (Bill bill : bills) {
-            grantTot += (bill.getVat()+bill.getNetTotal());
+            grantTot += (bill.getVat() + bill.getNetTotal());
         }
     }
 
@@ -2318,7 +2399,7 @@ public class ChannelReportTempController implements Serializable {
             m.put("class", CancelledBill.class);
         }
         if (billtype.equals("2")) {
-           sql += " and type(b)=:class ";
+            sql += " and type(b)=:class ";
             m.put("class", RefundBill.class);
         }
         sql += " and b.createdAt between :fd and :td ";
@@ -3246,6 +3327,7 @@ public class ChannelReportTempController implements Serializable {
     public class ChannelDoctorCountsRow {
 
         Staff staff;
+        Speciality speciality;
         List<Long> counts;
 
         public Staff getStaff() {
@@ -3262,6 +3344,14 @@ public class ChannelReportTempController implements Serializable {
 
         public void setCounts(List<Long> counts) {
             this.counts = counts;
+        }
+
+        public Speciality getSpeciality() {
+            return speciality;
+        }
+
+        public void setSpeciality(Speciality speciality) {
+            this.speciality = speciality;
         }
     }
 
