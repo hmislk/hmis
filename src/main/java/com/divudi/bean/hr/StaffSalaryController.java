@@ -640,6 +640,7 @@ public class StaffSalaryController implements Serializable {
 
             System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
+            System.err.println("OT Min : " + otSec / 60 );
             System.err.println("OT Time : " + otSec / (60 * 60));
 
             overTimeSec += otSec;
@@ -1695,6 +1696,27 @@ public class StaffSalaryController implements Serializable {
             getCurrent().calcualteEpfAndEtf();
             getItems().add(current);
             current = null;
+
+        }
+
+        //   createStaffSalaryTable();
+    }
+    
+    public void generateForCheck() {
+        if (getStaffController().getSelectedList() == null) {
+            return;
+        }
+
+        if (dateCheck()) {
+            return;
+        }
+
+        items = null;
+        int i = 0;
+        for (Staff s : getStaffController().getSelectedList()) {
+            setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
+            Long overTimeMinute = calculateOverTimeMinuteByDate(getCurrent().getStaff());//edited by doctor
+            System.out.println("overTimeMinute = " + overTimeMinute);
 
         }
 

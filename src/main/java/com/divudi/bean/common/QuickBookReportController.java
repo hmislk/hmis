@@ -96,6 +96,7 @@ public class QuickBookReportController implements Serializable {
     private List<QuickBookFormat> quickBookFormats;
     private List<Category> categorys;
     private List<Institution> creditCompanies;
+    private List<Item> items;
 
     private Institution institution;
     private Date toDate;
@@ -131,6 +132,46 @@ public class QuickBookReportController implements Serializable {
             default:
                 throw new AssertionError();
         }
+    }
+
+    public void createAllBilledItemReport() {
+        items = fetchBilledItem(Arrays.asList(new BillType[]{BillType.InwardBill, BillType.OpdBill}), fromDate, toDate);
+        for (Item i : items) {
+            if (i.getName().length() > 30) {
+                i.setTransName(i.getName().substring(0, 30));
+            } else {
+                i.setTransName(i.getName());
+            }
+            if (Investigation.class == i.getClass()) {
+                i.getCategory().setDescription("RHD LAB INCOME:RHD OPD Sale");
+            }
+        }
+    }
+
+    public List<Item> fetchBilledItem(List<BillType> billTypes, Date fd, Date td) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false ";
+
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bts ";
+            m.put("bts", billTypes);
+        }
+
+        sql += " and ((bi.bill.createdAt between :fromDate and :toDate) "
+                + " or (bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate)) "
+                + " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
     }
 
     public void createQBFormatOpdDayIncome() {
@@ -936,9 +977,9 @@ public class QuickBookReportController implements Serializable {
                 }
                 qbf.setInvItemType("SERV");
                 if (i.getName().length() > 30) {
-                    qbf.setInvItem(i.getName().substring(0, 30));
+                    qbf.setInvItem(i.getCategory().getName() + ":" + i.getName().substring(0, 30));
                 } else {
-                    qbf.setInvItem(i.getName());
+                    qbf.setInvItem(i.getCategory().getName() + ":" + i.getName());
                 }
                 qbf.setAmount(0 - sum);
                 if (bclass == BillClassType.BilledBill) {
@@ -1015,9 +1056,9 @@ public class QuickBookReportController implements Serializable {
                     }
                     qbf.setInvItemType("SERV");
                     if (i.getName().length() > 30) {
-                        qbf.setInvItem(i.getName().substring(0, 30));
+                        qbf.setInvItem(i.getCategory().getName() + ":" + i.getName().substring(0, 30));
                     } else {
-                        qbf.setInvItem(i.getName());
+                        qbf.setInvItem(i.getCategory().getName() + ":" + i.getName());
                     }
                     qbf.setAmount(0 - sum);
                     if (bclass == BillClassType.BilledBill) {
@@ -1326,13 +1367,13 @@ public class QuickBookReportController implements Serializable {
 
                 if (paymentMethod == PaymentMethod.Credit) {
                     if (pe != null) {
-                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), name, i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                     } else {
-                        qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                     }
                 } else {
                     sdf = new SimpleDateFormat("MMM yyyy");
-                    qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                    qbf = new QuickBookFormat(cat.getName(), name, i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                 }
                 if (Investigation.class == i.getClass()) {
                     qbf.setAccnt("RHD LAB INCOME:RHD Inward Sale");
@@ -1385,13 +1426,13 @@ public class QuickBookReportController implements Serializable {
                     qbf = new QuickBookFormat();
                     if (paymentMethod == PaymentMethod.Credit) {
                         if (pe != null) {
-                            qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                            qbf = new QuickBookFormat(cat.getName(), name, i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                         } else {
-                            qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s);
+                            qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                         }
                     } else {
                         sdf = new SimpleDateFormat("MMM yyyy");
-                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), name, i.getCategory().getName() + ":" + i.getName(), 0 - sum, s);
                     }
                     if (Investigation.class == i.getClass()) {
                         qbf.setAccnt("RHD LAB INCOME:RHD Inward Sale");
@@ -2083,6 +2124,8 @@ public class QuickBookReportController implements Serializable {
 
     public void listnerReportNameChange() {
         quickBookFormats = new ArrayList<>();
+        items = new ArrayList<>();
+        reportKeyWord = new ReportKeyWord();
     }
 
     public void listnerBool1Change() {
@@ -2291,6 +2334,14 @@ public class QuickBookReportController implements Serializable {
 
     public void setInwardBeanController(InwardBeanController inwardBeanController) {
         this.inwardBeanController = inwardBeanController;
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
 }

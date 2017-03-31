@@ -2462,6 +2462,26 @@ public class HrReportController implements Serializable {
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
 
+    private List<StaffShift> fetchWorkedShifts(Staff staff, Date f, Date t) {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:tp"
+                + " and ss.staff=:stf"
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", f);
+        hm.put("to", t);
+        hm.put("tp", StaffShiftExtra.class);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        sql += " order by ss.dayOfWeek,ss.staff.codeInterger ";
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
     private List<Object[]> fetchStaffShiftData() {
         String sql = "";
 
@@ -3053,7 +3073,7 @@ public class HrReportController implements Serializable {
             monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
             monthEnd.setMerhchantileDaysLeave(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
             //mr.lahiru request 
-            monthEnd.setWorkedDaysBefore(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate())));
+            monthEnd.setWorkedDaysBefore(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate())));
             monthEnd.setWorkedDaysThis(fetchWorkedDays(stf, commonFunctions.getStartOfDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate()), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             if (stf.getDateJoined() != null) {
                 if ((getReportKeyWord().getSalaryCycle().getSalaryFromDate().getTime() <= stf.getDateJoined().getTime()
@@ -3063,7 +3083,7 @@ public class HrReportController implements Serializable {
                         extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime()
                                 - stf.getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime() 
+                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime()
                                 - getReportKeyWord().getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     System.out.println("New Come extraDays = " + extraDays);
@@ -3074,7 +3094,6 @@ public class HrReportController implements Serializable {
                     monthEnd.setWorkedDaysAditional(0.0);
                 }
 
-                
             }
 
             monthEndRecords.add(monthEnd);
@@ -3298,7 +3317,7 @@ public class HrReportController implements Serializable {
             int i = 0;
             for (Object[] obj : list) {
                 i++;
-                System.out.println("i" + i);
+                System.out.println("i = " + i);
                 Integer dayOfWeek = (Integer) obj[0] != null ? (Integer) obj[0] : -1;
                 System.out.println("dayOfWeek = " + dayOfWeek);
                 System.out.println("obj[0] = " + obj[0]);
@@ -3309,6 +3328,7 @@ public class HrReportController implements Serializable {
                 List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
 //                System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
                 System.out.println("staffLeaves.size() = " + staffLeaves.size());
+                System.out.println("value = " + value);
                 if (staffLeaves.size() > 1) {
                     double d = 0.0;
                     for (StaffLeave sl : staffLeaves) {
@@ -3327,10 +3347,18 @@ public class HrReportController implements Serializable {
 
                 System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
                 if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
+                    double totShiftDuration = 0.0;
+                    List<StaffShift> shifts = fetchWorkedShifts(stf, ss.getShiftDate(), ss.getShiftDate());
+                    for (StaffShift s : shifts) {
+                        totShiftDuration += s.getShift().getDurationMin() * 60;
+                    }
+                    System.out.println("shifts.size() = " + shifts.size());
                     System.out.println("value = " + value);
                     System.out.println("leavedTimeValue = " + leavedTimeValue);
-                    if ((ss.getShift().getDurationMin() * 60) < value) {
-                        value = ss.getShift().getDurationMin() * 60;
+                    System.out.println("totShiftDuration = " + totShiftDuration);
+                    if ((totShiftDuration < value && staffLeaves.size() == 1)
+                            || (totShiftDuration > value && staffLeaves.size() > 1)) {
+                        value = totShiftDuration;
                     }
                 }
 

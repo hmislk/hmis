@@ -2165,6 +2165,11 @@ public class SearchController implements Serializable {
                 + " and bi.bill.billType=:bType  "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
+        if (getReportKeyWord().getCategory() != null) {
+            sql += " and bi.item.category=:cat ";
+            m.put("cat", getReportKeyWord().getCategory());
+        }
+
         sql += " order by bi.item.name, bi.pharmaceuticalBillItem.stock.itemBatch.id ";
 
         m.put("toDate", toDate);
@@ -2187,8 +2192,14 @@ public class SearchController implements Serializable {
             m = new HashMap();
             sql = "select s from Stock s "
                     + " where s.department=:d "
-                    + " and s.stock>=0 "
-                    + "  order by s.itemBatch.item.name,s.itemBatch.id ";
+                    + " and s.stock>=0 ";
+
+            if (getReportKeyWord().getCategory() != null) {
+                sql += " and s.itemBatch.item.category=:cat ";
+                m.put("cat", getReportKeyWord().getCategory());
+            }
+
+            sql += " order by s.itemBatch.item.name,s.itemBatch.id ";
             m.put("d", getReportKeyWord().getDepartment());
             List<Stock> stocks = getStockFacade().findBySQL(sql, m);
             System.out.println("stocks.size() = " + stocks.size());
@@ -2210,7 +2221,7 @@ public class SearchController implements Serializable {
                     i++;
                 }
                 if (flag) {
-                    if (s.getStock()>0) {
+                    if (s.getStock() > 0) {
                         createAdjustmentRow(s, null, null);
                     } else {
                         System.err.println("Zero stock");

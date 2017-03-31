@@ -179,6 +179,9 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
+    
+    @Transient
+    String transName;
 
     public double getVatPercentage() {
         if(vatable && vatPercentage==0.0){
@@ -918,6 +921,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
+    }
+
+    public String getTransName() {
+        return transName;
+    }
+
+    public void setTransName(String transName) {
+        this.transName = transName;
     }
 
     public double getChannelStaffFee() {

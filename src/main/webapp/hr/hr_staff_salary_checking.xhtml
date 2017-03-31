@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml" 
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
+                xmlns:salary="http://java.sun.com/jsf/composite/hr">
+
+    <ui:define name="content">
+        <h:form>
+            <p:panel>
+                <p:commandButton ajax="false" value="Generate For Check" action="#{staffSalaryController.generateForCheck()}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+            </p:panel>
+
+            <p:tabView style="min-height:300px;">
+                <p:tab title="Cycle">
+                    <p:selectOneMenu id="advanced" 
+                                     value="#{staffSalaryController.salaryCycle}" 
+                                     converter="salaryCycleConverter"                                      
+                                     effect="fade" var="t" 
+                                     filter="true" 
+                                     filterMatchMode="startsWith"  >
+
+                        <f:selectItem itemLabel="Slect Cycle"/>
+                        <f:selectItems value="#{salaryCycleController.salaryCycles}" 
+                                       var="theme" 
+                                       itemLabel="#{theme.name}" 
+                                       itemValue="#{theme}" ></f:selectItems>
+
+                        <p:column style="width:10%" headerText="Name">
+                            <h:outputText value="#{t.name}" />
+                        </p:column>
+
+                        <p:column headerText="Year">
+                            <h:outputText value="#{t.salaryYear}" />
+                        </p:column>
+                        <p:column headerText="Month">
+                            <h:outputText value="#{t.salaryMonth}" />
+                        </p:column>
+                        <p:ajax process="@this" update="cycleDetail" event="change"  />
+                    </p:selectOneMenu>
+
+                    <h:panelGrid columns="2" id="cycleDetail">
+                        <h:outputLabel value="Salary From Date "/>
+                        <h:outputLabel value="#{staffSalaryController.salaryCycle.salaryFromDate}"  >                                                        
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="Salary To Date "/>
+                        <h:outputLabel   value="#{staffSalaryController.salaryCycle.salaryToDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="Worked From Date "/>
+                        <h:outputLabel value="#{staffSalaryController.salaryCycle.workedFromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="Worked To Date "/>
+                        <h:outputLabel   value="#{staffSalaryController.salaryCycle.workedToDate}">
+                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </p:tab>
+                <p:tab title="Staff List" >
+
+                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" onclick="onSubmitButton();"/>
+                    <h:panelGrid columns="2"> 
+                        <h:outputLabel value="Employee : "/>
+                        <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>
+                        <h:outputLabel value="Institution : "/>
+                        <hr:institution value="#{staffController.reportKeyWord.institution}"/>
+                        <h:outputLabel value="Department : "/>
+                        <hr:department value="#{staffController.reportKeyWord.department}"/>
+                        <h:outputLabel value="Staff Category : "/>
+                        <hr:completeStaffCategory value="#{staffController.reportKeyWord.staffCategory}"/>
+                        <h:outputLabel value="Designation : "/>
+                        <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
+                        <h:outputLabel value="Roster : "/>
+                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>                      
+                    </h:panelGrid>
+
+                    <p:dataTable  value="#{staffController.staffWithCode}" 
+                                  var="s" filteredValue="#{staffController.filteredStaff}"  
+                                  rowKey="#{s.id}" 
+                                  selection="#{staffController.selectedList}"
+                                  rowIndexVar="i"
+                                  scrollable="true" rowStyleClass="#{((s.dateJoined eq staffSalaryController.salaryCycle.salaryFromDate)or(s.dateJoined gt staffSalaryController.salaryCycle.salaryFromDate)) and ((s.dateJoined eq staffSalaryController.salaryCycle.salaryToDate)or (s.dateJoined lt staffSalaryController.salaryCycle.salaryToDate)) ? 'greenText':''}"
+                                  scrollHeight="250">
+                        <p:column  selectionMode="multiple" >                            
+                        </p:column>
+
+                        <p:column >
+                            #{i+1}
+                        </p:column>
+                        <p:column headerText="Roster"  filterBy="#{s.roster.name}"  filterMatchMode="contains" >
+                            <h:outputLabel value="#{s.roster.name}"/>
+                        </p:column>
+                        <p:column headerText="Resigned Date"  >
+                            <h:outputLabel value="#{s.dateLeft}">
+                                <f:convertDateTime pattern="yyyy MMM dd" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Working Days(PH)">
+                            <h:outputLabel value="#{s.transWorkedDays}">
+                                <f:convertNumber pattern="##0" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Working Days(Work)">
+                            <h:outputLabel value="#{s.transWorkedDaysSalaryFromToDate}">
+                                <f:convertNumber pattern="##0" />
+                            </h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
+                            <h:outputLabel value="#{s.designation.name}"/>
+                        </p:column>                         
+                        <p:column headerText="Code" filterBy="#{s.codeInterger}"  filterMatchMode="contains">
+                            <h:outputLabel value="#{s.codeInterger}"/>
+                        </p:column>
+                        <p:column headerText="Name" filterBy="#{s.person.nameWithTitle}"  filterMatchMode="contains">
+                            <h:outputLabel value="#{s.person.nameWithTitle}"/>
+                        </p:column>
+                    </p:dataTable> 
+                </p:tab>
+            </p:tabView>
+
+
+            
+
+        </h:form>        
+    </ui:define>
+
+</ui:composition>

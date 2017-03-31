@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -27,10 +28,20 @@
                                 </p:calendar>
                                 <h:outputLabel value="Department"/>
                                 <au:department value="#{searchController.reportKeyWord.department}" />
+                                <h:outputLabel value="Category"/>
+                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" placeholder="Category"
+                                                forceSelection="true" value="#{searchController.reportKeyWord.category}" />
                                 <h:outputLabel value="Only Adjustments"/>
                                 <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" />
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                                  action="#{searchController.createPharmacyAdjustmentBillItemTableForStockTaking()}"/>
+                                <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton">
+                                    <p:printer target="panPrint" />
+                                </p:commandButton>
+                                <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
+                                </p:commandButton>
                             </h:panelGrid>
                         </f:facet>
 
@@ -40,6 +51,13 @@
                             </f:facet>
                             <p:dataTable rowIndexVar="i" id="tblBills" 
                                          value="#{searchController.pharmacyAdjustmentRows}" var="r" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="From Date - #{searchController.fromDate}"></p:outputLabel><br></br>
+                                    <p:outputLabel value="To Date - #{searchController.toDate}"></p:outputLabel><br></br>
+                                    <p:outputLabel value="Department - #{searchController.reportKeyWord.department.name}" rendered="#{searchController.reportKeyWord.department ne null}" /><br></br>
+                                    <p:outputLabel value="Category - #{searchController.reportKeyWord.category.name}" rendered="#{searchController.reportKeyWord.category ne null}" />
+                                    
+                                </f:facet>
                                 <p:column styleClass="alignTop" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="No" />
@@ -52,6 +70,12 @@
                                         <p:outputLabel value="Item Name" />
                                     </f:facet>
                                     <h:outputLabel value="#{r.itm.name}" />
+                                </p:column>
+                                <p:column styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Catogary" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.itm.category.name}" />
                                 </p:column>
                                 <p:column styleClass="alignTop" >
                                     <f:facet name="header" >

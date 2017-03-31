@@ -158,7 +158,7 @@
                             <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
                         </p:column>
 
-                            <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                             <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
                             <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
@@ -531,7 +531,8 @@
                             </div>
                             <div>
                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                    <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.printingBill}" dup="false"/>
+                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" hos="true"/>
+                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" doc="true"/>
                                 </h:panelGroup>
                             </div>
                             <div >
@@ -817,7 +818,9 @@
                                 </div>
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                        <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                        <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true"/>
+                                        <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true"/>
+                                        <!--<ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
                                     </h:panelGroup>
                                 </div>
                                 <div >
@@ -1037,7 +1040,8 @@
                                             </div>
                                             <div>
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                                    <ch:channelRecipt_ruhunu_1 bill="#{channelBillController.printingBill}" dup="false"/>
+                                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" hos="true"/>
+                                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" doc="true"/>
                                                 </h:panelGroup>
                                             </div>
                                             <!--                                            <div >
@@ -1224,7 +1228,7 @@
                             </h:panelGrid>
 
                         </p:tab>
-                        
+
                         <p:tab title="Doctor Payment" rendered="#{webUserController.hasPrivilege('ChannelBookingDocPay')}">
                             <p:panel header="Selected Session">
                                 <h:panelGrid columns="1">

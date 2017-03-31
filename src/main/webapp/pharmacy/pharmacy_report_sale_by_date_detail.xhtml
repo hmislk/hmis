@@ -10,7 +10,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail By Bill">
-                <h:panelGrid columns="6" styleClass="noPrintButton">
+                <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
                     <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
                     </p:calendar>
@@ -18,27 +18,31 @@
                     <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
-                    <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                    <p:autoComplete value="#{pharmacySaleReport.department}" completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                     </p:autoComplete>
-                     
+                    <h:outputLabel value="Payment Method"/>
+                    <p:selectOneMenu   id="pay" value="#{pharmacySaleReport.paymentMethod}">    
+                        <f:selectItem itemLabel="Select Payment Methord"/>
+                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                    </p:selectOneMenu>
                 </h:panelGrid>
-                
+
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDateDetail()}"/>
                     <p:commandButton actionListener="#{pharmacySaleReport.createSaleReportByDateDetail()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3" fileName="report_grn_detail_by_supplier"  />
-                            </p:commandButton>
+                    </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                 </h:panelGrid>
 
-               
+
                 <p:dataTable id="sum1" 
                              value="#{pharmacySaleReport.billedDetail.datedBills}" 
                              var="i" >
                     <f:facet name="header">  
-                         <h:outputLabel value="From  "/>
+                        <h:outputLabel value="From  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                             <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                         </h:outputLabel>
@@ -47,7 +51,7 @@
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
                             <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                         </h:outputLabel>&#13;&nbsp;
-                       <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
+                        <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
                         &#13;&nbsp;
                         <h:outputLabel value="BILLED"/>
                     </f:facet>
@@ -67,6 +71,16 @@
                             <p:column headerText="Billed Person">
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
+                                </f:facet>
+                            </p:column>  
+                            <p:column headerText="Payment Methord">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Methord"/>
+                                </f:facet>
+                            </p:column>  
+                            <p:column headerText="Credit Company">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit Company"/>
                                 </f:facet>
                             </p:column>  
                             <p:column headerText="Retired">
@@ -116,6 +130,9 @@
                             <h:outputLabel value="#{b.paymentMethod}"/>
                         </p:column>
                         <p:column>
+                            <h:outputLabel value="#{b.toInstitution.name}"/>
+                        </p:column>
+                        <p:column>
                             <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>
                         <p:column style="text-align: right;">
@@ -135,7 +152,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="6" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -164,7 +181,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="6"/>
                             <p:column footerText="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.billedDetail.netTotal+pharmacySaleReport.billedDetail.discount}">
@@ -213,7 +230,17 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
                                 </f:facet>
-                            </p:column>    
+                            </p:column>
+                            <p:column headerText="Payment Methord">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Payment Methord"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit Company"/>
+                                </f:facet>
+                            </p:column>
                             <p:column headerText="Retired">
                                 <f:facet name="header">
                                     <h:outputLabel value="Retired"/>
@@ -260,6 +287,9 @@
                             <h:outputLabel value="#{b.paymentMethod}"/>
                         </p:column>
                         <p:column>
+                            <h:outputLabel value="#{b.toInstitution.name}"/>
+                        </p:column>
+                        <p:column>
                             <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>
                         <p:column style="text-align: right;">
@@ -279,7 +309,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="6" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -308,7 +338,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="6"/>
                             <p:column footerText="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.cancelledDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
@@ -333,7 +363,7 @@
                         </p:row>
                     </p:columnGroup>
                 </p:dataTable>
-                
+
                 <p:dataTable id="sum3" 
                              value="#{pharmacySaleReport.refundedDetail.datedBills}" var="i"
                              >
@@ -357,10 +387,15 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Billed Person"/>
                                 </f:facet>
-                            </p:column>     
-                            <p:column headerText="Retired">
+                            </p:column>
+                            <p:column headerText="Payment Methord">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Retired"/>
+                                    <h:outputLabel value="Payment Methord"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Credit Company"/>
                                 </f:facet>
                             </p:column>
                             <p:column>
@@ -403,6 +438,9 @@
                         <p:column>
                             <h:outputLabel value="Retired" rendered="#{b.retired eq true}"/>
                         </p:column>
+                        <p:column>
+                            <h:outputLabel value="#{b.toInstitution.name}"/>
+                        </p:column>
                         <p:column style="text-align: right;">
                             <h:outputLabel value="#{b.total}">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -420,7 +458,7 @@
                         </p:column>
                         <p:columnGroup type="footer">
                             <p:row>
-                                <p:column colspan="3" footerText="Summary">                                    
+                                <p:column colspan="5" footerText="Summary">                                    
                                 </p:column>
                                 <p:column  footerText="#{i.sumNetTotal+i.sumDiscount}" style="text-align: right;">
                                     <f:facet name="footer">
@@ -449,7 +487,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column footerText="Total" colspan="3"/>
+                            <p:column footerText="Total" colspan="5"/>
                             <p:column footerText="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}" style="text-align: right;">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacySaleReport.refundedDetail.netTotal+pharmacySaleReport.cancelledDetail.discount}">
