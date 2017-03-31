@@ -108,6 +108,7 @@
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} 
                                 :#{p:component('lblSessionTotal')} 
+                                :#{p:component('tabViewPatientDetails')} 
                                 :#{p:component('panelSelectedBookinDetails')}"
                                 listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
                         <p:column style="text-wrap: none;width: 20px!important;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
@@ -297,7 +298,7 @@
 
                             <h:outputLabel/>
                             <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
-                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal"/>
+                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal :#{p:component('tabViewPatientDetails')}"/>
                             </p:selectBooleanCheckbox>
                             <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                             <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
@@ -484,6 +485,21 @@
                                 <h:outputLabel  rendered="#{channelBillController.searchPatient!=null}" value="Age" />
                                 <h:outputLabel rendered="#{channelBillController.searchPatient!=null}" value=": #{channelBillController.searchPatient.age}" />
                             </h:panelGrid>   
+                        </p:tab>
+                        <p:tab  id="tabFees" title="Fees" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' and bookingController.selectedServiceSession.originatingSession.forBillType eq 'XrayScan'}" >
+                            <p:dataTable value="#{bookingController.selectedServiceSession.originatingSession.itemFees}" var="f" rowStyleClass="#{(f.name.equals('Doctor Fee') or f.name.equals('Hospital Fee')) ? '':'noDisplayRow'}" >
+                                <p:column>
+                                    <p:outputLabel value="#{f.name}" />
+                                </p:column>
+                                <p:column>
+                                    <p:outputLabel value="#{f.feeType}" />
+                                </p:column>
+                                <p:column>
+                                    
+                                    <p:inputText value="#{f.ffee}" rendered="#{channelBillController.foriegn}" />
+                                    <p:inputText value="#{f.fee}" rendered="#{!channelBillController.foriegn}" />
+                                </p:column>
+                            </p:dataTable>
                         </p:tab>
                     </p:tabView>
                     <h:panelGrid columns="3" style="min-width: 100%;">
@@ -810,7 +826,8 @@
 
 
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
-
+                                <!--#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}-->
+                                
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
                                         <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        

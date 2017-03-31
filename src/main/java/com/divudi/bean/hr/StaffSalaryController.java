@@ -380,13 +380,14 @@ public class StaffSalaryController implements Serializable {
                     workedDays += extraDays;
                 }
             }
-//            if (getCurrent().getStaff().getDateLeft() != null) {
-//                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
-//                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-//                    System.out.println("Resigned extraDays = " + extraDays);
-//                    workedDays += extraDays;
-//                }
-//            } becaause this pesonn must analyse to resign date
+            if (getCurrent().getStaff().getDateLeft() != null) {
+                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
+                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    System.out.println("Resigned extraDays = " + extraDays);
+                    workedDays += extraDays;
+                }
+            } 
+//            becaause this pesonn must analyse to resign date
             System.out.println("2.workedDays = " + workedDays);
             //remove offdays 
 //            workedDays -= (int) (workedDays / 7); because we get only working days not week days
