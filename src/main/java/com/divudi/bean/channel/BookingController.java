@@ -1426,6 +1426,10 @@ public class BookingController implements Serializable {
     public void listnerBillSessionListForRowSelectNew() {
         fillBillSessions();
         listnerClearSelectedBillSession();
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                && getSelectedServiceSession().getOriginatingSession().getForBillType() == BillType.XrayScan) {
+            getSelectedServiceSession().getOriginatingSession().setItemFees(fetchFee(getSelectedServiceSession().getOriginatingSession()));
+        }
     }
 
     public void listnerStaffRowSelect() {

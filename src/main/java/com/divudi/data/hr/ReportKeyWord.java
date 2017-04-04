@@ -8,6 +8,7 @@ package com.divudi.data.hr;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.entity.Area;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -49,6 +50,7 @@ public class ReportKeyWord {
     Institution institutionBank;
     PaymentMethod paymentMethod;
     Item item;
+    Category category;
     StaffShift staffShift;
     LeaveType leaveType;
     Double from;
@@ -429,6 +431,14 @@ public class ReportKeyWord {
 
     public void setBool2(boolean bool2) {
         this.bool2 = bool2;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
 }

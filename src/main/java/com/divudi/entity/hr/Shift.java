@@ -195,14 +195,14 @@ public class Shift implements Serializable {
         cal.setTime(getEndingTime());
         int eHour = cal.get(Calendar.HOUR_OF_DAY);
 
-        System.err.println("S Time " + startingTime);
-        System.err.println("E Time " + endingTime);
-
-        System.err.println("S H " + sHour);
-        System.err.println("E H " + eHour);
+//        System.err.println("S Time " + startingTime);
+//        System.err.println("E Time " + endingTime);
+//
+//        System.err.println("S H " + sHour);
+//        System.err.println("E H " + eHour);
         durationMin = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60));
         if (sHour > eHour) {
-            System.err.println("1 ");
+//            System.err.println("1 ");
             durationMin = (durationMin + (24 * 60));
         }
 

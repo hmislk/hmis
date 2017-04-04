@@ -10,6 +10,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -3877,14 +3878,15 @@ public class ChannelReportController implements Serializable {
         total = 0.0;
         String sql;
         if (summery) {
-            sql = " select b.patient.person.area,count(b) ";
+            sql = " select b.patient.person.area,b.billClassType,count(b) ";
         } else {
-            sql = " select b.staff,b.patient.person.area,count(b) ";
+            sql = " select b.staff,b.patient.person.area,b.billClassType,count(b) ";
         }
 
         sql += " from Bill b "
                 + " where b.billType in :bt "
                 + " and b.retired=false "
+                + " and b.billClassType!=:cla "
                 + " and b.patient.person.area is not null ";
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
@@ -3893,14 +3895,15 @@ public class ChannelReportController implements Serializable {
         }
 
         if (summery) {
-            sql += " group by b.patient.person.area "
+            sql += " group by b.patient.person.area,b.billClassType "
                     + " order by b.patient.person.area.name ";
         } else {
-            sql += " group by b.staff,b.patient.person.area "
+            sql += " group by b.staff,b.patient.person.area,b.billClassType "
                     + " order by b.staff.person.name,b.patient.person.area.name ";
         }
 
         hm.put("bt", bts);
+        hm.put("cla", BillClassType.RefundBill);
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
 
@@ -3908,63 +3911,140 @@ public class ChannelReportController implements Serializable {
         System.out.println("objects.size() = " + objects.size());
 
         if (summery) {
+            AreaWithCount row = null;
+            Area beforeArea = null;
             for (Object[] ob : objects) {
-                AreaWithCount row = new AreaWithCount();
-                row.setArea((Area) ob[0]);
-                row.setCount((long) ob[1]);
+                Area a = (Area) ob[0];
+                BillClassType classType = (BillClassType) ob[1];
+                long count = (long) ob[2];
+                System.err.println("****************");
+                System.out.println("a.getName() = " + a.getName());
+                System.out.println("clas = " + classType);
+                System.out.println("count = " + count);
+                System.err.println("****************");
+                if (classType == BillClassType.BilledBill) {
+                    total += count;
+                } else {
+                    total -= count;
+                }
+                if (row == null) {
+                    row = new AreaWithCount();
+                    row.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(count);
+                    } else {
+                        row.setCount(0 - count);
+                    }
+                    beforeArea = a;
+                    continue;
+                }
+
                 System.out.println("row.getArea().getName() = " + row.getArea().getName());
-                areaWithCount.add(row);
-                total += row.getCount();
+                if (a.equals(beforeArea)) {
+                    System.out.println("row.getArea().getName() = " + row.getArea().getName());
+                    System.out.println("beforeArea.getName() = " + beforeArea.getName());
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(row.getCount() + count);
+                    } else {
+                        row.setCount(row.getCount() - count);
+                    }
+                } else {
+                    areaWithCount.add(row);
+                    row = new AreaWithCount();
+                    row.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(count);
+                    } else {
+                        row.setCount(0 - count);
+                    }
+                    beforeArea = a;
+                }
             }
+            areaWithCount.add(row);
         } else {
+            StaffWithAreaRow row = null;
+            AreaWithCount awc = null;
             Staff beforeStaff = null;
-            StaffWithAreaRow row = new StaffWithAreaRow();
+            Area beforeArea = null;
             for (Object[] ob : objects) {
                 Staff s = (Staff) ob[0];
                 Area a = (Area) ob[1];
-                long count = (long) ob[2];
+                BillClassType classType = (BillClassType) ob[2];
+                long count = (long) ob[3];
                 System.err.println("****************");
                 System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 System.out.println("a.getName() = " + a.getName());
+                System.out.println("clas = " + classType);
                 System.out.println("count = " + count);
                 System.err.println("****************");
-                total += count;
-                if (s.equals(beforeStaff)) {
-                    AreaWithCount awc = new AreaWithCount();
-                    awc.setArea(a);
-                    awc.setCount(count);
-                    row.getAreaWithCounts().add(awc);
-                    row.setSubTotal(row.getSubTotal() + count);
-                    System.out.println("if row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
+                if (classType == BillClassType.BilledBill) {
+                    total += count;
                 } else {
-                    if (!row.getAreaWithCounts().isEmpty()) {
-                        System.out.println("elase row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
-                        staffWithAreaRows.add(row);
-                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
-                        row = new StaffWithAreaRow();
-                        row.setStaf(s);
-                        AreaWithCount awc = new AreaWithCount();
-                        awc.setArea(a);
+                    total -= count;
+                }
+                if (row == null) {
+                    System.err.println("null");
+                    row = new StaffWithAreaRow();
+                    awc = new AreaWithCount();
+                    row.setStaf(s);
+                    awc.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
                         awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal() + count);
-                        row.getAreaWithCounts().add(awc);
                     } else {
-                        row = new StaffWithAreaRow();
-                        row.setStaf(s);
-                        AreaWithCount awc = new AreaWithCount();
-                        awc.setArea(a);
-                        awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal() + count);
-                        row.getAreaWithCounts().add(awc);
-                        if (beforeStaff != null) {
-                            staffWithAreaRows.add(row);
-                        }
-                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
+                        awc.setCount(0 - count);
                     }
                     beforeStaff = s;
+                    beforeArea = a;
+                    continue;
+                }
+                if (s.equals(beforeStaff)) {
+                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    System.out.println("beforeStaff.getPerson().getName() = " + beforeStaff.getPerson().getName());
+                    if (a.equals(beforeArea)) {
+                        System.out.println("a.getName() = " + a.getName());
+                        System.out.println("beforeArea.getName() = " + beforeArea.getName());
+                        System.out.println("awc.getCount() = " + awc.getCount());
+                        if (classType == BillClassType.BilledBill) {
+                            awc.setCount(awc.getCount() + count);
+                        } else {
+                            awc.setCount(awc.getCount() - count);
+                        }
+                    } else {
+                        row.getAreaWithCounts().add(awc);
+                        row.setSubTotal(row.getSubTotal() + awc.getCount());
+                        awc = new AreaWithCount();
+                        awc.setArea(a);
+                        if (classType == BillClassType.BilledBill) {
+                            awc.setCount(count);
+                        } else {
+                            awc.setCount(0 - count);
+                        }
+                        beforeArea = a;
+                    }
+                } else {
+                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    System.out.println("beforeStaff.getPerson().getName() = " + beforeStaff.getPerson().getName());
+                    row.getAreaWithCounts().add(awc);
+                    row.setSubTotal(row.getSubTotal() + awc.getCount());
+                    staffWithAreaRows.add(row);
+                    row = new StaffWithAreaRow();
+                    awc = new AreaWithCount();
+                    row.setStaf(s);
+                    awc.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        awc.setCount(count);
+                    } else {
+                        awc.setCount(0 - count);
+                    }
+                    beforeStaff = s;
+                    beforeArea = a;
+
                 }
 
             }
+            row.setSubTotal(row.getSubTotal() + awc.getCount());
+            row.getAreaWithCounts().add(awc);
+            staffWithAreaRows.add(row);
         }
         System.out.println("staffWithAreaRows.size() = " + staffWithAreaRows.size());
         System.out.println("areaWithCount.size() = " + areaWithCount.size());
@@ -4458,8 +4538,8 @@ public class ChannelReportController implements Serializable {
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
-        
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.Channel);
         }
@@ -4511,7 +4591,7 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
-    
+
     public void createTotalDoctorScan() {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -4521,8 +4601,8 @@ public class ChannelReportController implements Serializable {
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
-        
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.XrayScan);
         }

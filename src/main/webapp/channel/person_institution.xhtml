@@ -94,6 +94,12 @@
                         </p:column>
                         <p:column >
                             <f:facet name="header" >
+                                <h:outputLabel value="Code" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.code}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
                                 <h:outputLabel value="Remove" />
                             </f:facet>
                             <p:commandButton action="#{personInstitutionController.removeStaffToInstitutionPersons(pi)}" value="Remove" ajax="false" />

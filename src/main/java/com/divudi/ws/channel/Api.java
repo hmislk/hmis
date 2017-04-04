@@ -43,6 +43,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -319,6 +320,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
         Long ar_no = Long.parseLong(agent_reference_no);
+        URLDecoder decoder=new URLDecoder();
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
@@ -348,7 +350,7 @@ public class Api {
             }
             System.out.println("ss = " + ss);
 
-            Bill b = saveBilledBill(ss, name, phone, doc_code, a_id, ar_no);
+            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
             System.out.println("b = " + b);
 
             bill = billDetails(b.getId());
@@ -548,14 +550,14 @@ public class Api {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
-        List<ServiceSession> reList=new ArrayList<>();
+        List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
             System.out.println("session.getId() = " + session.getId());
             System.out.println("session.getId() = " + session.getStartingTime());
-            Calendar date=Calendar.getInstance();
+            Calendar date = Calendar.getInstance();
             date.setTime(session.getSessionDate());
             System.out.println("date.getTime() = " + date.getTime());
-            Calendar time=Calendar.getInstance();
+            Calendar time = Calendar.getInstance();
             time.setTime(session.getStartingTime());
             System.out.println("time.getTime() = " + time.getTime());
             time.set(Calendar.YEAR, date.get(Calendar.YEAR));
@@ -594,11 +596,11 @@ public class Api {
 
     public JSONArray sessionsDatesList(String doc_code, Date fromDate, Date toDate) {
         JSONArray array = new JSONArray();
-        List<Object> sessions = new ArrayList<>();
+        List<ServiceSession> sessions = new ArrayList<>();
         String sql;
         Map m = new HashMap();
 
-        sql = "Select distinct(s.sessionDate) "
+        sql = "Select distinct(s) "
                 + " From ServiceSession s where s.retired=false "
                 + " and s.staff.code=:doc_code "
                 + " and s.originatingSession is not null "
@@ -617,17 +619,61 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getStaffFacade().findObjects(sql, m);
+        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        List<ServiceSession> reList = new ArrayList<>();
+        for (ServiceSession session : sessions) {
+            System.out.println("session.getId() = " + session.getId());
+            System.out.println("session.getId() = " + session.getStartingTime());
+            Calendar date = Calendar.getInstance();
+            date.setTime(session.getSessionDate());
+            System.out.println("date.getTime() = " + date.getTime());
+            Calendar time = Calendar.getInstance();
+            time.setTime(session.getStartingTime());
+            System.out.println("time.getTime() = " + time.getTime());
+            time.set(Calendar.YEAR, date.get(Calendar.YEAR));
+            time.set(Calendar.MONTH, date.get(Calendar.MONTH));
+            time.set(Calendar.DATE, date.get(Calendar.DATE));
+            System.out.println("time.getTime() = " + time.getTime());
+            if (time.getTime().before(new Date())) {
+                reList.add(session);
+            }
+        }
+        System.out.println("reList.size() = " + reList.size());
+        sessions.removeAll(reList);
+        System.out.println("sessions.size() = " + sessions.size());
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
 
-        for (Object s : sessions) {
-            Date d = (Date) s;
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            array.put(df.format(d));
+        Date beforeDate = null;
+        for (ServiceSession s : sessions) {
+            System.out.println("s = " + s.getSessionAt());
+            System.out.println("beforeDate = " + beforeDate);
+            if (beforeDate == null) {
+                System.err.println("add Null");
+                Date d = (Date) s.getSessionDate();
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                array.put(df.format(d));
+                beforeDate = s.getSessionDate();
+            } else {
+                System.out.println("beforeDate.getTime() = " + beforeDate.getTime());
+                System.out.println("s.getSessionDate().getTime() = " + s.getSessionDate().getTime());
+                if (beforeDate.getTime() != s.getSessionDate().getTime()) {
+                    System.err.println("add");
+                    Date d = (Date) s.getSessionDate();
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    array.put(df.format(d));
+                }
+                beforeDate = s.getSessionDate();
+            }
         }
+//        for (Object s : sessions) {
+//            Date d = (Date) s;
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            array.put(df.format(d));
+//        }
 
         return array;
     }
@@ -870,7 +916,7 @@ public class Api {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal()+savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal() + savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
@@ -1052,7 +1098,7 @@ public class Api {
                 bf.setFeeVat(bf.getFeeValue() * 0.15);
                 bf.setFeeVatPlusValue(bf.getFeeValue() * 1.15);
                 bf.setFeeDiscount(0.0);
-            }else{
+            } else {
                 bf.setFeeGrossValue(bf.getFeeValue());
                 bf.setFeeVat(0.0);
                 bf.setFeeVatPlusValue(bf.getFeeValue());

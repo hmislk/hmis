@@ -380,13 +380,14 @@ public class StaffSalaryController implements Serializable {
                     workedDays += extraDays;
                 }
             }
-//            if (getCurrent().getStaff().getDateLeft() != null) {
-//                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
-//                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-//                    System.out.println("Resigned extraDays = " + extraDays);
-//                    workedDays += extraDays;
-//                }
-//            } becaause this pesonn must analyse to resign date
+            if (getCurrent().getStaff().getDateLeft() != null) {
+                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
+                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+                    System.out.println("Resigned extraDays = " + extraDays);
+                    workedDays += extraDays;
+                }
+            } 
+//            becaause this pesonn must analyse to resign date
             System.out.println("2.workedDays = " + workedDays);
             //remove offdays 
 //            workedDays -= (int) (workedDays / 7); because we get only working days not week days
@@ -640,6 +641,7 @@ public class StaffSalaryController implements Serializable {
 
             System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
+            System.err.println("OT Min : " + otSec / 60 );
             System.err.println("OT Time : " + otSec / (60 * 60));
 
             overTimeSec += otSec;
@@ -1695,6 +1697,27 @@ public class StaffSalaryController implements Serializable {
             getCurrent().calcualteEpfAndEtf();
             getItems().add(current);
             current = null;
+
+        }
+
+        //   createStaffSalaryTable();
+    }
+    
+    public void generateForCheck() {
+        if (getStaffController().getSelectedList() == null) {
+            return;
+        }
+
+        if (dateCheck()) {
+            return;
+        }
+
+        items = null;
+        int i = 0;
+        for (Staff s : getStaffController().getSelectedList()) {
+            setCurrent(getHumanResourceBean().getStaffSalary(s, getSalaryCycle()));
+            Long overTimeMinute = calculateOverTimeMinuteByDate(getCurrent().getStaff());//edited by doctor
+            System.out.println("overTimeMinute = " + overTimeMinute);
 
         }
 

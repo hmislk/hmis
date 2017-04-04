@@ -2165,6 +2165,11 @@ public class SearchController implements Serializable {
                 + " and bi.bill.billType=:bType  "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
+        if (getReportKeyWord().getCategory() != null) {
+            sql += " and bi.item.category=:cat ";
+            m.put("cat", getReportKeyWord().getCategory());
+        }
+
         sql += " order by bi.item.name, bi.pharmaceuticalBillItem.stock.itemBatch.id ";
 
         m.put("toDate", toDate);
@@ -2187,8 +2192,14 @@ public class SearchController implements Serializable {
             m = new HashMap();
             sql = "select s from Stock s "
                     + " where s.department=:d "
-                    + " and s.stock>=0 "
-                    + "  order by s.itemBatch.item.name,s.itemBatch.id ";
+                    + " and s.stock>=0 ";
+
+            if (getReportKeyWord().getCategory() != null) {
+                sql += " and s.itemBatch.item.category=:cat ";
+                m.put("cat", getReportKeyWord().getCategory());
+            }
+
+            sql += " order by s.itemBatch.item.name,s.itemBatch.id ";
             m.put("d", getReportKeyWord().getDepartment());
             List<Stock> stocks = getStockFacade().findBySQL(sql, m);
             System.out.println("stocks.size() = " + stocks.size());
@@ -2210,7 +2221,7 @@ public class SearchController implements Serializable {
                     i++;
                 }
                 if (flag) {
-                    if (s.getStock()>0) {
+                    if (s.getStock() > 0) {
                         createAdjustmentRow(s, null, null);
                     } else {
                         System.err.println("Zero stock");
@@ -6501,11 +6512,17 @@ public class SearchController implements Serializable {
     }
 
     public void createAllBillContacts() {
+        String sql;
         Map temMap = new HashMap();
         telephoneNumbers = new ArrayList<>();
 
-        String sql = "select distinct(b.patient.person.phone) from Bill b where "
-                + " b.retired = false "
+        if (getReportKeyWord().getString1().equals("0")) {
+            sql = "select b.patient.person.phone from Bill b where ";
+        } else {
+            sql = "select b from Bill b where ";
+        }
+
+        sql += " b.retired = false "
                 + " and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and (b.patient.person.phone is not null "
@@ -6539,28 +6556,55 @@ public class SearchController implements Serializable {
             temMap.put("a", getReportKeyWord().getArea());
         }
 
+        if (getReportKeyWord().getString1().equals("0")) {
+            sql += " group by b.patient.person.phone ";
+        }
         sql += " order by b.patient.person.phone ";
-//
 
         temMap.put("em", "");
 
-//        bills=getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        List<Object> objs = getBillFacade().findObjectBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("sql = " + sql);
         System.out.println("temMap = " + temMap);
-        System.out.println("objs.size() = " + objs.size());
+        if (getReportKeyWord().getString1().equals("0")) {
+            List<Object> objs = getBillFacade().findObjectBySQL(sql, temMap, TemporalType.TIMESTAMP);
+            System.out.println("sql = " + sql);
+            System.out.println("objs.size() = " + objs.size());
 
-        for (Object o : objs) {
-            String s = (String) o;
-            if (s != null && !"".equals(s)) {
-                String ss = s.substring(0, 3);
+            for (Object o : objs) {
+                String s = (String) o;
+                if (s != null && !"".equals(s)) {
+                    String ss = s.substring(0, 3);
 //                System.out.println("ss = " + ss);
-                if (ss.equals("077") || ss.equals("076")
-                        || ss.equals("071") || ss.equals("072")
-                        || ss.equals("075") || ss.equals("078")) {
-                    telephoneNumbers.add(s);
-                }
+                    if (ss.equals("077") || ss.equals("076")
+                            || ss.equals("071") || ss.equals("072")
+                            || ss.equals("075") || ss.equals("078")) {
+                        telephoneNumbers.add(s);
+                    }
 
+                }
+            }
+        } else {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+            System.out.println("bills.size() = " + bills.size());
+            for (Bill b : bills) {
+                if (b.getPatient().getPerson().getPhone() != null && "".equals(b.getPatient().getPerson().getPhone())) {
+                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getPatient().getPerson().getPhone());
+                    if (getReportKeyWord().getString1().equals("1")) {
+                        if (b.getPatient().getAgeYears() <= getReportKeyWord().getFrom()) {
+                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                        }
+                    }
+                    if (getReportKeyWord().getString1().equals("2")) {
+                        if (b.getPatient().getAgeYears() >= getReportKeyWord().getTo()) {
+                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                        }
+                    }
+                    if (getReportKeyWord().getString1().equals("3")) {
+                        if (b.getPatient().getAgeYears() >= getReportKeyWord().getFrom()
+                                && b.getPatient().getAgeYears() <= getReportKeyWord().getTo()) {
+                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                        }
+                    }
+                }
             }
         }
 
