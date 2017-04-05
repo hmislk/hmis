@@ -6526,13 +6526,9 @@ public class SearchController implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.refunded=false "
                 + " and (b.patient.person.phone is not null "
-                + " or b.patient.person.phone!=:em) ";
-
-        if (isPatientPanelVisible()) {
-            sql += " and b.createdAt between :fd and :td  ";
-            temMap.put("fd", fromDate);
-            temMap.put("td", toDate);
-        }
+                + " or b.patient.person.phone!=:em) "
+                + " and b.createdAt between :fd and :td  ";
+        
 
         if (getReportKeyWord().getString().equals("0")) {
         }
@@ -6562,6 +6558,8 @@ public class SearchController implements Serializable {
         sql += " order by b.patient.person.phone ";
 
         temMap.put("em", "");
+        temMap.put("fd", fromDate);
+        temMap.put("td", toDate);
 
         System.out.println("temMap = " + temMap);
         if (getReportKeyWord().getString1().equals("0")) {
@@ -6586,8 +6584,11 @@ public class SearchController implements Serializable {
             bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
             System.out.println("bills.size() = " + bills.size());
             for (Bill b : bills) {
-                if (b.getPatient().getPerson().getPhone() != null && "".equals(b.getPatient().getPerson().getPhone())) {
+                if (b.getPatient().getPerson().getPhone() != null && !"".equals(b.getPatient().getPerson().getPhone())) {
                     System.out.println("b.getPatient().getPerson().getPhone() = " + b.getPatient().getPerson().getPhone());
+                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getPatient().getPerson().getId());
+                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getInsId());
+                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getDeptId());
                     if (getReportKeyWord().getString1().equals("1")) {
                         if (b.getPatient().getAgeYears() <= getReportKeyWord().getFrom()) {
                             telephoneNumbers.add(b.getPatient().getPerson().getPhone());

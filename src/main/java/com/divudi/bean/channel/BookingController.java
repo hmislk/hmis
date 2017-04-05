@@ -381,7 +381,9 @@ public class BookingController implements Serializable {
     }
 
     public List<Staff> getSelectedConsultants() {
-        System.out.println("selectText.length() = " + selectTextConsultant.length());
+        System.err.println("Select Specility");
+        System.out.println("getSpeciality().getName() = " + getSpeciality().getName());
+//        System.out.println("selectText.length() = " + selectTextConsultant.length());
         String sql;
         Map m = new HashMap();
 
@@ -406,8 +408,8 @@ public class BookingController implements Serializable {
                 } else {
                     sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
                 }
-                System.out.println("m = " + m);
-                System.out.println("sql = " + sql);
+//                System.out.println("m = " + m);
+//                System.out.println("sql = " + sql);
                 consultants = getStaffFacade().findBySQL(sql, m);
             }
         } else {
@@ -423,8 +425,8 @@ public class BookingController implements Serializable {
 
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
-                    System.out.println("m = " + m);
-                    System.out.println("sql = " + sql);
+//                    System.out.println("m = " + m);
+//                    System.out.println("sql = " + sql);
                     consultants = getStaffFacade().findBySQL(sql, m);
 
                 } else {
@@ -1103,19 +1105,22 @@ public class BookingController implements Serializable {
     }
 
     public void generateSessionsOnlyIdNew() {
-        System.err.println("Time in = " + new Date());
+//        System.err.println("Time in = " + new Date());
         serviceSessions = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
         m.put("nd", new Date());
-        System.err.println("Time stage 1 = " + new Date());
+//        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
-            System.err.println("Time stage 4.1 = " + new Date());
+//            System.err.println("Time stage 4.1 = " + new Date());
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
             System.err.println("Fetch Created Sessions " + serviceSessions.size());
-            System.err.println("Time stage 4.2 = " + new Date());
+//            System.err.println("Time stage 4.2 = " + new Date());
+        }
+        if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
+            System.err.println("User = " + getSessionController().getLoggedUser().getWebUserPerson().getName());
         }
     }
 
