@@ -1169,6 +1169,10 @@ public class ChannelReportController implements Serializable {
             sql += " and b.billType in :bts ";
             hm.put("bts", bts);
         }
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            hm.put("bt", getReportKeyWord().getBillType());
+        }
 //        sql += " order by b.singleBillSession.sessionDate ";
 
         hm.put("class", bill.getClass());
@@ -1225,7 +1229,12 @@ public class ChannelReportController implements Serializable {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
         }
-
+        
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            temMap.put("bt", getReportKeyWord().getBillType());
+        }
+        
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
         temMap.put("btp", bt);
@@ -5106,6 +5115,12 @@ public class ChannelReportController implements Serializable {
         } else {
             sql += " and b.creditCompany is not null ";
         }
+        
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bts ";
+            m.put("bts", getReportKeyWord().getBillType());
+        }
+        
         sql += " and b.billType=:bt ";
         m.put("bt", BillType.ChannelAgent);
 

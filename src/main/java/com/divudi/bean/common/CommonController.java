@@ -50,10 +50,10 @@ public class CommonController implements Serializable {
         LocalDate secondDate = second.toLocalDate();
         return firstDate.equals(secondDate);
     }
-    
+
     public Date retiermentDate(Date dob) {
-        if (dob==null) {
-            dob=new Date();
+        if (dob == null) {
+            dob = new Date();
         }
         Calendar cal = Calendar.getInstance();
         cal.setTime(dob);
@@ -80,71 +80,76 @@ public class CommonController implements Serializable {
             s += " To :" + toDate;
         }
         s += "\n Report Start Time : " + startTime + " End Time :" + new Date();
+        if (fromDate != null && toDate != null) {
+            s += "\n Time Defferent : " + dateDifferenceInMinutes(fromDate, toDate);
+        }
         s += "\n ***************";
 
         System.err.println(s);
 
     }
+
     //----------Date Time Formats
-    public String getDateFormat(Date date){
-        String s="";
+
+    public String getDateFormat(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    
-    public String getDateFormat2(Date date){
-        String s="";
+
+    public String getDateFormat2(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    
-    public String getTimeFormat12(Date date){
-        String s="";
+
+    public String getTimeFormat12(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("hh:mm:ss a");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    
-    public String getTimeFormat24(Date date){
-        String s="";
+
+    public String getTimeFormat24(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("HH:mm:ss");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    
-    public String getDateTimeFormat12(Date date){
-        String s="";
+
+    public String getDateTimeFormat12(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss a");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    
-    public String getDateTimeFormat24(Date date){
-        String s="";
+
+    public String getDateTimeFormat24(Date date) {
+        String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-        s=d.format(date);
+        s = d.format(date);
         return s;
     }
-    public Date getConvertDateTimeFormat24(String dateString) throws ParseException{
+
+    public Date getConvertDateTimeFormat24(String dateString) throws ParseException {
         DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
-        Date date=d.parse(dateString);
+        Date date = d.parse(dateString);
         System.out.println("date = " + date);
         System.out.println("dateString = " + dateString);
         return date;
     }
-    
-    public String getDouble(double d){
-        String s="";
+
+    public String getDouble(double d) {
+        String s = "";
         NumberFormat myFormatter = new DecimalFormat("##0.00");
-        s=myFormatter.format(d);
+        s = myFormatter.format(d);
         System.out.println("s = " + s);
         return s;
     }
-    
-    //----------Date Time Formats
 
+    //----------Date Time Formats
     public SessionController getSessionController() {
         return sessionController;
     }

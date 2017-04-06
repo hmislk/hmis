@@ -21,35 +21,29 @@
                             <p:panel>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Item" ></h:outputLabel>
-                                    <p:autoComplete   forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.stock}" 
-                                                      converter="stockCon" 
-                                                      completeMethod="#{pharmacyController.completeAllStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                                    <p:autoComplete   forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.item}" 
+                                                      completeMethod="#{pharmacyController.completeAllStockItems}" var="i" itemLabel="#{i.name}" itemValue="#{i}" >
                                         <p:column headerText="Item">
-                                            <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Rate">
-                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Stocks">
-                                            <h:outputLabel value="#{i.stock}" >
-                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Expiry">
-                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                            </h:outputLabel>
+                                            <h:outputLabel value="#{i.name}" ></h:outputLabel>
                                         </p:column>
                                         <f:ajax event="itemSelect" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerItemSelect}"/>
                                     </p:autoComplete>
-                                    <p:commandButton id="btnAdjust" value="Clear" ajax="false" 
-                                                     action="#{pharmacyAdjustmentController.clearBill()}" ></p:commandButton>
+                                    <h:outputLabel value="New Quntity" ></h:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}" >
+                                        <f:ajax event="keyup" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
+                                    </p:inputText>
+                                    <h:outputLabel value="Comment" />
+                                    <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" />
+                                </h:panelGrid>
+                                <h:panelGrid columns="2">
+                                    <p:commandButton id="btnAdjust" value="Make Adjustments" ajax="false" 
+                                                     action="#{pharmacyAdjustmentController.adjustDepartmentStockAll}" ></p:commandButton>
+                                    <p:commandButton id="btnClear" value="Clear" ajax="false" 
+                                                     action="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
                             <p:panel>
-                                <p:dataTable value="#{pharmacyAdjustmentController.stocks}" var="s">
+                                <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" var="s">
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="Item" />
@@ -74,13 +68,16 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Stock" />
                                         </f:facet>
-                                        <p:outputLabel value="#{s.stock}" />
+                                        <p:outputLabel value="#{s.stock}" style="float: right;"/>
+                                        <f:facet name="footer">
+                                            <p:outputLabel value="#{pharmacyAdjustmentController.total}" />
+                                        </f:facet>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="New Qty" />
                                         </f:facet>
-                                        <p:outputLabel value="#{s.stock}" />
+                                        <p:outputLabel value="#{s.calculated}" style="float: right;" styleClass="#{s.calculated gt s.stock ? 'greenText':s.calculated lt s.stock ? 'redText':''}" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
@@ -88,12 +85,14 @@
                     </p:panel>
 
                     <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
-                        <p:commandButton ajax="false" action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment"/>
+                        <p:commandButton ajax="false" action="#{pharmacyAdjustmentController.newBill()}" value="New Adjustment"/>
                         <p:commandButton ajax="false" value="Print">
                             <p:printer target="print"/>
                         </p:commandButton>
                         <p:panel id="print">
-                            <ph:adjustmentBill  bill="#{pharmacyAdjustmentController.bill}" />
+                            <ui:repeat value="#{pharmacyAdjustmentController.bills}" var="b" >
+                                <ph:adjustmentBill  bill="#{b}" />
+                            </ui:repeat>
                         </p:panel>
                     </p:panel>
 

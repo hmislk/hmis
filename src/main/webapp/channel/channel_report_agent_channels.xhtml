@@ -31,7 +31,11 @@
                         </p:autoComplete>
                         <h:outputLabel value="Session Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
-
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportController.reportKeyWord.billType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                            <f:selectItem itemLabel="Please Select a Type"/>
+                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                        </p:selectOneMenu>
                         <p:commandButton action="#{channelReportController.createAgentBookings()}" value="Fill" ajax="false" ></p:commandButton> 
                         <h:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">

@@ -315,6 +315,10 @@ public class ChannelReportTempController implements Serializable {
             sql += " and b.staff.speciality=:sp ";
             m.put("sp", sp);
         }
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:fbt ";
+            m.put("fbt", getReportKeyWord().getBillType());
+        }
 
         m.put("fromDate", fd);
         m.put("toDate", td);
@@ -387,6 +391,10 @@ public class ChannelReportTempController implements Serializable {
         if (sp != null) {
             sql += " and b.staff.speciality=:sp ";
             m.put("sp", sp);
+        }
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:fbt ";
+            m.put("fbt", getReportKeyWord().getBillType());
         }
 
         m.put("fromDate", fd);
@@ -974,6 +982,11 @@ public class ChannelReportTempController implements Serializable {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
         }
+        
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            temMap.put("bt", getReportKeyWord().getBillType());
+        }
 
         temMap.put("fd", fd);
         temMap.put("td", td);
@@ -1021,6 +1034,11 @@ public class ChannelReportTempController implements Serializable {
         } else {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
+        }
+        
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            temMap.put("bt", getReportKeyWord().getBillType());
         }
 
         temMap.put("fdc", commonFunctions.getStartOfDay(getFromDate()));
@@ -1083,6 +1101,11 @@ public class ChannelReportTempController implements Serializable {
         } else {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
+        }
+        
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            temMap.put("bt", getReportKeyWord().getBillType());
         }
 
         temMap.put("fd", fd);
@@ -1957,7 +1980,7 @@ public class ChannelReportTempController implements Serializable {
             row.setBillCount(fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, false, true, null, null, webUser));
             row.setCanceledCount(fetchBillsTotal(bts, null, null, null, new CancelledBill(), fd, td, null, null, false, true, null, null, webUser));
             row.setRefundCount(fetchBillsTotal(bts, null, null, null, new RefundBill(), fd, td, null, null, false, true, null, null, webUser));
-            double netTotal = fetchBillsTotal(bts, null, null, null, null, fd, td, null, null, false, false, null, null, webUser);
+            double netTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, false, false, null, null, webUser);
             double hosTotal = fetchBillsTotal(bts, null, null, null, new BilledBill(), fd, td, null, null, true, false, null, null, webUser);
             row.setTotalHosFee(hosTotal);
             row.setTotalDocFee(netTotal - hosTotal);
