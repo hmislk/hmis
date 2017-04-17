@@ -10,6 +10,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.hr.DateType;
+import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
@@ -985,6 +986,9 @@ public class SalaryCycleController implements Serializable {
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
             s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
             s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+            s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
             
             
             if (s.getStaff().getDateJoined() != null) {

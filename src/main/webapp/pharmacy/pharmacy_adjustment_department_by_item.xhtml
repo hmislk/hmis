@@ -21,34 +21,52 @@
                             <p:panel>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Item" ></h:outputLabel>
-                                    <p:autoComplete   forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.item}" 
-                                                      completeMethod="#{pharmacyController.completeAllStockItems}" var="i" itemLabel="#{i.name}" itemValue="#{i}" >
+                                    <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}" 
+                                                    completeMethod="#{pharmacyController.completeAllStockItems}" var="i" 
+                                                    itemLabel="#{i.name}" itemValue="#{i}" >
                                         <p:column headerText="Item">
                                             <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code">
+                                            <h:outputLabel value="#{i.code}" ></h:outputLabel>
                                         </p:column>
                                         <f:ajax event="itemSelect" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerItemSelect}"/>
                                     </p:autoComplete>
                                     <h:outputLabel value="New Quntity" ></h:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}" >
+                                    <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" 
+                                                 disabled="#{pharmacyAdjustmentController.manualAdjust}" >
                                         <f:ajax event="keyup" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
                                     </p:inputText>
                                     <h:outputLabel value="Comment" />
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" />
+                                    <h:outputLabel value="Comment" />
+                                    <p:selectBooleanCheckbox value="#{pharmacyAdjustmentController.manualAdjust}" >
+                                        <f:ajax event="change" execute="@this" render="det input" />
+                                    </p:selectBooleanCheckbox>
                                 </h:panelGrid>
                                 <h:panelGrid columns="2">
-                                    <p:commandButton id="btnAdjust" value="Make Adjustments" ajax="false" 
+                                    <p:commandButton id="btnAdjust" value="Make Adjustments" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust this record?'))
+                                                return false;"
                                                      action="#{pharmacyAdjustmentController.adjustDepartmentStockAll}" ></p:commandButton>
                                     <p:commandButton id="btnClear" value="Clear" ajax="false" 
                                                      action="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
                             <p:panel>
-                                <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" var="s">
+                                <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" 
+                                             var="s" editable="true" >
+                                    <p:ajax event="rowEdit" listener="#{pharmacyAdjustmentController.onEdit}" update=":#{p:component('input')}" />
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="Item" />
                                         </f:facet>
                                         <p:outputLabel value="#{s.itemBatch.item.name}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Category" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{s.itemBatch.item.category.name}" />
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
@@ -77,7 +95,18 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="New Qty" />
                                         </f:facet>
-                                        <p:outputLabel value="#{s.calculated}" style="float: right;" styleClass="#{s.calculated gt s.stock ? 'greenText':s.calculated lt s.stock ? 'redText':''}" />
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <p:outputLabel value="#{s.calculated}" style="float: right;" styleClass="#{s.calculated gt s.stock ? 'greenText':s.calculated lt s.stock ? 'redText':''}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{s.calculated}" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column>
+                                        <p:rowEditor rendered="#{pharmacyAdjustmentController.manualAdjust}" >
+                                        </p:rowEditor>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>

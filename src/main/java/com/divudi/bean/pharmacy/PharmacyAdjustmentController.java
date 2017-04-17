@@ -97,6 +97,7 @@ public class PharmacyAdjustmentController implements Serializable {
     Stock stock;
     Item item;
     double total;
+    boolean manualAdjust;
 
     String comment;
 
@@ -330,7 +331,7 @@ public class PharmacyAdjustmentController implements Serializable {
         return ph;
 
     }
-    
+
     private PharmaceuticalBillItem saveDeptAdjustmentBillItems(Stock s) {
         billItem = null;
         BillItem tbi = getBillItem();
@@ -815,7 +816,7 @@ public class PharmacyAdjustmentController implements Serializable {
         if (errorCheckAll()) {
             return;
         }
-        bills=new ArrayList<>();
+        bills = new ArrayList<>();
         for (Stock s : stocks) {
             System.out.println("s.getCalculated() = " + s.getCalculated());
             System.out.println("s.getStock() = " + s.getStock());
@@ -927,7 +928,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void listnerChangeAdjustedStock() {
-        if (qty == null || qty == 0.0) {
+        if (qty == null) {
             for (Stock s : stocks) {
                 s.setCalculated(s.getStock());
             }
@@ -935,7 +936,6 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         if (total == qty) {
             JsfUtil.addErrorMessage("New Stock Equal To old Stock.");
-            return;
         }
         double addQty = 0.0;
         System.out.println("total = " + total);
@@ -968,22 +968,30 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
     }
-    public void newBill(){
+
+    public void onEdit() {
+        qty=0.0;
+        for (Stock s : stocks) {
+            qty += s.getCalculated();
+        }
+    }
+
+    public void newBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
         stocks = new ArrayList<>();
-        bills=new ArrayList<>();
+        bills = new ArrayList<>();
         item = new Item();
         qty = null;
-        printPreview=false;
+        printPreview = false;
     }
-    
+
     public void clearBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
         comment = "";
-        stocks=new ArrayList<>();
-        stock=null;
+        stocks = new ArrayList<>();
+        stock = null;
     }
 
     private void clearBillItem() {
@@ -1229,6 +1237,14 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public boolean isManualAdjust() {
+        return manualAdjust;
+    }
+
+    public void setManualAdjust(boolean manualAdjust) {
+        this.manualAdjust = manualAdjust;
     }
 
 }
