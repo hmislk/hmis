@@ -124,7 +124,7 @@ public class StoreController implements Serializable {
                 + " and (upper(i.itemBatch.item.name) like :n  or "
                 + " upper(i.itemBatch.item.code) like :n  or  "
                 + " upper(i.itemBatch.item.barcode) like :n ) "
-                + " order by i.stock ";
+                + " order by i.stock desc ";
         items = getStockFacade().findBySQL(sql, m, 40);
 
         return items;

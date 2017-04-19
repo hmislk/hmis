@@ -3201,10 +3201,10 @@ public class ChannelReportController implements Serializable {
             hm.put("ins", institution);
         }
 
-        if (reportKeyWord.getWebUser() != null) {
-            sql += " and b.creater=:user";
-            hm.put("user", reportKeyWord.getWebUser());
-        }
+//        if (reportKeyWord.getWebUser() != null) {
+//            sql += " and b.creater=:user";
+//            hm.put("user", reportKeyWord.getWebUser());
+//        }
 
         hm.put("fDate", fd);
         hm.put("tDate", td);
