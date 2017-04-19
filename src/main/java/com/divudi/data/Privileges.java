@@ -176,6 +176,7 @@ public enum Privileges {
     PharmacyPurchaseCancellation,
     PharmacyPurchaseReturn,
     PharmacyStockAdjustment,
+    PharmacyStockAdjustmentSingleItem,
     PharmacyReAddToStock,
     PharmacyStockIssue,
     PharmacyDealorPayment,

@@ -95,6 +95,9 @@ public class PharmacyAdjustmentController implements Serializable {
     BillItem editingBillItem;
 
     Stock stock;
+    Item item;
+    double total;
+    boolean manualAdjust;
 
     String comment;
 
@@ -111,6 +114,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     List<BillItem> billItems;
     List<Stock> stocks;
+    List<Bill> bills;
     private boolean printPreview;
 
     public Department getFromDepartment() {
@@ -328,6 +332,66 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
+    private PharmaceuticalBillItem saveDeptAdjustmentBillItems(Stock s) {
+        billItem = null;
+        BillItem tbi = getBillItem();
+
+        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
+
+        tbi.setPharmaceuticalBillItem(null);
+        ph.setStock(s);
+
+        tbi.setItem(s.getItemBatch().getItem());
+        tbi.setQty(s.getCalculated());
+
+        //pharmaceutical Bill Item
+        ph.setDoe(s.getItemBatch().getDateOfExpire());
+        ph.setFreeQty(0.0f);
+        ph.setItemBatch(s.getItemBatch());
+
+        Stock fetchedStock = getStockFacade().find(s.getId());
+        double stockQty = fetchedStock.getStock();
+        double changingQty;
+
+        changingQty = s.getCalculated() - stockQty;
+
+        ph.setQty(changingQty);
+
+        //Rates
+        //Values
+        tbi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getCalculated());
+        tbi.setNetValue(s.getCalculated() * tbi.getNetRate());
+        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setItem(s.getItemBatch().getItem());
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        ph.setBillItem(null);
+
+        if (ph.getId() == null) {
+            getPharmaceuticalBillItemFacade().create(ph);
+        }
+
+        tbi.setPharmaceuticalBillItem(ph);
+
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        }
+
+        ph.setBillItem(tbi);
+        getPharmaceuticalBillItemFacade().edit(ph);
+
+        getDeptAdjustmentPreBill().getBillItems().add(tbi);
+
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+
+        return ph;
+
+    }
+
     private void savePrAdjustmentBillItems() {
         billItem = null;
         BillItem tbi = getBillItem();
@@ -514,6 +578,24 @@ public class PharmacyAdjustmentController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckAll() {
+
+        if (getItem() == null) {
+            UtilityController.addErrorMessage("Select Item");
+            return true;
+        }
+        if (getStocks().isEmpty()) {
+            UtilityController.addErrorMessage("No Stocks");
+            return true;
+        }
+        if (qty == null || qty == 0.0) {
+            UtilityController.addErrorMessage("Please Select Corect Stock");
+            return true;
+        }
+
+        return false;
+    }
+
     public void transferAllDepartmentStockAsAdjustment() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -659,7 +741,7 @@ public class PharmacyAdjustmentController implements Serializable {
             i++;
         }
         printPreview = true;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Tranfer all stock(/faces/pharmacy/pharmacy_adjustment_department_all.xhtml)");
     }
 
@@ -730,6 +812,31 @@ public class PharmacyAdjustmentController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Department stock(qty)or (Staff stock adjustments)(/faces/pharmacy/pharmacy_adjustment_department.xhtml)");
     }
 
+    public void adjustDepartmentStockAll() {
+        if (errorCheckAll()) {
+            return;
+        }
+        bills = new ArrayList<>();
+        for (Stock s : stocks) {
+            System.out.println("s.getCalculated() = " + s.getCalculated());
+            System.out.println("s.getStock() = " + s.getStock());
+            if (s.getStock() != s.getCalculated()) {
+                deptAdjustmentPreBill = null;
+                saveDeptAdjustmentBill();
+                PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
+                bills.add(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+                getPharmacyBean().resetStock(ph, s, s.getCalculated(), getSessionController().getDepartment());
+
+            }
+
+        }
+
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
+        printPreview = true;
+
+    }
+
     public void adjustPurchaseRate() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -796,26 +903,95 @@ public class PharmacyAdjustmentController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Adjustments/Wholesale rate(/faces/pharmacy/pharmacy_adjustment_whole_sale_rate.xhtml)");
     }
-    
-    public void listnerItemSelect(){
-        List<Stock> items;
+
+    public void listnerItemSelect() {
+        stocks = new ArrayList<>();
+        if (getItem() == null) {
+            System.err.println("Item Null");
+            return;
+        }
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("i", getStock().getItemBatch().getItem());
+        m.put("i", getItem());
         sql = "select i from Stock i where i.department=:d "
-                + "and i.itemBatch.item=:i "
-                + " order by i.stock desc";
-        items = getStockFacade().findBySQL(sql, m);
+                + " and i.itemBatch.item=:i "
+                + " and i.stock>0 "
+                + " order by i.stock desc ";
+        stocks = getStockFacade().findBySQL(sql, m);
+        System.out.println("stocks.size() = " + stocks.size());
+        total = 0.0;
+        for (Stock s : stocks) {
+            s.setCalculated(s.getStock());
+            total += s.getStock();
+        }
+    }
+
+    public void listnerChangeAdjustedStock() {
+        if (qty == null) {
+            for (Stock s : stocks) {
+                s.setCalculated(s.getStock());
+            }
+            return;
+        }
+        if (total == qty) {
+            JsfUtil.addErrorMessage("New Stock Equal To old Stock.");
+        }
+        double addQty = 0.0;
+        System.out.println("total = " + total);
+        System.out.println("qty = " + qty);
+        System.out.println("stocks.size() = " + stocks.size());
+
+        if (total < qty) {
+            for (Stock s : stocks) {
+                s.setCalculated(s.getStock());
+            }
+            stocks.get(stocks.size() - 1).setCalculated(stocks.get(stocks.size() - 1).getStock() + (qty - total));
+        } else {
+            boolean flag = false;
+            for (Stock s : stocks) {
+                System.out.println("1.addQty = " + addQty);
+                System.out.println("s.getStock() = " + s.getStock());
+                addQty += s.getStock();
+                System.out.println("2.addQty = " + addQty);
+                if (flag) {
+                    s.setCalculated(0.0);
+                } else {
+                    if (addQty >= qty) {
+                        flag = true;
+                        s.setCalculated(s.getStock() - (addQty - qty));
+                    } else {
+                        s.setCalculated(s.getStock());
+                    }
+                }
+            }
+        }
+
+    }
+
+    public void onEdit() {
+        qty=0.0;
+        for (Stock s : stocks) {
+            qty += s.getCalculated();
+        }
+    }
+
+    public void newBill() {
+        deptAdjustmentPreBill = null;
+        billItems = null;
+        stocks = new ArrayList<>();
+        bills = new ArrayList<>();
+        item = new Item();
+        qty = null;
+        printPreview = false;
     }
 
     public void clearBill() {
         deptAdjustmentPreBill = null;
         billItems = null;
         comment = "";
-        stocks=new ArrayList<>();
-        stock=null;
+        stocks = new ArrayList<>();
+        stock = null;
     }
 
     private void clearBillItem() {
@@ -1037,6 +1213,38 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setStocks(List<Stock> stocks) {
         this.stocks = stocks;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public List<Bill> getBills() {
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
+    }
+
+    public boolean isManualAdjust() {
+        return manualAdjust;
+    }
+
+    public void setManualAdjust(boolean manualAdjust) {
+        this.manualAdjust = manualAdjust;
     }
 
 }

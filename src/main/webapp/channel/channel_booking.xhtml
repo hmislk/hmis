@@ -592,7 +592,7 @@
 
                 <p:panel id="panelSelectedBookinDetails">
                     <p:tabView id="detail">
-                        <p:tab title="Booking" id="booking" rendered="#{webUserController.hasPrivilege('ChannelBookingBokking')}">
+                        <p:tab title="Booking" id="booking" rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2" >
 
                                 <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
@@ -818,7 +818,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Reprint" id="rePrint" rendered="#{webUserController.hasPrivilege('ChannelBookingReprint')}">
+                        <p:tab title="Reprint" id="rePrint" rendered="#{webUserController.hasPrivilege('ChannelBookingReprint') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
 
                             <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
@@ -876,7 +876,7 @@
 
                         </p:panel>
 
-                        <p:tab title="Cancel" id="cancel" rendered="#{webUserController.hasPrivilege('ChannelBookingCancel')}">                                                         
+                        <p:tab title="Cancel" id="cancel" rendered="#{webUserController.hasPrivilege('ChannelBookingCancel') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">                                                         
                             #{channelBillController.billSession.bill.billType}
 
                             <h:panelGroup rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
@@ -921,7 +921,7 @@
                                              onclick="onSubmitButton();"/>
                         </p:tab>
 
-                        <p:tab title="Refund" id="refund" rendered="#{webUserController.hasPrivilege('ChannelBookingRefund')}">                          
+                        <p:tab title="Refund" id="refund" rendered="#{webUserController.hasPrivilege('ChannelBookingRefund') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">                          
                             <h:panelGroup>
                                 <h:panelGrid columns="2" rendered="#{channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}" >
 
@@ -998,7 +998,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Settle" id="settle" rendered="#{webUserController.hasPrivilege('ChannelBookingSettle')}">
+                        <p:tab title="Settle" id="settle" rendered="#{webUserController.hasPrivilege('ChannelBookingSettle') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <p:panel  id="set">
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}" />
 
@@ -1049,7 +1049,7 @@
                                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                             <p:printer target="panelAddedBillPrintSettle" ></p:printer>
                                         </p:commandButton>
-                                        <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" >
+                                        <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}">
                                             <div>
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
                                                     <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.printingBill}" dup="true"/>                                        
@@ -1098,7 +1098,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                        <p:tab title="Change" id="change" rendered="#{webUserController.hasPrivilege('ChannelBookingChange') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Title"/>
                                 <p:selectOneMenu  value="#{bookingController.selectedBillSession.bill.patient.person.title}"  >
@@ -1136,7 +1136,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Search" rendered="#{webUserController.hasPrivilege('ChannelBookingSearch')}">
+                        <p:tab title="Search" rendered="#{webUserController.hasPrivilege('ChannelBookingSearch') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2">
                                 <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" placeholder="From Date" pattern="dd MMMM yyyy hh:mm:ss a" >   
                                     <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
@@ -1207,7 +1207,7 @@
                             </p:dataTable> 
                         </p:tab>
 
-                        <p:tab title="Views" rendered="#{webUserController.hasPrivilege('ChannelBookingViews')}">
+                        <p:tab title="Views" rendered="#{webUserController.hasPrivilege('ChannelBookingViews') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2">
                                 <p:panel header="Selected Session">
                                     <h:panelGrid columns="1">
@@ -1246,7 +1246,7 @@
 
                         </p:tab>
 
-                        <p:tab title="Doctor Payment" rendered="#{webUserController.hasPrivilege('ChannelBookingDocPay')}">
+                        <p:tab title="Doctor Payment" rendered="#{webUserController.hasPrivilege('ChannelBookingDocPay') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <p:panel header="Selected Session">
                                 <h:panelGrid columns="1">
                                     <p:commandButton value="Pay Selected Doctor" action="#{bookingController.paySelectedDoctor}" 

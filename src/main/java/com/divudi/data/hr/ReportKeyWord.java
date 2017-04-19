@@ -5,6 +5,7 @@
  */
 package com.divudi.data.hr;
 
+import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.entity.Area;
@@ -66,6 +67,7 @@ public class ReportKeyWord {
     String address;
     AdmissionType admissionType;
     Area area;
+    BillType billType;
     @Transient
     String transAddress1;
     @Transient
@@ -439,6 +441,14 @@ public class ReportKeyWord {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public BillType getBillType() {
+        return billType;
+    }
+
+    public void setBillType(BillType billType) {
+        this.billType = billType;
     }
 
 }

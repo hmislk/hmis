@@ -132,6 +132,7 @@ public class ChannelBean {
 
         return lg.intValue();
     }
+
     public int getBillSessionsCount(long ss, Date date) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -568,17 +569,17 @@ public class ChannelBean {
 //        System.out.println("toDate = " + toDate);
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Time 1 = " + new Date());
+//        System.err.println("Time 1 = " + new Date());
 
         createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
 
-        System.err.println("Time 2 = " + new Date());
+//        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
-        System.err.println("Time 3 = " + new Date());
+//        System.err.println("Time 3 = " + new Date());
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;
-        System.out.println("Doc = " + s.getPerson().getName() + " - Time = " + time);
+        System.out.println("Doc = " + s.getPerson().getName() + " - Time = " + time + " Seconds");
 
         return createdSessions;
     }
@@ -841,9 +842,9 @@ public class ChannelBean {
         m.put("class", ServiceSession.class);
         try {
             tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-            System.out.println("m = " + m);
-            System.out.println("sql = " + sql);
-            System.out.println("tmp.size() = " + tmp.size());
+//            System.out.println("m = " + m);
+//            System.out.println("sql = " + sql);
+//            System.out.println("tmp.size() = " + tmp.size());
         } catch (Exception e) {
             e.printStackTrace();
         }
