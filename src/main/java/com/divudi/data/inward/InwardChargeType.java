@@ -56,6 +56,7 @@ public enum InwardChargeType {
     VAT("VAT (15%)"),
     AccessoryCharges("Accessory Charges"),
     EyeLence("Eye Lence"),
+    HospitalSupportService("Hospital Support Service"),
     
     @Deprecated
     Investigations("Investigations"),

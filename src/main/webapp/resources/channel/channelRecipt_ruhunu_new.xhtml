@@ -32,7 +32,9 @@
                          font-weight: bold!important;
                          top: 0%!important;
                          text-decoration: underline!important;">
-                        <h:outputLabel value="Invoice" style="font-size: 13px!important;"/>
+                        <h:outputLabel value="Invoice" style="font-size: 13px!important;"/><br></br>
+                        <h:outputLabel value="Hospital Bill" style="font-size: 13px!important;" rendered="#{cc.attrs.hos eq true}"/>
+                        <h:outputLabel value="Professional Bill" style="font-size: 13px!important;" rendered="#{cc.attrs.hos ne true}"/>
                     </div>
                     <div style="position: absolute!important;
                          left: 40%!important;
@@ -250,7 +252,7 @@
 
                                 <tr>
                                     <td>
-                                        <h:outputLabel value="Administration Fee" rendered="#{cc.attrs.bill.vat ne 0.0 and cc.attrs.hos eq true}"></h:outputLabel>
+                                        <h:outputLabel value="Hospital Support Service" rendered="#{cc.attrs.bill.vat ne 0.0 and cc.attrs.hos eq true}"></h:outputLabel>
                                     </td>
                                     <td>
                                         <p:spacer width="10" rendered="#{cc.attrs.bill.vat ne 0.0 and cc.attrs.hos eq true}"></p:spacer>
@@ -362,6 +364,14 @@
 
                             </table>
                         </div>
+                    </div>
+                    <div style="position: absolute!important;
+                         left: 5%!important; 
+                         top: 30%!important;"
+                          >
+                        <h:outputLabel value="&quot;Collected for and on behalf of the Doctor&quot;" 
+                                       rendered="#{cc.attrs.hos ne true}"
+                                       style="font-size: 9px!important;" />
                     </div>
                 </h:panelGroup>
             </div>

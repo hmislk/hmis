@@ -610,6 +610,7 @@
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
+                            <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
                             <h:panelGroup id="gpBillPreview">
                                 <ui:repeat value="#{billController.bills}" var="bill">
                                     <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>

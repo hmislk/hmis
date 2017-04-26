@@ -108,6 +108,14 @@
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
                                 </p:column>           
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Shift In Time"  />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.shiftStartTime}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>                                     
+                                </p:column>           
                                 <p:column headerText="Late In Minute Varified">
                                     <f:facet name="header">
                                         <h:outputLabel value="Late In Minute Varified"  />
@@ -123,7 +131,15 @@
                                     <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
                                         <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
                                     </h:outputLabel>                                     
-                                </p:column>           
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Shift out Time"  />
+                                    </f:facet>
+                                    <h:outputLabel value="#{ss.shiftEndTime}">
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
+                                    </h:outputLabel>                                     
+                                </p:column>
                                 <p:column headerText="Early Out Minute Varified">
                                     <f:facet name="header">
                                         <h:outputLabel value="Early Out Minute Varified"  />

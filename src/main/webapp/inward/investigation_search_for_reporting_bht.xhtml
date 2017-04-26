@@ -146,7 +146,7 @@
                                     </h:outputLabel>
                                 </p:tooltip>
                             </p:column>
-                            
+
                             <p:column headerText="BHT Number"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.encounter.bhtNo}" >
                                 </h:outputLabel>
@@ -169,6 +169,7 @@
                                     <h:column >
                                         <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/lab_patient_report_print">
                                             <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>                                                
+                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                         </p:commandLink>
 
                                         <p:tooltip for="cmdOldReportPrint" >
@@ -179,7 +180,7 @@
                                     </h:column>
 
                                 </h:dataTable>
-                                
+
                                 <h:outputLabel value="Data Not Entered" rendered="#{pi.patientReports.size() eq 0}"/>
 
 

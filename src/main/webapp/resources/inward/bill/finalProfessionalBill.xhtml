@@ -27,8 +27,10 @@
                     <table class="headingPrinting" >
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel class="mark" value="**Final Bill Original**" 
+                                <h:outputLabel class="mark" value="**Professional Bill**" 
                                                rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
+<!--                                <h:outputLabel class="mark" value="**Final Bill Original**" 
+                                               rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>-->
                             </td>
                         </tr>
                         <tr>
@@ -51,7 +53,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
                             </td>                           
                         </tr>
-                        <tr>
+<!--                        <tr>
                             <td >
                                 <h:outputLabel value="Address : " />
                             </td>
@@ -104,7 +106,7 @@
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
                             </td>    
 
-                        </tr>      
+                        </tr>      -->
                     </table>
 
 
@@ -146,14 +148,14 @@
 
 
 
-                    <p:spacer height="30px"></p:spacer>
-                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"
+                    <p:spacer height="40px"></p:spacer>
+<!--                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"
                                      >
                     </h:outputLabel>
                     
                     <h:outputLabel value="     Patient/Guardian     " style="margin-left: 60%; text-decoration: overline;">
-                    </h:outputLabel>
-
+                    </h:outputLabel>-->
+                    <h:outputLabel value="&quot;Collected for and on behalf of the Doctor&quot;" ></h:outputLabel>
                 </div>
 
             </h:panelGroup>

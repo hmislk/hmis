@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
@@ -2149,6 +2150,14 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
+        fetchAdjustmentBillItemTableForStockTaking(BillType.PharmacyAdjustment);
+    }
+
+    public void createStoreAdjustmentBillItemTableForStockTaking() {
+        fetchAdjustmentBillItemTableForStockTaking(BillType.StoreAdjustment);
+    }
+
+    private void fetchAdjustmentBillItemTableForStockTaking(BillType billType) {
         pharmacyAdjustmentRows = new ArrayList<>();
 
         if (getReportKeyWord().getDepartment() == null) {
@@ -2174,7 +2183,7 @@ public class SearchController implements Serializable {
 
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("bType", BillType.PharmacyAdjustment);
+        m.put("bType", billType);
         m.put("ins", getSessionController().getInstitution());
         m.put("dep", getReportKeyWord().getDepartment());
         m.put("class", PreBill.class);
@@ -2192,7 +2201,8 @@ public class SearchController implements Serializable {
             m = new HashMap();
             sql = "select s from Stock s "
                     + " where s.department=:d "
-                    + " and s.stock>=0 ";
+                    + " and s.stock>=0 "
+                    + " and s.itemBatch.item.departmentType!=:depty ";
 
             if (getReportKeyWord().getCategory() != null) {
                 sql += " and s.itemBatch.item.category=:cat ";
@@ -2201,6 +2211,7 @@ public class SearchController implements Serializable {
 
             sql += " order by s.itemBatch.item.name,s.itemBatch.id ";
             m.put("d", getReportKeyWord().getDepartment());
+            m.put("depty", DepartmentType.Inventry);
             List<Stock> stocks = getStockFacade().findBySQL(sql, m);
             System.out.println("stocks.size() = " + stocks.size());
             for (Stock s : stocks) {
@@ -6528,7 +6539,6 @@ public class SearchController implements Serializable {
                 + " and (b.patient.person.phone is not null "
                 + " or b.patient.person.phone!=:em) "
                 + " and b.createdAt between :fd and :td  ";
-        
 
         if (getReportKeyWord().getString().equals("0")) {
         }
@@ -6586,23 +6596,37 @@ public class SearchController implements Serializable {
             for (Bill b : bills) {
                 if (b.getPatient().getPerson().getPhone() != null && !"".equals(b.getPatient().getPerson().getPhone())) {
                     System.out.println("b.getPatient().getPerson().getPhone() = " + b.getPatient().getPerson().getPhone());
-                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getPatient().getPerson().getId());
-                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getInsId());
-                    System.out.println("b.getPatient().getPerson().getPhone() = " + b.getDeptId());
+                    String ss = b.getPatient().getPerson().getPhone().substring(0, 3);
                     if (getReportKeyWord().getString1().equals("1")) {
                         if (b.getPatient().getAgeYears() <= getReportKeyWord().getFrom()) {
-                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                            if (ss.equals("077") || ss.equals("076")
+                                    || ss.equals("071") || ss.equals("072")
+                                    || ss.equals("075") || ss.equals("078")) {
+                                telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                            }
                         }
                     }
                     if (getReportKeyWord().getString1().equals("2")) {
                         if (b.getPatient().getAgeYears() >= getReportKeyWord().getTo()) {
-                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                            if (b.getPatient().getAgeYears() <= getReportKeyWord().getFrom()) {
+                                if (ss.equals("077") || ss.equals("076")
+                                        || ss.equals("071") || ss.equals("072")
+                                        || ss.equals("075") || ss.equals("078")) {
+                                    telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                                }
+                            }
                         }
                     }
                     if (getReportKeyWord().getString1().equals("3")) {
                         if (b.getPatient().getAgeYears() >= getReportKeyWord().getFrom()
                                 && b.getPatient().getAgeYears() <= getReportKeyWord().getTo()) {
-                            telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                            if (b.getPatient().getAgeYears() <= getReportKeyWord().getFrom()) {
+                                if (ss.equals("077") || ss.equals("076")
+                                        || ss.equals("071") || ss.equals("072")
+                                        || ss.equals("075") || ss.equals("078")) {
+                                    telephoneNumbers.add(b.getPatient().getPerson().getPhone());
+                                }
+                            }
                         }
                     }
                 }
