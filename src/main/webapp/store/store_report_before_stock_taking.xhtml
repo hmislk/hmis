@@ -93,11 +93,34 @@
                                     </f:facet>
                                 </p:column>
                                 
+                                <p:column headerText="Physical Stock(Total)" style="text-align: center;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Physical Stock(Total)"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="__________"  ></h:outputLabel>
+                                </p:column>
+                                
                                 <p:column headerText="Physical Stock" style="text-align: center;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Physical Stock"/>    
                                     </f:facet>
-                                    <h:outputLabel value="__________________"  ></h:outputLabel>
+                                    <h:outputLabel value="#{a+1})__________________"  ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="DOE" style="text-align: center;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="DOE"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="______/___/___"  ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="DOE" styleClass="noPrintButton">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="DOE"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
+                                        <f:convertDateTime pattern="YYYY MM dd" />
+                                    </h:outputLabel>                                  
                                 </p:column>
                                 
 
