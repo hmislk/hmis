@@ -129,7 +129,7 @@
                                                 </h:panelGrid>
                                                 <h:outputLabel value="Date of Birth"/>
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
-                                                    <f:ajax event="dateSelect" execute="calNewPtDob"/>
+                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
                                                 </p:calendar>
 
                                                 <h:outputLabel value="Phone"/>
@@ -254,7 +254,7 @@
                                                 </p:inputMask>
                                                 <h:outputLabel value="Date of Birth"/>
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
-                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge"/>
+                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge year month day" listener="#{patientController.dobChangeListen()}"/>
                                                 </p:calendar>
                                                 <h:outputLabel value="NIC" />
                                                 <p:inputText maxlength="12" value="#{patientController.current.person.nic}"/>

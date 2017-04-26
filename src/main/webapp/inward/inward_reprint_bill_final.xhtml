@@ -21,8 +21,19 @@
 
                                 <h:panelGrid columns="3">
 
+                                    <p:panel header="Bill Reprints"
+                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"   >
+                                                <p:printer target="professionalAndFinaBill" ></p:printer>
+                                            </p:commandButton>
+                                            <p:commandButton value="Print Credit Company Letter" ajax="false"  >
+                                                <p:printer target="letter" ></p:printer>
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
                                     <p:panel header="Claimable Bill Reprints" 
-                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
+                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Print Patient Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
@@ -44,7 +55,7 @@
 
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">
+                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Patient Copy without Professional" ajax="false"   >
                                                 <p:printer target="notClaimablePatientCopy" ></p:printer>
@@ -57,20 +68,27 @@
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
+                                    <p:panel header="Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
                                         <h:panelGrid columns="1">
                                             <p:commandButton ajax="false" value="Green Sheet Print"  >
                                                 <p:printer target="finalBillGreenSheet" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
-                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
+                                    <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
                                                 <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
                                             </p:commandButton>
                                             <p:commandButton value="Professional Fees" ajax="false"   >
                                                 <p:printer target="professional" ></p:printer>
+                                            </p:commandButton>
+                                        </h:panelGrid>
+                                    </p:panel>
+                                    <p:panel header="Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <h:panelGrid columns="1">
+                                            <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
+                                                <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
                                     </p:panel>
@@ -161,52 +179,61 @@
 
 
 
-                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
+                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                             <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
                         <h:panelGroup id="claimablePatientCopy2" styleClass="noBorder" rendered="false" >                  
                             <bi:finalBill_vat   bill="#{inwardSearch.bill}"   showProfessional="true"/>
+                        </h:panelGroup>
+                        
+                        <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
+                            <bi:finalBill  bill="#{inwardSearch.bill}" />
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}"  />
                         </h:panelGroup>
 
                         <h:panelGroup id="letter">
                             <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
                         </h:panelGroup>
 
-                        <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder">                    
+                        <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                             <bi:finalBill  hosCopy="true"     showProfessional="true"                                  
                                            bill="#{inwardSearch.bill}"/>
                         </h:panelGroup>
 
-                        <h:panelGroup id="claimableDuplicate" styleClass="noBorder" >                    
+                        <h:panelGroup id="claimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                             <bi:finalBill duplicate="true"   showProfessional="true"                                
                                           bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
-                        <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder">
+                        <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                             <bi:finalBill  bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
-                        <h:panelGroup id="notClaimableHospitalCopy" styleClass="noBorder">                    
+                        <h:panelGroup id="notClaimableHospitalCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                             <bi:finalBill  hosCopy="true" bill="#{inwardSearch.bill}"/>
                         </h:panelGroup>
 
-                        <h:panelGroup id="professional" styleClass="noBorder">       
+                        <h:panelGroup id="professional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">       
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}"  />
                         </h:panelGroup>
 
-                        <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder">                
+                        <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                
                             <bi:finalBill duplicate="true"                                   
                                           bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
 
 
-                        <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" >                  
+                        <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                             <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
 
-                        <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
+                        <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                             <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
+                        </h:panelGroup>
+                        <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                  
+                            <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
 
@@ -217,7 +244,7 @@
                     </p:panel>
 
 
-                    <h:panelGroup id="claimablePatientDetailCopy" > 
+                    <h:panelGroup id="claimablePatientDetailCopy" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"> 
 
                         <div style="width: 100%; text-align: center; margin: auto; padding: 10px; " >
                             <div styleClass="noBorderWhenPrint" style="width: 21.0cm; " >

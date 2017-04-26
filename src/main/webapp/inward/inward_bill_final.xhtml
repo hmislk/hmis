@@ -460,13 +460,22 @@
 
 
                     <h:panelGrid columns="2">
-                        <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase'}">                            
+                        <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
                                 <p:commandButton value="Print Patient Copy" ajax="false">
                                     <p:printer target="claimablePatientCopy" ></p:printer>
                                 </p:commandButton>                               
                                 <p:commandButton value="Print Duplicate Copy" ajax="false" >
                                     <p:printer target="claimableDuplicate" ></p:printer>
+                                </p:commandButton> 
+                                <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"   >
+                                    <p:printer target="professionalAndFinaBill" ></p:printer>
                                 </p:commandButton> 
                                 <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
                                 </p:commandButton>
@@ -485,14 +494,21 @@
                                                         </p:commandButton>
                                                     </h:panelGrid>
                                                 </p:panel>-->
-                        <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">                            
+                        <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
+                            <h:panelGrid columns="1">
+                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
+                                    <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
                                 <p:commandButton ajax="false" value="Green Sheet Print" >
                                     <p:printer target="finalBillGreenSheet" ></p:printer>
                                 </p:commandButton>
                             </h:panelGrid>
                         </p:panel>
-                        <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase'}">
+                        <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="1">
                                 <p:commandButton ajax="false" value="Green Sheet Print Without Professional"  >
                                     <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
@@ -504,35 +520,44 @@
                         </p:panel>
                     </h:panelGrid>
 
+                    <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" 
+                                  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
+                        <bi:finalBill  bill="#{bhtSummeryController.current}" />
+                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}"  />
+                    </h:panelGroup>
+                    <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                  
+                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
+                        <bi:finalProfessionalBill bill="#{inwardSearch.bill}" />
+                    </h:panelGroup>
 
-                    <h:panelGroup id="claimablePatientCopy" styleClass="noBorder">                  
+                    <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                         <bi:finalBill   bill="#{bhtSummeryController.current}" showProfessional="true"/>
                     </h:panelGroup>
 
-                    <h:panelGroup id="claimableDuplicate" styleClass="noBorder">                    
+                    <h:panelGroup id="claimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                         <bi:finalBill duplicate="true"   showProfessional="true"                                
                                       bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 
-                    <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder">
+                    <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                         <bi:finalBill  bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 
-                    <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder">                
+                    <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                
                         <bi:finalBill duplicate="true" bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 
 
 
-                    <h:panelGroup id="professional" styleClass="noBorder">       
+                    <h:panelGroup id="professional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">       
                         <bi:finalProfessionalBill bill="#{bhtSummeryController.current}"  />
                     </h:panelGroup>
 
-                    <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" >                  
+                    <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                         <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="true"/>
                     </h:panelGroup>
 
-                    <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" >                  
+                    <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
                         <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 

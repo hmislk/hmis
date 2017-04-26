@@ -8,6 +8,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
@@ -2149,6 +2150,14 @@ public class SearchController implements Serializable {
     }
 
     public void createPharmacyAdjustmentBillItemTableForStockTaking() {
+        fetchAdjustmentBillItemTableForStockTaking(BillType.PharmacyAdjustment);
+    }
+
+    public void createStoreAdjustmentBillItemTableForStockTaking() {
+        fetchAdjustmentBillItemTableForStockTaking(BillType.StoreAdjustment);
+    }
+
+    private void fetchAdjustmentBillItemTableForStockTaking(BillType billType) {
         pharmacyAdjustmentRows = new ArrayList<>();
 
         if (getReportKeyWord().getDepartment() == null) {
@@ -2174,7 +2183,7 @@ public class SearchController implements Serializable {
 
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
-        m.put("bType", BillType.PharmacyAdjustment);
+        m.put("bType", billType);
         m.put("ins", getSessionController().getInstitution());
         m.put("dep", getReportKeyWord().getDepartment());
         m.put("class", PreBill.class);
@@ -2192,7 +2201,8 @@ public class SearchController implements Serializable {
             m = new HashMap();
             sql = "select s from Stock s "
                     + " where s.department=:d "
-                    + " and s.stock>=0 ";
+                    + " and s.stock>=0 "
+                    + " and s.itemBatch.item.departmentType!=:depty ";
 
             if (getReportKeyWord().getCategory() != null) {
                 sql += " and s.itemBatch.item.category=:cat ";
@@ -2201,6 +2211,7 @@ public class SearchController implements Serializable {
 
             sql += " order by s.itemBatch.item.name,s.itemBatch.id ";
             m.put("d", getReportKeyWord().getDepartment());
+            m.put("depty", DepartmentType.Inventry);
             List<Stock> stocks = getStockFacade().findBySQL(sql, m);
             System.out.println("stocks.size() = " + stocks.size());
             for (Stock s : stocks) {

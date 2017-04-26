@@ -729,7 +729,7 @@ public class PatientReportController implements Serializable {
 //            cpt = getFacade().find(currentPatientReport.getId());
 //            currentPatientReport = cpt;
 //        }
-        System.out.println("currentPatientReport = " + currentPatientReport.toString());
+//        System.out.println("currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
     }
 

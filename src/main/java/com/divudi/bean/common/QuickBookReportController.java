@@ -135,7 +135,7 @@ public class QuickBookReportController implements Serializable {
     }
 
     public void createAllBilledItemReport() {
-        items = fetchBilledItem(Arrays.asList(new BillType[]{BillType.InwardBill, BillType.OpdBill}), fromDate, toDate);
+        items = fetchBilledItem(BillType.OpdBill, fromDate, toDate,true);
         for (Item i : items) {
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
@@ -143,9 +143,22 @@ public class QuickBookReportController implements Serializable {
                 i.setTransName(i.getName());
             }
             if (Investigation.class == i.getClass()) {
-                i.getCategory().setDescription("RHD LAB INCOME:RHD OPD Sale");
+                i.getCategory().setDescription("RHD LAB INCOME:OPD:RHD OPD Sale");
             }
         }
+        List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate,false);
+        for (Item i : is) {
+            if (i.getName().length() > 30) {
+                i.setTransName(i.getName().substring(0, 30));
+            } else {
+                i.setTransName(i.getName());
+            }
+            if (Investigation.class == i.getClass()) {
+                i.getCategory().setDescription("RHD LAB INCOME:INWARD:RHD Inward Sale");
+            }
+        }
+        items.addAll(is);
+
     }
 
     public List<Item> fetchBilledItem(List<BillType> billTypes, Date fd, Date td) {
@@ -165,6 +178,64 @@ public class QuickBookReportController implements Serializable {
                 + " order by bi.item.category.name, bi.item.name ";
         m.put("toDate", td);
         m.put("fromDate", fd);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
+    }
+
+    public List<Item> fetchBilledItem(BillType billType, Date fd, Date td, boolean opd) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false ";
+
+        if (billType != null) {
+            sql += " and  bi.bill.billType=:bt ";
+            m.put("bt", billType);
+        }
+        
+        if (opd) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate";
+        } else {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
+
+        sql += " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
+    }
+
+    public List<Item> fetchBilledItemInwardInvestigationOnly(List<BillType> billTypes, Date fd, Date td) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.item.inactive!=true "
+                + " and type(bi.item)=:typ ";
+
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bts ";
+            m.put("bts", billTypes);
+        }
+
+        sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("typ", Investigation.class);
 
         List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
