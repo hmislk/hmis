@@ -363,8 +363,13 @@ public class StaffSalaryController implements Serializable {
                 || checkDateRange(getCurrent().getStaff().getDateRetired())) {
 
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
-            //#311
-            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
+            //#311 
+            double workedDays = 0.0;
+            if (checkDateRange(getCurrent().getStaff().getDateLeft()) || checkDateRange(getCurrent().getStaff().getDateLeft())) {
+                workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
+            } else {
+                workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
+            }
             System.out.println("1.workedDays = " + workedDays);
             if (getCurrent().getStaff().getDateJoined() != null) {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
@@ -380,13 +385,13 @@ public class StaffSalaryController implements Serializable {
                     workedDays += extraDays;
                 }
             }
-            if (getCurrent().getStaff().getDateLeft() != null) {
-                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
-                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-                    System.out.println("Resigned extraDays = " + extraDays);
-                    workedDays += extraDays;
-                }
-            } 
+//            if (getCurrent().getStaff().getDateLeft() != null) {
+//                if (salaryCycle.getDayOffPhToDate().getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
+//                    long extraDays = (getCurrent().getStaff().getDateLeft().getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
+//                    System.out.println("Resigned extraDays = " + extraDays);
+//                    workedDays += extraDays;
+//                }
+//            }
 //            becaause this pesonn must analyse to resign date
             System.out.println("2.workedDays = " + workedDays);
             //remove offdays 
@@ -641,7 +646,7 @@ public class StaffSalaryController implements Serializable {
 
             System.out.println("otSec = " + otSec);
 //            System.err.println("Working Time : " + workedWithinTimeFrameVarified / (60 * 60));
-            System.err.println("OT Min : " + otSec / 60 );
+            System.err.println("OT Min : " + otSec / 60);
             System.err.println("OT Time : " + otSec / (60 * 60));
 
             overTimeSec += otSec;
@@ -1582,11 +1587,11 @@ public class StaffSalaryController implements Serializable {
                 if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
                     double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
                     System.out.println("workedDays = " + workedDays);
-                    if (workedDays==0.0) {
-                        JsfUtil.addErrorMessage("No Working Days - "+ s.getPerson().getName());
+                    if (workedDays == 0.0) {
+                        JsfUtil.addErrorMessage("No Working Days - " + s.getPerson().getName());
                         continue;
                     }
-                    
+
                 }
                 if (checkDateRange(commonFunctions.getEndOfDay(getCurrent().getStaff().getDateLeft())) && getCurrent().getStaff().getDateLeft() != null) {
                     if (lastAnalyseDate.getTime() < getCurrent().getStaff().getDateLeft().getTime()) {
@@ -1626,13 +1631,13 @@ public class StaffSalaryController implements Serializable {
 
         //   createStaffSalaryTable();
     }
-    
+
     public void generateSpecial() {
         if (getStaffController().getSelectedList() == null) {
             return;
         }
-        
-        if (getStaffController().getSelectedList().size()>1) {
+
+        if (getStaffController().getSelectedList().size() > 1) {
             JsfUtil.addErrorMessage("Sorry. You Can't Process More than One Staff this Special Salary Genrate.");
             return;
         }
@@ -1702,7 +1707,7 @@ public class StaffSalaryController implements Serializable {
 
         //   createStaffSalaryTable();
     }
-    
+
     public void generateForCheck() {
         if (getStaffController().getSelectedList() == null) {
             return;

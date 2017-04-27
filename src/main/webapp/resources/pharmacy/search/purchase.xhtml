@@ -12,15 +12,17 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="4">         
+        <h:panelGrid columns="5">         
             <h:outputLabel value="Bill No"/>
             <h:outputLabel value="Net Total"/>
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
+            <h:outputLabel value="Dealor Name"/>
             <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
+            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}"/>
         </h:panelGrid>
         <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
@@ -79,6 +81,12 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
+            <p:column headerText="Dealor" >
+                <h:commandLink action="pharmacy_reprint_purchase" >
+                    <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>                               
             <p:column headerText="Net Value"  style="text-align: right;"  >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.netTotal}" >
@@ -87,7 +95,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>
-            
+
             <p:column headerText="Sale Value"  style="text-align: right;"  >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.saleValue}" >

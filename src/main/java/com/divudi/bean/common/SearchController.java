@@ -1503,6 +1503,12 @@ public class SearchController implements Serializable {
     public void createTableByBillType() {
         Date startTime = new Date();
 
+        if (billType == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+
+        }
+
         String sql;
         Map temMap = new HashMap();
 
