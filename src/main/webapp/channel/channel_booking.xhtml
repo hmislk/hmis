@@ -1231,7 +1231,7 @@
                                         </p:commandButton>
                                         <p:commandButton value="All Doctor" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctor()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Doctor(Scan)" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctorScan()}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Doctor(Scan)" action="channel_doctor_view_today" actionListener="#{channelReportController.createTotalDoctorScan()}" ajax="false" onclick="onSubmitButton();" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}">                                        
                                         </p:commandButton>
                                         <p:commandButton value="Doctor Arraival List" action="channel_doctor_view_today_1" actionListener="#{channelReportController.createDoctorArrival()}" ajax="false" onclick="onSubmitButton();">                                        
                                         </p:commandButton>

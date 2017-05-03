@@ -4552,12 +4552,56 @@ public class ChannelReportController implements Serializable {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.Channel);
         }
-
+        
         sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("bills = " + bills.size());
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+//            System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
+            if (getReportKeyWord().getString().equals("0")) {
+                
+            }
+            if (getReportKeyWord().getString().equals("1")) {
+                List<Bill> reBills=new ArrayList<>();
+                for (Bill b : bills) {
+                    Calendar cal=Calendar.getInstance();
+                    cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
+//                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+                    if (cal.get(Calendar.HOUR_OF_DAY)>=12) {
+                        reBills.add(b);
+//                        System.err.println("add 1");
+                    }
+                }
+//                System.out.println("bills.size() = " + bills.size());
+//                System.out.println("reBills.size() = " + reBills.size());
+                bills.removeAll(reBills);
+//                System.out.println("bills.size() = " + bills.size());
+            }
+            if (getReportKeyWord().getString().equals("2")) {
+                List<Bill> reBills=new ArrayList<>();
+                for (Bill b : bills) {
+                    Calendar cal=Calendar.getInstance();
+                    cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
+//                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+                    if (cal.get(Calendar.HOUR_OF_DAY)<12) {
+                        reBills.add(b);
+//                        System.err.println("add 2");
+                    }
+                }
+//                System.out.println("bills.size() = " + bills.size());
+//                System.out.println("reBills.size() = " + reBills.size());
+                bills.removeAll(reBills);
+//                System.out.println("bills.size() = " + bills.size());
+            }
+        }
+//        System.out.println("bills = " + bills.size());
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4570,10 +4614,10 @@ public class ChannelReportController implements Serializable {
         }
 
         for (ChannelDoctor cd : channelDoctors) {
-            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+//            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
             for (Bill b : bills) {
-                System.out.println("b = " + b.getStaff().getPerson().getName());
-                System.out.println("b = " + b.getBillClass());
+//                System.out.println("b = " + b.getStaff().getPerson().getName());
+//                System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
@@ -4590,6 +4634,11 @@ public class ChannelReportController implements Serializable {
                         } else if (b instanceof RefundBill) {
                             cd.setRefundedCount(cd.getRefundedCount() + 1);
                             cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
+                        }
+                    }else{
+                        if ((b.getBillType()==BillType.ChannelStaff||b.getBillType()==BillType.ChannelOnCall) 
+                                && b.getPaidBill()==null && !b.isCancelled() && !b.isRefunded()) {
+                            cd.setNotPaidBillCount(cd.getNotPaidBillCount()+1);
                         }
                     }
                 }

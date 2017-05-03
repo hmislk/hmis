@@ -445,6 +445,21 @@ public class ShiftTableController implements Serializable {
         while (tmpToDate.after(nowDate)) {
             netT = new ShiftTable();
             netT.setDate(nowDate);
+            
+            DayType dt = humanResourceBean.isHolidayWithDayType(nowDate);
+            System.out.println("dt = " + dt);
+            
+            if (dt==DayType.MurchantileHoliday) {
+                netT.setMerch(true);
+            }else{
+                netT.setMerch(false);
+            }
+            
+            if (dt==DayType.Poya) {
+                netT.setPh(true);
+            } else {
+                netT.setPh(false);
+            }
 
             Calendar calNowDate = Calendar.getInstance();
             calNowDate.setTime(nowDate);

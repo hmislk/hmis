@@ -19,6 +19,8 @@ public class ShiftTable {
     private List<StaffShift> staffShift;
     private Date date;   
     boolean flag;
+    private boolean ph;
+    private boolean merch;
 
     public boolean isFlag() {
         return flag;
@@ -31,9 +33,6 @@ public class ShiftTable {
     public void setFlag(boolean flag) {
         this.flag = flag;
     }
-    
-   
-    
    
     public Date getDate() {
         return date;
@@ -52,6 +51,22 @@ public class ShiftTable {
 
     public void setStaffShift(List<StaffShift> staffShift) {
         this.staffShift = staffShift;
+    }
+
+    public boolean isPh() {
+        return ph;
+    }
+
+    public void setPh(boolean ph) {
+        this.ph = ph;
+    }
+
+    public boolean isMerch() {
+        return merch;
+    }
+
+    public void setMerch(boolean merch) {
+        this.merch = merch;
     }
 
 }
