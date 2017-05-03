@@ -43,9 +43,13 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +59,10 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import org.primefaces.model.UploadedFile;
 
 /**
  *
@@ -152,6 +160,7 @@ public class SearchController implements Serializable {
     List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
 
     BillSession selectedBillSession;
+    UploadedFile file;
 
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
@@ -457,6 +466,14 @@ public class SearchController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
     }
 
     public class billsWithbill {
@@ -6643,6 +6660,61 @@ public class SearchController implements Serializable {
 
     }
 
+    public void importToExcel() {
+//        if (file == null) {
+//            UtilityController.addErrorMessage("Select File");
+//            return;
+//        }
+        telephoneNumbers = new ArrayList<>();
+        String number;
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        System.err.println("in");
+        try {
+            System.err.println("in 1");
+            UtilityController.addSuccessMessage(file.getFileName());
+            System.err.println("in 2");
+            in = file.getInputstream();
+            System.err.println("in 3");
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            System.err.println("in 4");
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            System.err.println("in 5");
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            for (int i = 0; i < sheet.getRows(); i++) {
+                System.out.println("i = " + i);
+                cell = sheet.getCell(1, i);
+                number = cell.getContents();
+                System.out.println("number = " + number);
+                if (number.contains("077") || number.contains("076")
+                        || number.contains("071") || number.contains("072")
+                        || number.contains("075") || number.contains("078")) {
+                    telephoneNumbers.add(number);
+                }
+            }
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted.");
+        } catch (Exception e) {
+        }
+    }
+
     public void sendSms() {
 
         String sendingNo = uniqueSmsText;
@@ -6692,6 +6764,10 @@ public class SearchController implements Serializable {
         }
         if (selectedTelephoneNumbers.size() > 10000) {
             JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
+            return;
+        }
+        if (smsText.equals("")||smsText==null) {
+            JsfUtil.addErrorMessage("Enter Message");
             return;
         }
         for (String stn : selectedTelephoneNumbers) {

@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Department Report (#{dataAdministrationController.departmentType})" >
+
+                        <h:panelGrid columns="2">
+                            <h:outputText id="lblType" value="Department Type" ></h:outputText>
+                            <p:selectOneMenu value="#{dataAdministrationController.departmentType}">
+                                <f:selectItem itemLabel="Select Department Type"/>
+                                <f:selectItems value="#{departmentController.departmentType}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton ajax="false" value="Fill" action="#{dataAdministrationController.fillDepartmentss()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <h:panelGrid columns="2">
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                    <pe:exporter type="xlsx" target="tbl" fileName="Detailed_#{dataAdministrationController.departmentType}_List"  />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder summeryBorder" value="#{dataAdministrationController.departments}" var="i"  >
+
+                                <p:column sortBy="#{i.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column sortBy="#{i.printingName}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Printing Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.printingName}" ></h:outputLabel>
+                                </p:column>
+                                <p:column sortBy="#{i.departmentCode}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.departmentCode}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Address"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.address}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel 1"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.telephone1}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tel 2"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.telephone2}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Fax"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.fax}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Email"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.email}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Institution"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.institution.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Creater"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Created At"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.createdAt}">
+                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

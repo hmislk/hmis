@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form id="form" enctype="multipart/form-data" >
+                <p:panel header="Contact numbers" >
+                    <f:facet name="header">
+                        <h:panelGrid columns="2" id="panGrup1">
+
+                            <h:outputLabel value="Import Pharmaceutical Items" ></h:outputLabel>
+                            <p>Please make sure the following order of Columns.</p>
+                            <p>Leave First Row for Row Headings.</p>
+                            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+                            <p:panelGrid columns="2" style="border: 1px solid blue;" >
+                                <h:outputLabel value ="0. No(Optional)" ></h:outputLabel>
+                                <h:outputLabel value ="1. Phone Number"></h:outputLabel>
+                            </p:panelGrid>
+
+                            <p:fileUpload value="#{searchController.file}" mode="simple"/>
+                            <h:commandButton value="Submit" action="#{searchController.importToExcel}" />
+                            <h:outputLabel></h:outputLabel>
+                            <p:outputLabel value="Message" />
+                            <p:inputMask mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputMask>
+
+                            <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />
+                        </h:panelGrid>
+                    </f:facet>
+                </p:panel>
+
+                <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                             rowKey="#{b}" 
+                             rows="#{searchController.rows}"
+                             selection="#{searchController.selectedTelephoneNumbers}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100">
+
+                    <f:facet name="header" >
+                        <p:outputLabel value="Contact Numbers - #{searchController.telephoneNumbers.size()}" />                                
+                    </f:facet>
+
+                    <p:column selectionMode="multiple"></p:column>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="No" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{i+1}"> 
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column style="text-align: left;" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Phone number" >
+                            </p:outputLabel>
+                        </f:facet>
+                        <p:outputLabel value="#{b}"> 
+                        </p:outputLabel>
+                    </p:column>
+
+                </p:dataTable>
+
+            </h:form>
+
+        </h:panelGroup>
+
+        <h:form>
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

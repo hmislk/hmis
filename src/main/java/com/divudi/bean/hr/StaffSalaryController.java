@@ -365,12 +365,25 @@ public class StaffSalaryController implements Serializable {
 //            double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             //#311 
             double workedDays = 0.0;
-            if (checkDateRange(getCurrent().getStaff().getDateLeft()) || checkDateRange(getCurrent().getStaff().getDateLeft())) {
+            if (checkDateRange(getCurrent().getStaff().getDateLeft())|| checkDateRange(getCurrent().getStaff().getDateRetired())) {
                 workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate(), getCurrent().getStaff());
             } else {
                 workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryFromDate(), salaryCycle.getDayOffPhToDate(), getCurrent().getStaff());
             }
             System.out.println("1.workedDays = " + workedDays);
+            //----get leave days
+            workedDays += humanResourceBean.calStaffLeave(getCurrent().getStaff(), LeaveType.Annual, salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate());
+            System.out.println("2.workedDays(Annual) = " + workedDays);
+            workedDays +=humanResourceBean.calStaffLeave(getCurrent().getStaff(), LeaveType.Casual, salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate());
+            System.out.println("3.workedDays(Casual) = " + workedDays);
+            workedDays +=humanResourceBean.calStaffLeave(getCurrent().getStaff(), LeaveType.Medical, salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate());
+            System.out.println("4.workedDays(Medical) = " + workedDays);
+            workedDays +=humanResourceBean.calStaffLeave(getCurrent().getStaff(), LeaveType.DutyLeave, salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate());
+            System.out.println("5.workedDays(DutyLeave) = " + workedDays);
+            workedDays +=humanResourceBean.calStaffLeaveMaternity(getCurrent().getStaff(), salaryCycle.getSalaryFromDate(), salaryCycle.getSalaryToDate());
+            System.out.println("6.workedDays(Matinity) = " + workedDays);
+            
+            //----get leave days
             if (getCurrent().getStaff().getDateJoined() != null) {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
                     long extraDays;
@@ -393,10 +406,10 @@ public class StaffSalaryController implements Serializable {
 //                }
 //            }
 //            becaause this pesonn must analyse to resign date
-            System.out.println("2.workedDays = " + workedDays);
+            System.out.println("7.workedDays = " + workedDays);
             //remove offdays 
 //            workedDays -= (int) (workedDays / 7); because we get only working days not week days
-            System.out.println("3.workedDays = " + workedDays);
+//            System.out.println("3.workedDays = " + workedDays);
 
             if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
                 return value;
