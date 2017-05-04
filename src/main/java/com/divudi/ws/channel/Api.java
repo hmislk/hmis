@@ -438,6 +438,34 @@ public class Api {
         String json = jSONObjectOut.toString();
         return json;
     }
+    
+    @GET
+    @Path("/specility/")
+    @Produces("application/json")
+    public String getAllSpecilities(){
+        List<Object[]> specilities = specilityList();
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+        if (!specilities.isEmpty()) {
+            for (Object[] con : specilities) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("Spec_id", con[0]);
+                jSONObject.put("Spec_name", con[1]);
+                array.put(jSONObject);
+            }
+            jSONObjectOut.put("specilities", array);
+            jSONObjectOut.put("error", "0");
+            jSONObjectOut.put("error_description", "");
+        } else {
+            jSONObjectOut.put("specilities", array);
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = jSONObjectOut.toString();
+
+        return json;
+    }
 
     //----------------------------------------------------
     public List<Object[]> doctorsList(String doc_code) {
@@ -475,6 +503,8 @@ public class Api {
 
         return consultants;
     }
+    
+    
 
     public List<Object[]> sessionsListObject(String doc_code, Date fromDate, Date toDate) {
 
@@ -1348,6 +1378,27 @@ public class Api {
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
 
+    }
+    
+    public List<Object[]> specilityList() {
+
+        List<Object[]> specilities = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select c.id,c.name "
+                + " from DoctorSpeciality c "
+                + " where c.retired=false "
+                + " order by c.name";
+
+        
+        specilities = getStaffFacade().findAggregates(sql);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("consultants.size() = " + specilities.size());
+
+        return specilities;
     }
 
     /**
