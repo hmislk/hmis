@@ -151,7 +151,7 @@ public class Api {
     @Produces("application/json")
     public String getDoctors() {
 
-        List<Object[]> consultants = doctorsList(null);
+        List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         if (!consultants.isEmpty()) {
@@ -186,7 +186,7 @@ public class Api {
         JSONObject jSONObjectOut = new JSONObject();
         try {
 //            Long d_id = Long.parseLong(doc_id);
-            List<Object[]> consultants = doctorsList(doc_code);
+            List<Object[]> consultants = doctorsList(doc_code, null);
             if (!consultants.isEmpty()) {
                 for (Object[] con : consultants) {
                     JSONObject jSONObject = new JSONObject();
@@ -320,7 +320,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
         Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder=new URLDecoder();
+        URLDecoder decoder = new URLDecoder();
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
@@ -438,11 +438,11 @@ public class Api {
         String json = jSONObjectOut.toString();
         return json;
     }
-    
+
     @GET
     @Path("/specility/")
     @Produces("application/json")
-    public String getAllSpecilities(){
+    public String getAllSpecilities() {
         List<Object[]> specilities = specilityList();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -453,22 +453,148 @@ public class Api {
                 jSONObject.put("Spec_name", con[1]);
                 array.put(jSONObject);
             }
-            jSONObjectOut.put("specilities", array);
-            jSONObjectOut.put("error", "0");
-            jSONObjectOut.put("error_description", "");
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
         } else {
-            jSONObjectOut.put("specilities", array);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "No Data.");
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
         }
 
-        String json = jSONObjectOut.toString();
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/doc/{spec_id}/")
+    @Produces("application/json")
+    public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
+        long sp_id = Long.parseLong(spec_id);
+        List<Object[]> consultants = doctorsList(null, sp_id);
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+        if (!consultants.isEmpty()) {
+            for (Object[] con : consultants) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("doc_id", con[0]);
+                jSONObject.put("doc_name", con[1]);
+                jSONObject.put("doc_specility", con[2]);
+                jSONObject.put("doc_code", con[3]);
+                array.put(jSONObject);
+            }
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
+        } else {
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/ses/{doc_code}")
+    @Produces("application/json")
+    public String getDocSessions(@PathParam("doc_code") String doc_code) {
+
+        JSONObject object = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray array1 = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+
+        try {
+            List<ServiceSession> sessions = sessionsList(doc_code, null, null);
+            if (!sessions.isEmpty()) {
+                for (ServiceSession s : sessions) {
+                    object = new JSONObject();
+                    object.put("session_id", s.getId());
+                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
+                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
+                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
+                    object.put("session_max_no", s.getMaxNo());
+                    object.put("session_is_refundable", s.isRefundable());
+                    object.put("session_duration", s.getDuration());
+                    object.put("session_room_no", s.getRoomNo());
+                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
+                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_is_leaved", s.isDeactivated());
+                    array.put(object);
+//            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
+                }
+                jSONObjectOut.put("session", array);
+                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
+                jSONObjectOut.put("error", "0");
+                jSONObjectOut.put("error_description", "");
+            } else {
+                jSONObjectOut.put("session", sessions);
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "No Data.");
+            }
+        } catch (Exception e) {
+            jSONObjectOut.put("session", object);
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "Invalid Argument.");
+        }
+
+        String json = array.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/apps/{ses_id}/")
+    @Produces("application/json")
+    public String getBillSessions(@PathParam("ses_id") String ses_id) {
+
+        long sp_id = Long.parseLong(ses_id);
+        List<BillSession> billSessions = fillBillSessions(sp_id);
+        JSONArray array = new JSONArray();
+        if (!billSessions.isEmpty()) {
+            for (BillSession bs : billSessions) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("app_no", bs.getSerialNo());
+                jSONObject.put("patient_name", bs.getBill().getPatient().getPerson().getNameWithTitle());
+                if (bs.getBill().getPaidAmount() == 0) {
+                    jSONObject.put("app_type", "Credit - " + bs.getBill().getPaymentMethod());
+                } else {
+                    jSONObject.put("app_type", "Paid - " + bs.getBill().getPaymentMethod());
+                }
+                if (bs.getBill().isCancelled()) {
+                    jSONObject.put("app_status", "Canceled");
+                } else if (bs.getBill().isRefunded()) {
+                    jSONObject.put("app_status", "Refunded");
+                } else {
+                    jSONObject.put("app_status", "");
+                }
+                if (bs.getBill().getPaymentMethod()==PaymentMethod.Staff) {
+                    jSONObject.put("staff_agent_status", bs.getBill().getToStaff().getCode());
+                }else if(bs.getBill().getPaymentMethod()==PaymentMethod.Agent){
+                    jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getInstitutionCode());
+                }else{
+                    jSONObject.put("staff_agent_status", "");
+                }
+                
+                array.put(jSONObject);
+            }
+        }
+        String json = array.toString();
 
         return json;
     }
 
     //----------------------------------------------------
-    public List<Object[]> doctorsList(String doc_code) {
+    public List<Object[]> doctorsList(String doc_code, Long spec_id) {
 
         List<Object[]> consultants = new ArrayList<>();
         String sql;
@@ -491,6 +617,10 @@ public class Api {
 //            sql += " and pi.staff.id=:doc_id ";
 //            m.put("doc_id", doc_id);
 //        }
+        if (spec_id != null) {
+            sql += " and pi.staff.speciality.id=:spec_id ";
+            m.put("spec_id", spec_id);
+        }
 
         sql += " order by pi.staff.person.name ";
 
@@ -503,8 +633,29 @@ public class Api {
 
         return consultants;
     }
-    
-    
+
+    public List<BillSession> fillBillSessions(long ses_id) {
+
+        HashMap m = new HashMap();
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession.id=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                //                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        m.put("bt", bts);
+        m.put("class", BilledBill.class);
+//        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
+        m.put("ss", ses_id);
+
+        return getBillSessionFacade().findBySQL(sql, m);
+
+    }
 
     public List<Object[]> sessionsListObject(String doc_code, Date fromDate, Date toDate) {
 
@@ -1379,7 +1530,7 @@ public class Api {
         getInstitutionFacade().edit(ins);
 
     }
-    
+
     public List<Object[]> specilityList() {
 
         List<Object[]> specilities = new ArrayList<>();
@@ -1391,7 +1542,6 @@ public class Api {
                 + " where c.retired=false "
                 + " order by c.name";
 
-        
         specilities = getStaffFacade().findAggregates(sql);
 
         System.out.println("m = " + m);

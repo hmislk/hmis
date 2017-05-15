@@ -38,6 +38,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.ArrivalRecord;
@@ -1229,12 +1230,12 @@ public class ChannelReportController implements Serializable {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
         }
-        
+
         if (getReportKeyWord().getBillType() != null) {
             sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             temMap.put("bt", getReportKeyWord().getBillType());
         }
-        
+
         temMap.put("fromDate", fd);
         temMap.put("toDate", td);
         temMap.put("btp", bt);
@@ -3214,7 +3215,6 @@ public class ChannelReportController implements Serializable {
 //            sql += " and b.creater=:user";
 //            hm.put("user", reportKeyWord.getWebUser());
 //        }
-
         hm.put("fDate", fd);
         hm.put("tDate", td);
 
@@ -3851,6 +3851,25 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void channelBillList() {
+        Date startTime = new Date();
+
+        channelBills = new ArrayList<>();
+        channelBillsCancelled = new ArrayList<>();
+        channelBillsRefunded = new ArrayList<>();
+
+        if (summery) {
+            channelBills = channelBillList(sessoinDate, new BilledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+        } else {
+            channelBills = channelBillList(sessoinDate, new BilledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+            channelBillsCancelled = channelBillList(sessoinDate, new CancelledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+            channelBillsRefunded = channelBillList(sessoinDate, new RefundBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill summery(Process Session Date)(/faces/channel/channel_report_all_booking.xhtml)");
+
+    }
+
     public void createAreaWithCountTable() {
         channelAreaWithCount(sessoinDate);
     }
@@ -3875,6 +3894,70 @@ public class ChannelReportController implements Serializable {
         hm.put("tDate", getToDate());
 
         channelBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
+    public List<Bill> channelBillList(boolean createdDate, Bill bill, boolean paid, Staff s, Speciality sp, Area area) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and type(b)=:class ";
+
+        if (paid) {
+            sql += " and b.paidBill is not null "
+                    + " and b.paidAmount!=0 ";
+        }
+
+        if (!createdDate) {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.refundedBill.createdAt between :fd and :td ";
+            }
+        } else {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.refundedBill.createdAt between :fd and :td ";
+            }
+
+        }
+
+        if (s != null) {
+            sql += " and b.staff=:stf ";
+            hm.put("stf", s);
+        }
+
+        if (sp != null) {
+            sql += " and b.staff.speciality=:sp ";
+            hm.put("sp", sp);
+        }
+
+        if (area != null) {
+            sql += " and b.patient.person.area=:area ";
+            hm.put("area", area);
+        }
+
+        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
+
+        hm.put("class", bill.getClass());
+        hm.put("bt", bts);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -4552,7 +4635,7 @@ public class ChannelReportController implements Serializable {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.Channel);
         }
-        
+
         sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
@@ -4560,18 +4643,18 @@ public class ChannelReportController implements Serializable {
         if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
             if (getReportKeyWord().getString().equals("0")) {
-                
+
             }
             if (getReportKeyWord().getString().equals("1")) {
-                List<Bill> reBills=new ArrayList<>();
+                List<Bill> reBills = new ArrayList<>();
                 for (Bill b : bills) {
-                    Calendar cal=Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
                     cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
 //                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
 //                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
 //                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
 //                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
-                    if (cal.get(Calendar.HOUR_OF_DAY)>=12) {
+                    if (cal.get(Calendar.HOUR_OF_DAY) >= 12) {
                         reBills.add(b);
 //                        System.err.println("add 1");
                     }
@@ -4582,15 +4665,15 @@ public class ChannelReportController implements Serializable {
 //                System.out.println("bills.size() = " + bills.size());
             }
             if (getReportKeyWord().getString().equals("2")) {
-                List<Bill> reBills=new ArrayList<>();
+                List<Bill> reBills = new ArrayList<>();
                 for (Bill b : bills) {
-                    Calendar cal=Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
                     cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
 //                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
 //                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
 //                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
 //                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
-                    if (cal.get(Calendar.HOUR_OF_DAY)<12) {
+                    if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
                         reBills.add(b);
 //                        System.err.println("add 2");
                     }
@@ -4635,10 +4718,10 @@ public class ChannelReportController implements Serializable {
                             cd.setRefundedCount(cd.getRefundedCount() + 1);
                             cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
                         }
-                    }else{
-                        if ((b.getBillType()==BillType.ChannelStaff||b.getBillType()==BillType.ChannelOnCall) 
-                                && b.getPaidBill()==null && !b.isCancelled() && !b.isRefunded()) {
-                            cd.setNotPaidBillCount(cd.getNotPaidBillCount()+1);
+                    } else {
+                        if ((b.getBillType() == BillType.ChannelStaff || b.getBillType() == BillType.ChannelOnCall)
+                                && b.getPaidBill() == null && !b.isCancelled() && !b.isRefunded()) {
+                            cd.setNotPaidBillCount(cd.getNotPaidBillCount() + 1);
                         }
                     }
                 }
@@ -5164,12 +5247,12 @@ public class ChannelReportController implements Serializable {
         } else {
             sql += " and b.creditCompany is not null ";
         }
-        
+
         if (getReportKeyWord().getBillType() != null) {
             sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bts ";
             m.put("bts", getReportKeyWord().getBillType());
         }
-        
+
         sql += " and b.billType=:bt ";
         m.put("bt", BillType.ChannelAgent);
 

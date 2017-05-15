@@ -512,7 +512,8 @@ public class StoreGrnController implements Serializable {
             return;
         }
         //System.out.println("In");
-        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
+        long b = billNumberBean.inventoryItemSerialNumberGeneraterForYear(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
+//        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
         b = b + 1;
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {

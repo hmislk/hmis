@@ -65,10 +65,20 @@
                                     <h:inputText autocomplete="off"  value="#{storeDealorController.current.address}"  ></h:inputText>
                                     <h:outputText  value="Phone" ></h:outputText>
                                     <h:inputText autocomplete="off"  value="#{storeDealorController.current.phone}"  ></h:inputText>
+                                    <h:outputText  value="Mobile" ></h:outputText>
+                                    <h:inputText autocomplete="off"  value="#{storeDealorController.current.mobile}"  ></h:inputText>
                                     <h:outputText  value="Fax" ></h:outputText>
                                     <h:inputText autocomplete="off"  value="#{storeDealorController.current.fax}"  ></h:inputText>
                                     <h:outputText  value="E-mail" ></h:outputText>
                                     <h:inputText autocomplete="off"  value="#{storeDealorController.current.email}"  ></h:inputText>
+                                    <p:separator ></p:separator>
+                                    <p:separator ></p:separator>
+                                    <h:outputText value="Contact Person Name" ></h:outputText>
+                                    <h:inputText autocomplete="off"  value="#{storeDealorController.current.contactPerson.name}"  ></h:inputText>
+                                    <h:outputText value="Contact Person Tel" ></h:outputText>
+                                    <h:inputText autocomplete="off" value="#{storeDealorController.current.contactPerson.mobile}"  ></h:inputText>
+                                    <h:outputText value="Contact Person Email" ></h:outputText>
+                                    <h:inputText autocomplete="off" value="#{storeDealorController.current.contactPerson.email}"  ></h:inputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{storeDealorController.saveSelected()}" styleClass="buttons">

@@ -137,6 +137,8 @@ public class QuickBookReportController implements Serializable {
     public void createAllBilledItemReport() {
         items = fetchBilledItem(BillType.OpdBill, fromDate, toDate, true);
         for (Item i : items) {
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -148,6 +150,8 @@ public class QuickBookReportController implements Serializable {
         }
         List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate, false);
         for (Item i : is) {
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -1203,9 +1207,11 @@ public class QuickBookReportController implements Serializable {
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
 //        Item itemBefore = null;
-        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
-                "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
+        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:Professional",
+                "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:Professional",
                 0 - d, "OPD");
+        
+        qbf.setInvItem("ACCRUED CHARGES:Consultant Advance:Professional");
 
         grantTot += d;
 
