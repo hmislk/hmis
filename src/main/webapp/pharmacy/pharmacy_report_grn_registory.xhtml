@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:se="http://java.sun.com/jsf/composite/pharmacy/search">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel id="gpBillPreview">
+                        <f:facet name="header" >
+                            <h:outputLabel value="GRN Registry"/>                                 
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" 
+                                        value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" />
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="toDate" 
+                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" />
+                            <h:outputLabel value="Department"/>
+                            <au:department value="#{searchController.reportKeyWord.department}" />
+                            <h:outputLabel value="Distributor"/>
+                            <p:autoComplete converter="deal" placeholder="Distributor"
+                                            value="#{searchController.reportKeyWord.institution}"  
+                                            forceSelection="true"
+                                            completeMethod="#{storeDealorController.completeDealor}"
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                            </p:autoComplete>
+                            <!--                            <h:outputLabel value="Item"/>
+                                                        <au:comp-->
+
+                        </h:panelGrid>
+                        <h:panelGrid columns="3" >
+                            <p:commandButton id="btnSearch" ajax="false" value="Process" action="#{searchController.createGRNRegistory}"/>
+                            <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
+                                <p:printer target="panelPrint" />
+                            </p:commandButton>
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report ne '2'}">
+                                <pe:exporter type="xlsx" target="tblBills" fileName="QB_Export"/>
+                            </p:commandButton>
+                        </h:panelGrid>
+                        <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                            <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
+                                <f:facet name="header">
+                                    <h:outputLabel value="GRN Registry"/>
+                                </f:facet>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="GRN NO" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bill.deptId}" />
+                                </p:column> 
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="GRN Date" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    </h:outputLabel>
+                                </p:column>                 
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Suplier" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bill.fromInstitution.name}" />
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Invoice NO" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bill.invoiceNumber}" />
+                                </p:column>  
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="PO NO" />
+                                    </f:facet>
+                                    <h:outputLabel  value="#{bill.referenceBill.deptId}" />
+                                </p:column>    
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bill.netTotal}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Remark" />
+                                    </f:facet>
+                                    <h:outputLabel value="....................." >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sign" />
+                                    </f:facet>
+                                    <h:outputLabel value="....................." >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Date" />
+                                    </f:facet>
+                                    <h:outputLabel value="....................." >
+                                    </h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

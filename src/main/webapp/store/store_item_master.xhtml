@@ -95,6 +95,10 @@
 
                                             <h:outputLabel value="Creator"/>
                                             <h:outputLabel value="#{storeAmpController.current.creater.webUserPerson.nameWithTitle}"/>
+                                            <h:outputLabel value="Created At"/>
+                                            <h:outputLabel value="#{storeAmpController.current.createdAt}" >
+                                                <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            </h:outputLabel>
 
                                         </p:panelGrid>
                                     </p:panel>

@@ -287,6 +287,11 @@ public class InwardReportController implements Serializable {
             m.put("pm", paymentMethod);
         }
 
+        if (reportKeyWord.getStaff() != null) {
+            sql += " and b.referringDoctor =:refDoc ";
+            m.put("refDoc", reportKeyWord.getStaff());
+        }
+
         sql += " order by  b.dateOfDischarge";
 
         m.put("fd", fromDate);
@@ -402,6 +407,11 @@ public class InwardReportController implements Serializable {
             m.put("pm", paymentMethod);
         }
 
+        if (reportKeyWord.getStaff() != null) {
+            sql += " and b.referringDoctor =:refDoc ";
+            m.put("refDoc", reportKeyWord.getStaff());
+        }
+
         sql += " order by  b.dateOfDischarge";
 
         m.put("fd", fromDate);
@@ -432,6 +442,11 @@ public class InwardReportController implements Serializable {
         if (paymentMethod != null) {
             sql += " and b.paymentMethod =:pm ";
             m.put("pm", paymentMethod);
+        }
+
+        if (reportKeyWord.getStaff() != null) {
+            sql += " and b.referringDoctor =:refDoc ";
+            m.put("refDoc", reportKeyWord.getStaff());
         }
 
         sql += " order by  b.dateOfDischarge";

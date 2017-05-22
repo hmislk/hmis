@@ -470,6 +470,37 @@ public class Api {
     }
 
     @GET
+    @Path("/docs/")
+    @Produces("application/json")
+    public String getAllDoctors() {
+        List<Object[]> consultants = doctorsList(null, null);
+        JSONArray array = new JSONArray();
+        if (!consultants.isEmpty()) {
+            for (Object[] con : consultants) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("doc_id", con[0]);
+                jSONObject.put("doc_name", con[1]);
+                jSONObject.put("doc_specility", con[2]);
+                jSONObject.put("doc_code", con[3]);
+                array.put(jSONObject);
+            }
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
+        } else {
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+    
+    @GET
     @Path("/doc/{spec_id}/")
     @Produces("application/json")
     public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
@@ -622,7 +653,7 @@ public class Api {
             m.put("spec_id", spec_id);
         }
 
-        sql += " order by pi.staff.person.name ";
+        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
 
         m.put("typ", PersonInstitutionType.Channelling);
         consultants = getStaffFacade().findAggregates(sql, m);

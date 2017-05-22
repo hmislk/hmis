@@ -20,7 +20,7 @@
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>                             
                         <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
-                        <h:outputLabel value="To Date " ></h:outputLabel>
+                        <h:outputLabel value="To Date " />
                         <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
                         <h:outputLabel value="Department"/> 
                         <p:autoComplete id="dep" value="#{pharmacyErrorChecking.department}"  
@@ -90,7 +90,7 @@
                             <p:outputLabel value="#{pharmacyErrorChecking.item.name} History" />
                             <br></br>
                         </f:facet>
-                        
+
 
                         <p:column >
                             <h:outputLabel value="#{i+1}"/>
@@ -142,7 +142,8 @@
                             </h:panelGrid>
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="After "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty+(pb.pharmaceuticalBillItem.qtyInUnit+pb.pharmaceuticalBillItem.freeQtyInUnit)}" />
+                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty+(pb.pharmaceuticalBillItem.qtyInUnit+pb.pharmaceuticalBillItem.freeQtyInUnit)}" rendered="#{pb.bill.billType ne 'PharmacyGrnReturn'}"/>
+                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty-(pb.pharmaceuticalBillItem.qtyInUnit)}" rendered="#{pb.bill.billType eq 'PharmacyGrnReturn'}"/>
 
                             </h:panelGrid>
                         </p:column>

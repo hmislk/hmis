@@ -1210,7 +1210,7 @@ public class QuickBookReportController implements Serializable {
         QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:Professional",
                 "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:Professional",
                 0 - d, "OPD");
-        
+
         qbf.setInvItem("ACCRUED CHARGES:Consultant Advance:Professional");
 
         grantTot += d;
@@ -1603,42 +1603,42 @@ public class QuickBookReportController implements Serializable {
                 if (pe != null) {
                     qbf = new QuickBookFormat();
                     if (getReportKeyWord().isBool1()) {
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward");
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
                     } else {
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Linen");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MedicalCareICU.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MedicalCareICU.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward");
                         qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
@@ -1649,43 +1649,43 @@ public class QuickBookReportController implements Serializable {
             } else {
                 qbf = new QuickBookFormat();
                 if (getReportKeyWord().isBool1()) {
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
                 } else {
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Linen");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward ");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward");
                     qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -1930,26 +1930,26 @@ public class QuickBookReportController implements Serializable {
         grantTot += d;
         if (getReportKeyWord().isBool2()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
-                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
+                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem() + " Green Sheet");
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
-                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
+                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem() + " Green Sheet");
             }
         } else if (getReportKeyWord().isBool1()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
                 qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
                 qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         } else {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
                 qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
                 qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         }
@@ -1972,10 +1972,10 @@ public class QuickBookReportController implements Serializable {
         d = fetchOutSideFee(fd, td, pe, admissionType, paymentMethod, cc);
         grantTot += d;
         if (paymentMethod == PaymentMethod.Credit && pe != null) {
-            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), "Out Side Charges", 0 - d, "Out Side Charges");
+            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), "Out Side Charges", 0 - d, "Ward");
             qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
         } else {
-            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", name, "Out Side Charges", 0 - d, "Out Side Charges");
+            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", name, "Out Side Charges", 0 - d, "Ward");
             qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
 
         }

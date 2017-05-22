@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.store;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
@@ -14,6 +15,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +32,7 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
@@ -43,6 +45,7 @@ public class StoreAmpController implements Serializable {
     private AmpFacade ejbFacade;
     private Amp current;
     private List<Amp> items = null;
+    private List<Amp> itemsAll = null;
     List<Amp> itemsByCode = null;
 
     public List<Amp> getItemsByCode() {
@@ -79,7 +82,7 @@ public class StoreAmpController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        items=null;
+        items = null;
         // getItems();
     }
 
@@ -148,14 +151,33 @@ public class StoreAmpController implements Serializable {
         return items;
     }
 
-    
-    
+    public void createStoreItemsWithRetierd() {
+        items=null;
+        getItems();
+        itemsAll.addAll(items);
+        Map m = new HashMap();
+        m.put("dt", DepartmentType.Store);
+        String sql = "Select a from Item a where a.retired=true and a.departmentType=:dt order by a.name";
+        itemsAll.addAll(getFacade().findBySQL(sql, m));
+    }
+
     public List<Amp> getFilteredItems() {
         return filteredItems;
     }
 
     public void setFilteredItems(List<Amp> filteredItems) {
         this.filteredItems = filteredItems;
+    }
+
+    public List<Amp> getItemsAll() {
+        if (itemsAll==null) {
+            itemsAll=new ArrayList<>();
+        }
+        return itemsAll;
+    }
+
+    public void setItemsAll(List<Amp> itemsAll) {
+        this.itemsAll = itemsAll;
     }
 
     /**

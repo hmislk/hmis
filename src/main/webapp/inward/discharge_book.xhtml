@@ -30,20 +30,30 @@
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
 
-                            <h:outputLabel value="BHT Type : " ></h:outputLabel>
+                            <h:outputLabel value="BHT Type" ></h:outputLabel>
                             <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportController.paymentMethod}"  >
                                 <f:selectItem itemLabel="All BHT Types" />                           
                                 <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
                             </p:selectOneMenu>
 
 
-                            <h:outputLabel value="Company Name : " style="min-width: 100px;"  />  
+                            <h:outputLabel value="Company Name" style="min-width: 100px;"  />  
                             <p:autoComplete id="acCreditCompany" forceSelection="true" style="text-align: right;"
                                             value="#{inwardReportController.institution}"  
                                             completeMethod="#{creditCompanyController.completeCredit}" 
                                             var="ix" itemLabel="#{ix.name}" 
                                             itemValue="#{ix}" size="30" >  
                                 <f:ajax event="itemSelect" execute="@this"  ></f:ajax>
+                            </p:autoComplete>
+                            <h:outputLabel value="Referring Doctor" style="min-width: 100px;"  />
+                            <p:autoComplete id="acRefDoc" 
+                                            forceSelection="true" 
+                                            value="#{inwardReportController.reportKeyWord.staff}"
+                                            completeMethod="#{inwardStaffPaymentBillController.completeReferringDoctor}" 
+                                            var="ix"
+                                            itemLabel="#{ix.person.name}" 
+                                            itemValue="#{ix}" 
+                                            converter="stfcon" >
                             </p:autoComplete>
 
 
