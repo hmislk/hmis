@@ -27,6 +27,11 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
                         </p:calendar>
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                            <f:selectItem itemLabel="Please Select a Type"/>
+                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                        </p:selectOneMenu>
                     </h:panelGrid> 
                     <h:panelGrid columns="3">
                         <p:commandButton action="#{channelReportTempController.createUsercollectionByDateCreatedSummery()}" value="Process" ajax="false" />

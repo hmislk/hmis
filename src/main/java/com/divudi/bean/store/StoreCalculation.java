@@ -481,7 +481,7 @@ public class StoreCalculation {
         //System.err.println("Puchase :  " + purchase);
         //System.err.println("Puchase :  " + retail);
         ib.setDateOfExpire(pbi.getDoe());
-        ib.setBatchNo(pbi.getStringValue());
+//        ib.setBatchNo(pbi.getStringValue());
         ib.setPurcahseRate(purchase);
         ib.setRetailsaleRate(retail);
 
@@ -503,7 +503,7 @@ public class StoreCalculation {
         } else {
             getItemBatchFacade().create(ib);
         }
-        ib.setBatchNo(pbi.getCode());
+//        ib.setBatchNo(pbi.getCode());
         ib.setMake(pbi.getMake());
         ib.setModal(pbi.getModel());
         ib.setDescription(pbi.getDescription());

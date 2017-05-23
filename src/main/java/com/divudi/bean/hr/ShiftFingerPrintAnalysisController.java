@@ -448,6 +448,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void fetchAndSetDayType(StaffShift ss) {
+        System.out.println("1.ss.getDayType() = " + ss.getDayType());
         if (ss.getDayType() == DayType.Extra || ss.getDayType() == DayType.DayOff) {
             return;
         }
@@ -456,11 +457,13 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
         ss.setDayType(dtp);
+        System.out.println("2.ss.getDayType() = " + ss.getDayType());
         if (dtp == null) {
             if (ss.getShift() != null) {
                 ss.setDayType(ss.getShift().getDayType());
             }
         }
+        System.out.println("3.ss.getDayType() = " + ss.getDayType());
     }
 
     private void fetchAndSetStaffLeave(StaffShift ss) {

@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -285,6 +286,17 @@ public class PharmacyPreSettleController implements Serializable {
 //        }
         return false;
     }
+    
+    private boolean errorCheckForSaleBillAraedyAddToStock() {
+        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
+        setPreBill(getBillFacade().find(getPreBill().getId()));
+        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
+        if (getPreBill().isCancelled()) {
+            return true;
+        }
+
+        return false;
+    }
 
     @Inject
     private BillBeanController billBean;
@@ -492,6 +504,10 @@ public class PharmacyPreSettleController implements Serializable {
     public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
+            return;
+        }
+        if (errorCheckForSaleBillAraedyAddToStock()) {
+            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
             return;
         }
 

@@ -33,6 +33,11 @@
                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                             <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                         </p:selectOneMenu>
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportController.reportKeyWord.billType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                            <f:selectItem itemLabel="Please Select a Type"/>
+                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                        </p:selectOneMenu>
                     </h:panelGrid>
 
                     <h:panelGrid columns="4">

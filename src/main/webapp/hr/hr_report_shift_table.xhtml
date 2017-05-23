@@ -69,7 +69,7 @@
 
                         <p:column rendered="#{data.date ne null}" style="text-align: right;">
                             <f:facet name="header">                            
-                                <h:outputLabel value="#{data.date}" >
+                                <h:outputLabel value="#{data.date}" styleClass="#{data.ph ? 'yellowtext':data.merch ? 'redText':''}" >
                                     <f:convertDateTime pattern="dd/MM/yy  E"/>
                                 </h:outputLabel>
                             </f:facet>

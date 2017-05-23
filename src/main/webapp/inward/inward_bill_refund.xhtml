@@ -26,7 +26,7 @@
                                         completeMethod="#{admissionController.completePatientAll}"
                                         var="apt2" itemLabel="#{apt2.bhtNo}" 
                                         itemValue="#{apt2}" size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="@this" update="panSearch2 paid" 
+                            <p:ajax event="itemSelect" process="@this" update="panSearch2 paid amount" 
                                     listener="#{inwardRefundController.selectBhtListener}"/>
                             <p:column>
                                 #{apt2.bhtNo}
@@ -52,19 +52,23 @@
                     </p:panel>
 
                     <p:panel header="Paid Amount" id="paid" >
-                        <p:panelGrid columns="2">
-                            <h:outputLabel value="Refund Amount "/>
+                        <p:panelGrid columns="2" rendered="#{inwardRefundController.current.patientEncounter.paymentFinalized}">
+                            <h:outputLabel value="Due Amount" rendered="#{inwardRefundController.paidAmount gt 0}" style="color: red"/>
+                            <h:outputLabel value="Refundable Amount" rendered="#{inwardRefundController.paidAmount lt 0 or inwardRefundController.paidAmount eq 0}" style="color: green"/>
                             <h:outputLabel value="#{inwardRefundController.paidAmount}">                              
+                                <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>                           
                             
-                            <h:outputLabel value="Final Bill Total: "/>
-                            <h:outputLabel value="#{inwardRefundController.netTotal}"></h:outputLabel>
+                            <h:outputLabel value="Final Bill Total"/>
+                            <h:outputLabel value="#{inwardRefundController.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
                             
                         </p:panelGrid>
                     </p:panel>
                    
 
-                    <p:panel header="Payment Detail">
+                    <p:panel header="Payment Detail" id="amount">
                         <h:panelGrid columns="7">                        
                             <p:selectOneMenu   id="cmbPs" value="#{inwardRefundController.current.paymentMethod}"  >
                                 <f:selectItem itemLabel="Select Payment Method" />
@@ -87,7 +91,7 @@
 
                         <h:panelGrid columns="2">
                             <p:outputLabel value="Amount"/>
-                            <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}"/>
+                            <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}" disabled="#{inwardRefundController.paidAmount gt 0 or inwardRefundController.paidAmount eq 0}"/>
                             <p:commandButton id="btnRefund" ajax="false" value="Refund" 
                                             action="#{inwardRefundController.pay}" onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" onclick="onSubmitButton();"/>

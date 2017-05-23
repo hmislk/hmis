@@ -320,6 +320,7 @@ public class GoodsReturnController implements Serializable {
             bi.setSearialNo(getBillItems().size());
             PharmaceuticalBillItem retPh = new PharmaceuticalBillItem();
             retPh.copy(grnPh);
+            retPh.setFreeQty(0.0);
             retPh.setBillItem(bi);
 
             double rBilled = getPharmacyRecieveBean().getTotalQty(grnPh.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());

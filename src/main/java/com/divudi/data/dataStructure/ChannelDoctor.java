@@ -32,6 +32,7 @@ public class ChannelDoctor {
     private double creditCancelFee;
     ////////////////////////
     private double absentCount;
+    private double notPaidBillCount;
 
     public double getCommon() {
         return 1;
@@ -179,5 +180,13 @@ public class ChannelDoctor {
 
     public void setRefundedFee_c(double refundedFee_c) {
         this.refundedFee_c = refundedFee_c;
+    }
+
+    public double getNotPaidBillCount() {
+        return notPaidBillCount;
+    }
+
+    public void setNotPaidBillCount(double notPaidBillCount) {
+        this.notPaidBillCount = notPaidBillCount;
     }
 }

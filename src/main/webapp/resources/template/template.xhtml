@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:poue="http://primefaces.org/ui/extensions">
     <h:head>
-        <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+        <!--<script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>-->
 
         <!--<script src="resources/js/snowstorm.js" type="text/javascript"></script>-->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -322,6 +322,7 @@
                                     </p:submenu>                                   
                                     <p:submenu label="Adjustments" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" >
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department"  value="Department Stock(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item"  value="Department Stock By Single Item(QTY)" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustmentSingleItem')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff"  value="Staff Stock Adjustment" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate"  value="Purchase Rate" rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate"  value="Sale Rate" ></p:menuitem>

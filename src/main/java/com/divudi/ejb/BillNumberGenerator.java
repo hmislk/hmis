@@ -26,6 +26,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientFacade;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1388,6 +1389,40 @@ public class BillNumberGenerator {
         hm.put("item", item);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
+        Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+        //System.out.println("In Bill Num Gen" + b);
+        return b;
+    }
+    
+    public Long inventoryItemSerialNumberGeneraterForYear(Institution ins, Item item) {
+        if (ins == null) {
+            //System.out.println("Ins null");
+            return 0l;
+        }
+        Calendar c = Calendar.getInstance();
+        System.out.println("c.getTime() = " + c.getTime());
+        int y = c.get(Calendar.YEAR);
+        c.set(y, 3, 1, 0, 0, 0);
+        Date fd=c.getTime();
+        System.out.println("fd = " + fd);
+        c.set(y+1, 2, 31, 23, 59, 59);
+        Date td=c.getTime();
+        System.out.println("td = " + td);
+        
+        String sql = "SELECT count(b) FROM BillItem b where "
+                + " b.bill.institution=:ins "
+                + " and b.item=:item "
+                + " and (b.bill.billType=:btp1 or b.bill.billType=:btp2) "
+                + " and b.bill.createdAt between :fd and :td ";
+
+        HashMap hm = new HashMap();
+        hm.put("ins", ins);
+        hm.put("item", item);
+        hm.put("btp1", BillType.StoreGrnBill);
+        hm.put("btp2", BillType.StorePurchase);
+        hm.put("fd", fd);
+        hm.put("td", td);
+        
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
         //System.out.println("In Bill Num Gen" + b);
         return b;

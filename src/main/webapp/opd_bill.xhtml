@@ -533,7 +533,7 @@
 
                                                 <p:column>
                                                     <f:facet name="header">Payee</f:facet>                                                
-                                                    <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" >
+                                                    <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}" filter="true" filterMatchMode="contains">
                                                         <f:selectItem itemLabel="Select Staff" />
                                                         <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                     </p:selectOneMenu>
@@ -610,6 +610,7 @@
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                              return false;"/>
                             </div>
+                            <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
                             <h:panelGroup id="gpBillPreview">
                                 <ui:repeat value="#{billController.bills}" var="bill">
                                     <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>

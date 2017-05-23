@@ -90,11 +90,29 @@
                             <h:outputLabel value="#{bi.expenseBill.deptId}"/>
                         </p:column>
 
+                        <p:column headerText="Invoice Date" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Invoice Date"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.invoiceDate}">
+                                <f:convertDateTime pattern="MM/dd/yy"/>
+                            </h:outputLabel>
+                        </p:column>
+                        
                         <p:column headerText="Invoice No" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Invoice No"/>
                             </f:facet> 
                             <h:outputLabel value="#{bi.expenseBill.invoiceNumber}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Tax Invoice No" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Discription"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.descreption}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel> 
                         </p:column>
 
                         <p:column headerText="Created At"  >
@@ -112,6 +130,13 @@
                             </f:facet> 
                             <h:outputLabel value="#{bi.expenseBill.fromInstitution.name}"/>
 
+                        </p:column>
+                        
+                        <p:column headerText="Discription" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Discription"/>
+                            </f:facet> 
+                            <h:outputLabel value="Stores Purchasing" />
                         </p:column>
 
                         <p:column headerText="Po No" >
@@ -139,7 +164,7 @@
 
                         <p:column headerText="Expenses" style=" text-align: right" >
                             <f:facet name="header">  
-                                <h:outputLabel value="With Expenses"/>
+                                <h:outputLabel value="Expenses"/>
                             </f:facet> 
                             <h:outputLabel value="#{bi.netValue}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -151,18 +176,9 @@
                             </f:facet>
                         </p:column>
                         
-                        <p:column headerText="Discription" style=" text-align: right" >
+                        <p:column headerText="Net Total" style=" text-align: right" >
                             <f:facet name="header">  
-                                <h:outputLabel value="Discription"/>
-                            </f:facet> 
-                            <h:outputLabel value="#{bi.descreption}"  >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel> 
-                        </p:column>
-
-                        <p:column headerText="With Expenses" style=" text-align: right" >
-                            <f:facet name="header">  
-                                <h:outputLabel value="With Expenses"/>
+                                <h:outputLabel value="Net Total"/>
                             </f:facet> 
                             <h:outputLabel value="#{bi.expenseBill.netTotal}"  >
                                 <f:convertNumber pattern="#,##0.00"/>
@@ -172,6 +188,14 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
+                        </p:column>
+                        <p:column headerText="Disallowed VAT Amount" style=" text-align: right" >
+                            <f:facet name="header">  
+                                <h:outputLabel value="Disallowed VAT Amount"/>
+                            </f:facet> 
+                            <h:outputLabel value="#{bi.expenseBill.netTotal-(bi.expenseBill.grnNetTotal*1.15)}"  >
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>   
                         </p:column>
 
                     </p:dataTable>

@@ -1395,6 +1395,14 @@ public class BillController implements Serializable {
                     }
                 }
             }
+//            if (getStrTenderedValue() == null) {
+//                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
+//                return true;
+//            }
+//            if (cashPaid < (vat + netTotal)) {
+//                UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
+//                return true;
+//            }
         }
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
             if (referralId == null || referralId.trim().equals("")) {
@@ -1581,7 +1589,7 @@ public class BillController implements Serializable {
         double qty = getCurrentBillItem().getQty();
         System.out.println("qty = " + qty);
         for (int i = 0; i < qty; i++) {
-            BillItem bi=new BillItem();
+            BillItem bi = new BillItem();
             bi.copy(getCurrentBillItem());
             bi.setSessionDate(sessionDate);
 //        New Session

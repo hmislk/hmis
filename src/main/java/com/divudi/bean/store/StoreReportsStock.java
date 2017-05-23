@@ -6,11 +6,13 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.pharmacy.DealerController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
@@ -26,6 +28,7 @@ import com.divudi.entity.pharmacy.ItemBatch;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.entity.pharmacy.StockHistory;
+import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.StockHistoryFacade;
@@ -73,6 +76,7 @@ public class StoreReportsStock implements Serializable {
     Date toDate;
     Date fromDateE;
     Date toDateE;
+    ReportKeyWord reportKeyWord;
 
     Stock selectedInventoryStock;
 
@@ -87,13 +91,12 @@ public class StoreReportsStock implements Serializable {
      */
     @EJB
     StockFacade stockFacade;
+    @EJB
+    ItemBatchFacade itemBatchFacade;
 
     /**
      * Methods
      */
-
-    
-    
     public void fillDepartmentNonEmptyItemStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -123,12 +126,6 @@ public class StoreReportsStock implements Serializable {
         pharmacyStockRows = lsts;
     }
 
-    
-    
-    
-    
-    
-    
     public void fillDepartmentStocks() {
         if (department == null) {
             UtilityController.addErrorMessage("Please select a department");
@@ -219,23 +216,37 @@ public class StoreReportsStock implements Serializable {
     }
 
     public void fillDepartmentInventryStocks() {
-        if (department == null) {
+        if (institution == null) {
             UtilityController.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
         String sql;
-        sql = "select s from Stock s where s.department=:d"
-                + " and s.itemBatch.item.departmentType=:depty";
-        if (item!=null) {
-            sql+=" and s.itemBatch.item=:itm ";
+        sql = "select s from Stock s where s.department.institution=:i"
+                + " and s.itemBatch.item.departmentType=:depty "
+                + " and s.itemBatch.lastPurchaseBillItem.parentBillItem is null ";
+        if (item != null) {
+            sql += " and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
-                
-        sql+= " order by s.itemBatch.item.name";
+        if (department != null) {
+            sql += " and s.department=:d ";
+            m.put("d", department);
+        }
+        if (getReportKeyWord().isBool1()) {
+            sql += " and s.itemBatch.lastPurchaseBillItem.bill.createdAt between :fd and :td ";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+        if (!getReportKeyWord().getAddress().equals("") && getReportKeyWord().getAddress() != null) {
+            sql += " and s.itemBatch.batchNo=:tag ";
+            m.put("tag", getReportKeyWord().getAddress());
+        }
+
+        sql += " order by s.itemBatch.item.name";
 
         m.put("depty", DepartmentType.Inventry);
-        m.put("d", department);
+        m.put("i", institution);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -564,7 +575,7 @@ public class StoreReportsStock implements Serializable {
         m.put("cat", category);
         m.put("dep", department);
         m.put("depty", DepartmentType.Store);//Before Add show items Without code
-        
+
         sql = "select s from Stock s where s.department=:dep "
                 + " and s.itemBatch.item.category=:cat "
                 + " and s.itemBatch.item.departmentType=:depty "
@@ -770,6 +781,23 @@ public class StoreReportsStock implements Serializable {
         fillDepartmentNonmovingStocks();
     }
 
+    public void updateTagSerialNo() {
+        if (selectedInventoryStock == null) {
+            JsfUtil.addErrorMessage("Nothing To Update");
+            return;
+        }
+        if (selectedInventoryStock.getItemBatch() == null) {
+            JsfUtil.addErrorMessage("Nothing To Update.Item Batch Null.");
+            return;
+        }
+        if (selectedInventoryStock.getItemBatch().getBatchNo() == null || selectedInventoryStock.getItemBatch().getBatchNo().equals("")) {
+            JsfUtil.addErrorMessage("Please Enter Tag Serial");
+            return;
+        }
+        getItemBatchFacade().edit(selectedInventoryStock.getItemBatch());
+        JsfUtil.addSuccessMessage("Updated");
+    }
+
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -890,20 +918,17 @@ public class StoreReportsStock implements Serializable {
     public void setRows(int rows) {
         this.rows = rows;
     }
-    
-    
-    
-    public void prepareForPrint(){
-        paginator=false;
-        rows=getStocks().size();
-    }
-    
-    public void prepareForView(){
-        paginator=true;
-        rows=20;
+
+    public void prepareForPrint() {
+        paginator = false;
+        rows = getStocks().size();
     }
 
-    
+    public void prepareForView() {
+        paginator = true;
+        rows = 20;
+    }
+
     @EJB
     CreditBean creditBean;
 
@@ -941,6 +966,25 @@ public class StoreReportsStock implements Serializable {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public ItemBatchFacade getItemBatchFacade() {
+        return itemBatchFacade;
+    }
+
+    public void setItemBatchFacade(ItemBatchFacade itemBatchFacade) {
+        this.itemBatchFacade = itemBatchFacade;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
 }

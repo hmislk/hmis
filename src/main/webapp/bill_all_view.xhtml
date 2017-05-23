@@ -349,11 +349,25 @@
                                     </p:column> 
                                     <p:column>
                                         <f:facet name="header">Fee Vat</f:facet>
-                                        <h:outputLabel value="#{bip.feeVat}"/>
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.feeVat}"/>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.feeVat}"/>
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Fee Vat Plus Value</f:facet>
-                                        <h:outputLabel value="#{bip.feeVatPlusValue}"/>
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.feeVatPlusValue}"/>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.feeVatPlusValue}"/>
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Adjusted Value</f:facet>
@@ -391,8 +405,8 @@
                                         </p:cellEditor>
                                     </p:column>
 
-                                    <p:column headerText="Payee">
-                                        <p:cellEditor>  
+                                    <p:column headerText="Payee" >
+                                        <p:cellEditor rendered="#{bip.staff ne null}">  
                                             <f:facet name="output"> 
                                                 <h:inputText value="#{bip.staff.person.name}"></h:inputText>
                                             </f:facet>  
@@ -464,10 +478,10 @@
                                         <h:outputLabel value="#{bip21.item.name}"/>
                                     </p:column>
                                     <p:column headerText="1">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" />
+                                        <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" rendered="#{bip21.paidForBillFee ne null}"/>
                                     </p:column>
                                     <p:column headerText="2" >
-                                        <p:cellEditor>
+                                        <p:cellEditor rendered="#{bip21.paidForBillFee ne null}" >
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
                                             </f:facet>
@@ -520,13 +534,34 @@
                                         </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Net Rate">
-                                        <h:outputLabel value="#{bip21.netRate}" />
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.netRate}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.netRate}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Vat">
-                                        <h:outputLabel value="#{bip21.vat}" />
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.vat}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.vat}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Vat Plus Net Value">
-                                        <h:outputLabel value="#{bip21.vatPlusNetValue}" />
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip21.vatPlusNetValue}" />
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip21.vatPlusNetValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column headerText="Fee Adjusted" >
                                         <p:cellEditor>

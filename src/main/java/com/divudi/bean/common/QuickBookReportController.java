@@ -96,6 +96,7 @@ public class QuickBookReportController implements Serializable {
     private List<QuickBookFormat> quickBookFormats;
     private List<Category> categorys;
     private List<Institution> creditCompanies;
+    private List<Item> items;
 
     private Institution institution;
     private Date toDate;
@@ -131,6 +132,121 @@ public class QuickBookReportController implements Serializable {
             default:
                 throw new AssertionError();
         }
+    }
+
+    public void createAllBilledItemReport() {
+        items = fetchBilledItem(BillType.OpdBill, fromDate, toDate, true);
+        for (Item i : items) {
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getId() = " + i.getId());
+            if (i.getName().length() > 30) {
+                i.setTransName(i.getName().substring(0, 30));
+            } else {
+                i.setTransName(i.getName());
+            }
+            if (Investigation.class == i.getClass()) {
+                i.getCategory().setDescription("RHD LAB INCOME:OPD:RHD OPD Sale");
+            }
+        }
+        List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate, false);
+        for (Item i : is) {
+            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getId() = " + i.getId());
+            if (i.getName().length() > 30) {
+                i.setTransName(i.getName().substring(0, 30));
+            } else {
+                i.setTransName(i.getName());
+            }
+            if (Investigation.class == i.getClass()) {
+                i.getCategory().setDescription("RHD LAB INCOME:INWARD:RHD Inward Sale");
+            }
+        }
+        items.addAll(is);
+
+    }
+
+    public List<Item> fetchBilledItem(List<BillType> billTypes, Date fd, Date td) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false ";
+
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bts ";
+            m.put("bts", billTypes);
+        }
+
+        sql += " and ((bi.bill.createdAt between :fromDate and :toDate) "
+                + " or (bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate)) "
+                + " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
+    }
+
+    public List<Item> fetchBilledItem(BillType billType, Date fd, Date td, boolean opd) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false ";
+
+        if (billType != null) {
+            sql += " and  bi.bill.billType=:bt ";
+            m.put("bt", billType);
+        }
+
+        if (opd) {
+            sql += " and bi.bill.createdAt between :fromDate and :toDate";
+        } else {
+            sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
+        }
+
+        sql += " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
+    }
+
+    public List<Item> fetchBilledItemInwardInvestigationOnly(List<BillType> billTypes, Date fd, Date td) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select distinct(bi.item) FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.item.inactive!=true "
+                + " and type(bi.item)=:typ ";
+
+        if (!billTypes.isEmpty()) {
+            sql += " and  bi.bill.billType in :bts ";
+            m.put("bts", billTypes);
+        }
+
+        sql += " and bi.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                + " order by bi.item.category.name, bi.item.name ";
+        m.put("toDate", td);
+        m.put("fromDate", fd);
+        m.put("typ", Investigation.class);
+
+        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("tmp.size() = " + tmp.size());
+
+        return tmp;
+
     }
 
     public void createQBFormatOpdDayIncome() {
@@ -355,7 +471,7 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
@@ -611,16 +727,16 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
-            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
-            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(fromDate)));
+            billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsCanceledP.addAll(getBills(new CancelledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturn.addAll(getBills(new BilledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnP.addAll(getBills(new BilledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnCancel.addAll(getBills(new CancelledBill(), BillType.StoreGrnReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
+            billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
         }
 
         System.out.println("billsBilled.size() = " + billsBilled.size());
@@ -646,11 +762,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -664,14 +781,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -701,11 +818,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName() + " / " + b.getBilledBill().getDeptId());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName() + " / " + b.getBilledBill().getDeptId());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getBilledBill().getDeptId());
             }
@@ -719,14 +837,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -757,11 +875,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getToInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getToInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -775,14 +894,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill Refund", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getToInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -813,11 +932,12 @@ public class QuickBookReportController implements Serializable {
             qbf.setInvItemType("");
             qbf.setInvItem("");
             qbf.setAmount(0 - b.getTotal());
-            qbf.setDocNum(b.getInvoiceNumber());
+            qbf.setDocNum(b.getDeptId());
+//            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
+                qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()));
             }
@@ -831,14 +951,14 @@ public class QuickBookReportController implements Serializable {
             System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
-                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
+                qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
                 grantTot += bi.getNetValue();
                 qbfs.add(qbf);
             }
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), "Cash GRN - Stores", "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             } else {
-                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getInvoiceNumber(), b.getDeptId(), b.getDepartment().getName(), "", "", "", "", "", "");
+                qbf = new QuickBookFormat("TRNS", "Bill", sdf.format(b.getCreatedAt()), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), b.getFromInstitution().getChequePrintingName(), "", "", grantTot, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), b.getInvoiceNumber(), "", "", "", "", "");
             }
             quickBookFormats.add(qbf);
 
@@ -924,7 +1044,7 @@ public class QuickBookReportController implements Serializable {
                 }
 
                 if (Investigation.class == i.getClass()) {
-                    qbf.setAccnt("INCOME ACCOUNTS:RHD Lab Income:RHD OPD Sale");
+                    qbf.setAccnt("RHD LAB INCOME:RHD OPD Sale");
                 } else {
                     qbf.setAccnt(cat.getDescription());
 //                    qbf.setAccnt("INCOME:" + cName);
@@ -932,9 +1052,9 @@ public class QuickBookReportController implements Serializable {
                 }
                 qbf.setInvItemType("SERV");
                 if (i.getName().length() > 30) {
-                    qbf.setInvItem(i.getName().substring(0, 30));
+                    qbf.setInvItem(i.getCategory().getName() + ":" + i.getName().substring(0, 30));
                 } else {
-                    qbf.setInvItem(i.getName());
+                    qbf.setInvItem(i.getCategory().getName() + ":" + i.getName());
                 }
                 qbf.setAmount(0 - sum);
                 if (bclass == BillClassType.BilledBill) {
@@ -1003,7 +1123,7 @@ public class QuickBookReportController implements Serializable {
                         qbf.setName("Cash AR");
                     }
                     if (Investigation.class == i.getClass()) {
-                        qbf.setAccnt("INCOME ACCOUNTS:RHD Lab Income:RHD OPD Sale");
+                        qbf.setAccnt("RHD LAB INCOME:RHD OPD Sale");
                     } else {
                         qbf.setAccnt(cat.getDescription());
 //                        qbf.setAccnt("INCOME:" + cName);
@@ -1011,9 +1131,9 @@ public class QuickBookReportController implements Serializable {
                     }
                     qbf.setInvItemType("SERV");
                     if (i.getName().length() > 30) {
-                        qbf.setInvItem(i.getName().substring(0, 30));
+                        qbf.setInvItem(i.getCategory().getName() + ":" + i.getName().substring(0, 30));
                     } else {
-                        qbf.setInvItem(i.getName());
+                        qbf.setInvItem(i.getCategory().getName() + ":" + i.getName());
                     }
                     qbf.setAmount(0 - sum);
                     if (bclass == BillClassType.BilledBill) {
@@ -1087,9 +1207,11 @@ public class QuickBookReportController implements Serializable {
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
 //        Item itemBefore = null;
-        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
-                "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
+        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:Professional",
+                "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:Professional",
                 0 - d, "OPD");
+
+        qbf.setInvItem("ACCRUED CHARGES:Consultant Advance:Professional");
 
         grantTot += d;
 
@@ -1322,16 +1444,16 @@ public class QuickBookReportController implements Serializable {
 
                 if (paymentMethod == PaymentMethod.Credit) {
                     if (pe != null) {
-                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s, "");
                     } else {
-                        qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s, "");
                     }
                 } else {
                     sdf = new SimpleDateFormat("MMM yyyy");
-                    qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                    qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s, "");
                 }
                 if (Investigation.class == i.getClass()) {
-                    qbf.setAccnt("INCOME ACCOUNTS:RHD Lab Income:RHD Inward Sale");
+                    qbf.setAccnt("RHD LAB INCOME:RHD Inward Sale");
                 } else {
 //                    qbf.setAccnt(cat.getName() + " I");
                     qbf.setAccnt(cat.getDescription());
@@ -1381,16 +1503,16 @@ public class QuickBookReportController implements Serializable {
                     qbf = new QuickBookFormat();
                     if (paymentMethod == PaymentMethod.Credit) {
                         if (pe != null) {
-                            qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                            qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s, "");
                         } else {
-                            qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s);
+                            qbf = new QuickBookFormat(cat.getName(), "No Bht", i.getName(), 0 - sum, s, "");
                         }
                     } else {
                         sdf = new SimpleDateFormat("MMM yyyy");
-                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s);
+                        qbf = new QuickBookFormat(cat.getName(), name, i.getName(), 0 - sum, s, "");
                     }
                     if (Investigation.class == i.getClass()) {
-                        qbf.setAccnt("INCOME ACCOUNTS:RHD Lab Income:RHD Inward Sale");
+                        qbf.setAccnt("RHD LAB INCOME:RHD Inward Sale");
                     } else {
 //                        qbf.setAccnt(cat.getName() + " I");
                         qbf.setAccnt(cat.getDescription());
@@ -1481,36 +1603,43 @@ public class QuickBookReportController implements Serializable {
                 if (pe != null) {
                     qbf = new QuickBookFormat();
                     if (getReportKeyWord().isBool1()) {
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward");
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
                     } else {
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Linen");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
-                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MedicalCareICU.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment().getName());
+                        qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MedicalCareICU.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward");
+                        qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                         if (qbf.getAmount() != 0.0) {
                             qbfs.add(qbf);
                         }
@@ -1520,36 +1649,44 @@ public class QuickBookReportController implements Serializable {
             } else {
                 qbf = new QuickBookFormat();
                 if (getReportKeyWord().isBool1()) {
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, "Dialysis", 0 - ((double) obj[0] + (double) obj[1] + (double) obj[2] + (double) obj[3] + (double) obj[4] + (double) obj[5] + (double) obj[6]), "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
                 } else {
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.RoomCharges.toString(), name, InwardChargeType.RoomCharges.toString(), 0 - (double) obj[0], "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MaintainCharges.toString(), name, InwardChargeType.MaintainCharges.toString(), 0 - (double) obj[1], "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MOCharges.toString(), 0 - (double) obj[2], "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.NursingCharges.toString(), name, InwardChargeType.NursingCharges.toString(), 0 - (double) obj[3], "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.LinenCharges.toString(), name, InwardChargeType.LinenCharges.toString(), 0 - (double) obj[4], "Linen");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdministrationCharge.toString(), name, InwardChargeType.AdministrationCharge.toString(), 0 - (double) obj[5], "Ward ");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
-                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward Bed");
+                    qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.MOCharges.toString(), name, InwardChargeType.MedicalCareICU.toString(), 0 - (double) obj[6], "Ward");
+                    qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
                     }
@@ -1631,11 +1768,14 @@ public class QuickBookReportController implements Serializable {
             if (paymentMethod == PaymentMethod.Credit) {
                 if (pe != null) {
                     qbf = new QuickBookFormat(sp, name, sp, 0 - value, "Ward");
+                    qbf.setInvItem(sp);
                 } else {
                     qbf = new QuickBookFormat(sp, "No BHT", sp, 0 - value, "Ward");
+                    qbf.setInvItem(sp);
                 }
             } else {
                 qbf = new QuickBookFormat(sp, name, sp, 0 - value, "Ward");
+                qbf.setInvItem(sp);
             }
             if (value != 0.0) {
                 grantTot += value;
@@ -1718,11 +1858,14 @@ public class QuickBookReportController implements Serializable {
             if (paymentMethod == PaymentMethod.Credit) {
                 if (pe != null) {
                     qbf = new QuickBookFormat(cat.getDescription(), name, item.getName(), 0 - value, item.getDepartment().getName());
+                    qbf.setInvItem(cat.getName() + ":" + qbf.getInvItem());
                 } else {
                     qbf = new QuickBookFormat(cat.getDescription(), "No BHT", item.getName(), 0 - value, item.getDepartment().getName());
+                    qbf.setInvItem(cat.getName() + ":" + qbf.getInvItem());
                 }
             } else {
                 qbf = new QuickBookFormat(cat.getDescription(), name, item.getName(), 0 - value, item.getDepartment().getName());
+                qbf.setInvItem(cat.getName() + ":" + qbf.getInvItem());
             }
             grantTot += value;
             qbfs.add(qbf);
@@ -1756,22 +1899,28 @@ public class QuickBookReportController implements Serializable {
         }
         if (getReportKeyWord().isBool1()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Dialysis");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:Dialysis Unit", name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Dialysis");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
 
         } else if (getReportKeyWord().isBool2()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName() + " Green Sheet", pe.getCreditCompany().getChequePrintingName(), InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel() + " Green Sheet", pe.getCreditCompany().getChequePrintingName(), InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Theatre");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel() + " Green Sheet", name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Theatre");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         } else {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Ward");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, InwardChargeType.AdmissionFee.getLabel());
+                qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.AdmissionFee.getLabel(), name, InwardChargeType.AdmissionFee.getLabel(), 0 - d, "Ward");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         }
         if (qbf.getAmount() != 0.0) {
@@ -1781,21 +1930,27 @@ public class QuickBookReportController implements Serializable {
         grantTot += d;
         if (getReportKeyWord().isBool2()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem() + " Green Sheet");
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Green Sheet Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem() + " Green Sheet");
             }
         } else if (getReportKeyWord().isBool1()) {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Dialysis Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         } else {
             if (paymentMethod == PaymentMethod.Credit && pe != null) {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             } else {
-                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, InwardChargeType.Medicine.getLabel());
+                qbf = new QuickBookFormat("PHARMACY SALES:Inward Sales", name, InwardChargeType.Medicine.getLabel(), 0 - d, "Main Pharmacy");
+                qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
             }
         }
         if (qbf.getAmount() != 0.0) {
@@ -1805,8 +1960,10 @@ public class QuickBookReportController implements Serializable {
         grantTot += d;
         if (paymentMethod == PaymentMethod.Credit && pe != null) {
             qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.GeneralIssuing.getLabel(), "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), InwardChargeType.GeneralIssuing.getLabel(), 0 - d, InwardChargeType.GeneralIssuing.getLabel());
+            qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
         } else {
             qbf = new QuickBookFormat("INCOME ACCOUNTS:" + InwardChargeType.GeneralIssuing.getLabel(), name, InwardChargeType.GeneralIssuing.getLabel(), 0 - d, InwardChargeType.GeneralIssuing.getLabel());
+            qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
 
         }
         if (qbf.getAmount() != 0.0) {
@@ -1815,9 +1972,11 @@ public class QuickBookReportController implements Serializable {
         d = fetchOutSideFee(fd, td, pe, admissionType, paymentMethod, cc);
         grantTot += d;
         if (paymentMethod == PaymentMethod.Credit && pe != null) {
-            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), "Out Side Charges", 0 - d, "Out Side Charges");
+            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName(), "Out Side Charges", 0 - d, "Ward");
+            qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
         } else {
-            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", name, "Out Side Charges", 0 - d, "Out Side Charges");
+            qbf = new QuickBookFormat("ACCRUED CHARGES:Indoor Patient Payable", name, "Out Side Charges", 0 - d, "Ward");
+            qbf.setInvItem(qbf.getInvItem() + ":" + qbf.getInvItem());
 
         }
         if (qbf.getAmount() != 0.0) {
@@ -2079,6 +2238,8 @@ public class QuickBookReportController implements Serializable {
 
     public void listnerReportNameChange() {
         quickBookFormats = new ArrayList<>();
+        items = new ArrayList<>();
+        reportKeyWord = new ReportKeyWord();
     }
 
     public void listnerBool1Change() {
@@ -2287,6 +2448,14 @@ public class QuickBookReportController implements Serializable {
 
     public void setInwardBeanController(InwardBeanController inwardBeanController) {
         this.inwardBeanController = inwardBeanController;
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
 }

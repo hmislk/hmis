@@ -15,6 +15,7 @@ import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.DepartmentAttendance;
 import com.divudi.data.hr.FingerPrintRecordType;
 import com.divudi.data.hr.LeaveType;
+import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.hr.StaffLeaveBallance;
 import com.divudi.data.hr.StaffShiftAggrgation;
@@ -74,6 +75,9 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.UploadedFile;
 
@@ -147,6 +151,7 @@ public class HrReportController implements Serializable {
     List<Staff> salaryGeneratedStaffs;
     List<Staff> salaryNotGeneratedStaffs;
     List<SalaryAndDeletaedDetail> salaryAndDeletaedDetails;
+    List<StaffGratuity> staffGratuitys;
 
     String backButtonPage;
 
@@ -2462,6 +2467,26 @@ public class HrReportController implements Serializable {
         return staffShiftFacade.findAggregates(sql, hm, TemporalType.DATE);
     }
 
+    private List<StaffShift> fetchWorkedShifts(Staff staff, Date f, Date t) {
+        String sql = "";
+
+        HashMap hm = new HashMap();
+        sql = "select ss from StaffShift ss "
+                + " where ss.retired=false "
+                + " and type(ss)!=:tp"
+                + " and ss.staff=:stf"
+                + " and ss.dayType not in :dtp "
+                + " and ss.shiftDate between :frm  and :to ";
+        hm.put("frm", f);
+        hm.put("to", t);
+        hm.put("tp", StaffShiftExtra.class);
+        hm.put("stf", staff);
+        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+
+        sql += " order by ss.dayOfWeek,ss.staff.codeInterger ";
+        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+    }
+
     private List<Object[]> fetchStaffShiftData() {
         String sql = "";
 
@@ -3053,7 +3078,7 @@ public class HrReportController implements Serializable {
             monthEnd.setMerhchantileDays(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), false));
             monthEnd.setMerhchantileDaysLeave(fetchWorkedDays(stf, DayType.MurchantileHoliday, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), getReportKeyWord().getSalaryCycle().getDayOffPhToDate(), true));
             //mr.lahiru request 
-            monthEnd.setWorkedDaysBefore(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate())));
+            monthEnd.setWorkedDaysBefore(fetchWorkedDays(stf, getReportKeyWord().getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate())));
             monthEnd.setWorkedDaysThis(fetchWorkedDays(stf, commonFunctions.getStartOfDay(getReportKeyWord().getSalaryCycle().getSalaryFromDate()), getReportKeyWord().getSalaryCycle().getDayOffPhToDate()));
             if (stf.getDateJoined() != null) {
                 if ((getReportKeyWord().getSalaryCycle().getSalaryFromDate().getTime() <= stf.getDateJoined().getTime()
@@ -3063,7 +3088,7 @@ public class HrReportController implements Serializable {
                         extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime()
                                 - stf.getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime() 
+                        extraDays = (commonFunctions.getEndOfDay(getReportKeyWord().getSalaryCycle().getSalaryToDate()).getTime()
                                 - getReportKeyWord().getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     System.out.println("New Come extraDays = " + extraDays);
@@ -3074,7 +3099,6 @@ public class HrReportController implements Serializable {
                     monthEnd.setWorkedDaysAditional(0.0);
                 }
 
-                
             }
 
             monthEndRecords.add(monthEnd);
@@ -3298,7 +3322,7 @@ public class HrReportController implements Serializable {
             int i = 0;
             for (Object[] obj : list) {
                 i++;
-                System.out.println("i" + i);
+                System.out.println("i = " + i);
                 Integer dayOfWeek = (Integer) obj[0] != null ? (Integer) obj[0] : -1;
                 System.out.println("dayOfWeek = " + dayOfWeek);
                 System.out.println("obj[0] = " + obj[0]);
@@ -3309,6 +3333,7 @@ public class HrReportController implements Serializable {
                 List<StaffLeave> staffLeaves = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
 //                System.out.println("ss.getLeaveType().isFullDayLeave() = " + ss.getLeaveType().isFullDayLeave());
                 System.out.println("staffLeaves.size() = " + staffLeaves.size());
+                System.out.println("value = " + value);
                 if (staffLeaves.size() > 1) {
                     double d = 0.0;
                     for (StaffLeave sl : staffLeaves) {
@@ -3327,10 +3352,18 @@ public class HrReportController implements Serializable {
 
                 System.err.println("Staff " + stf.getCodeInterger() + " :Value : " + value);
                 if (ss.getShift() != null && ss.getShift().getLeaveHourHalf() != 0 && leavedTimeValue > 0) {
+                    double totShiftDuration = 0.0;
+                    List<StaffShift> shifts = fetchWorkedShifts(stf, ss.getShiftDate(), ss.getShiftDate());
+                    for (StaffShift s : shifts) {
+                        totShiftDuration += s.getShift().getDurationMin() * 60;
+                    }
+                    System.out.println("shifts.size() = " + shifts.size());
                     System.out.println("value = " + value);
                     System.out.println("leavedTimeValue = " + leavedTimeValue);
-                    if ((ss.getShift().getDurationMin() * 60) < value) {
-                        value = ss.getShift().getDurationMin() * 60;
+                    System.out.println("totShiftDuration = " + totShiftDuration);
+                    if ((totShiftDuration < value && staffLeaves.size() == 1)
+                            || (totShiftDuration > value && staffLeaves.size() > 1)) {
+                        value = totShiftDuration;
                     }
                 }
 
@@ -4851,6 +4884,109 @@ public class HrReportController implements Serializable {
 
     }
 
+    public void createGrativityList() {
+        staffGratuitys = new ArrayList<>();
+        if (reportKeyWord.getSalaryCycle() == null) {
+            JsfUtil.addErrorMessage("Select Salary Cycle");
+            return;
+        }
+        List<StaffSalary> salarys = fillStaffSalary();
+        for (StaffSalary s : salarys) {
+            System.out.println("*******s.getStaff().getPerson().getName() = " + s.getStaff().getPerson().getName());
+            StaffGratuity gratuity = new StaffGratuity();
+            gratuity.setSalary(s);
+            if (s.getStaff().getDateJoined() == null) {
+                gratuity.setComment("No Join Date.");
+                staffGratuitys.add(gratuity);
+                continue;
+            }
+            for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
+                if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
+                    s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
+                    System.err.println("s.getBasicVal() = " + s.getBasicVal());
+                }
+            }
+            LocalDate JoinDate = new LocalDate(s.getStaff().getDateJoined());
+            LocalDate toDate = new LocalDate(s.getSalaryCycle().getSalaryToDate());
+
+            Period period = new Period(JoinDate, toDate, PeriodType.yearMonthDay());
+            int years = period.getYears();
+            System.out.println("ageYears = " + years);
+            int months = period.getMonths();
+            System.out.println("ageMonths = " + months);
+            int days = period.getDays();
+            System.out.println("ageDays = " + days);
+            System.out.println("s.getBasicVal() = " + s.getBasicVal());
+            double mon=months;
+            System.out.println("mon = " + mon);
+            double monthinyears = mon / 12;
+            System.out.println("monthinyears = " + monthinyears);
+            double grat = (((s.getBasicVal() / 2) * years) + ((s.getBasicVal() / 2) * monthinyears));
+            System.out.println("grat = " + grat);
+            gratuity.setYears(years);
+            gratuity.setMonths(months);
+            gratuity.setDays(days);
+            gratuity.setGratuity(grat);
+            staffGratuitys.add(gratuity);
+        }
+
+    }
+
+    private List<StaffSalary> fillStaffSalary() {
+        HashMap m = new HashMap();
+        String sql;
+
+        sql = "select spc from StaffSalary spc "
+                + " where spc.retired=false "
+                + " and spc.salaryCycle=:sc "
+                + " and (spc.staff.dateLeft>:rd or spc.staff.dateLeft is null) "
+                + " and (spc.staff.dateRetired>:rd or spc.staff.dateRetired is null) "
+                + " and spc.blocked=false ";
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and spc.institution=:ins ";
+            m.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and spc.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and spc.staff=:stf ";
+            m.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and spc.staff.staffCategory=:stfCat ";
+            m.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and spc.staff.designation=:des ";
+            m.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and spc.staff.roster=:rs ";
+            m.put("rs", getReportKeyWord().getRoster());
+        }
+
+        sql += " order by spc.staff.codeInterger ";
+        m.put("sc", reportKeyWord.getSalaryCycle());
+        m.put("rd", reportKeyWord.getSalaryCycle().getSalaryToDate());
+        return staffSalaryFacade.findBySQL(sql, m);
+    }
+
+    public List<StaffGratuity> getStaffGratuitys() {
+        return staffGratuitys;
+    }
+
+    public void setStaffGratuitys(List<StaffGratuity> staffGratuitys) {
+        this.staffGratuitys = staffGratuitys;
+    }
+
     public class OverTimeAllMonth {
 
         String dateRange;
@@ -5025,6 +5161,64 @@ public class HrReportController implements Serializable {
 
         public void setSalarys(List<StaffSalary> salarys) {
             this.salarys = salarys;
+        }
+    }
+
+    public class StaffGratuity {
+
+        private StaffSalary salary;
+        private int Years;
+        private int months;
+        private int Days;
+        private double gratuity;
+        private String Comment;
+
+        public StaffSalary getSalary() {
+            return salary;
+        }
+
+        public void setSalary(StaffSalary salary) {
+            this.salary = salary;
+        }
+
+        public int getYears() {
+            return Years;
+        }
+
+        public void setYears(int Years) {
+            this.Years = Years;
+        }
+
+        public int getMonths() {
+            return months;
+        }
+
+        public void setMonths(int months) {
+            this.months = months;
+        }
+
+        public int getDays() {
+            return Days;
+        }
+
+        public void setDays(int Days) {
+            this.Days = Days;
+        }
+
+        public double getGratuity() {
+            return gratuity;
+        }
+
+        public void setGratuity(double gratuity) {
+            this.gratuity = gratuity;
+        }
+
+        public String getComment() {
+            return Comment;
+        }
+
+        public void setComment(String Comment) {
+            this.Comment = Comment;
         }
     }
 

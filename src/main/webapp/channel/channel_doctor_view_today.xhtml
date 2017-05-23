@@ -17,19 +17,30 @@
                 </f:facet>
                 <p:panel>
                     <h:panelGrid columns="2" >
+                        <p:selectOneRadio value="#{channelReportController.reportKeyWord.string}" 
+                                          rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                            <f:selectItem itemValue="0" itemLabel="All" />
+                            <f:selectItem itemValue="1" itemLabel="Morning(Till 11.59 am)" />
+                            <f:selectItem itemValue="2" itemLabel="Evening(After 12 noon)" />
+                        </p:selectOneRadio>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3" >
                        
                         <p:outputLabel value="With Agency" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
-                        <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
+                        <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" ajax="false">
                         </p:commandButton>
                         <p:commandButton value="Process(Scan)" action="#{channelReportController.createTotalDoctorScan()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
                         </p:commandButton>
                         <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />
                         </p:commandButton>
+                        <p:commandButton value="Excel" action="#" ajax="false">
+                            <p:dataExporter target="tbl" type="xls" fileName="all_doctor" />
+                        </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
-                <p:dataTable value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
+                <p:dataTable id="tbl" value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
                     <f:facet name="header">
                         <p:outputLabel value="#{sessionController.loggedUser.institution.name}" style="fon"/><br></br>
                         <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
@@ -51,6 +62,11 @@
                         </f:facet>
                         <p:outputLabel value="#{bs.consultant.person.nameWithTitle}" />
                     </p:column>   
+                    <p:column headerText="Not Paid Bill" styleClass="numberCol">
+                        <p:outputLabel value="#{bs.notPaidBillCount}" >
+                            <f:convertNumber pattern="#,##0"/>
+                        </p:outputLabel>
+                    </p:column>
                     <p:column headerText="Bill" styleClass="numberCol">
                         <p:outputLabel value="#{bs.billCount}" >
                             <f:convertNumber pattern="#,##0"/>
@@ -71,7 +87,7 @@
                             <f:convertNumber pattern="#,##0"/>
                         </p:outputLabel>
                     </p:column>
-                    <p:column headerText="Total" styleClass="numberCol" sortBy="#{bs.billFee+bs.billCanncelFee+bs.refundFee}">
+                    <p:column headerText="Total" styleClass="numberCol noPrintButton" sortBy="#{bs.billFee+bs.billCanncelFee+bs.refundFee}">
                         <p:outputLabel value="#{bs.billFee+bs.billCanncelFee+bs.refundFee}" >
                             <f:convertNumber pattern="##,###,##0.00" />
                         </p:outputLabel>

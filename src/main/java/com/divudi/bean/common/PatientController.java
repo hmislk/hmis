@@ -188,6 +188,9 @@ public class PatientController implements Serializable {
     public void dateChangeListen() {
         getCurrent().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
     }
+    public void dobChangeListen() {
+        yearMonthDay=getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
+    }
 
     public StreamedContent getPhoto(Patient p) {
         ////System.out.println("p is " + p);

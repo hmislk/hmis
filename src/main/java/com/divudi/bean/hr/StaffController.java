@@ -32,6 +32,7 @@ import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
 import com.divudi.entity.hr.StaffEmployment;
 import com.divudi.entity.hr.StaffGrade;
+import com.divudi.entity.hr.StaffSalary;
 import com.divudi.entity.hr.StaffStaffCategory;
 import com.divudi.entity.hr.StaffWorkingDepartment;
 import com.divudi.entity.lab.CommonReportItem;
@@ -43,6 +44,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.SalaryCycleFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.StaffSalaryFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -98,7 +100,7 @@ public class StaffController implements Serializable {
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
-    SalaryCycleFacade salaryCycleFacade;
+    StaffSalaryFacade staffSalaryFacade;
     List<Staff> selectedItems;
     List<Staff> selectedList;
     private List<Staff> filteredStaff;
@@ -1406,14 +1408,17 @@ public class StaffController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        sql = "select c from SalaryCycle c "
+        sql = "select c from StaffSalary c "
                 + " where c.retired=false "
-                + " and c.salaryFromDate<=:d "
-                + " and c.salaryToDate>=:d ";
+                + " and c.salaryCycle.retired=false "
+                + " and c.staff=:s "
+                + " and c.salaryCycle.salaryFromDate<=:d "
+                + " and c.salaryCycle.salaryToDate>=:d ";
 
         m.put("d", tempReDate);
+        m.put("s", getCurrent());
 
-        List<SalaryCycle> cycles = salaryCycleFacade.findBySQL(sql, m, TemporalType.DATE);
+        List<StaffSalary> cycles = staffSalaryFacade.findBySQL(sql, m, TemporalType.DATE);
         System.out.println("cycles.size() = " + cycles.size());
 
         if (cycles.size() > 0) {

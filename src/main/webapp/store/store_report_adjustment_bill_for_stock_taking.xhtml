@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="SEARCH PHARMACY BILL ITEM "/>                                                          
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" 
+                                            value="#{searchController.fromDate}" navigator="false" 
+                                            pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="toDate"
+                                            value="#{searchController.toDate}" navigator="false" 
+                                            pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel value="Department"/>
+                                <au:department value="#{searchController.reportKeyWord.department}" />
+                                <h:outputLabel value="Category"/>
+                                <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" placeholder="Category"
+                                                forceSelection="true" value="#{searchController.reportKeyWord.category}" />
+                                <h:outputLabel value="Only Adjustments"/>
+                                <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                                 action="#{searchController.createStoreAdjustmentBillItemTableForStockTaking}"/>
+                                <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton">
+                                    <p:printer target="panPrint" />
+                                </p:commandButton>
+                                <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </f:facet>
+
+                        <p:panel id="panPrint" styleClass="noBorder summeryBorder" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Stock Taking Special Report(This Report Accuracy is Depending On Stock Taking Date.)" />
+                            </f:facet>
+                            <p:dataTable rowIndexVar="i" id="tblBills" 
+                                         value="#{searchController.pharmacyAdjustmentRows}" var="r" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="From Date - #{searchController.fromDate}"></p:outputLabel><br></br>
+                                    <p:outputLabel value="To Date - #{searchController.toDate}"></p:outputLabel><br></br>
+                                    <p:outputLabel value="Department - #{searchController.reportKeyWord.department.name}" rendered="#{searchController.reportKeyWord.department ne null}" /><br></br>
+                                    <p:outputLabel value="Category - #{searchController.reportKeyWord.category.name}" rendered="#{searchController.reportKeyWord.category ne null}" />
+                                    
+                                </f:facet>
+                                <p:column styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i+1}"/>
+                                </p:column>
+
+                                <p:column styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.itm.name}" />
+                                </p:column>
+                                <p:column styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Catogary" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.itm.category.name}" />
+                                </p:column>
+                                <p:column styleClass="alignTop" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Batch" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.batchNo}"/>
+                                </p:column>
+                                <p:column styleClass="alignTop"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Date Of Expiry" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.expiry}">
+                                        <f:convertDateTime pattern="yyyy MM dd"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop numberCol"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Purchase Val" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop numberCol" rendered="false" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Sale Val" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.purchaseRate}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Be. St. Qty" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.befoerQty}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop numberCol"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Be. St. Val" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.befoerVal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{searchController.dueTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="alignTop"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="After St. Qty" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.afterQty}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop numberCol"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="After St. Val" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.afterVal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{searchController.doneTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column styleClass="alignTop"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Adj. St. Qty" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.adjusetedQty}" style="float: right;">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column styleClass="alignTop numberCol"  >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Adj. St. Val" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{r.adjusetedVal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer" >
+                                        <h:outputLabel value="#{searchController.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+
+
+                            </p:dataTable>
+                        </p:panel>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

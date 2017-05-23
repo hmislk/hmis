@@ -71,6 +71,12 @@
                                     <p:inputText autocomplete="off"  value="#{doctorController.current.qualification}" />
                                     <h:outputText  value="Refering Charge" />
                                     <p:inputText autocomplete="off"  value="#{doctorController.current.charge}"  />
+                                    <h:outputText  value="Creater" />
+                                    <h:outputText  value="#{doctorController.current.creater.webUserPerson.name}" />
+                                    <h:outputText  value="Created At" />
+                                    <h:outputText  value="#{doctorController.current.createdAt}" >
+                                        <f:convertDateTime  pattern="yyyy MM dd hh:mm:ss a" />
+                                    </h:outputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"

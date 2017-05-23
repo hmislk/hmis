@@ -7,41 +7,63 @@
       xmlns:h="http://java.sun.com/jsf/html">
 
     <h:body>
+        
+            <ui:composition template="/resources/template/template.xhtml">
 
-        <ui:composition template="/resources/template/template.xhtml">
+                <ui:define name="content">
+                    <h:form>
+                        <p:panel header="Items by Name" >
 
-            <ui:define name="content">
+                            <p:panel >
+                                <f:facet name="header">
+                                    <p:commandButton ajax="false" value="Process" action="#{storeAmpController.createStoreItemsWithRetierd()}" />
+                                </f:facet>
 
-                <p:panel header="Items by Name" >
+                                <p:panel id="paItems">
+                                    <p:dataTable id="tblItem" value="#{storeAmpController.itemsAll}" var="i" >
+                                        <p:column headerText="Category" >
+                                            <p:outputLabel value="#{i.category.name}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" >
+                                            <p:outputLabel value="#{i.code}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Name" >
+                                            <p:outputLabel value="#{i.name}" styleClass="#{i.retired ? 'redText':''}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Generic" >
+                                            <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Creater" >
+                                            <p:outputLabel value="#{i.creater.webUserPerson.name}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Creater" >
+                                            <p:outputLabel value="#{i.createdAt}">
+                                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Retire" >
+                                            <p:outputLabel value="#{i.retirer.webUserPerson.name}" ></p:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Retired At" >
+                                            <p:outputLabel value="#{i.retiredAt}">
+                                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
 
-                    <p:panel >
+                            </p:panel>
 
-                    <p:panel id="paItems">
-                        <p:dataTable id="tblItem" value="#{storeAmpController.items}" var="i" >
-                            <p:column headerText="Category" >
-                                    <p:outputLabel value="#{i.category.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Code" >
-                                <p:outputLabel value="#{i.code}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Name" >
-                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Generic" >
-                                    <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-
-                </p:panel>
-
-                </p:panel>
+                        </p:panel>
+                    </h:form>
 
 
-            </ui:define>
+                </ui:define>
 
 
-        </ui:composition>
+            </ui:composition>
+        
+
 
     </h:body>
 </html>

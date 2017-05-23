@@ -15,6 +15,7 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.BillNumber;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Category;
+import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Service;
@@ -32,6 +33,7 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillNumberFacade;
 import com.divudi.facade.CategoryFacade;
+import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.ItemFacade;
@@ -112,6 +114,8 @@ public class DataAdministrationController {
     PersonFacade personFacade;
     @EJB
     ServiceSessionFacade serviceSessionFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -119,6 +123,7 @@ public class DataAdministrationController {
     List<Institution> selectedInstitutions;
     private List<Item> items;
     private List<Item> selectedItems;
+    private List<Department> departments;
 
     double val1;
     double val2;
@@ -137,6 +142,7 @@ public class DataAdministrationController {
     private String item;
     private Category itemCategory;
     private Double vatPrecentage = 0.0;
+    private DepartmentType departmentType;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -791,12 +797,14 @@ public class DataAdministrationController {
             serviceSessionFacade.edit(s);
         }
     }
+
     public void createAllSessionAsChannel() {
         for (ServiceSession s : fetchAllSessions()) {
             s.setForBillType(BillType.Channel);
             serviceSessionFacade.edit(s);
         }
     }
+
     public void createAllSessionAsNotVatable() {
         for (ServiceSession s : fetchAllSessions()) {
             s.setVatable(false);
@@ -815,20 +823,37 @@ public class DataAdministrationController {
         m.put("class", ServiceSession.class);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        
-        sessions=serviceSessionFacade.findBySQL(sql, m);
+
+        sessions = serviceSessionFacade.findBySQL(sql, m);
         System.out.println("sessions.size() = " + sessions.size());
-        
+
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.originatingSession is not null "
                 + " and s.sessionDate >=:cd "
                 + " and type(s)=:class ";
         m.put("cd", new Date());
-        
+
         sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
         System.out.println("sessions.size() = " + sessions.size());
 
         return sessions;
+    }
+
+    public void fillDepartmentss() {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select d from Department d "
+                + " where d.retired=false ";
+
+        if (departmentType != null) {
+            sql += " and d.departmentType=:depT";
+            m.put("depT", departmentType);
+        }
+
+        departments =getDepartmentFacade().findBySQL(sql, m);
+
     }
 
     public void itemChangeListener() {
@@ -1106,6 +1131,33 @@ public class DataAdministrationController {
 
     public void setVatableStatus(boolean vatableStatus) {
         this.vatableStatus = vatableStatus;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
+    }
+
+    public List<Department> getDepartments() {
+        if (departments==null) {
+            departments=new ArrayList<>();
+        }
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
+    }
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
     }
 
 }

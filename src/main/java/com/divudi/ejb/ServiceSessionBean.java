@@ -273,17 +273,17 @@ public class ServiceSessionBean {
         }
 
         System.out.println("temStr = " + temStr);
-        availabeNumbers = stringNumbersToInts(temStr,serviceSession);
+        availabeNumbers = stringNumbersToInts(temStr, serviceSession);
         System.out.println("availableNumbers = " + availabeNumbers.toString());
 
         boolean numberGiven;
 
         for (Integer i : availabeNumbers) {
-            System.out.println("i = " + i);
             numberGiven = false;
             for (BillSession bs : lgValue) {
-                System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
                 if (i == bs.getSerialNo()) {
+                    System.out.println("i = " + i);
+                    System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
                     //System.out.println("break");
                     numberGiven = true;
                     break;
@@ -304,16 +304,16 @@ public class ServiceSessionBean {
         }
     }
 
-    public List<Integer> stringNumbersToInts(String str,ServiceSession ss) {
+    public List<Integer> stringNumbersToInts(String str, ServiceSession ss) {
         int maxNo = 100;
         List<Integer> nits = new ArrayList();
         if (str == null || str.trim().equals("")) {
-            if (ss.getStartingNo()>0) {
+            if (ss.getStartingNo() > 0) {
                 addToIntList(ss.getStartingNo(), maxNo, nits);
-            }else{
+            } else {
                 addToIntList(1, maxNo, nits);
             }
-            
+
             return nits;
         }
         if (str.contains(">")) {

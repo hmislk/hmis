@@ -31,6 +31,13 @@
                                         <p:commandButton styleClass="linkButton" ajax="false" value="Deleted Bht List" action="deleted_admission_book" onclick="onSubmitButton();"/>
                                     </h:panelGrid>
                                 </p:panel>
+                                
+                                <p:panel header="Institiute" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
+                                    <h:panelGrid columns="1">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Institution List" action="instituton_by_institution_type" onclick="onSubmitButton();"/> 
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Department List" action="department_by_department_type" onclick="onSubmitButton();"/>
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGrid>
 
                             <h:panelGrid columns="1">

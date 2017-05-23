@@ -10,6 +10,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
@@ -37,6 +38,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.channel.ArrivalRecord;
@@ -1168,6 +1170,10 @@ public class ChannelReportController implements Serializable {
             sql += " and b.billType in :bts ";
             hm.put("bts", bts);
         }
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            hm.put("bt", getReportKeyWord().getBillType());
+        }
 //        sql += " order by b.singleBillSession.sessionDate ";
 
         hm.put("class", bill.getClass());
@@ -1223,6 +1229,11 @@ public class ChannelReportController implements Serializable {
         } else {
             sql += " and b.paymentMethod=:pm ";
             temMap.put("pm", paymentMethod);
+        }
+
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
+            temMap.put("bt", getReportKeyWord().getBillType());
         }
 
         temMap.put("fromDate", fd);
@@ -1896,6 +1907,82 @@ public class ChannelReportController implements Serializable {
                 + " and type(bf.bill)=:class "
                 + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
+
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
+        }
+
+        if (ft == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
+
+        if (paid) {
+            sql += " and bf.bill.paidBill is not null "
+                    + " and bf.bill.paidAmount!=0 ";
+        }
+        if (sessoinDate) {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+        } else {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+
+        }
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("class", BilledBill.class);
+        m.put("ft", ft);
+        m.put("bt", bt);
+//        m.put("fn", "Scan Fee");
+
+        double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
+        return d;
+    }
+
+    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean sessoinDate, boolean paid, boolean onlineAgent) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select count(distinct(bf.bill)) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType=:bt "
+                + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft "
+                + " and bf.feeValue>0 ";
+
+        if (bt == BillType.ChannelAgent) {
+            if (onlineAgent) {
+                sql += " and bf.bill.creditCompany.id=20385287 ";
+            } else {
+                sql += " and bf.bill.creditCompany.id!=20385287 ";
+            }
+        }
 
         if (bill.getClass().equals(CancelledBill.class)) {
             sql += " and bf.bill.cancelled=true";
@@ -3200,11 +3287,10 @@ public class ChannelReportController implements Serializable {
             hm.put("ins", institution);
         }
 
-        if (reportKeyWord.getWebUser() != null) {
-            sql += " and b.creater=:user";
-            hm.put("user", reportKeyWord.getWebUser());
-        }
-
+//        if (reportKeyWord.getWebUser() != null) {
+//            sql += " and b.creater=:user";
+//            hm.put("user", reportKeyWord.getWebUser());
+//        }
         hm.put("fDate", fd);
         hm.put("tDate", td);
 
@@ -3521,17 +3607,33 @@ public class ChannelReportController implements Serializable {
             BookingCountSummryRow row = new BookingCountSummryRow();
             if (ft == FeeType.Service) {
                 row.setBookingType("Scan " + bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, false));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, false));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, false));
+                bookingCountSummryRows.add(row);
+                if (bt == BillType.ChannelAgent) {
+                    row = new BookingCountSummryRow();
+                    row.setBookingType("Scan Online " + bt.getLabel());
+                    row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, true));
+                    row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, true));
+                    row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, true));
+                    bookingCountSummryRows.add(row);
+                }
             } else {
                 row.setBookingType(bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, false));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, false));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, false));
+                bookingCountSummryRows.add(row);
+                if (bt == BillType.ChannelAgent) {
+                    row = new BookingCountSummryRow();
+                    row.setBookingType("Online " + bt.getLabel());
+                    row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, true));
+                    row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, true));
+                    row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, true));
+                    bookingCountSummryRows.add(row);
+                }
             }
-
-            bookingCountSummryRows.add(row);
 
         }
     }
@@ -3841,6 +3943,25 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void channelBillList() {
+        Date startTime = new Date();
+
+        channelBills = new ArrayList<>();
+        channelBillsCancelled = new ArrayList<>();
+        channelBillsRefunded = new ArrayList<>();
+
+        if (summery) {
+            channelBills = channelBillList(sessoinDate, new BilledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+        } else {
+            channelBills = channelBillList(sessoinDate, new BilledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+            channelBillsCancelled = channelBillList(sessoinDate, new CancelledBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+            channelBillsRefunded = channelBillList(sessoinDate, new RefundBill(), paid, getReportKeyWord().getStaff(), getReportKeyWord().getSpeciality(), getReportKeyWord().getArea());
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill summery(Process Session Date)(/faces/channel/channel_report_all_booking.xhtml)");
+
+    }
+
     public void createAreaWithCountTable() {
         channelAreaWithCount(sessoinDate);
     }
@@ -3868,6 +3989,70 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public List<Bill> channelBillList(boolean createdDate, Bill bill, boolean paid, Staff s, Speciality sp, Area area) {
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+        HashMap hm = new HashMap();
+
+        String sql = " select b from Bill b "
+                + " where b.billType in :bt "
+                + " and b.retired=false "
+                + " and type(b)=:class ";
+
+        if (paid) {
+            sql += " and b.paidBill is not null "
+                    + " and b.paidAmount!=0 ";
+        }
+
+        if (!createdDate) {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.refundedBill.createdAt between :fd and :td ";
+            }
+        } else {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and b.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and b.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and b.refundedBill.createdAt between :fd and :td ";
+            }
+
+        }
+
+        if (s != null) {
+            sql += " and b.staff=:stf ";
+            hm.put("stf", s);
+        }
+
+        if (sp != null) {
+            sql += " and b.staff.speciality=:sp ";
+            hm.put("sp", sp);
+        }
+
+        if (area != null) {
+            sql += " and b.patient.person.area=:area ";
+            hm.put("area", area);
+        }
+
+        sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
+
+        hm.put("class", bill.getClass());
+        hm.put("bt", bts);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+
+        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+
+    }
+
     public void channelAreaWithCount(boolean createdDate) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -3877,14 +4062,15 @@ public class ChannelReportController implements Serializable {
         total = 0.0;
         String sql;
         if (summery) {
-            sql = " select b.patient.person.area,count(b) ";
+            sql = " select b.patient.person.area,b.billClassType,count(b) ";
         } else {
-            sql = " select b.staff,b.patient.person.area,count(b) ";
+            sql = " select b.staff,b.patient.person.area,b.billClassType,count(b) ";
         }
 
         sql += " from Bill b "
                 + " where b.billType in :bt "
                 + " and b.retired=false "
+                + " and b.billClassType!=:cla "
                 + " and b.patient.person.area is not null ";
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
@@ -3893,14 +4079,15 @@ public class ChannelReportController implements Serializable {
         }
 
         if (summery) {
-            sql += " group by b.patient.person.area "
+            sql += " group by b.patient.person.area,b.billClassType "
                     + " order by b.patient.person.area.name ";
         } else {
-            sql += " group by b.staff,b.patient.person.area "
+            sql += " group by b.staff,b.patient.person.area,b.billClassType "
                     + " order by b.staff.person.name,b.patient.person.area.name ";
         }
 
         hm.put("bt", bts);
+        hm.put("cla", BillClassType.RefundBill);
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
 
@@ -3908,63 +4095,140 @@ public class ChannelReportController implements Serializable {
         System.out.println("objects.size() = " + objects.size());
 
         if (summery) {
+            AreaWithCount row = null;
+            Area beforeArea = null;
             for (Object[] ob : objects) {
-                AreaWithCount row = new AreaWithCount();
-                row.setArea((Area) ob[0]);
-                row.setCount((long) ob[1]);
+                Area a = (Area) ob[0];
+                BillClassType classType = (BillClassType) ob[1];
+                long count = (long) ob[2];
+                System.err.println("****************");
+                System.out.println("a.getName() = " + a.getName());
+                System.out.println("clas = " + classType);
+                System.out.println("count = " + count);
+                System.err.println("****************");
+                if (classType == BillClassType.BilledBill) {
+                    total += count;
+                } else {
+                    total -= count;
+                }
+                if (row == null) {
+                    row = new AreaWithCount();
+                    row.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(count);
+                    } else {
+                        row.setCount(0 - count);
+                    }
+                    beforeArea = a;
+                    continue;
+                }
+
                 System.out.println("row.getArea().getName() = " + row.getArea().getName());
-                areaWithCount.add(row);
-                total += row.getCount();
+                if (a.equals(beforeArea)) {
+                    System.out.println("row.getArea().getName() = " + row.getArea().getName());
+                    System.out.println("beforeArea.getName() = " + beforeArea.getName());
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(row.getCount() + count);
+                    } else {
+                        row.setCount(row.getCount() - count);
+                    }
+                } else {
+                    areaWithCount.add(row);
+                    row = new AreaWithCount();
+                    row.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        row.setCount(count);
+                    } else {
+                        row.setCount(0 - count);
+                    }
+                    beforeArea = a;
+                }
             }
+            areaWithCount.add(row);
         } else {
+            StaffWithAreaRow row = null;
+            AreaWithCount awc = null;
             Staff beforeStaff = null;
-            StaffWithAreaRow row = new StaffWithAreaRow();
+            Area beforeArea = null;
             for (Object[] ob : objects) {
                 Staff s = (Staff) ob[0];
                 Area a = (Area) ob[1];
-                long count = (long) ob[2];
+                BillClassType classType = (BillClassType) ob[2];
+                long count = (long) ob[3];
                 System.err.println("****************");
                 System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 System.out.println("a.getName() = " + a.getName());
+                System.out.println("clas = " + classType);
                 System.out.println("count = " + count);
                 System.err.println("****************");
-                total += count;
-                if (s.equals(beforeStaff)) {
-                    AreaWithCount awc = new AreaWithCount();
-                    awc.setArea(a);
-                    awc.setCount(count);
-                    row.getAreaWithCounts().add(awc);
-                    row.setSubTotal(row.getSubTotal() + count);
-                    System.out.println("if row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
+                if (classType == BillClassType.BilledBill) {
+                    total += count;
                 } else {
-                    if (!row.getAreaWithCounts().isEmpty()) {
-                        System.out.println("elase row.getAreaWithCounts().size() = " + row.getAreaWithCounts().size());
-                        staffWithAreaRows.add(row);
-                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
-                        row = new StaffWithAreaRow();
-                        row.setStaf(s);
-                        AreaWithCount awc = new AreaWithCount();
-                        awc.setArea(a);
+                    total -= count;
+                }
+                if (row == null) {
+                    System.err.println("null");
+                    row = new StaffWithAreaRow();
+                    awc = new AreaWithCount();
+                    row.setStaf(s);
+                    awc.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
                         awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal() + count);
-                        row.getAreaWithCounts().add(awc);
                     } else {
-                        row = new StaffWithAreaRow();
-                        row.setStaf(s);
-                        AreaWithCount awc = new AreaWithCount();
-                        awc.setArea(a);
-                        awc.setCount(count);
-                        row.setSubTotal(row.getSubTotal() + count);
-                        row.getAreaWithCounts().add(awc);
-                        if (beforeStaff != null) {
-                            staffWithAreaRows.add(row);
-                        }
-                        System.out.println("row.getStaf().getPerson().getName() = " + row.getStaf().getPerson().getName());
+                        awc.setCount(0 - count);
                     }
                     beforeStaff = s;
+                    beforeArea = a;
+                    continue;
+                }
+                if (s.equals(beforeStaff)) {
+                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    System.out.println("beforeStaff.getPerson().getName() = " + beforeStaff.getPerson().getName());
+                    if (a.equals(beforeArea)) {
+                        System.out.println("a.getName() = " + a.getName());
+                        System.out.println("beforeArea.getName() = " + beforeArea.getName());
+                        System.out.println("awc.getCount() = " + awc.getCount());
+                        if (classType == BillClassType.BilledBill) {
+                            awc.setCount(awc.getCount() + count);
+                        } else {
+                            awc.setCount(awc.getCount() - count);
+                        }
+                    } else {
+                        row.getAreaWithCounts().add(awc);
+                        row.setSubTotal(row.getSubTotal() + awc.getCount());
+                        awc = new AreaWithCount();
+                        awc.setArea(a);
+                        if (classType == BillClassType.BilledBill) {
+                            awc.setCount(count);
+                        } else {
+                            awc.setCount(0 - count);
+                        }
+                        beforeArea = a;
+                    }
+                } else {
+                    System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                    System.out.println("beforeStaff.getPerson().getName() = " + beforeStaff.getPerson().getName());
+                    row.getAreaWithCounts().add(awc);
+                    row.setSubTotal(row.getSubTotal() + awc.getCount());
+                    staffWithAreaRows.add(row);
+                    row = new StaffWithAreaRow();
+                    awc = new AreaWithCount();
+                    row.setStaf(s);
+                    awc.setArea(a);
+                    if (classType == BillClassType.BilledBill) {
+                        awc.setCount(count);
+                    } else {
+                        awc.setCount(0 - count);
+                    }
+                    beforeStaff = s;
+                    beforeArea = a;
+
                 }
 
             }
+            row.setSubTotal(row.getSubTotal() + awc.getCount());
+            row.getAreaWithCounts().add(awc);
+            staffWithAreaRows.add(row);
         }
         System.out.println("staffWithAreaRows.size() = " + staffWithAreaRows.size());
         System.out.println("areaWithCount.size() = " + areaWithCount.size());
@@ -4458,8 +4722,8 @@ public class ChannelReportController implements Serializable {
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
-        
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.Channel);
         }
@@ -4468,7 +4732,51 @@ public class ChannelReportController implements Serializable {
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("bills = " + bills.size());
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+//            System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
+            if (getReportKeyWord().getString().equals("0")) {
+
+            }
+            if (getReportKeyWord().getString().equals("1")) {
+                List<Bill> reBills = new ArrayList<>();
+                for (Bill b : bills) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
+//                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+                    if (cal.get(Calendar.HOUR_OF_DAY) >= 12) {
+                        reBills.add(b);
+//                        System.err.println("add 1");
+                    }
+                }
+//                System.out.println("bills.size() = " + bills.size());
+//                System.out.println("reBills.size() = " + reBills.size());
+                bills.removeAll(reBills);
+//                System.out.println("bills.size() = " + bills.size());
+            }
+            if (getReportKeyWord().getString().equals("2")) {
+                List<Bill> reBills = new ArrayList<>();
+                for (Bill b : bills) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
+//                    System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+                    if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
+                        reBills.add(b);
+//                        System.err.println("add 2");
+                    }
+                }
+//                System.out.println("bills.size() = " + bills.size());
+//                System.out.println("reBills.size() = " + reBills.size());
+                bills.removeAll(reBills);
+//                System.out.println("bills.size() = " + bills.size());
+            }
+        }
+//        System.out.println("bills = " + bills.size());
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4481,10 +4789,10 @@ public class ChannelReportController implements Serializable {
         }
 
         for (ChannelDoctor cd : channelDoctors) {
-            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
+//            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
             for (Bill b : bills) {
-                System.out.println("b = " + b.getStaff().getPerson().getName());
-                System.out.println("b = " + b.getBillClass());
+//                System.out.println("b = " + b.getStaff().getPerson().getName());
+//                System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
@@ -4502,6 +4810,11 @@ public class ChannelReportController implements Serializable {
                             cd.setRefundedCount(cd.getRefundedCount() + 1);
                             cd.setRefundFee(cd.getRefundFee() + getBillFees(b, FeeType.Staff));
                         }
+                    } else {
+                        if ((b.getBillType() == BillType.ChannelStaff || b.getBillType() == BillType.ChannelOnCall)
+                                && b.getPaidBill() == null && !b.isCancelled() && !b.isRefunded()) {
+                            cd.setNotPaidBillCount(cd.getNotPaidBillCount() + 1);
+                        }
                     }
                 }
             }
@@ -4511,7 +4824,7 @@ public class ChannelReportController implements Serializable {
         calTotal();
 
     }
-    
+
     public void createTotalDoctorScan() {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -4521,8 +4834,8 @@ public class ChannelReportController implements Serializable {
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
-        
-        if (sessionController.getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Cooperative) {
+
+        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.XrayScan);
         }
@@ -5026,6 +5339,12 @@ public class ChannelReportController implements Serializable {
         } else {
             sql += " and b.creditCompany is not null ";
         }
+
+        if (getReportKeyWord().getBillType() != null) {
+            sql += " and b.singleBillSession.serviceSession.originatingSession.forBillType=:bts ";
+            m.put("bts", getReportKeyWord().getBillType());
+        }
+
         sql += " and b.billType=:bt ";
         m.put("bt", BillType.ChannelAgent);
 

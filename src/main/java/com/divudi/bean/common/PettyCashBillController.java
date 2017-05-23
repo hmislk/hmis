@@ -135,10 +135,12 @@ public class PettyCashBillController implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.billType= :btp "
                 + " and b.createdAt > :fd "
-                + " and upper(b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
+                + " and b.invoiceNumber=:inv ";
+//                + " and upper(b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
         HashMap h = new HashMap();
         h.put("btp", BillType.PettyCash);
         h.put("fd", fd);
+        h.put("inv", inv);
         System.out.println("h = " + h);
         System.out.println("sql = " + sql);
         List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
@@ -151,15 +153,32 @@ public class PettyCashBillController implements Serializable {
         return false;
     }
 
+    public void checkInvoiceNumber() {
+        System.out.println("createInvoiceNumberSuffix() = " + createInvoiceNumberSuffix());
+    }
+
     private String createInvoiceNumberSuffix() {
 
         Calendar c = Calendar.getInstance();
+        System.out.println("c.getTime() = " + c.getTime());
         int y = c.get(Calendar.YEAR);
-        String s1 = y + "";
-        String s2 = y + 1 + "";
+        System.out.println("y = " + y);
+        int m = c.get(Calendar.MONTH);
+        System.out.println("m = " + m);
+        String s1;
+        String s2;
+        if (m < 3) {
+            s1 = Integer.toString(y - 1);
+            s2 = Integer.toString(y);
+
+        } else {
+            s1 = Integer.toString(y);
+            s2 = Integer.toString(y + 1);
+
+        }
         String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
         System.out.println("s = " + s);
-
+        
         return s;
     }
 
@@ -388,6 +407,5 @@ public class PettyCashBillController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }

@@ -36,6 +36,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
@@ -90,6 +91,8 @@ public class PharmacyController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private AmpFacade ampFacade;
+    @EJB
+    ItemFacade itemFacade;
     ///////////
     private Item pharmacyItem;
     private Date fromDate;
@@ -137,6 +140,24 @@ public class PharmacyController implements Serializable {
                 + " order by i.stock desc";
         items = getStockFacade().findBySQL(sql, m, 30);
 
+        return items;
+    }
+    
+    public List<Item> completeAllStockItems(String qry) {
+        List<Item> items;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        double d = 0.0;
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select distinct(i.itemBatch.item) from Stock i where i.department=:d and "
+                + " (upper(i.itemBatch.item.name) like :n  or "
+                + " upper(i.itemBatch.item.code) like :n  or  "
+                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " and i.stock>0 "
+                + " order by i.itemBatch.item.name ";
+        items = getItemFacade().findBySQL(sql, m);
+        System.out.println("items.size() = " + items.size());
         return items;
     }
 
@@ -1935,6 +1956,14 @@ public class PharmacyController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
     }
     
 }

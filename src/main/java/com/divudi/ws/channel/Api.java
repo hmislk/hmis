@@ -16,6 +16,7 @@ import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
@@ -42,10 +43,12 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -108,6 +111,8 @@ public class Api {
     private BillNumberGenerator billNumberBean;
     @EJB
     private ServiceSessionBean serviceSessionBean;
+    @EJB
+    FinalVariables finalVariables;
 
     @Inject
     private BillBeanController billBeanController;
@@ -146,7 +151,7 @@ public class Api {
     @Produces("application/json")
     public String getDoctors() {
 
-        List<Object[]> consultants = doctorsList(null);
+        List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         if (!consultants.isEmpty()) {
@@ -181,7 +186,7 @@ public class Api {
         JSONObject jSONObjectOut = new JSONObject();
         try {
 //            Long d_id = Long.parseLong(doc_id);
-            List<Object[]> consultants = doctorsList(doc_code);
+            List<Object[]> consultants = doctorsList(doc_code, null);
             if (!consultants.isEmpty()) {
                 for (Object[] con : consultants) {
                     JSONObject jSONObject = new JSONObject();
@@ -230,7 +235,7 @@ public class Api {
             List<ServiceSession> sessions = sessionsList(doc_code, null, null);
             if (!sessions.isEmpty()) {
                 for (ServiceSession s : sessions) {
-                    object=new JSONObject();
+                    object = new JSONObject();
                     object.put("session_id", s.getId());
                     object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
                     object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
@@ -239,8 +244,9 @@ public class Api {
                     object.put("session_is_refundable", s.isRefundable());
                     object.put("session_duration", s.getDuration());
                     object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()));
+                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
@@ -314,6 +320,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
         Long ar_no = Long.parseLong(agent_reference_no);
+        URLDecoder decoder = new URLDecoder();
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
@@ -322,6 +329,8 @@ public class Api {
                 jSONObjectOut.put("make_booking", s);
                 jSONObjectOut.put("error", "1");
                 jSONObjectOut.put("error_description", "No Data.");
+                json = jSONObjectOut.toString();
+                return json;
             }
             ServiceSession ss = serviceSessionFacade.find(ss_id);
             if (ss != null) {
@@ -334,14 +343,14 @@ public class Api {
                 ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
                 ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
             } else {
-                jSONObjectOut.put("make_booking", s);
+                jSONObjectOut.put("make_booking", "Invalid Session Id");
                 jSONObjectOut.put("error", "1");
                 jSONObjectOut.put("error_description", "No Data.");
                 return jSONObjectOut.toString();
             }
             System.out.println("ss = " + ss);
 
-            Bill b = saveBilledBill(ss, name, phone, doc_code, a_id, ar_no);
+            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
             System.out.println("b = " + b);
 
             bill = billDetails(b.getId());
@@ -349,6 +358,7 @@ public class Api {
             jSONObjectOut.put("error", "0");
             jSONObjectOut.put("error_description", "");
         } catch (Exception e) {
+            e.printStackTrace();
             jSONObjectOut.put("make_booking", bill);
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
@@ -429,8 +439,193 @@ public class Api {
         return json;
     }
 
+    @GET
+    @Path("/specility/")
+    @Produces("application/json")
+    public String getAllSpecilities() {
+        List<Object[]> specilities = specilityList();
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+        if (!specilities.isEmpty()) {
+            for (Object[] con : specilities) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("Spec_id", con[0]);
+                jSONObject.put("Spec_name", con[1]);
+                array.put(jSONObject);
+            }
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
+        } else {
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/docs/")
+    @Produces("application/json")
+    public String getAllDoctors() {
+        List<Object[]> consultants = doctorsList(null, null);
+        JSONArray array = new JSONArray();
+        if (!consultants.isEmpty()) {
+            for (Object[] con : consultants) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("doc_id", con[0]);
+                jSONObject.put("doc_name", con[1]);
+                jSONObject.put("doc_specility", con[2]);
+                jSONObject.put("doc_code", con[3]);
+                array.put(jSONObject);
+            }
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
+        } else {
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+    
+    @GET
+    @Path("/doc/{spec_id}/")
+    @Produces("application/json")
+    public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
+        long sp_id = Long.parseLong(spec_id);
+        List<Object[]> consultants = doctorsList(null, sp_id);
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+        if (!consultants.isEmpty()) {
+            for (Object[] con : consultants) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("doc_id", con[0]);
+                jSONObject.put("doc_name", con[1]);
+                jSONObject.put("doc_specility", con[2]);
+                jSONObject.put("doc_code", con[3]);
+                array.put(jSONObject);
+            }
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "0");
+//            jSONObjectOut.put("error_description", "");
+
+        } else {
+//            jSONObjectOut.put("specilities", array);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "No Data.");
+        }
+
+        String json = array.toString();
+//        String json = jSONObjectOut.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/ses/{doc_code}")
+    @Produces("application/json")
+    public String getDocSessions(@PathParam("doc_code") String doc_code) {
+
+        JSONObject object = new JSONObject();
+        JSONArray array = new JSONArray();
+        JSONArray array1 = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+
+        try {
+            List<ServiceSession> sessions = sessionsList(doc_code, null, null);
+            if (!sessions.isEmpty()) {
+                for (ServiceSession s : sessions) {
+                    object = new JSONObject();
+                    object.put("session_id", s.getId());
+                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
+                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
+                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
+                    object.put("session_max_no", s.getMaxNo());
+                    object.put("session_is_refundable", s.isRefundable());
+                    object.put("session_duration", s.getDuration());
+                    object.put("session_room_no", s.getRoomNo());
+                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
+                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_is_leaved", s.isDeactivated());
+                    array.put(object);
+//            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
+                }
+                jSONObjectOut.put("session", array);
+                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
+                jSONObjectOut.put("error", "0");
+                jSONObjectOut.put("error_description", "");
+            } else {
+                jSONObjectOut.put("session", sessions);
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "No Data.");
+            }
+        } catch (Exception e) {
+            jSONObjectOut.put("session", object);
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "Invalid Argument.");
+        }
+
+        String json = array.toString();
+
+        return json;
+    }
+
+    @GET
+    @Path("/apps/{ses_id}/")
+    @Produces("application/json")
+    public String getBillSessions(@PathParam("ses_id") String ses_id) {
+
+        long sp_id = Long.parseLong(ses_id);
+        List<BillSession> billSessions = fillBillSessions(sp_id);
+        JSONArray array = new JSONArray();
+        if (!billSessions.isEmpty()) {
+            for (BillSession bs : billSessions) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("app_no", bs.getSerialNo());
+                jSONObject.put("patient_name", bs.getBill().getPatient().getPerson().getNameWithTitle());
+                if (bs.getBill().getPaidAmount() == 0) {
+                    jSONObject.put("app_type", "Credit - " + bs.getBill().getPaymentMethod());
+                } else {
+                    jSONObject.put("app_type", "Paid - " + bs.getBill().getPaymentMethod());
+                }
+                if (bs.getBill().isCancelled()) {
+                    jSONObject.put("app_status", "Canceled");
+                } else if (bs.getBill().isRefunded()) {
+                    jSONObject.put("app_status", "Refunded");
+                } else {
+                    jSONObject.put("app_status", "");
+                }
+                if (bs.getBill().getPaymentMethod()==PaymentMethod.Staff) {
+                    jSONObject.put("staff_agent_status", bs.getBill().getToStaff().getCode());
+                }else if(bs.getBill().getPaymentMethod()==PaymentMethod.Agent){
+                    jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getInstitutionCode());
+                }else{
+                    jSONObject.put("staff_agent_status", "");
+                }
+                
+                array.put(jSONObject);
+            }
+        }
+        String json = array.toString();
+
+        return json;
+    }
+
     //----------------------------------------------------
-    public List<Object[]> doctorsList(String doc_code) {
+    public List<Object[]> doctorsList(String doc_code, Long spec_id) {
 
         List<Object[]> consultants = new ArrayList<>();
         String sql;
@@ -453,8 +648,12 @@ public class Api {
 //            sql += " and pi.staff.id=:doc_id ";
 //            m.put("doc_id", doc_id);
 //        }
+        if (spec_id != null) {
+            sql += " and pi.staff.speciality.id=:spec_id ";
+            m.put("spec_id", spec_id);
+        }
 
-        sql += " order by pi.staff.person.name ";
+        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
 
         m.put("typ", PersonInstitutionType.Channelling);
         consultants = getStaffFacade().findAggregates(sql, m);
@@ -464,6 +663,29 @@ public class Api {
         System.out.println("consultants.size() = " + consultants.size());
 
         return consultants;
+    }
+
+    public List<BillSession> fillBillSessions(long ses_id) {
+
+        HashMap m = new HashMap();
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession.id=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                //                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        m.put("bt", bts);
+        m.put("class", BilledBill.class);
+//        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
+        m.put("ss", ses_id);
+
+        return getBillSessionFacade().findBySQL(sql, m);
+
     }
 
     public List<Object[]> sessionsListObject(String doc_code, Date fromDate, Date toDate) {
@@ -540,11 +762,27 @@ public class Api {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
-        
+        List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
             System.out.println("session.getId() = " + session.getId());
+            System.out.println("session.getId() = " + session.getStartingTime());
+            Calendar date = Calendar.getInstance();
+            date.setTime(session.getSessionDate());
+            System.out.println("date.getTime() = " + date.getTime());
+            Calendar time = Calendar.getInstance();
+            time.setTime(session.getStartingTime());
+            System.out.println("time.getTime() = " + time.getTime());
+            time.set(Calendar.YEAR, date.get(Calendar.YEAR));
+            time.set(Calendar.MONTH, date.get(Calendar.MONTH));
+            time.set(Calendar.DATE, date.get(Calendar.DATE));
+            System.out.println("time.getTime() = " + time.getTime());
+            if (time.getTime().before(new Date())) {
+                reList.add(session);
+            }
         }
-
+        System.out.println("reList.size() = " + reList.size());
+        sessions.removeAll(reList);
+        System.out.println("sessions.size() = " + sessions.size());
 
 //        List<Object[]> objects = new ArrayList<>();
 //        for (ServiceSession s : sessions) {
@@ -565,17 +803,16 @@ public class Api {
 //            }
 //        }
 //        System.out.println("objects.size() = " + objects.size());
-
         return sessions;
     }
 
     public JSONArray sessionsDatesList(String doc_code, Date fromDate, Date toDate) {
         JSONArray array = new JSONArray();
-        List<Object> sessions = new ArrayList<>();
+        List<ServiceSession> sessions = new ArrayList<>();
         String sql;
         Map m = new HashMap();
 
-        sql = "Select distinct(s.sessionDate) "
+        sql = "Select distinct(s) "
                 + " From ServiceSession s where s.retired=false "
                 + " and s.staff.code=:doc_code "
                 + " and s.originatingSession is not null "
@@ -594,17 +831,61 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getStaffFacade().findObjects(sql, m);
+        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        List<ServiceSession> reList = new ArrayList<>();
+        for (ServiceSession session : sessions) {
+            System.out.println("session.getId() = " + session.getId());
+            System.out.println("session.getId() = " + session.getStartingTime());
+            Calendar date = Calendar.getInstance();
+            date.setTime(session.getSessionDate());
+            System.out.println("date.getTime() = " + date.getTime());
+            Calendar time = Calendar.getInstance();
+            time.setTime(session.getStartingTime());
+            System.out.println("time.getTime() = " + time.getTime());
+            time.set(Calendar.YEAR, date.get(Calendar.YEAR));
+            time.set(Calendar.MONTH, date.get(Calendar.MONTH));
+            time.set(Calendar.DATE, date.get(Calendar.DATE));
+            System.out.println("time.getTime() = " + time.getTime());
+            if (time.getTime().before(new Date())) {
+                reList.add(session);
+            }
+        }
+        System.out.println("reList.size() = " + reList.size());
+        sessions.removeAll(reList);
+        System.out.println("sessions.size() = " + sessions.size());
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("sessions.size() = " + sessions.size());
 
-        for (Object s : sessions) {
-            Date d = (Date) s;
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            array.put(df.format(d));
+        Date beforeDate = null;
+        for (ServiceSession s : sessions) {
+            System.out.println("s = " + s.getSessionAt());
+            System.out.println("beforeDate = " + beforeDate);
+            if (beforeDate == null) {
+                System.err.println("add Null");
+                Date d = (Date) s.getSessionDate();
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                array.put(df.format(d));
+                beforeDate = s.getSessionDate();
+            } else {
+                System.out.println("beforeDate.getTime() = " + beforeDate.getTime());
+                System.out.println("s.getSessionDate().getTime() = " + s.getSessionDate().getTime());
+                if (beforeDate.getTime() != s.getSessionDate().getTime()) {
+                    System.err.println("add");
+                    Date d = (Date) s.getSessionDate();
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                    array.put(df.format(d));
+                }
+                beforeDate = s.getSessionDate();
+            }
         }
+//        for (Object s : sessions) {
+//            Date d = (Date) s;
+//            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+//            array.put(df.format(d));
+//        }
 
         return array;
     }
@@ -639,7 +920,9 @@ public class Api {
                 map.put("bill_session_date", getCommonController().getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
                 map.put("bill_session_start_time", getCommonController().getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
                 map.put("bill_created_at", getCommonController().getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
-                map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+                map.put("bill_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", getCommonController().getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", getCommonController().getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -746,6 +1029,34 @@ public class Api {
         return obj;
     }
 
+    double fetchLocalFeeVat(long id, PaymentMethod paymentMethod, boolean forign) {
+        String jpql;
+        Map m = new HashMap();
+        FeeType[] fts = {FeeType.Staff};
+        List<FeeType> feeTypes = Arrays.asList(fts);
+        if (forign) {
+            jpql = "Select sum(f.ffee)";
+        } else {
+            jpql = "Select sum(f.fee)";
+        }
+
+        jpql += " from ItemFee f "
+                + " where f.retired=false "
+                + " and f.item.id=:ses "
+                + " and f.feeType in :fts ";
+        m.put("fts", feeTypes);
+
+        m.put("ses", serviceSessionFacade.find(id).getOriginatingSession().getId());
+
+        Double obj = ItemFeeFacade.findDoubleByJpql(jpql, m);
+        System.out.println("obj = " + obj);
+        if (obj == null) {
+            return 0;
+        }
+
+        return obj * 0.15;
+    }
+
     String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
         String s = "";
         if (name == null || "".equals(name)) {
@@ -754,6 +1065,10 @@ public class Api {
         }
         if (phone == null || "".equals(phone)) {
             s = "Please Enter Phone Number";
+            return s;
+        }
+        if (phone.length() != 10) {
+            s = "Please Enter Phone Number Length";
             return s;
         }
         if ("".equals(doc)) {
@@ -766,6 +1081,11 @@ public class Api {
         }
         if ("".equals(agent)) {
             s = "Please Enter Agency";
+            return s;
+        }
+        Institution institution = institutionFacade.find(agent);
+        if (institution == null) {
+            s = "Incorrect Agency Id";
             return s;
         }
         if ("".equals(agent_ref)) {
@@ -808,7 +1128,7 @@ public class Api {
         savingBill.setBillFees(savingBillFees);
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
-            updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
+            updateBallance(savingBill.getCreditCompany(), 0 - (savingBill.getNetTotal() + savingBill.getVat()), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
             savingBill.setBalance(0.0);
             savingBillSession.setPaidBillSession(savingBillSession);
         } else if (savingBill.getBillType() == BillType.ChannelCash) {
@@ -839,7 +1159,7 @@ public class Api {
         Patient p = new Patient();
         p.setPerson(new Person());
         p.getPerson().setName(name);
-        p.getPerson().setPhone(phone);
+        p.getPerson().setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
         getPersonFacade().create(p.getPerson());
         bill.setPatient(p);
         getPatientFacade().create(p);
@@ -938,6 +1258,9 @@ public class Api {
     private List<BillFee> createBillFee(Bill bill, BillItem billItem, ServiceSession ss) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
+        double tmpTotalNet = 0;
+        double tmpTotalVat = 0;
+        double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
         System.out.println("ss.getOriginatingSession().getItemFees() = " + ss.getOriginatingSession().getItemFees().size());
         for (ItemFee f : ss.getOriginatingSession().getItemFees()) {
@@ -979,26 +1302,39 @@ public class Api {
             }
 
             bf.setPatient(bill.getPatient());
+            bf.setFeeValue(f.getFee());
 
             if (f.getFeeType() == FeeType.Staff) {
                 bf.setStaff(f.getStaff());
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(bf.getFeeValue() * 0.15);
+                bf.setFeeVatPlusValue(bf.getFeeValue() * 1.15);
+                bf.setFeeDiscount(0.0);
+            } else {
+                bf.setFeeGrossValue(bf.getFeeValue());
+                bf.setFeeVat(0.0);
+                bf.setFeeVatPlusValue(bf.getFeeValue());
+                bf.setFeeDiscount(0.0);
             }
 
             if (f.getFeeType() == FeeType.OwnInstitution) {
                 bf.setInstitution(bill.getInstitution());
             }
-            bf.setFeeValue(f.getFee());
 
-            bf.setFeeGrossValue(bf.getFeeValue());
-            bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-
-            tmpTotal += bf.getFeeValue();
+            tmpTotal += bf.getFeeGrossValue();
+            tmpTotalVat += bf.getFeeVat();
+            tmpTotalVatPlusNet += bf.getFeeVatPlusValue();
+            tmpTotalNet += bf.getFeeValue();
+            tmpDiscount += bf.getFeeDiscount();
 
             billFeeFacade.create(bf);
             billFeeList.add(bf);
         }
+        bill.setDiscount(tmpDiscount);
+        bill.setNetTotal(tmpTotalNet);
         bill.setTotal(tmpTotal);
-        bill.setNetTotal(tmpTotal);
+        bill.setVat(tmpTotalVat);
+        bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
         System.out.println("tmpDiscount = " + tmpDiscount);
         System.out.println("tmpTotal = " + tmpTotal);
         System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
@@ -1006,7 +1342,10 @@ public class Api {
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
-        billItem.setNetValue(tmpTotal);
+        billItem.setGrossValue(tmpTotal);
+        billItem.setNetValue(tmpTotalNet);
+        billItem.setVat(tmpTotalVat);
+        billItem.setVatPlusNetValue(tmpTotalVatPlusNet);
         System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
         getBillItemFacade().edit(billItem);
 
@@ -1221,6 +1560,26 @@ public class Api {
         ins.setBallance(ins.getBallance() + transactionValue);
         getInstitutionFacade().edit(ins);
 
+    }
+
+    public List<Object[]> specilityList() {
+
+        List<Object[]> specilities = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select c.id,c.name "
+                + " from DoctorSpeciality c "
+                + " where c.retired=false "
+                + " order by c.name";
+
+        specilities = getStaffFacade().findAggregates(sql);
+
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("consultants.size() = " + specilities.size());
+
+        return specilities;
     }
 
     /**

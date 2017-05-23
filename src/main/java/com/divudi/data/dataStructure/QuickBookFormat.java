@@ -85,7 +85,23 @@ public class QuickBookFormat {
         }
         this.amount = amount;
         this.qbClass = qbClass;
-        this.memo=invItem;// invItem name limit for 30 characters
+        this.memo = invItem;// invItem name limit for 30 characters
+    }
+
+    public QuickBookFormat(String accnt, String name, String invItem, double amount, String qbClass, String aa) {
+        this.rowType = "SPL";
+        this.trnsType = "INVOICE";
+        this.accnt = accnt;
+        this.name = name;
+        this.invItemType = "SERV";
+        if (invItem.length() > 30) {
+            this.invItem = accnt + ":" + invItem.substring(0, 30);
+        } else {
+            this.invItem = accnt + ":" + invItem;
+        }
+        this.amount = amount;
+        this.qbClass = qbClass;
+        this.memo = invItem;// invItem name limit for 30 characters
     }
 
     public String getRowType() {

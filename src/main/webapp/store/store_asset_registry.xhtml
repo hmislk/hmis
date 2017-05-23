@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
       xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
@@ -18,8 +19,12 @@
                     <p:panel header="Department Stock Report by Batch" >
 
                         <h:panelGrid columns="2" >
+                            <h:outputLabel value="Institution" ></h:outputLabel>
+                            <au:institution value="#{storeReportsStock.institution}" />
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
+                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="Item"/>                             
                             <p:autoComplete   value="#{storeReportsStock.item}" 
@@ -36,10 +41,23 @@
                                     <h:outputLabel value="#{vt.departmentType}"></h:outputLabel>
                                 </p:column>
                             </p:autoComplete>
+                            <h:outputLabel value="Tag Serial No"/>
+                            <p:inputText value="#{storeReportsStock.reportKeyWord.address}" autocomplete="off" />
+                            <h:outputLabel value="Consider Date Range"/>
+                            <p:selectBooleanCheckbox value="#{storeReportsStock.reportKeyWord.bool1}" >
+                                <f:ajax render="fdate tdate" event="change" execute="@this" />
+                            </p:selectBooleanCheckbox>
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar id="fdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
+                                        value="#{storeReportsStock.fromDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="tdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
+                                        value="#{storeReportsStock.toDate}" pattern="yyyy MM dd hh:mm:ss a" />
                         </h:panelGrid>
                         <h:panelGrid columns="4" > 
                             <p:spacer width="80" height="1"/>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{storeReportsStock.fillDepartmentInventryStocks()}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process" 
+                                             actionListener="#{storeReportsStock.fillDepartmentInventryStocks()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -61,12 +79,35 @@
                                 <p:column>
                                     <h:outputLabel value="#{ii+1}" />
                                 </p:column>
+                                
+                                <p:column headerText="Tag Serial No" sortBy="#{i.itemBatch.batchNo}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Tag Serial No"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
+                                    </h:outputLabel>
+                                </p:column>
 
                                 <p:column headerText="Item">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Item">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.parentBillItem.item.name}" style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Inventry No"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.code}"  >                                        
+                                    </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Quantity" style="text-align: right;">
@@ -83,14 +124,6 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
                                         <f:convertDateTime pattern="MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Batch No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Batch No"/>    
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.batchNo}"  >                                        
                                     </h:outputLabel>
                                 </p:column>
 
@@ -112,21 +145,36 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Retail Price" style="text-align: right;">
+                                <p:column style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Retail Price"/>                                     
+                                        <h:outputLabel value="GRN No"/>                                     
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.deptId}" />
+                                </p:column>
+<!--                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="GRN No"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.insId}" />
+                                </p:column>-->
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Invoice No"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.invoiceNumber}" />
+                                </p:column>
+                                <p:column style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Current loction"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.department.name}" />
                                 </p:column>
 
-                                <p:column headerText="Retail Sale Value" style="text-align: right;">
+                                <p:column style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Retail Sale Value"/>                                     
+                                        <h:outputLabel value="Purchase Dept."/>                                     
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.department.name}"  >
                                     </h:outputLabel>
                                 </p:column>
 

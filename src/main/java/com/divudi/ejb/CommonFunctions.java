@@ -6,6 +6,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import javax.ejb.Singleton;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
+import org.joda.time.Months;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
+import org.joda.time.Years;
 
 /**
  *
@@ -429,6 +435,41 @@ public class CommonFunctions {
         double mul = Math.pow(10, decimalPlaces);
         double roundOff = (double) Math.round(num * mul) / mul;
         return roundOff;
+    }
+
+    public YearMonthDay guessAge(Date dofb) {
+        YearMonthDay yearMonthDay=new YearMonthDay();
+        
+//        Calendar cal=Calendar.getInstance();
+//        cal.setTime(dob);
+//        System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.YEAR));
+//        System.out.println("cal.get(Calendar.MONTH) = " + cal.get(Calendar.MONTH)+1);
+//        System.out.println("cal.get(Calendar.DATE) = " + cal.get(Calendar.DATE));
+//        LocalDate birthDay=new LocalDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DATE));
+//        LocalDate now=new LocalDate();
+        
+        LocalDate dob = new LocalDate(dofb);
+        LocalDate date = new LocalDate(new Date());
+
+        Period period = new Period(dob, date, PeriodType.yearMonthDay());
+        int ageYears = period.getYears();
+        System.out.println("ageYears = " + ageYears);
+        int ageMonths = period.getMonths();
+        System.out.println("ageMonths = " + ageMonths);
+        int ageDays = period.getDays();
+        System.out.println("ageDays = " + ageDays);
+        
+//        Years years=Years.yearsBetween(birthDay, now);
+//        Months months=Months.monthsBetween(birthDay, now);
+//        Days days=Days.daysBetween(birthDay, now);
+//        System.out.println("years.getYears() = " + years.getYears());
+        yearMonthDay.setYear(Integer.toString(ageYears));
+//        System.out.println("months.getMonths() = " + months.getMonths());
+        yearMonthDay.setMonth(Integer.toString(ageMonths));
+//        System.out.println("days.getDays() = " + days.getDays());
+        yearMonthDay.setDay(Integer.toString(ageDays));
+        
+        return yearMonthDay;
     }
 
 }

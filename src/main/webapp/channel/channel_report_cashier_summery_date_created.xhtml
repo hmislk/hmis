@@ -27,9 +27,9 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
                         </p:calendar>
-<!--                        <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
-                        </p:calendar>-->
+                        <!--                        <h:outputLabel value="To Date"/>
+                                                <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
+                                                </p:calendar>-->
                         <h:outputLabel value="Doc Fee Only"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.withDocPayment}" >
                             <p:ajax event="change" process="@this" update="pan1" listener="#{channelReportTempController.listnerDoc()}" />
@@ -43,6 +43,11 @@
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{channelReportTempController.reportKeyWord.webUser}" ></p:autoComplete>
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                            <f:selectItem itemLabel="Please Select a Type"/>
+                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                        </p:selectOneMenu>
                     </h:panelGrid> 
                     <h:panelGrid columns="3">
                         <p:commandButton action="#{channelReportTempController.createUsercollectionByDateCreated()}" value="Process" ajax="false" />
