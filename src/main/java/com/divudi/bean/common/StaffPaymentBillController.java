@@ -15,6 +15,7 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Payment;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -255,8 +256,14 @@ public class StaffPaymentBillController implements Serializable {
             dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
             
             List<BillFee> removeingBillFees = new ArrayList<>();
-            for (BillFee bf : billFees) {
-                sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            for (BillFee bf : dueBillFees) {
+                h = new HashMap();
+                sql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false "
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class"
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+                h.put("class", RefundBill.class);
                 BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
 
                 if (rbi != null) {
