@@ -11,6 +11,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ItemWithFee;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -35,6 +36,7 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +80,7 @@ public class mdInwardReportController implements Serializable {
     double total = 0.0;
     List<BillFee> billfees;
     Bill bill;
+    ReportKeyWord reportKeyWord;
     ////////////////////////////////////
     @EJB
     private CommonFunctions commonFunctions;
@@ -345,15 +348,23 @@ public class mdInwardReportController implements Serializable {
         Map temMap = new HashMap();
         sql = "select b from BillItem b where "
                 + " b.bill.billType = :billType "
-                //                + " and b.bill.cancelled=false "
                 + " and b.bill.institution=:ins "
-                + " and b.patientEncounter.discharged=true "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
-
-        if (admissionType != null) {
-            sql += " and b.patientEncounter.admissionType =:ad ";
-            temMap.put("ad", admissionType);
+        
+        if (reportKeyWord.getString().equals("0")) {
+            if (admissionType != null) {
+                sql += " and b.patientEncounter.admissionType =:ad ";
+                temMap.put("ad", admissionType);
+            }
+            sql+=" and b.patientEncounter is not null ";
+        }else if(reportKeyWord.getString().equals("1")){
+            sql += " and b.referenceBill.billType=:refTp";
+            temMap.put("refTp", BillType.OpdBill);
+            
+        }else if(reportKeyWord.getString().equals("2")){
+            sql+= " and b.referenceBill.billType in :refTp ";
+            temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
         }
 
         sql += " order by b.createdAt ";
@@ -2820,6 +2831,17 @@ public class mdInwardReportController implements Serializable {
 
     public void setShowCategory(boolean showCategory) {
         this.showCategory = showCategory;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord==null) {
+            reportKeyWord=new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
     //619

@@ -286,12 +286,10 @@ public class PharmacyPreSettleController implements Serializable {
 //        }
         return false;
     }
-    
+
     private boolean errorCheckForSaleBillAraedyAddToStock() {
-        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
-        setPreBill(getBillFacade().find(getPreBill().getId()));
-        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
-        if (getPreBill().isCancelled()) {
+        Bill b = getBillFacade().find(getPreBill().getId());
+        if (b.isCancelled()) {
             return true;
         }
 
@@ -353,14 +351,14 @@ public class PharmacyPreSettleController implements Serializable {
             getBillFacade().create(getSaleReturnBill());
         }
 
-           updateSaleReturnPreBill();
+        updateSaleReturnPreBill();
     }
 
-     private void updateSaleReturnPreBill() {
+    private void updateSaleReturnPreBill() {
         getPreBill().setReferenceBill(getSaleReturnBill());
         getBillFacade().edit(getPreBill());
     }
-  
+
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
 
@@ -466,7 +464,7 @@ public class PharmacyPreSettleController implements Serializable {
         }
         getBillFacade().edit(getSaleReturnBill());
     }
-    
+
     private void saveSaleReturnBillItems(Payment p) {
         for (BillItem tbi : getPreBill().getBillItems()) {
 
@@ -492,7 +490,7 @@ public class PharmacyPreSettleController implements Serializable {
             if (ph.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
-            
+
             saveBillFee(sbi, p);
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
@@ -603,7 +601,7 @@ public class PharmacyPreSettleController implements Serializable {
 
         saveSaleReturnBill();
 //        saveSaleReturnBillItems();
-        
+
         Payment p = createPayment(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod());
         saveSaleReturnBillItems(p);
 
