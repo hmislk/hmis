@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.memberShip.PaymentSchemeController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
@@ -286,6 +287,15 @@ public class PharmacyPreSettleController implements Serializable {
         return false;
     }
 
+    private boolean errorCheckForSaleBillAraedyAddToStock() {
+        Bill b = getBillFacade().find(getPreBill().getId());
+        if (b.isCancelled()) {
+            return true;
+        }
+
+        return false;
+    }
+
     @Inject
     private BillBeanController billBean;
 
@@ -341,14 +351,14 @@ public class PharmacyPreSettleController implements Serializable {
             getBillFacade().create(getSaleReturnBill());
         }
 
-           updateSaleReturnPreBill();
+        updateSaleReturnPreBill();
     }
 
-     private void updateSaleReturnPreBill() {
+    private void updateSaleReturnPreBill() {
         getPreBill().setReferenceBill(getSaleReturnBill());
         getBillFacade().edit(getPreBill());
     }
-  
+
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
 
@@ -454,7 +464,7 @@ public class PharmacyPreSettleController implements Serializable {
         }
         getBillFacade().edit(getSaleReturnBill());
     }
-    
+
     private void saveSaleReturnBillItems(Payment p) {
         for (BillItem tbi : getPreBill().getBillItems()) {
 
@@ -480,7 +490,7 @@ public class PharmacyPreSettleController implements Serializable {
             if (ph.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
-            
+
             saveBillFee(sbi, p);
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
@@ -492,6 +502,10 @@ public class PharmacyPreSettleController implements Serializable {
     public void settleBillWithPay2() {
         editingQty = null;
         if (errorCheckForSaleBill()) {
+            return;
+        }
+        if (errorCheckForSaleBillAraedyAddToStock()) {
+            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
             return;
         }
 
@@ -587,7 +601,7 @@ public class PharmacyPreSettleController implements Serializable {
 
         saveSaleReturnBill();
 //        saveSaleReturnBillItems();
-        
+
         Payment p = createPayment(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod());
         saveSaleReturnBillItems(p);
 

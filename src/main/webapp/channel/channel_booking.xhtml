@@ -495,7 +495,7 @@
                                     <p:outputLabel value="#{f.feeType}" />
                                 </p:column>
                                 <p:column>
-                                    
+
                                     <p:inputText value="#{f.ffee}" rendered="#{channelBillController.foriegn}" />
                                     <p:inputText value="#{f.fee}" rendered="#{!channelBillController.foriegn}" />
                                 </p:column>
@@ -535,6 +535,9 @@
                                          disabled="#{channelBillController.printingBill.balance ne 0.0 or !channelBillController.settleSucessFully}">
                             <p:printer target="panelAddedBillPrint" ></p:printer>
                         </p:commandButton>
+
+                        <p:outputLabel value="Total : " />
+                        <p:outputLabel value="#{channelBillController.printingBill.netTotal+channelBillController.printingBill.vat}" style="color: red;font-size: x-large;"/>
 
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
@@ -828,7 +831,7 @@
 
                             <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
                                 <!--#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}-->
-                                
+
                                 <div>
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
                                         <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
@@ -1050,6 +1053,9 @@
                                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                             <p:printer target="panelAddedBillPrintSettle" ></p:printer>
                                         </p:commandButton>
+                                        <p:outputLabel value="Total : " />
+                                        <p:outputLabel value="#{channelBillController.printingBill.netTotal+channelBillController.printingBill.vat}" style="color: red;font-size: x-large;"/>
+
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}">
                                             <div>
                                                 <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}

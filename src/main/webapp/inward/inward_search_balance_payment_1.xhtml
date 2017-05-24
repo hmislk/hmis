@@ -18,17 +18,24 @@
                                 <h:panelGrid columns="1">
                                     <h:outputLabel value="Balance Payment Search"/>
                                 </h:panelGrid>
-                                <h:panelGrid columns="6">
+                                <h:panelGrid columns="2" id="pan">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
-                                    <p:outputLabel value="Admission Type"/>
-                                    <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
+                                    <p:outputLabel value="Payments For : "/>
+                                    <p:selectOneRadio value="#{mdInwardReportController.reportKeyWord.string}" >
+                                        <f:selectItem itemLabel="Inward" itemValue="0" />
+                                        <f:selectItem itemLabel="OPD" itemValue="1" />
+                                        <f:selectItem itemLabel="Pharmacy" itemValue="2" />
+                                        <f:ajax event="change" execute="@this" render="pan" />
+                                    </p:selectOneRadio>
+                                    <p:outputLabel value="Admission Type" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}"/>
+                                    <p:selectOneMenu value="#{mdInwardReportController.admissionType}" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                         <f:selectItem itemLabel="All Admission Type"/>
                                         <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                         itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
@@ -61,21 +68,21 @@
                                     </p:outputLabel>
                                     <p:outputLabel value=" All Balance Payment Bills" />
                                 </f:facet>
-                                <p:column headerText="Bht No" >
+                                <p:column headerText="Bht No" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bht No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Final Bill No"  >
+                                <p:column headerText="Final Bill No"  rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Final Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{bb.patientEncounter.finalBill.insId}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Client" >
+                                <p:column headerText="Client" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Client"/>
                                     </f:facet>
@@ -84,7 +91,7 @@
 
                                 <p:column headerText="Date" >
                                     <f:facet name="header">
-                                        <h:outputLabel value="Date"/>
+                                        <h:outputLabel value="Payment Date"/>
                                     </f:facet>
                                     <h:outputLabel value="#{bb.createdAt}" >
                                         <f:convertDateTime pattern="dd MMM yy"/>
@@ -98,7 +105,39 @@
                                         </h:outputLabel>
                                     </h:panelGroup>                             
                                 </p:column>
+                                
+                                <p:column headerText="Date" rendered="#{mdInwardReportController.reportKeyWord.string ne '0'}" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bb.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd MMM yy"/>
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Date" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Date"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bb.patientEncounter.dateOfDischarge}" >
+                                        <f:convertDateTime pattern="dd MMM yy"/>
+                                    </h:outputLabel>
+                                </p:column>
 
+                                <p:column headerText="Ref Bill No" rendered="#{mdInwardReportController.reportKeyWord.string eq '1'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Ref Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bb.referenceBill.insId}" />                                      
+                                </p:column>
+                                
+                                <p:column headerText="Ref Bill No" rendered="#{mdInwardReportController.reportKeyWord.string eq '2'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Ref Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bb.referenceBill.deptId}" />                                      
+                                </p:column>
+                                
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>

@@ -1964,6 +1964,82 @@ public class ChannelReportController implements Serializable {
         return d;
     }
 
+    public double countBillByBillTypeAndFeeType(Bill bill, FeeType ft, BillType bt, boolean sessoinDate, boolean paid, boolean onlineAgent) {
+
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select count(distinct(bf.bill)) from BillFee  bf where "
+                + " bf.bill.retired=false "
+                + " and bf.bill.billType=:bt "
+                + " and type(bf.bill)=:class "
+                + " and bf.fee.feeType =:ft "
+                + " and bf.feeValue>0 ";
+
+        if (bt == BillType.ChannelAgent) {
+            if (onlineAgent) {
+                sql += " and bf.bill.creditCompany.id=20385287 ";
+            } else {
+                sql += " and bf.bill.creditCompany.id!=20385287 ";
+            }
+        }
+
+        if (bill.getClass().equals(CancelledBill.class)) {
+            sql += " and bf.bill.cancelled=true";
+            System.err.println("cancel");
+        }
+        if (bill.getClass().equals(RefundBill.class)) {
+            sql += " and bf.bill.refunded=true";
+            System.err.println("Refund");
+        }
+
+        if (ft == FeeType.OwnInstitution) {
+            sql += " and bf.fee.name =:fn ";
+            m.put("fn", "Hospital Fee");
+        }
+
+        if (paid) {
+            sql += " and bf.bill.paidBill is not null "
+                    + " and bf.bill.paidAmount!=0 ";
+        }
+        if (sessoinDate) {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+        } else {
+            if (bill.getClass().equals(BilledBill.class)) {
+                sql += " and bf.bill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(CancelledBill.class)) {
+                sql += " and bf.bill.cancelledBill.createdAt between :fd and :td ";
+            }
+            if (bill.getClass().equals(RefundBill.class)) {
+                sql += " and bf.bill.refundedBill.createdAt between :fd and :td ";
+            }
+
+        }
+
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        m.put("class", BilledBill.class);
+        m.put("ft", ft);
+        m.put("bt", bt);
+//        m.put("fn", "Scan Fee");
+
+        double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
+
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
+        return d;
+    }
+
     public double hospitalTotalBillByBillTypeAndFeeType(Bill bill, FeeType fts, BillType bt, boolean sessoinDate, boolean paid) {
 
         String sql;
@@ -3531,17 +3607,33 @@ public class ChannelReportController implements Serializable {
             BookingCountSummryRow row = new BookingCountSummryRow();
             if (ft == FeeType.Service) {
                 row.setBookingType("Scan " + bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, false));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, false));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, false));
+                bookingCountSummryRows.add(row);
+                if (bt == BillType.ChannelAgent) {
+                    row = new BookingCountSummryRow();
+                    row.setBookingType("Scan Online " + bt.getLabel());
+                    row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, true));
+                    row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, true));
+                    row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, true));
+                    bookingCountSummryRows.add(row);
+                }
             } else {
                 row.setBookingType(bt.getLabel());
-                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid));
-                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid));
-                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid));
+                row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, false));
+                row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, false));
+                row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, false));
+                bookingCountSummryRows.add(row);
+                if (bt == BillType.ChannelAgent) {
+                    row = new BookingCountSummryRow();
+                    row.setBookingType("Online " + bt.getLabel());
+                    row.setBilledCount(countBillByBillTypeAndFeeType(new BilledBill(), ft, bt, sessionDate, paid, true));
+                    row.setCancelledCount(countBillByBillTypeAndFeeType(new CancelledBill(), ft, bt, sessionDate, paid, true));
+                    row.setRefundCount(countBillByBillTypeAndFeeType(new RefundBill(), ft, bt, sessionDate, paid, true));
+                    bookingCountSummryRows.add(row);
+                }
             }
-
-            bookingCountSummryRows.add(row);
 
         }
     }

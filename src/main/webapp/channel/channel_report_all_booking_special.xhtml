@@ -44,7 +44,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl tbl1 tbl2" fileName="Channel_Appointment_list"  />
+                            <pe:exporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Channel_Appointment_list"  />
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -167,7 +167,7 @@
                                 <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                             </f:facet>
                         </p:dataTable>
-                        <p:dataTable value="#{channelReportController.channelBillsCancelled}" var="b" id="tbl1" rendered="#{!channelReportController.summery}">
+                        <p:dataTable value="#{channelReportController.channelBillsCancelled}" var="b" id="tbl2" rendered="#{!channelReportController.summery}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary(Cancel)" />
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
@@ -273,7 +273,7 @@
                                 <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                             </f:facet>
                         </p:dataTable>
-                        <p:dataTable value="#{channelReportController.channelBillsRefunded}" var="b" id="tbl2" rendered="#{!channelReportController.summery}">
+                        <p:dataTable value="#{channelReportController.channelBillsRefunded}" var="b" id="tbl3" rendered="#{!channelReportController.summery}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Bill Summary(Refund)" />
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>

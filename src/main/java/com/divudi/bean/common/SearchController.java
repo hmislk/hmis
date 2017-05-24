@@ -1607,6 +1607,45 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Search/(/faces/pharmacy/pharmacy_search.xhtml)");
     }
+    
+    public void createGRNRegistory() {
+        if (getReportKeyWord().getDepartment()==null) {
+            JsfUtil.addErrorMessage("Select Departmrnt.");
+            return ;
+        }
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select b from Bill b where b.retired=false and "
+                + " (type(b)=:class1 or type(b)=:class2) "
+                + " and b.department=:dep and b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getReportKeyWord().getInstitution() != null ) {
+            sql += " and  (upper(b.fromInstitution.name) like :frmIns )";
+            m.put("frmIns", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getItem() != null) {
+            sql += " and b.id in (select bItem.bill.id  "
+                    + " from BillItem bItem where bItem.retired=false "
+                    + " and bItem.item.name=:itm ))";
+            m.put("itm", getReportKeyWord().getItem());
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        m.put("class1", BilledBill.class);
+        m.put("class2", PreBill.class);
+        m.put("billType", BillType.PharmacyGrnBill);
+        m.put("dep",getReportKeyWord().getDepartment());
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        //temMap.put("dep", getSessionController().getDepartment());
+        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        //     //System.err.println("SIZE : " + lst.size());
+
+    }
 
     public void createTableByBillTypeAllDepartment() {
 
@@ -4250,8 +4289,14 @@ public class SearchController implements Serializable {
         Date toDate = null;
 
         for (Bill b : getSelectedBills()) {
+            System.out.println("b.getReferenceBill() = " + b.getReferenceBill());
+            b = getBillFacade().find(b.getId());
+            System.out.println("b.getReferenceBill() = " + b.getReferenceBill());
+            if (b.getReferenceBill() != null) {
+                JsfUtil.addErrorMessage("This Bill " + b.getDeptId() + " alrady Paid can't add to stock.");
+                continue;
+            }
             if (b.checkActiveCashPreBill()) {
-
                 continue;
             }
 
@@ -6766,7 +6811,7 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Contact System Development Team.You are trying to send more than 10,000 sms.");
             return;
         }
-        if (smsText.equals("")||smsText==null) {
+        if (smsText.equals("") || smsText == null) {
             JsfUtil.addErrorMessage("Enter Message");
             return;
         }

@@ -79,6 +79,13 @@
                             <p:outputLabel value="#{a.bill.insId} - #{a.bill.deptId}" >
                             </p:outputLabel>
                         </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <p:outputLabel value="Bill No" />
+                            </f:facet>
+                            <p:outputLabel value="#{a.bill.cancelledBill.insId}" >
+                            </p:outputLabel>
+                        </p:column>
                         <p:column styleClass="numberCol" >
                             <f:facet name="header">
                                 <p:outputLabel value="Before Balance" />

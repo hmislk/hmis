@@ -1868,6 +1868,42 @@ public class StoreBillSearch implements Serializable {
         lazyBills = null;
 
     }
+    
+    public String viewBill() {
+
+        if (bill != null) {
+            switch (bill.getBillType()) {
+//                case PharmacyPre:
+//                    return "store_reprint_bill_sale";
+//                case PharmacyBhtPre:
+//                    return "store_reprint_bill_sale";
+                case StoreIssue:
+                    return "store_reprint_bill_unit_issue";
+                case StoreTransferIssue:
+                    return "store_reprint_transfer_isssue";
+                case StoreTransferReceive:
+                    return "store_reprint_transfer_receive";
+                case StorePurchase:
+                    return "store_reprint_purchase";
+                case StoreGrnBill:
+                    return "store_reprint_grn";
+                case StoreGrnReturn:
+                    return "store_reprint_grn_return";
+                case StorePurchaseReturn:
+                    return "store_reprint_purchase_return";
+                case StoreAdjustment:
+                    return "store_reprint_adjustment";
+//                case PharmacyWholesalePre:
+//                    return "store_reprint_bill_sale";
+                default:
+                    return "store_reprint_bill_sale";
+            }
+        } else {
+
+            return "";
+        }
+
+    }
 
     public List<Bill> getPreRefundBills() {
         if (bills == null) {
