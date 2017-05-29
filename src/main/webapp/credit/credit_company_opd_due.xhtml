@@ -52,6 +52,8 @@
                                         </p:column>
                                         <p:column headerText="Client Name">                                    
                                         </p:column>
+                                        <p:column headerText="Bill Date">                                    
+                                        </p:column>
                                         <p:column headerText="Billed Amount">                                    
                                         </p:column>
                                         <p:column headerText="Staff Fee">                                    
@@ -71,6 +73,11 @@
                                     </p:column>
                                     <p:column>                               
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
+                                    </p:column>
+                                    <p:column>                                
+                                        <h:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="yyyy MM dd" />
+                                        </h:outputLabel>                                 
                                     </p:column>
                                     <p:column style="text-align: right;">                                
                                         <h:outputLabel value="#{b.netTotal}" >
@@ -94,7 +101,7 @@
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
-                                            <p:column footerText="Total" colspan="2" />
+                                            <p:column footerText="Total" colspan="3" />
                                             <p:column style="text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">

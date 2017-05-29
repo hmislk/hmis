@@ -526,8 +526,8 @@
                         <bi:finalProfessionalBill bill="#{bhtSummeryController.current}"  />
                     </h:panelGroup>
                     <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                  
-                        <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
-                        <bi:finalProfessionalBill bill="#{inwardSearch.bill}" />
+                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="false"/>
+                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 
                     <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  

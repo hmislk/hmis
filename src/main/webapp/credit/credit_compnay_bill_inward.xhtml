@@ -15,7 +15,7 @@
                 <p:panel rendered="#{!cashRecieveBillController.printPreview}" >
                     <f:facet name="header" >
                         <h:panelGrid columns="15"  >
-                            <h:outputLabel value="OPD CREDIT BIll PAYMENT" />
+                            <h:outputLabel value="Inward CREDIT BIll PAYMENT" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{cashRecieveBillController.current.paymentMethod}">                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>

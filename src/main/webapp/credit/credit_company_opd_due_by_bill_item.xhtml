@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -31,8 +32,10 @@
                                             completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
                             </p:autoComplete>
-                            <p:spacer width="100" height="1"/>
                             <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" onclick="onSubmitButton();"/>
+                            <p:commandButton value="Excel" ajax="false">
+                                <pe:exporter type="xlsx" target="lst" fileName="credit_company_opd_due_by_bill_item" subTable="true" />
+                            </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.items}" var="i">
@@ -51,6 +54,8 @@
                                 <p:row>
                                     <p:column headerText="Bill No">                                    
                                     </p:column>
+                                    <p:column headerText="Date">                                    
+                                    </p:column>
                                     <p:column headerText="Client Name">                                    
                                     </p:column>
                                     <p:column headerText="Item Name">                                    
@@ -65,6 +70,11 @@
                                 </f:facet>
                                 <p:column>                              
                                     <h:outputLabel value="#{b.bill.insId}" />                                
+                                </p:column>
+                                <p:column>                              
+                                    <h:outputLabel value="#{b.createdAt}" >
+                                        <f:convertDateTime pattern="YYYY MM dd" />
+                                    </h:outputLabel>                                
                                 </p:column>
                                 <p:column>                               
                                     <h:outputLabel value="#{b.bill.patient.person.nameWithTitle}" />                                 
@@ -81,7 +91,7 @@
                                 </p:column>
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column footerText="Total" colspan="3" />
+                                        <p:column footerText="Total" colspan="4" />
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{i.total}">
@@ -89,7 +99,7 @@
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        
+
                                     </p:row>
                                 </p:columnGroup>
                             </p:subTable>

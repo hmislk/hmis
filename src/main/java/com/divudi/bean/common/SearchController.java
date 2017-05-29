@@ -1607,11 +1607,11 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Search/(/faces/pharmacy/pharmacy_search.xhtml)");
     }
-    
+
     public void createGRNRegistory() {
-        if (getReportKeyWord().getDepartment()==null) {
+        if (getReportKeyWord().getDepartment() == null) {
             JsfUtil.addErrorMessage("Select Departmrnt.");
-            return ;
+            return;
         }
         String sql;
         Map m = new HashMap();
@@ -1621,7 +1621,7 @@ public class SearchController implements Serializable {
                 + " and b.department=:dep and b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if (getReportKeyWord().getInstitution() != null ) {
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and  (upper(b.fromInstitution.name) like :frmIns )";
             m.put("frmIns", getReportKeyWord().getInstitution());
         }
@@ -1638,7 +1638,7 @@ public class SearchController implements Serializable {
         m.put("class1", BilledBill.class);
         m.put("class2", PreBill.class);
         m.put("billType", BillType.PharmacyGrnBill);
-        m.put("dep",getReportKeyWord().getDepartment());
+        m.put("dep", getReportKeyWord().getDepartment());
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         //temMap.put("dep", getSessionController().getDepartment());
@@ -4998,6 +4998,13 @@ public class SearchController implements Serializable {
     }
 
     public void createSearchBill() {
+        System.err.println("****");
+        if (getSearchKeyword().getInsId() == null && getSearchKeyword().getDeptId() == null
+                && getSearchKeyword().getBhtNo() == null && getSearchKeyword().getRefBillNo() == null) {
+            JsfUtil.addErrorMessage("Enter BHT No or Bill No");
+            return;
+        }
+        System.err.println("****");
         bills = null;
         String sql;
         Map m = new HashMap();
@@ -5019,8 +5026,18 @@ public class SearchController implements Serializable {
             sql += " and b.patientEncounter.bhtNo=:bht";
             m.put("bht", getSearchKeyword().getBhtNo());
         }
-        sql += " order by b.insId ";
+        if (getSearchKeyword().getRefBillNo() != null) {
+            try {
+                long l=Long.parseLong(getSearchKeyword().getRefBillNo());
+                sql += " and b.id=:id";
+                m.put("id", l);
+            } catch (Exception e) {
+            }
 
+        }
+        sql += " order by b.insId ";
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
 //        m.put("class", PreBill.class);
         bills = getBillFacade().findBySQL(sql, m);
     }

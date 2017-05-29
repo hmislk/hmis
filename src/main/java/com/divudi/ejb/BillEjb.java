@@ -12,6 +12,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.RefundBill;
+import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -55,7 +56,7 @@ public class BillEjb implements Serializable {
             Department department,
             Institution institution,
             PaymentMethod[] paymentMethods) {
-        return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null);
+        return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null, false, null);
     }
 
     /**
@@ -242,18 +243,30 @@ public class BillEjb implements Serializable {
             Institution institution, Institution toInstitution, Institution fromInstitution,
             PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
-            Class[] billCLassesToExclude) {
+            Class[] billCLassesToExclude,
+            boolean isInward, AdmissionType admissionType) {
         //System.out.println("findBillBills");
         String sql;
         Map m = new HashMap();
 
-        sql = "Select b from Bill b ";
-        sql += " where b.createdAt between :fd and :td ";
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+        sql = "Select b from Bill b "
+                + " where b.retired=false ";
+        if (isInward) {
+            sql += " and b.patientEncounter.dateOfDischarge between :fd and :td ";
+        } else {
+            sql += " and b.createdAt between :fd and :td ";
+        }
+        if (admissionType != null) {
+            sql += " and b.patientEncounter.admissionType =:ad ";
+            m.put("ad", admissionType);
+        }
         if (paymentMethods != null) {
             List<PaymentMethod> lpms = Arrays.asList(paymentMethods);
-            sql += " and b.paymentMethod in :pms ";
+            if (isInward) {
+                sql += " and b.patientEncounter.paymentMethod in :pms ";
+            } else {
+                sql += " and b.paymentMethod in :pms ";
+            }
             m.put("pms", lpms);
         }
         if (billTypes != null) {
@@ -305,13 +318,15 @@ public class BillEjb implements Serializable {
             m.put("fins", fromInstitution);
         }
 
+        m.put("fd", fromDate);
+        m.put("td", toDate);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         //System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
         //System.out.println("r = " + r);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
+        System.out.println("bills.size() = " + bills.size());
         //System.out.println("r = " + r);
         r.setBills(bills);
 
@@ -319,7 +334,7 @@ public class BillEjb implements Serializable {
             //System.out.println("bills not null");
             for (Bill b : r.getBills()) {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
-                r.setVat(r.getVat()+b.getVat());
+                r.setVat(r.getVat() + b.getVat());
                 r.setNetTotal(r.getNetTotal() + b.getNetTotal());
                 r.setGrossTotal(r.getGrossTotal() + b.getTotal());
                 if (r.getSaleValueTotal() == null) {

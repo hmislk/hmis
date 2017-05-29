@@ -19,22 +19,27 @@
                             <h:outputLabel  value="#{i.string}"/>
                         </p:column>                               
                         <p:column headerText="0-30" filterBy="#{i.value1}" filterMatchMode="contains">   
-                            <h:outputLabel  value="#{i.value1}">
+                            <h:outputLabel  value="#{i.value1}" style="float: right;">
                                  <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="30-60" filterBy="#{i.value2}" filterMatchMode="contains">    
-                             <h:outputLabel  value="#{i.value2}">
+                             <h:outputLabel  value="#{i.value2}" style="float: right;">
                                   <f:convertNumber pattern="#,##0.00" />
                              </h:outputLabel>
                         </p:column>
                         <p:column headerText="60-90" filterBy="#{i.value3}" filterMatchMode="contains">  
-                             <h:outputLabel  value="#{i.value3}">
+                             <h:outputLabel  value="#{i.value3}" style="float: right;">
                                   <f:convertNumber pattern="#,##0.00" />
                              </h:outputLabel>
                         </p:column>
                         <p:column headerText="90 More" filterBy="#{i.value4}" filterMatchMode="contains">   
-                             <h:outputLabel  value="#{i.value4}">
+                             <h:outputLabel  value="#{i.value4}" style="float: right;">
+                                  <f:convertNumber pattern="#,##0.00" />
+                             </h:outputLabel>
+                        </p:column>                      
+                        <p:column headerText="Total">   
+                            <h:outputLabel  value="#{i.value1+i.value2+i.value3+i.value4}" style="float: right;">
                                   <f:convertNumber pattern="#,##0.00" />
                              </h:outputLabel>
                         </p:column>                      

@@ -84,7 +84,8 @@ public class CreditBean {
                 + " and b.refundedBill is null "
                 + " and b.toInstitution=:cc "
                 + " and b.paymentMethod=:pm "
-                + " and b.billType in :tps ";
+                + " and b.billType in :tps "
+                + " and b.toStaff is null ";
 
         HashMap hm = new HashMap();
         hm.put("frm", fromDate);
@@ -176,6 +177,7 @@ public class CreditBean {
                 + " and b.createdAt between :frm and :to "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
+                + " and b.toStaff is null "
                 + " order by b.toInstitution.name ";
 
         hm = new HashMap();
@@ -467,7 +469,8 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and b.billType in :tp1 ";
+                + " and b.billType in :tp1 "
+                + " and b.toStaff is null ";
 
         if (lessThan) {
             sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
@@ -571,7 +574,8 @@ public class CreditBean {
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt is not null "
                 + " and b.toInstitution=:ins "
-                + " and b.billType in :tps";
+                + " and b.billType in :tps "
+                + " and b.toStaff is null ";
 
         if (lessThan) {
             sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";

@@ -9,9 +9,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.ItemWithFee;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.CreditBean;
 import com.divudi.entity.Bill;
@@ -98,6 +100,8 @@ public class mdInwardReportController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     AdmissionTypeFacade admissionTypeFacade;
+    @EJB
+    BillEjb billEjb;
     ///////////////////////////////
     @Inject
     private SessionController sessionController;
@@ -351,19 +355,19 @@ public class mdInwardReportController implements Serializable {
                 + " and b.bill.institution=:ins "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
-        
+
         if (reportKeyWord.getString().equals("0")) {
             if (admissionType != null) {
                 sql += " and b.patientEncounter.admissionType =:ad ";
                 temMap.put("ad", admissionType);
             }
-            sql+=" and b.patientEncounter is not null ";
-        }else if(reportKeyWord.getString().equals("1")){
+            sql += " and b.patientEncounter is not null ";
+        } else if (reportKeyWord.getString().equals("1")) {
             sql += " and b.referenceBill.billType=:refTp";
             temMap.put("refTp", BillType.OpdBill);
-            
-        }else if(reportKeyWord.getString().equals("2")){
-            sql+= " and b.referenceBill.billType in :refTp ";
+
+        } else if (reportKeyWord.getString().equals("2")) {
+            sql += " and b.referenceBill.billType in :refTp ";
             temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
         }
 
@@ -382,6 +386,47 @@ public class mdInwardReportController implements Serializable {
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Balance payment report (D)(/faces/inward/inward_search_balance_payment_1.xhtml)");
+    }
+
+    public void createCreditInwardOpdPharmacyBills() {
+        BillListWithTotals billListWithTotals = new BillListWithTotals();
+        PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Credit};
+        total=0.0;
+        if (reportKeyWord.getString().equals("0")) {
+            BillType[] bts = new BillType[]{BillType.InwardFinalBill};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
+                    pms, null, null, true, admissionType);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills = new ArrayList<>();
+                bills.addAll(billListWithTotals.getBills());
+                total = billListWithTotals.getNetTotal();
+            }
+        }
+        if (reportKeyWord.getString().equals("1")) {
+            BillType[] bts = new BillType[]{BillType.OpdBill};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
+                    pms, null, null, false, null);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills = new ArrayList<>();
+                bills.addAll(billListWithTotals.getBills());
+                total = billListWithTotals.getNetTotal();
+            }
+        }
+        if (reportKeyWord.getString().equals("2")) {
+            BillType[] bts = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
+                    pms, null, null, false, null);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills = new ArrayList<>();
+                for (Bill b : billListWithTotals.getBills()) {
+                    System.out.println("b.getToStaff() = " + b.getToStaff());
+                    if (b.getToStaff() == null) {
+                        bills.add(b);
+                        total += b.getNetTotal();
+                    }
+                }
+            }
+        }
     }
 
     public List<Bill> getBillsDischarged() {
@@ -1419,8 +1464,7 @@ public class mdInwardReportController implements Serializable {
     }
 
     public void notDisBhtPySummerries() {
-        
- 
+
         bil = inwdPaymentBillsNotDischarge(new BilledBill());
         cancel = inwdPaymentBillsNotDischarge(new CancelledBill());
         refund = inwdPaymentBillsNotDischarge(new RefundBill());
@@ -1479,7 +1523,6 @@ public class mdInwardReportController implements Serializable {
         cancelledTotal = allPaymentByCreatedDateValue(new CancelledBill(), true);
         refundTotal = allPaymentByCreatedDateValue(new RefundBill(), true);
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "All payment of discharged patient(/faces/inward/all_payment_by_created_date_discharged_only.xhtml)");
     }
 
@@ -1548,15 +1591,14 @@ public class mdInwardReportController implements Serializable {
         String sql = "";
         completePayments = fetchPaymentBillsNotDicharged();
         completePaymentsTotal = calPaymentBillsNotDicharged();
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "All deposite of not discharged patient(/faces/inward/bht_deposit_of_not_discharged_patient.xhtml)");
-        
 
     }
 
     public void dipositsOfNotDischargedByBht() {
         Date startTime = new Date();
-        
+
         String sql = "";
         Map temMap = new HashMap();
         sql = "select b.patientEncounter,sum(b.netTotal)"
@@ -2834,8 +2876,8 @@ public class mdInwardReportController implements Serializable {
     }
 
     public ReportKeyWord getReportKeyWord() {
-        if (reportKeyWord==null) {
-            reportKeyWord=new ReportKeyWord();
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
         }
         return reportKeyWord;
     }

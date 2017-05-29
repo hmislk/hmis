@@ -17,7 +17,7 @@ public enum InwardChargeType {
     CT("CT Scan"),
     DressingCharges("Dressing Charges"),
     Equipment("Equipment Charges"),
-    ECG_EEG("ECG/EEG/ECHO/EXECG"),
+    ECG_EEG("ECG/EEG"),//"ECG/EEG/ECHO/EXECG" request by piumini
     ETUCharges("ETU Charges"),
     GeneralIssuing("General Issuing"),
     HomeVisiting("Home Visiting"),
