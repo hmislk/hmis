@@ -4752,7 +4752,7 @@ public class HrReportController implements Serializable {
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.staffShift.id,ss.staffShift.shiftDate";
         staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
-
+        
     }
 
     List<FingerPrintRecordHistory> fingerPrintRecordHistorys;
@@ -4940,7 +4940,7 @@ public class HrReportController implements Serializable {
                 + " where spc.retired=false "
                 + " and spc.salaryCycle=:sc "
                 + " and (spc.staff.dateLeft>:rd or spc.staff.dateLeft is null) "
-                + " and (spc.staff.dateRetired>:rd or spc.staff.dateRetired is null) "
+//                + " and (spc.staff.dateRetired>:rd or spc.staff.dateRetired is null) "
                 + " and spc.blocked=false ";
 
         if (getReportKeyWord().getInstitution() != null) {

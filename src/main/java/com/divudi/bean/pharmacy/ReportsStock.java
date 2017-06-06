@@ -110,8 +110,12 @@ public class ReportsStock implements Serializable {
         sql = "select s from Stock s "
                 + " where s.department=:d "
                 + " and s.stock>0 "
-                + "  order by s.itemBatch.item.name";
+                + " and s.itemBatch.item.departmentType!=:depty1 "
+                + " and s.itemBatch.item.departmentType!=:depty2 "
+                + " order by s.itemBatch.item.name";
         m.put("d", department);
+        m.put("depty1", DepartmentType.Store);
+        m.put("depty2", DepartmentType.Inventry);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;

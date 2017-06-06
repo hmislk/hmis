@@ -2070,6 +2070,15 @@ public class BillController implements Serializable {
         }
     }
 
+    public void updateReferingDoctor() {
+        if (bill.getReferredBy() == null) {
+            JsfUtil.addErrorMessage("Empty Doctor");
+            return;
+        }
+        billFacade.edit(bill);
+        JsfUtil.addSuccessMessage("Ref Doctor Updated");
+    }
+
     public BillFacade getEjbFacade() {
         return billFacade;
     }

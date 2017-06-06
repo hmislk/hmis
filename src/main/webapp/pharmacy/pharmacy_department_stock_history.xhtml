@@ -21,12 +21,12 @@
                             <h:panelGrid columns="2" >
                                 <p:outputLabel value="From Date" ></p:outputLabel>
                                 <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
-                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                    <!--<f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>-->
                                 </p:calendar>
 
                                 <p:outputLabel value="To Date" ></p:outputLabel>
                                 <p:calendar id="calToDate" value="#{stockHistoryController.toDate}"  pattern="dd MMMM yyyy" >
-                                    <f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>
+                                    <!--<f:ajax event="dateSelect" execute="calFromDate calToDate" render="tblDates" listener="#{stockHistoryController.fillHistoryAvailableDays}" ></f:ajax>-->
                                 </p:calendar>
 
                                 <p:outputLabel value="Department" ></p:outputLabel>
@@ -47,7 +47,7 @@
 
                             </h:panelGrid>
 
-                            <h:panelGrid columns="3" >
+                            <h:panelGrid columns="4" >
 
                                 <p:dataTable id="tblDates" rowIndexVar="i"
                                              value="#{stockHistoryController.pharmacyStockHistoryDays}" 
@@ -64,9 +64,12 @@
                                     </p:column>
                                 </p:dataTable>
 
+                                <p:selectOneMenu value="#{stockHistoryController.departmentType}" >
+                                    <f:selectItem itemLabel="Select Type" />
+                                    <f:selectItems value="#{enumController.departmentType}" var="i" itemLabel="#{i.label}" itemValue="#{i}"  />
+                                </p:selectOneMenu>
 
-
-                                <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistories()}" 
+                                <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithZero()}" 
                                                  value="Display History" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
                                                  
                                 <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" 

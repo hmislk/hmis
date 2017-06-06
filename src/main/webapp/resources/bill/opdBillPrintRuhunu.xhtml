@@ -274,14 +274,14 @@
                                 <h:outputLabel  rendered="#{bip1.bill.id eq cc.attrs.bill.id}"  value="#{bip1.grossValue+bip1.vat}"  style="font-size: 11px!important;float: right;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <h:panelGroup rendered="#{bip1.item.department.id eq cc.attrs.bill.toDepartment.id and bip1.billSession ne null }"  >
+<!--                                <h:panelGroup rendered="#{bip1.item.department.id eq cc.attrs.bill.toDepartment.id and bip1.billSession ne null }"  >
                                     <br/>
                                     <h:panelGroup rendered="#{bip1.item.sessionNumberType ne null}">
                                         <h:outputLabel value="#{bip1.billSession.sessionDate}" style="margin: 4px; font-size: 9 px!important; font-weight: bold;" >
                                             <f:convertDateTime pattern="yyyy-MMM-dd" />
                                         </h:outputLabel>
                                     </h:panelGroup>
-                                </h:panelGroup>
+                                </h:panelGroup>-->
                             </h:column>
                         </h:dataTable>
                     </div>

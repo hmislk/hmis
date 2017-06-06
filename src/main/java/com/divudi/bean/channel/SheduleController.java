@@ -6,14 +6,12 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.common.WebUserController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.FeeChangeType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StockHistoryRecorder;
-import com.divudi.entity.BillSession;
 import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
@@ -31,6 +29,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -322,6 +321,30 @@ public class SheduleController implements Serializable {
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
         items = getFacade().findBySQL(sql, hm);
+        List<ServiceSession> tmp = new ArrayList<>();
+        for (ServiceSession i : items) {
+            if (i.getSessionDate() != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(i.getSessionDate());
+                Calendar calNow = Calendar.getInstance();
+                System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.YEAR));
+                System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.YEAR));
+                if (cal.get(Calendar.YEAR) <= calNow.get(Calendar.YEAR)) {
+                    System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.MONTH));
+                    System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.MONTH));
+                    if (cal.get(Calendar.MONTH) <= calNow.get(Calendar.MONTH)) {
+                        System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.DATE));
+                        System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.DATE));
+                        if (cal.get(Calendar.DATE) < calNow.get(Calendar.DATE)) {
+                            tmp.add(i);
+                        }
+                    }
+                }
+
+            }
+        }
+        System.out.println("tmp.size() = " + tmp.size());
+        items.removeAll(tmp);
 
         return items;
     }
@@ -534,6 +557,8 @@ public class SheduleController implements Serializable {
 
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getCurrent().setEditer(getSessionController().getLoggedUser());
+            getCurrent().setEditedAt(new Date());
             getFacade().edit(getCurrent());
             System.err.println("edit Ses");
             UtilityController.addSuccessMessage("Updated Successfully.");

@@ -53,7 +53,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author archmage
+ * @author Dushan
  */
 @Named(value = "quickBookReportController")
 @SessionScoped

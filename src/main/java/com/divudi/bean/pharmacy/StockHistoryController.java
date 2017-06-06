@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.HistoryType;
 import com.divudi.ejb.StockHistoryRecorder;
 import com.divudi.entity.Department;
@@ -44,6 +45,7 @@ public class StockHistoryController implements Serializable {
     Date toDate;
     Date historyDate;
     Department department;
+    DepartmentType departmentType;
 
     double totalStockSaleValue;
     double totalStockPurchaseValue;
@@ -72,13 +74,13 @@ public class StockHistoryController implements Serializable {
         for (Date d : pharmacyStockHistoryDays) {
             System.out.println("d = " + d);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display Available Days)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
     }
 
-    public void fillStockHistories() {
+    public void fillStockHistories(boolean withoutZeroStock) {
         Date startTime = new Date();
-        
+
         String jpql;
         Map m = new HashMap();
         m.put("hd", historyDate);
@@ -93,6 +95,15 @@ public class StockHistoryController implements Serializable {
                 + " where s.historyType=:ht "
                 + " and s.createdAt=:hd ";
 
+        if (withoutZeroStock) {
+            jpql += " and s.stockQty>0 ";
+        }
+
+        if (departmentType != null) {
+            jpql += " and s.item.departmentType=:depty ";
+            m.put("depty", departmentType);
+        }
+
         if (department != null) {
             jpql += " and s.department=:d  ";
             m.put("d", department);
@@ -102,54 +113,24 @@ public class StockHistoryController implements Serializable {
 
         System.out.println("m = " + m);
         System.out.println("jpql = " + jpql);
-        System.out.println("pharmacyStockHistories.size() = " + pharmacyStockHistories.size());
         pharmacyStockHistories = facade.findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        System.out.println("pharmacyStockHistories.size() = " + pharmacyStockHistories.size());
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;
         for (StockHistory psh : pharmacyStockHistories) {
             totalStockPurchaseValue += psh.getStockPurchaseValue();
             totalStockSaleValue += psh.getStockSaleValue();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display History)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
     }
 
+    public void fillStockHistoriesWithZero() {
+        fillStockHistories(false);
+    }
+
     public void fillStockHistoriesWithOutZero() {
-        Date startTime = new Date();
-        
-        String jpql;
-        Map m = new HashMap();
-        m.put("hd", historyDate);
-        m.put("ht", HistoryType.MonthlyRecord);
-//        if (department == null) {
-//            jpql = "select s from StockHistory s where s.historyType=:ht and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
-//        } else {
-//            m.put("d", department);
-//            jpql = "select s from StockHistory s where s.historyType=:ht and s.department=:d and s.stockAt =:hd and s.stockQty>0 order by s.item.name";
-//        }
-        jpql = "select s from StockHistory s "
-                + " where s.historyType=:ht "
-                + " and s.stockQty>0 "
-                + " and s.createdAt =:hd ";
-
-        if (department != null) {
-            jpql += " and s.department=:d  ";
-            m.put("d", department);
-        }
-
-        jpql += " order by s.item.name";
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
-        pharmacyStockHistories = facade.findBySQL(jpql, m, TemporalType.TIMESTAMP);
-        totalStockPurchaseValue = 0.0;
-        totalStockSaleValue = 0.0;
-        System.out.println("pharmacyStockHistories.size() = " + pharmacyStockHistories.size());
-        for (StockHistory psh : pharmacyStockHistories) {
-            totalStockPurchaseValue += psh.getStockPurchaseValue();
-            totalStockSaleValue += psh.getStockSaleValue();
-        }
-        
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Display History(Stock With Out Zero))(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
+        fillStockHistories(true);
     }
 
     public Date getHistoryDate() {
@@ -196,22 +177,18 @@ public class StockHistoryController implements Serializable {
 
     public void recordHistory() {
         Date startTime = new Date();
-        
+
         try {
             stockHistoryRecorder.myTimer();
             JsfUtil.addSuccessMessage("History Saved");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed due to " + e.getMessage());
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(Record History Now)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
     }
 
     public List<Date> getPharmacyStockHistoryDays() {
-        Date startTime = new Date();
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Stock history(History Availabe Days)(/faces/pharmacy/pharmacy_department_stock_history.xhtml)");
-
         return pharmacyStockHistoryDays;
     }
 
@@ -270,6 +247,13 @@ public class StockHistoryController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
+
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
 
 }

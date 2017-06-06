@@ -11,10 +11,10 @@
 
 
             <h:panelGrid columns="2" class="alignTop">
-                <p:panel >
+                <p:panel style="width: 500px;height: 520px;">
                     <h:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
-                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
+                        <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality" placeholder="Speciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                          converter="specilityCon"   >
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
@@ -23,7 +23,7 @@
 
 
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
-                        <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
+                        <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff" placeholder="Doctor"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           converter="stfcon"   >   
                             <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{sheduleController.prepareAdd()}" />
@@ -60,7 +60,7 @@
 
                 </p:panel>
 
-                <p:panel id="gpDetail" header="Session Details">  
+                <p:panel id="gpDetail" header="Session Details" style="width: 750px;height: 520px;">  
                     <f:facet name="header" >
                         <p:outputLabel value="Session Details" ></p:outputLabel>
                         <p:spacer width="30" height="1" ></p:spacer>
@@ -71,158 +71,178 @@
                         </p:commandButton>
                     </f:facet>
 
-                    <p:panelGrid columns="2">  
-                        <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
-                        <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
-                        <p:outputLabel value="Session Name"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.name}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+                    <h:panelGrid columns="1" > 
+                        <p:tabView style="width: 700px!important;height: 410px;">
+                            <p:tab title="Details">
+                                <h:panelGrid columns="2" cellpadding="10">
+                                    <p:outputLabel value="Session Name"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.name}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
 
-                        <h:outputText value="Institution" ></h:outputText>
-                        <p:selectOneMenu id="cmbIns" value="#{sheduleController.current.institution}" >
-                            <f:selectItem itemLabel="Please select a Institution"/>
-                            <f:selectItems value="#{institutionController.companies}" 
-                                           var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
-                            <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
-                        </p:selectOneMenu>
+                                    <h:outputText value="Institution" ></h:outputText>
+                                    <p:selectOneMenu id="cmbIns" value="#{sheduleController.current.institution}" >
+                                        <f:selectItem itemLabel="Please select a Institution"/>
+                                        <f:selectItems value="#{institutionController.companies}" 
+                                                       var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />    
+                                        <f:ajax execute="cmbIns" render="cmbDep" event="change"/>
+                                    </p:selectOneMenu>
 
 
 
-                        <h:outputText value="Department"></h:outputText>        
-                        <p:selectOneMenu id="cmbDep" value="#{sheduleController.current.department}">
-                            <f:selectItem itemLabel="Please select a Department" />
-                            <f:selectItems value="#{sheduleController.institutionDepatrments}"
-                                           var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
-                        </p:selectOneMenu>
+                                    <h:outputText value="Department"></h:outputText>        
+                                    <p:selectOneMenu id="cmbDep" value="#{sheduleController.current.department}">
+                                        <f:selectItem itemLabel="Please select a Department" />
+                                        <f:selectItems value="#{sheduleController.institutionDepatrments}"
+                                                       var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Start Time"/>                        
+                                    <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                    </p:calendar>
 
-                    </p:panelGrid>
-                    <p:panelGrid columns="2" >
+                                    <p:outputLabel value="End Time"/>                        
+                                    <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                    </p:calendar>
 
-                        <p:outputLabel value="Start Time"/>                        
-                        <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
-                        </p:calendar>
+                                    <p:outputLabel value="Starting Number"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.startingNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
 
-                        <p:outputLabel value="End Time"/>                        
-                        <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
-                        </p:calendar>
+                                    <p:outputLabel value="Max Number"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
 
-                        <p:outputLabel value="Starting Number"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.startingNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulStartingNo')}"/>
+                                    <p:outputLabel value="Duration in Minutes"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.duration}"/>
+                                    <p:outputLabel value="Room Number"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.roomNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
 
-                        <p:outputLabel value="Max Number"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.maxNo}"/>
+                                    <p:outputLabel value="Before Session" rendered="false"/>
+                                    <p:autoComplete rendered="false" forceSelection="true" value="#{sheduleController.current.beforeSession}" 
+                                                    completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="sscon"   >                            
+                                    </p:autoComplete>
+                                    <p:outputLabel value="After Session" rendered="false"/>
+                                    <p:autoComplete  rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
+                                                     completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                     converter="sscon"   >   
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Refundable"/>
+                                    <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
+                                    <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}" />
+                                    <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}"/>
 
-                        <p:outputLabel value="Duration in Minutes"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.duration}"/>
-                        <p:outputLabel value="Room Number"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.roomNo}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulRoomNo')}"/>
+                                    <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
+                                    <p:selectOneMenu id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                        <f:selectItem itemLabel="Please Select a Type"/>
+                                        <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
+                                    
+                                    <p:outputLabel value="Weekday or Session Date"></p:outputLabel>
+                                    <p:outputLabel value="Sunday" rendered="#{sheduleController.current.sessionWeekday eq 1 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Monday" rendered="#{sheduleController.current.sessionWeekday eq 2 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Tuesday" rendered="#{sheduleController.current.sessionWeekday eq 3 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Wednesday" rendered="#{sheduleController.current.sessionWeekday eq 4 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Thursday" rendered="#{sheduleController.current.sessionWeekday eq 5 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Friday" rendered="#{sheduleController.current.sessionWeekday eq 6 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="Sutarday" rendered="#{sheduleController.current.sessionWeekday eq 7 and sheduleController.current.sessionWeekday ne null}"/>
+                                    <p:outputLabel value="#{sheduleController.current.sessionDate}" rendered="#{sheduleController.current.sessionWeekday eq null}">
+                                        <f:convertDateTime pattern="yyyy MMM dd" />
+                                    </p:outputLabel>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Date Details">
+                                <h:panelGrid columns="1">
+                                    <p:tabView  >
+                                        <p:tab title="WeekDay"> 
+                                            <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}" disabled="#{sheduleController.current.id ne null}">
+                                                <f:selectItem itemLabel="Select Week Day"/>
+                                                <f:selectItem itemValue="1" itemLabel="Sunday"/>
+                                                <f:selectItem itemValue="2" itemLabel="Monday"/>
+                                                <f:selectItem itemValue="3" itemLabel="Tuesday"/>
+                                                <f:selectItem itemValue="4" itemLabel="Wednesday"/>
+                                                <f:selectItem itemValue="5" itemLabel="Thursday"/>
+                                                <f:selectItem itemValue="6" itemLabel="Friday"/>
+                                                <f:selectItem itemValue="7" itemLabel="Sutarday"/>
+                                            </p:selectOneMenu>
+                                        </p:tab>
+                                        <p:tab title="Other Day" >
+                                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" disabled="#{sheduleController.current.id ne null}">                              
+                                            </p:calendar>
+                                        </p:tab>
+                                    </p:tabView>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Fee Details">
+                                <p:outputLabel value="Session Value = "/>
+                                <p:outputLabel value="#{sheduleController.current.total}"/>
+                                <h:panelGrid columns="1">
+                                    <p:dataTable value="#{sheduleController.itemFees}" var="i" >
+                                        <p:column headerText="Name">
+                                            <h:outputLabel value="#{i.name}"/> 
+                                        </p:column>
+                                        <p:column headerText="Fee Type">
+                                            #{i.feeType}
+                                        </p:column>
+                                        <p:column headerText="Specialtiy">
+                                            #{i.speciality.name}
+                                        </p:column>
+                                        <p:column headerText="Staff">
+                                            #{i.staff.person.name}
+                                        </p:column>                        
+                                        <p:column headerText="Institution">
+                                            #{i.institution.name}
+                                        </p:column>
+                                        <p:column headerText="Local Fee">
+                                            <p:inputText value="#{i.fee}" style="width: 50px!important;"/>
+                                        </p:column>
+                                        <p:column headerText="Foriegn Fee">
+                                            <p:inputText value="#{i.ffee}" style="width: 50px!important;"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Aditional Details">
+                                <h:panelGrid columns="2">
+                                    <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
+                                    <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
+                                    <p:outputLabel value="Displaying Count"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.displayCount}"/>
+                                    <p:outputLabel value="Displaying Percent"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.displayPercent}"/>
+                                    <p:outputLabel value="Session Number"></p:outputLabel>
 
-                        <p:outputLabel value="Before Session" rendered="false"/>
-                        <p:autoComplete rendered="false" forceSelection="true" value="#{sheduleController.current.beforeSession}" 
-                                        completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                        converter="sscon"   >                            
-                        </p:autoComplete>
-                        <p:outputLabel value="After Session" rendered="false"/>
-                        <p:autoComplete  rendered="false" forceSelection="true" value="#{sheduleController.current.afterSession}" 
-                                         completeMethod="#{sheduleController.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                         converter="sscon"   >   
-                        </p:autoComplete>
+                                    <p:autoComplete forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
+                                                    completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
+                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                    converter="genConvert">                            
+                                    </p:autoComplete>
 
-                        <p:outputLabel value="Displaying Count"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.displayCount}"/>
-                        <p:outputLabel value="Displaying Percent"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.displayPercent}"/>
-                        <p:outputLabel value="Session Number"></p:outputLabel>
+                                    <p:outputLabel value="Credit Numbers"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>
+                                    <p:outputLabel value="Cash Numbers"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.cashNumbers}"/>
+                                    <p:outputLabel value="Agent Numbers"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.agencyNumbers}"/>
+                                    <p:outputLabel value="Reserved Numbers"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.reserveNumbers}"/>
+                                    <p:outputLabel value="Reserver Name"/>
+                                    <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
 
-                        <p:autoComplete forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
-                                        completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
-                                        var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                        converter="genConvert">                            
-                        </p:autoComplete>
-
-                        <p:outputLabel value="Refundable"/>
-                        <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
-                        
-                        <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}" />
-                        <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}"/>
-                        
-                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
-                        <p:selectOneMenu id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                            <f:selectItem itemLabel="Please Select a Type"/>
-                            <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
-                        </p:selectOneMenu>
-                        
-                        <p:outputLabel value="Credit Numbers"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.creditNumbers}"/>
-                        <p:outputLabel value="Cash Numbers"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.cashNumbers}"/>
-                        <p:outputLabel value="Agent Numbers"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.agencyNumbers}"/>
-                        <p:outputLabel value="Reserved Numbers"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.reserveNumbers}"/>
-                        <p:outputLabel value="Reserver Name"/>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
-                        <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
-                        <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
-                        <p:outputLabel value="creater"></p:outputLabel>
-                        <p:outputLabel value="#{sheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
-                        <p:outputLabel value="created At"></p:outputLabel>
-                        <p:outputLabel value="#{sheduleController.current.createdAt}">
-                            <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
-                        </p:outputLabel>
-
-                    </p:panelGrid>
-                    <br/>
-                    <p:tabView  >
-                        <p:tab title="WeekDay"> 
-                            <p:selectOneMenu id="wdate" value="#{sheduleController.current.sessionWeekday}" disabled="#{sheduleController.current.id ne null}">
-                                <f:selectItem itemLabel="Select Week Day"/>
-                                <f:selectItem itemValue="1" itemLabel="Sunday"/>
-                                <f:selectItem itemValue="2" itemLabel="Monday"/>
-                                <f:selectItem itemValue="3" itemLabel="Tuesday"/>
-                                <f:selectItem itemValue="4" itemLabel="Wednesday"/>
-                                <f:selectItem itemValue="5" itemLabel="Thursday"/>
-                                <f:selectItem itemValue="6" itemLabel="Friday"/>
-                                <f:selectItem itemValue="7" itemLabel="Sutarday"/>
-                            </p:selectOneMenu>
-                        </p:tab>
-                        <p:tab title="Other Day" >
-                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" disabled="#{sheduleController.current.id ne null}">                              
-                            </p:calendar>
-                        </p:tab>
-                    </p:tabView>  
-                    <p:outputLabel value="Session Value"/>
-                    <p:outputLabel value="#{sheduleController.current.total}"/>
-                    <h:panelGrid columns="1">
-                        <p:commandButton ajax="false" id="btnSav2" value="Save"  
-                                         action="#{sheduleController.saveSelected}"
-                                         styleClass="buttons" onclick="onSubmitButton();">
-
-                        </p:commandButton>
+                                    <p:outputLabel value="creater"></p:outputLabel>
+                                    <p:outputLabel value="#{sheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
+                                    <p:outputLabel value="created At"></p:outputLabel>
+                                    <p:outputLabel value="#{sheduleController.current.createdAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Editor"></p:outputLabel>
+                                    <p:outputLabel value="#{sheduleController.current.editer.webUserPerson.name}"></p:outputLabel>
+                                    <p:outputLabel value="Edited At"></p:outputLabel>
+                                    <p:outputLabel value="#{sheduleController.current.editedAt}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
+                                    </p:outputLabel>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
                     </h:panelGrid>
-                    <p:dataTable value="#{sheduleController.itemFees}" var="i" >
-                        <p:column headerText="Name">
-                            <h:outputLabel value="#{i.name}"/> 
-                        </p:column>
-                        <p:column headerText="Fee Type">
-                            #{i.feeType}
-                        </p:column>
-                        <p:column headerText="Specialtiy">
-                            #{i.speciality.name}
-                        </p:column>
-                        <p:column headerText="Staff">
-                            #{i.staff.person.name}
-                        </p:column>                        
-                        <p:column headerText="Institution">
-                            #{i.institution.name}
-                        </p:column>
-                        <p:column headerText="Local Fee">
-                            <p:inputText value="#{i.fee}"/>
-                        </p:column>
-                        <p:column headerText="Foriegn Fee">
-                            <p:inputText value="#{i.ffee}"/>
-                        </p:column>
-                    </p:dataTable>
-
                 </p:panel>
 
             </h:panelGrid>
