@@ -153,6 +153,7 @@
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
                                                >
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                    <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billController.bill}"/>
                                 </h:commandLink>
                                 <p:tooltip for="colPtDetail"  >
                                     <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.nameWithTitle}" >

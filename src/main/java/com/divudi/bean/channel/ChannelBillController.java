@@ -210,9 +210,9 @@ public class ChannelBillController implements Serializable {
 
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
-        Bill errBill=getBillFacade().find(getBillSession().getBill().getId());
-        System.err.println("errBill.getPaidBill() = "+ errBill.getPaidBill());
-        if (errBill.getPaidBill()!=null) {
+        Bill errBill = getBillFacade().find(getBillSession().getBill().getId());
+        System.err.println("errBill.getPaidBill() = " + errBill.getPaidBill());
+        if (errBill.getPaidBill() != null) {
             System.out.println("errBill.getPaidBill().getCreater().getWebUserPerson().getName() = " + errBill.getPaidBill().getCreater().getWebUserPerson().getName());
             System.out.println("errBill.getPaidBill().getCreatedAt() = " + errBill.getPaidBill().getCreatedAt());
         }
@@ -1565,10 +1565,10 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckAfterSaveBill(Bill b) {
-        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+        if (b.getPaymentMethod() == null) {
             return true;
         }
-        if (b.getPaymentMethod() == null) {
+        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
             return true;
         }
         return false;
@@ -1694,7 +1694,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
         //********************retier bill,billitem,billsession***********************************************
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
         settleSucessFully = true;

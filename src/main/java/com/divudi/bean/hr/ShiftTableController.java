@@ -115,9 +115,9 @@ public class ShiftTableController implements Serializable {
     private void saveStaffShift() {
         for (ShiftTable st : shiftTables) {
             for (StaffShift ss : st.getStaffShift()) {
-//                if (ss.getShift() == null) {
-//                    continue;
-//                }
+                if (ss.getId()==null && ss.getShift() == null) {
+                    continue;
+                }
 
                 fetchAndSetDayType(ss);
                 ss.calShiftStartEndTime();
@@ -262,7 +262,7 @@ public class ShiftTableController implements Serializable {
 
     public void fetchShiftTable() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -312,6 +312,7 @@ public class ShiftTableController implements Serializable {
                         newStaffShift.setShiftDate(nowDate);
                         newStaffShift.setCreatedAt(new Date());
                         newStaffShift.setCreater(sessionController.getLoggedUser());
+                        newStaffShift.setRoster(roster);
                         netT.getStaffShift().add(newStaffShift);
                     }
                 } else {
@@ -326,6 +327,7 @@ public class ShiftTableController implements Serializable {
                         newStaffShift.setShiftDate(nowDate);
                         newStaffShift.setCreatedAt(new Date());
                         newStaffShift.setCreater(sessionController.getLoggedUser());
+                        newStaffShift.setRoster(roster);
                         netT.getStaffShift().add(newStaffShift);
                     }
 
@@ -343,7 +345,7 @@ public class ShiftTableController implements Serializable {
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Working Time/Roster table(Fill Old Roster)(/faces/hr/hr_shift_table.xhtml)");
     }
 
@@ -420,7 +422,7 @@ public class ShiftTableController implements Serializable {
 
     public void fetchShiftTableForCheck() {
         Date startTime = new Date();
-        
+
         if (errorCheck()) {
             return;
         }
@@ -445,17 +447,17 @@ public class ShiftTableController implements Serializable {
         while (tmpToDate.after(nowDate)) {
             netT = new ShiftTable();
             netT.setDate(nowDate);
-            
+
             DayType dt = humanResourceBean.isHolidayWithDayType(nowDate);
             System.out.println("dt = " + dt);
-            
-            if (dt==DayType.MurchantileHoliday) {
+
+            if (dt == DayType.MurchantileHoliday) {
                 netT.setMerch(true);
-            }else{
+            } else {
                 netT.setMerch(false);
             }
-            
-            if (dt==DayType.Poya) {
+
+            if (dt == DayType.Poya) {
                 netT.setPh(true);
             } else {
                 netT.setPh(false);
@@ -629,7 +631,7 @@ public class ShiftTableController implements Serializable {
 
         Long range = getCommonFunctions().getDayCount(getFromDate(), getToDate());
         setDateRange(range + 1);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Roster table and vertify time(/faces/hr/hr_report_shift_table.xhtml)");
     }
 
@@ -881,6 +883,5 @@ public class ShiftTableController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }

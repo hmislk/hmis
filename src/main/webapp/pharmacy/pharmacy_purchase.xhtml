@@ -18,7 +18,8 @@
                     <f:facet name="header" > 
                         <h:panelGrid columns="6"  >
                             <h:outputText value="Pharmacy Purchase" />                     
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPurchaseController.bill.paymentMethod}">       
+                                <f:selectItem itemLabel="Select PaymentMethod" />
                                 <f:selectItems value="#{enumController.paymentMethodsForPo}" />
                             </p:selectOneMenu>
                             <p:outputLabel value="Select Dealor"/>

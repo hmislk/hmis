@@ -891,6 +891,10 @@ body {
     width : 100px!important;
 }
 
+.shortinput2 .ui-autocomplete-input.ui-inputfield { 
+    width : 200px!important;
+}
+
 .standardList{
     height: 300px;
     width: 300px!important;

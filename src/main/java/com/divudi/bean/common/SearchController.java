@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -105,6 +106,8 @@ public class SearchController implements Serializable {
     private CommonController commonController;
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    SmsController smsController;
 
     /**
      * Properties
@@ -6778,47 +6781,21 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-
-        String sendingNo = uniqueSmsText;
-        if (sendingNo.contains("077") || sendingNo.contains("076")
-                || sendingNo.contains("071") || sendingNo.contains("072")
-                || sendingNo.contains("075") || sendingNo.contains("078")) {
-        } else {
-            return;
+        
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution()!=ApplicationInstitution.Ruhuna) {
+            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
+            return ;
         }
 
-        StringBuilder sb = new StringBuilder(sendingNo);
-        sb.deleteCharAt(3);
-        sendingNo = sb.toString();
-
-        String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-        HttpResponse<String> stringResponse;
-        String pw = "&q=14488825498722";
-
-        String messageBody2 = smsText;
-
-        System.out.println("messageBody2 = " + messageBody2.length());
-
-        final StringBuilder request = new StringBuilder(url);
-        request.append(sendingNo.substring(1, 10));
-        request.append(pw);
-
-        try {
-            System.out.println("pw = " + pw);
-            System.out.println("sendingNo = " + sendingNo);
-            System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-            System.out.println("text = " + messageBody2);
-
-            stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return;
-        }
+        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText);
 
     }
 
     public void sendSmsAll() {
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
+            return;
+        }
         System.out.println("selectedTelephoneNumbers.size() = " + selectedTelephoneNumbers.size());
         if (selectedTelephoneNumbers == null) {
             JsfUtil.addErrorMessage("Please Select Numbers");
@@ -6834,42 +6811,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            String sendingNo = stn;
-            if (sendingNo.contains("077") || sendingNo.contains("076")
-                    || sendingNo.contains("071") || sendingNo.contains("072")
-                    || sendingNo.contains("075") || sendingNo.contains("078")) {
-            } else {
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder(sendingNo);
-            sb.deleteCharAt(3);
-            sendingNo = sb.toString();
-
-            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-            HttpResponse<String> stringResponse;
-            String pw = "&q=14488825498722";
-
-            String messageBody2 = smsText;
-
-            System.out.println("messageBody2 = " + messageBody2.length());
-
-            final StringBuilder request = new StringBuilder(url);
-            request.append(sendingNo.substring(1, 10));
-            request.append(pw);
-
-            try {
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
-
-                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
+            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText);
             JsfUtil.addSuccessMessage("Done.");
         }
 

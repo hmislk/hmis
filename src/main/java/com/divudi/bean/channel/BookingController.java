@@ -1401,7 +1401,7 @@ public class BookingController implements Serializable {
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
         ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo() != tmp.getMaxNo() || ss.getStartingNo() != tmp.getStartingNo()) {
+        if (ss.getMaxNo() != tmp.getMaxNo() || ss.getStartingNo() != tmp.getStartingNo()|| ss.getSessionTime() != tmp.getStartingTime()|| ss.isRetired() != tmp.isRetired()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
         }

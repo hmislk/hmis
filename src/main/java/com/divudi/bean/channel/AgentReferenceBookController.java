@@ -20,10 +20,13 @@ import com.divudi.facade.AgentReferenceBookFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -282,6 +285,27 @@ public class AgentReferenceBookController implements Serializable {
         }
 
     }
+    
+    public void listnerChannelAgentSelect(){
+        listnerAgentSelect(ReferenceBookEnum.ChannelBook);
+    }
+    
+    private void listnerAgentSelect(ReferenceBookEnum bookEnum){
+        agentReferenceBooks=new ArrayList<>();
+        String sql;
+        Map m=new HashMap();
+        
+        sql = " select a from AgentReferenceBook a where "
+                + " a.retired=false "
+                + " and a.institution=:ins "
+                + " and a.referenceBookEnum=:rb "
+                + " order by a.bookNumber desc";
+
+        m.put("rb", bookEnum);
+        m.put("ins", getAgentReferenceBook().getInstitution());
+        
+        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP,10);
+    }
 
     public AgentReferenceBook getAgentReferenceBook() {
         if (agentReferenceBook == null) {
@@ -311,6 +335,9 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
+        if (agentReferenceBooks==null) {
+            agentReferenceBooks=new ArrayList<>();
+        }
         return agentReferenceBooks;
     }
 

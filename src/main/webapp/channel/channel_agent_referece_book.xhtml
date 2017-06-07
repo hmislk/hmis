@@ -14,26 +14,77 @@
 
             <p:panel header="Cannel Agent Reference Book" styleClass="verticalAndHorizontalCenteringLarge">
 
-                <p:panelGrid columns="2" >
-                    <p:outputLabel value="Agent Name" />
-                    <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
-                                    forceSelection="true"
-                                    completeMethod="#{agencyController.completeAgency}" 
-                                    var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                        <p:column>#{vt.institutionCode}</p:column>
-                        <p:column>#{vt.name}</p:column>
-                    </p:autoComplete>
-                    <p:outputLabel value="Book Number" />
-                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
-                    <p:outputLabel value="Strarting Reference Number" />
-                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
-                    <p:outputLabel value="Ending Reference Number" />
-                    <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
-                    
-                    <p:commandButton action="#{agentReferenceBookController.saveChannelBook}" value="Save" ajax="false" ></p:commandButton> 
-                    <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
+                <p:tabView id="tabView">
+                    <p:tab title="Book Details">
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="Agent Name" />
+                            <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
+                                            forceSelection="true" 
+                                            completeMethod="#{agencyController.completeAgency}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column>#{vt.institutionCode}</p:column>
+                                <p:column>#{vt.name}</p:column>
+                                <f:ajax event="itemSelect" execute="@this" render="tabView" 
+                                        listener="#{agentReferenceBookController.listnerChannelAgentSelect}" />
+                            </p:autoComplete>
+                            <p:outputLabel value="Book Number" />
+                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
+                            <p:outputLabel value="Strarting Reference Number" />
+                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
+                            <p:outputLabel value="Ending Reference Number" />
+                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
 
-                </p:panelGrid>
+                            <p:commandButton action="#{agentReferenceBookController.saveChannelBook}" value="Save" ajax="false" ></p:commandButton> 
+                            <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 
+
+                        </p:panelGrid>
+                    </p:tab>
+                    <p:tab title="Book Details">
+                        <p:dataTable value="#{agentReferenceBookController.agentReferenceBooks}" var="a" styleClass="noBorder">
+                            <f:facet name="header">
+                                <p:outputLabel value="Channel Book Details" />
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Book Number" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bookNumber}" >
+                                    <f:convertNumber pattern="0000" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Starting Ref. No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                    <f:convertNumber pattern="00000" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Ending Ref. No" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                    <f:convertNumber pattern="00000" />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Creater" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.creater.webUserPerson.nameWithTitle}" />
+                            </p:column>
+                            <p:column style="width: 120px!important;">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Created Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.createdAt}" >
+                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                </p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+                </p:tabView>
 
             </p:panel>
 
