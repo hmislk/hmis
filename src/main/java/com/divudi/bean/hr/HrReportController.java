@@ -4886,6 +4886,7 @@ public class HrReportController implements Serializable {
 
     public void createGrativityList() {
         staffGratuitys = new ArrayList<>();
+        total = 0.0;
         if (reportKeyWord.getSalaryCycle() == null) {
             JsfUtil.addErrorMessage("Select Salary Cycle");
             return;
@@ -4917,7 +4918,7 @@ public class HrReportController implements Serializable {
             int days = period.getDays();
             System.out.println("ageDays = " + days);
             System.out.println("s.getBasicVal() = " + s.getBasicVal());
-            double mon=months;
+            double mon = months;
             System.out.println("mon = " + mon);
             double monthinyears = mon / 12;
             System.out.println("monthinyears = " + monthinyears);
@@ -4928,6 +4929,7 @@ public class HrReportController implements Serializable {
             gratuity.setDays(days);
             gratuity.setGratuity(grat);
             staffGratuitys.add(gratuity);
+            total += grat;
         }
 
     }

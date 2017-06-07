@@ -3124,9 +3124,9 @@ public class HumanResourceBean {
                 + " and ss.endRecord.recordTimeStamp is not null ) "
                 + " and ss.dayType=:dtp "
                 + " and ss.shiftDate between :fd  and :td "
-                + " and ss.extraTimeFromStartRecordVarified=:d "
-                + " and ss.extraTimeFromEndRecordVarified=:d "
-                + " and ss.extraTimeCompleteRecordVarified=:d "
+//                + " and ss.extraTimeFromStartRecordVarified=:d "
+//                + " and ss.extraTimeFromEndRecordVarified=:d "
+//                + " and ss.extraTimeCompleteRecordVarified=:d "
                 + " and ss.staff=:stf "
                 + " order by ss.shiftDate ";
 
@@ -3135,7 +3135,7 @@ public class HumanResourceBean {
         hm.put("td", toDate);
         hm.put("dtp", dayType);
         hm.put("stf", staff);
-        hm.put("d", 0.0);
+//        hm.put("d", 0.0);
 
         List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
 
@@ -3156,12 +3156,15 @@ public class HumanResourceBean {
                         }
                     }
                 }
+                System.out.println("s.getShift().isHalfShift() = " + s.getShift().isHalfShift());
                 dbl += s.getShift().isHalfShift() ? 0.5 : 1;
+                System.out.println("dbl = " + dbl);
                 lastStaffShift = s;
                 System.err.println("lastStaffShift.getShiftDate() = " + lastStaffShift.getShiftDate());
             }
 
         }
+        System.out.println("dbl("+dayType+") = " + dbl);
 
         return dbl;
     }
@@ -3194,7 +3197,7 @@ public class HumanResourceBean {
                 + " and ss.dayType = :dtp "
                 + " and ss.shiftDate between :fd  and :td "
                 + " and ss.staff=:stf ";
-
+        
         if (dayType == DayType.Poya || dayType == DayType.MurchantileHoliday) {
             sql += " and ss.lieuAllowed=false "
                     + " and ss.lieuQtyUtilized=0";

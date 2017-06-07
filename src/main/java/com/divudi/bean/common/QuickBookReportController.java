@@ -302,7 +302,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setTrnsType("INVOICE");
             qbf.setDate(sdf.format(fromDate));
             qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
-            qbf.setName("CREDIT COMPANY:" + i.getName());
+            qbf.setName("CREDIT COMPANY:" + i.getChequePrintingName());
             qbf.setAmount(grantTot);
             qbf.setMemo("Sales");
             sdf = new SimpleDateFormat("yyyyMMdd");
@@ -338,7 +338,7 @@ public class QuickBookReportController implements Serializable {
                     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
                     qbf.setRowType("TRNS");
                     qbf.setTrnsType("INVOICE");
-                    qbf.setDate(sdf.format(fromDate));
+                    qbf.setDate(sdf.format(pe.getDateOfDischarge()));
                     qbf.setEditDate(true);
                     if (getReportKeyWord().getString().equals("0")) {
                         qbf.setAccnt("Accounts Receivable:Debtors Control - BHT");
@@ -350,7 +350,7 @@ public class QuickBookReportController implements Serializable {
                         qbf.setAccnt("Accounts Receivable:Debtors Control - DS");
                     }
                     if (getReportKeyWord().isBool1()) {
-                        qbf.setName("DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName());
+                        qbf.setName("DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle());
                     } else {
                         qbf.setName("CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName());
                     }
@@ -361,7 +361,7 @@ public class QuickBookReportController implements Serializable {
                     sdf = new SimpleDateFormat("yyyy-MM-dd");
                     qbf.setCustFld2(sdf.format(pe.getDateOfAdmission()));
                     qbf.setCustFld3(sdf.format(pe.getDateOfDischarge()));
-                    qbf.setCustFld4(pe.getPatient().getPerson().getName());
+                    qbf.setCustFld4(pe.getPatient().getPerson().getNameWithTitle());
                     qbf.setCustFld5(pe.getPatient().getPerson().getAddress());
                     qbf.setCustFld6(pe.getPatient().getPerson().getPhone() + "/" + pe.getPatient().getPerson().getMobile());
 
@@ -1034,7 +1034,7 @@ public class QuickBookReportController implements Serializable {
                 if (creditCompany != null) {
                     qbf.setTrnsType("INVOICE");
                     if (creditCompany != null) {
-                        qbf.setName("CREDIT COMPANY:" + creditCompany.getName());
+                        qbf.setName("CREDIT COMPANY:" + creditCompany.getChequePrintingName());
                     } else {
                         qbf.setName("Credit");
                     }
@@ -1114,7 +1114,7 @@ public class QuickBookReportController implements Serializable {
                     if (creditCompany != null) {
                         qbf.setTrnsType("INVOICE");
                         if (creditCompany != null) {
-                            qbf.setName("CREDIT COMPANY:" + creditCompany.getName());
+                            qbf.setName("CREDIT COMPANY:" + creditCompany.getChequePrintingName());
                         } else {
                             qbf.setName("Credit");
                         }
@@ -1428,7 +1428,7 @@ public class QuickBookReportController implements Serializable {
             String name = "";
             if (paymentMethod == PaymentMethod.Credit) {
                 if (getReportKeyWord().isBool1()) {
-                    name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName();
+                    name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle();
                 } else {
                     name = "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName();
                 }
@@ -1588,7 +1588,7 @@ public class QuickBookReportController implements Serializable {
             String name = "";
             if (paymentMethod == PaymentMethod.Credit) {
                 if (getReportKeyWord().isBool1()) {
-                    name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName();
+                    name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle();
                 } else {
                     name = "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName();
                 }
@@ -1750,7 +1750,7 @@ public class QuickBookReportController implements Serializable {
         String name = "";
         if (paymentMethod == PaymentMethod.Credit) {
             if (getReportKeyWord().isBool1()) {
-                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName();
+                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle();
             } else {
                 name = "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName();
             }
@@ -1839,7 +1839,7 @@ public class QuickBookReportController implements Serializable {
         String name = "";
         if (paymentMethod == PaymentMethod.Credit) {
             if (getReportKeyWord().isBool1()) {
-                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName();
+                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle();
             } else {
                 name = "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName();
             }
@@ -1886,7 +1886,7 @@ public class QuickBookReportController implements Serializable {
         String name = "";
         if (paymentMethod == PaymentMethod.Credit) {
             if (getReportKeyWord().isBool1()) {
-                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getName();
+                name = "DIALYSIS CUSTOMER:" + pe.getCreditCompany().getChequePrintingName() + ":" + pe.getPatient().getPerson().getNameWithTitle();
             } else {
                 name = "CREDIT COMPANY:" + pe.getCreditCompany().getChequePrintingName();
             }
