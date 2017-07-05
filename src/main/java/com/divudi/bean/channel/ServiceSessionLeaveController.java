@@ -8,6 +8,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.entity.BillSession;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
@@ -117,7 +118,7 @@ public class ServiceSessionLeaveController implements Serializable {
 
     private boolean errorCheckForServiceSessoinLeaveByDate() {
 
-        if (getCurrent().getDeactivateComment() == null ||getCurrent().getDeactivateComment().isEmpty()) {
+        if (getCurrent().getDeactivateComment() == null || getCurrent().getDeactivateComment().isEmpty()) {
             UtilityController.addErrorMessage("Please Enter a Reson For Leave");
             return true;
         }
@@ -155,7 +156,7 @@ public class ServiceSessionLeaveController implements Serializable {
     }
 
     public void removeLeaveAndActiveServiceSessionByDate() {
-        if (bookingController.getStaff()==null) {
+        if (bookingController.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff.");
             return;
         }
@@ -163,7 +164,7 @@ public class ServiceSessionLeaveController implements Serializable {
             JsfUtil.addErrorMessage("Please Enter Remove Comment.");
             return;
         }
-        List<ServiceSessionLeave> serviceSessionLeaves=fetchCreatedLeaveServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
+        List<ServiceSessionLeave> serviceSessionLeaves = fetchCreatedLeaveServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
         if (serviceSessionLeaves.isEmpty()) {
             JsfUtil.addErrorMessage("Please Select Correct Date This Date hasn't Any Leave");
             return;
@@ -194,9 +195,9 @@ public class ServiceSessionLeaveController implements Serializable {
         hm.put("st", getCurrentStaff());
 
         serviceSessionLeaves = getFacade().findBySQL(slq, hm, TemporalType.DATE);
-        System.out.println("hm = " + hm);
-        System.out.println("slq = " + slq);
-        System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
+//        System.out.println("hm = " + hm);
+//        System.out.println("slq = " + slq);
+//        System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
         bookingController.generateSessionsOnlyId();
     }
 
@@ -230,6 +231,11 @@ public class ServiceSessionLeaveController implements Serializable {
         getCurrent().setOriginatingSession(getSelectedServiceSession());
         getCurrent().setSessionDate(getSelectedServiceSession().getSessionDate());//leave date
         getFacade().create(getCurrent());
+
+//        bookingController.setSelectedServiceSession(selectedServiceSession);
+//        bookingController.fillBillSessions();
+//        bookingController.sendSmsToinformLeave();
+
         current = null;
         selectedServiceSession = null;
         fillLeaveItems();
@@ -240,7 +246,7 @@ public class ServiceSessionLeaveController implements Serializable {
         if (errorCheckForServiceSessoinLeaveByDate()) {
             return;
         }
-        List<ServiceSession> serviceSessions=fetchCreatedServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
+        List<ServiceSession> serviceSessions = fetchCreatedServiceSession(bookingController.getSessionStartingDate(), bookingController.getStaff());
         if (serviceSessions.isEmpty()) {
             UtilityController.addErrorMessage("Selected Date Haven't Sessions or This Date Already Added Leave");
             return;
@@ -260,6 +266,10 @@ public class ServiceSessionLeaveController implements Serializable {
             ss.setSessionDate(s.getSessionDate());//leave date
             ss.setDeactivateComment(getCurrent().getDeactivateComment());
             getFacade().create(ss);
+            
+//            bookingController.setSelectedServiceSession(s);
+//            bookingController.fillBillSessions();
+//            bookingController.sendSmsToinformLeave();
 
         }
         current = null;

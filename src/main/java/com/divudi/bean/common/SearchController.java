@@ -4079,7 +4079,12 @@ public class SearchController implements Serializable {
         System.out.println("jpql = " + jpql);
 
 //        return "/reports_list";
-        return "/reports_list_new";
+        if (userPatientInvestigations.size() > 0) {
+            return "/reports_list_new";
+        } else {
+            JsfUtil.addErrorMessage("Please Enter Correct Phone Number and Bill Number");
+            return "";
+        }
     }
 
     public void createPatientInvestigationsTableSingle() {
@@ -5031,7 +5036,7 @@ public class SearchController implements Serializable {
         }
         if (getSearchKeyword().getRefBillNo() != null) {
             try {
-                long l=Long.parseLong(getSearchKeyword().getRefBillNo());
+                long l = Long.parseLong(getSearchKeyword().getRefBillNo());
                 sql += " and b.id=:id";
                 m.put("id", l);
             } catch (Exception e) {
@@ -6781,10 +6786,10 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-        
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution()!=ApplicationInstitution.Ruhuna) {
+
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
             JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
-            return ;
+            return;
         }
 
         smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText);

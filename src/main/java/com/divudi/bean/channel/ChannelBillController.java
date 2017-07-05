@@ -2362,6 +2362,21 @@ public class ChannelBillController implements Serializable {
         return refundBillFee;
     }
 
+    public String updatePrintStatus() {
+        System.out.println("getBillSession()= " + getBillSession());
+        if (getBillSession() != null) {
+            System.out.println("getBillSession().getBill().isPrinted() = " + getBillSession().getBill().isPrinted());
+            if (!getBillSession().getBill().isPrinted()) {
+                getBillSession().getBill().setPrinted(true);
+                getBillSession().getBill().setPrintedAt(new Date());
+                getBillSession().getBill().setPrintedUser(getSessionController().getLoggedUser());
+                getBillFacade().edit(getBillSession().getBill());
+                JsfUtil.addSuccessMessage("Bill Print Status Updated");
+            }
+        }
+        return "";
+    }
+
     public void listnerSetBillSession(BillSession bs) {
         setBillSessionTmp(bs);
         setBillSession(bs);

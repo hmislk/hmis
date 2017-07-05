@@ -103,6 +103,9 @@ public class Institution implements Serializable {
     String descreption;
     String accountNo;
     Institution bankBranch;
+    
+    //Inactive Status
+    private boolean inactive;
 
     public Institution() {
         split();
@@ -497,6 +500,14 @@ public class Institution implements Serializable {
 
     public void setBankBranch(Institution bankBranch) {
         this.bankBranch = bankBranch;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
     }
 
 }

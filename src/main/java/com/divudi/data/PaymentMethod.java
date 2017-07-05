@@ -19,4 +19,15 @@ public enum PaymentMethod {
    Card,
    Cheque,
    Slip,
+   OnlineSettlement;
+   
+   public String getLabel() {
+        switch (this) {
+            case OnlineSettlement:
+                return "Online Settlement";
+            default:
+                return this.toString();
+
+        }
+    }
 }
