@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.channel;
 
+import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
@@ -118,6 +119,8 @@ public class Api {
     private BillBeanController billBeanController;
     @Inject
     private CommonController commonController;
+    @Inject
+    AgentReferenceBookController AgentReferenceBookController;
 
     /**
      * Creates a new instance of Api
@@ -1092,8 +1095,8 @@ public class Api {
             s = "Please Enter Agency Reference No";
             return s;
         }
-        if ("".equals(agent_ref)) {
-            s = "Please Enter Agency Reference No";
+        if (checkAgentRefNo(agent_ref,institution)) {
+            s = "This Reference No Already Exists";
             return s;
         }
 
@@ -1581,6 +1584,14 @@ public class Api {
 
         return specilities;
     }
+    
+    private boolean checkAgentRefNo(long agent_ref,Institution institution) {
+        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * PUT method for updating or creating an instance of Api
@@ -1735,6 +1746,14 @@ public class Api {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public AgentReferenceBookController getAgentReferenceBookController() {
+        return AgentReferenceBookController;
+    }
+
+    public void setAgentReferenceBookController(AgentReferenceBookController AgentReferenceBookController) {
+        this.AgentReferenceBookController = AgentReferenceBookController;
     }
 
 }
