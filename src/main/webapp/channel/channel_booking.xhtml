@@ -745,7 +745,8 @@
                                         <p:separator ></p:separator>
 
                                         <p:outputLabel value="Bill No"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                                         <p:outputLabel value="Bill Total"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.netTotal+bookingController.selectedBillSession.bill.vat}" style="color: red;">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -846,7 +847,8 @@
                                 <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Bill Id"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                                         <p:outputLabel value="Cancel Id(Booking)" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.cancelledBill.deptId}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         <p:outputLabel value="Payment Method"/>
