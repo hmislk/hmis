@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup >
+            <h:form  >
+
+
+
+
+                <p:panel header="Consultant List">
+                    <h:panelGrid id ="gpVeda" columns="1">
+
+                        <h:panelGrid id="gpSelect" columns="1"  >
+                            <h:panelGrid id="gpSelectText" columns="10" >
+
+                                <p:autoComplete  forceSelection="true" value="#{consultantController.speciality}" id="acSpeciality" placeholder="Speciality"
+                                                 completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
+                                                 converter="specilityCon"   >
+                                </p:autoComplete>
+                                <p:commandButton id="btnAdd" value="Fill"  
+                                                 action="#{consultantController.createConsultantTable()}" 
+                                                 styleClass="buttons" ajax="false"/>           
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                    <pe:exporter type="xlsx" target="tbl" fileName="Doctor_List"/>
+                                </p:commandButton>
+                            </h:panelGrid>
+
+                        </h:panelGrid  >
+                        <h:panelGrid id="gpSelect2" columns="1"  >
+                            <p:panel header="consultant List" styleClass="noBorder summeryBorder" >
+                                <p:dataTable id="tbl" value="#{consultantController.items}" var="c" rowIndexVar="i" >
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="No" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{i+1}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Name" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.person.name}" />
+                                    </p:column>
+                                    <p:column rendered="#{consultantController.speciality eq null}">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Specility" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.speciality.name}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Code" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.code}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Phone" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.person.phone}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Mobil/Other" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.person.mobile}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Address" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.person.address}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Registration" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.registration}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Qualification" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.qualification}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Creater" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.creater.webUserPerson.name}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Created At" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{c.createdAt}" >
+                                            <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGrid>
+
+                    </h:panelGrid>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

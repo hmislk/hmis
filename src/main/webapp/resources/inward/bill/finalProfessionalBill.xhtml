@@ -111,18 +111,18 @@
 
 
                     <ui:repeat  class="tbl"  value="#{cc.attrs.bill.billItems}" var="bip">
-                        <h:panelGroup rendered="#{bip.netValue!=0 and  bip.inwardChargeType eq 'ProfessionalCharge'}">
+                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                             <br></br>
                             <p:dataTable style="noBorder" value="#{bip.proFees}" var="fe">
 
                                 <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;"> 
-                                    <h:panelGroup rendered="#{fe.feeValue ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false 
+                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                         <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/> 
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Amount" style="text-align: right;">
-                                    <h:panelGroup rendered="#{fe.feeAdjusted ne 0 
-                                                              and fe.bill.cancelled eq false 
+                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false 
                                                               and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                         <h:outputLabel value="#{fe.feeAdjusted}">
                                             <f:convertNumber pattern="#,##0.00" />

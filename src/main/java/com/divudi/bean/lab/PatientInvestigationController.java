@@ -13,6 +13,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.SmsType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -541,6 +542,7 @@ public class PatientInvestigationController implements Serializable {
             sms.setCreater(getSessionController().getLoggedUser());
             sms.setBill(bill);
             sms.setSendingUrl(url);
+            sms.setSmsType(SmsType.LabReport);
             sms.setSendingMessage(messageBody2);
         } else {
             String url = "http://www.textit.biz/sendmsg/index.php";

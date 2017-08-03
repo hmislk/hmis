@@ -250,7 +250,7 @@ root {
         height: 95%;
         padding: 0px;
         font-size: 100%;
-
+        border: none!important;
     }
 
 

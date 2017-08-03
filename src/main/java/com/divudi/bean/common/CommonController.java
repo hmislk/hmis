@@ -67,6 +67,11 @@ public class CommonController implements Serializable {
         return timeInMs / (1000 * 60);
     }
 
+    public double dateDifferenceInSeconds(Date fromDate, Date toDate) {
+        long timeInMs = toDate.getTime() - fromDate.getTime();
+        return timeInMs / 1000;
+    }
+
     public void printReportDetails(Date fromDate, Date toDate, Date startTime, String url) {
 
         String s;
@@ -83,6 +88,10 @@ public class CommonController implements Serializable {
         if (fromDate != null && toDate != null) {
             s += "\n Time Defferent : " + dateDifferenceInMinutes(fromDate, toDate);
         }
+        if (startTime != null) {
+            s += "\n Report Time Defferent(Miniuts) : " + dateDifferenceInMinutes(startTime, new Date());
+            s += "\n Report Time Defferent(Seconds) : " + dateDifferenceInSeconds(startTime, new Date());
+        }
         s += "\n ***************";
 
         System.err.println(s);
@@ -90,7 +99,6 @@ public class CommonController implements Serializable {
     }
 
     //----------Date Time Formats
-
     public String getDateFormat(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MM-dd");

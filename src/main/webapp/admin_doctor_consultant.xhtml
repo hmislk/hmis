@@ -24,11 +24,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    
+
                                     <h:selectOneListbox size="1" value="#{consultantController.speciality}" >
                                         <f:selectItem itemLabel="Please select a speciality"/>
                                         <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                    <f:ajax execute="@this" render="lstSelect" event="change" />
+                                        <f:ajax execute="@this" render="lstSelect" event="change" />
                                     </h:selectOneListbox>
                                     <p:inputText autocomplete="off" value="#{consultantController.selectText}" >
                                         <f:ajax execute="@this" render="lstSelect" event="keyup" />
@@ -38,7 +38,7 @@
                                         <f:selectItems  value="#{consultantController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}"  ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" />                                        
                                     </h:selectOneListbox>
-                                    
+
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton id="btnAdd" value="Add"  
@@ -50,6 +50,7 @@
                                 </h:panelGrid>
 
                             </p:panel>
+                            <p:commandLink value="Consultant List" action="admin_doctor_consultant_1" ajax="false" />
                         </h:panelGrid  >
 
                         <p:panel>
@@ -71,7 +72,7 @@
                                     <h:outputText  value="*Consultant Serial No" />
                                     <p:inputText autocomplete="off" value="#{consultantController.current.codeInterger}"  />
                                     <h:outputText  value="Phone" />
-                                    <p:inputMask mask="999-999999" value="#{consultantController.current.person.phone}"  />
+                                    <p:inputMask mask="999-9999999" value="#{consultantController.current.person.phone}"  />
                                     <h:outputText  value="Fax" />
                                     <p:inputText autocomplete="off"  value="#{consultantController.current.person.fax}"  />
                                     <h:outputText  value="Mobile" />
@@ -95,8 +96,8 @@
                                     <h:outputText  value="#{consultantController.current.createdAt}" >
                                         <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
                                     </h:outputText>
-                                    
-                                   
+
+
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"

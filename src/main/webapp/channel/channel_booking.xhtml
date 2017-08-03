@@ -195,8 +195,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <p:spacer height="30px" />
-                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px; width: 600px;"
+                    <p:spacer height="10px" />
+                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 280px; width: 500px;"
                                  value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}" styleClass="noBorder" 
                                  rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
@@ -208,7 +208,7 @@
                         </f:facet>
 
                         <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                        <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                         <p:column headerText="Paid" style="width: 30px!important;">
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
@@ -226,9 +226,9 @@
                             <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                             <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
                         </p:column> 
-                        <p:column headerText="P/A" style="width: 10px!important;">                           
+<!--                        <p:column headerText="P/A" style="width: 10px!important;">                           
                             <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                        </p:column> 
+                        </p:column> -->
                     </p:dataTable>    
                 </h:panelGroup>
 
@@ -306,7 +306,7 @@
                                     <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'};"
                                                     value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
                                                     itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="shortinput2">
-                                        <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} :#{p:component('tblAgentBooks2')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
+                                        <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} :#{p:component('tblAgentBooks2')} pgNewBookingDetail :#{p:component('ballance2')} :#{p:component('ballance6')} :#{p:component('ballance4')}" listener="#{channelBillController.validateAgentBalance()}"/>
                                         <!--<p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />-->
                                         <p:column>#{ix.institutionCode}</p:column>
                                         <p:column>#{ix.name}</p:column>                                
@@ -445,7 +445,7 @@
                                         <f:convertNumber  pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                    <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ;">
                                         <f:convertNumber  pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </h:panelGrid>

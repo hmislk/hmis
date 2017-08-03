@@ -391,7 +391,7 @@ public class mdInwardReportController implements Serializable {
     public void createCreditInwardOpdPharmacyBills() {
         BillListWithTotals billListWithTotals = new BillListWithTotals();
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Credit};
-        total=0.0;
+        total = 0.0;
         if (reportKeyWord.getString().equals("0")) {
             BillType[] bts = new BillType[]{BillType.InwardFinalBill};
             billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
@@ -1647,8 +1647,11 @@ public class mdInwardReportController implements Serializable {
             row.setPaid((Double) obj[1]);
             double paidAmtByCreditCompany = Math.abs(creditBean.getPaidAmount(pe, BillType.CashRecieveBill, getToDate()));
             row.setPaidByCreditCompany(paidAmtByCreditCompany);
-
+            if (row.getPaid() == 0.0 && paidAmtByCreditCompany == 0.0) {
+                continue;
+            }
             patientEncounterValues.add(row);
+
         }
 
         completePaymentsTotal = calPaymentBillsNotDicharged();

@@ -13,6 +13,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.data.SmsType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
@@ -1010,9 +1011,13 @@ public class BookingController implements Serializable {
                 ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
 
                 if (ss.getOriginatingSession().isVatable()) {
-                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
-                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
-
+                    //all Bill
+//                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
+//                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
+                    
+                    //only Doc Fee
+                    ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+                    ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
                 }
             } else {
                 ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
@@ -1303,8 +1308,9 @@ public class BookingController implements Serializable {
         }
 
         String msg = "Dear Sir/Madam,\n"
-                + ss.getStaff().getPerson().getName() + " is arrived to Hospital. If you are not available at Hospital."
-                + "Please come soon.";
+                + ss.getStaff().getPerson().getName() + " has arrived.\n"
+                + "** Now you can channel your doctor online on www.ruhunuhospitl.lk **";
+        System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName().length());
         System.out.println("msg.length() = " + msg.length());
 //        fillBillSessions();
         for (BillSession bs : bSessions) {
@@ -1312,7 +1318,7 @@ public class BookingController implements Serializable {
                 System.out.println("bs.getBill().getPatient().getPerson().getPhone() = " + bs.getBill().getPatient().getPerson().getPhone());
                 continue;
             }
-            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg);
+            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg, bs.getBill(), SmsType.ChannelDoctorAraival);
         }
     }
 
@@ -1328,7 +1334,7 @@ public class BookingController implements Serializable {
                 System.out.println("bs.getBill().getPatient().getPerson().getPhone() = " + bs.getBill().getPatient().getPerson().getPhone());
                 continue;
             }
-            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg);
+//            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg,bs.getBill());
         }
     }
 
@@ -1378,7 +1384,9 @@ public class BookingController implements Serializable {
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
             //
-            sendSmsDoctorArived(selectedServiceSession);
+            if (getSessionController().getInstitutionPreference().isChannelDoctorArivalMsgSend()) {
+                sendSmsDoctorArived(selectedServiceSession);
+            }
         }
         arrivalRecord.setRecordTimeStamp(new Date());
         arrivalRecord.setApproved(false);

@@ -110,12 +110,14 @@ public class ReportsStock implements Serializable {
         sql = "select s from Stock s "
                 + " where s.department=:d "
                 + " and s.stock>0 "
-                + " and s.itemBatch.item.departmentType!=:depty1 "
-                + " and s.itemBatch.item.departmentType!=:depty2 "
+                + " and (s.itemBatch.item.departmentType is null or s.itemBatch.item.departmentType =:depty) "
+                //                + " and s.itemBatch.item.departmentType!=:depty1 "
+                //                + " and s.itemBatch.item.departmentType!=:depty2 "
                 + " order by s.itemBatch.item.name";
         m.put("d", department);
-        m.put("depty1", DepartmentType.Store);
-        m.put("depty2", DepartmentType.Inventry);
+        m.put("depty", DepartmentType.Pharmacy);
+//        m.put("depty1", DepartmentType.Store);
+//        m.put("depty2", DepartmentType.Inventry);
         stocks = getStockFacade().findBySQL(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -282,7 +284,7 @@ public class ReportsStock implements Serializable {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Error checking/department stock by batch minus(/faces/pharmacy/pharmacy_report_department_stock_by_batch_minus.xhtml)");
     }
 
@@ -1099,7 +1101,6 @@ public class ReportsStock implements Serializable {
         this.rows = rows;
     }
 
-    
     public void prepareForPrint() {
         paginator = false;
         rows = getStocks().size();

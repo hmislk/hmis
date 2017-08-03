@@ -69,6 +69,9 @@
 
                                         <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
+                                        
+                                        <h:outputLabel value="Invoice Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
+                                        <p:calendar value="#{billSearch.billSearch.billedBill.invoiceDate}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
                                         <h:outputLabel value="Canceled :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>

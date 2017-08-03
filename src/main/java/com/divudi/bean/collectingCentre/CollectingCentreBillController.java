@@ -921,16 +921,20 @@ public class CollectingCentreBillController implements Serializable {
         return insId;
     }
 
-    private boolean institutionReferranceNumberExist() {
+    private boolean institutionReferranceNumberExist(Institution ins) {
         String jpql;
         HashMap m = new HashMap();
         jpql = "Select b from Bill b"
                 + " where b.retired = false "
                 + " and b.billType=:bt "
+                + " and b.institution=:ins "
                 + " and upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
+        m.put("ins", ins);
         List<Bill> tempBills = getFacade().findBySQL(jpql, m);
+//        Bill b = getFacade().findFirstBySQL(jpql, m);
+//        System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
@@ -945,7 +949,7 @@ public class CollectingCentreBillController implements Serializable {
             UtilityController.addErrorMessage("Please select a collecting centre");
             return true;
         }
-
+        
         if (getPatientTabId().equals("tabSearchPt")) {
             if (getSearchedPatient() == null) {
                 UtilityController.addErrorMessage("Plese Select Patient");
@@ -979,7 +983,7 @@ public class CollectingCentreBillController implements Serializable {
         if (referralId == null || referralId.trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a referrance number");
             return true;
-        } else if (institutionReferranceNumberExist()) {
+        } else if (institutionReferranceNumberExist(collectingCentre)) {
             JsfUtil.addErrorMessage("Referral number alredy entered");
             return true;
         }

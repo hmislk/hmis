@@ -190,10 +190,13 @@
                             <bi:finalBill  bill="#{inwardSearch.bill}" />
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}"  />
                         </h:panelGroup>
-
+                        
                         <h:panelGroup id="letter">
-                            <bi:credit_company_letter bill="#{inwardSearch.bill}"/> 
+                            <!--<bi:credit_company_letter bill="#{inwardSearch.bill}"/>--> 
+                            <bi:credit_company_letter_new bill="#{inwardSearch.bill}"/> 
                         </h:panelGroup>
+
+                        <p:spacer height="550" />
 
                         <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                             <bi:finalBill  hosCopy="true"     showProfessional="true"                                  

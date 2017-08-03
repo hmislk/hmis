@@ -13,6 +13,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.SmsType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
@@ -3275,7 +3276,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 //Starting of newly added code 
-                + " and b.bill.refunded=false "
+//                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -3324,6 +3325,19 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search/(/faces/inward/inward_search_professional_payment_due.xhtml)");
@@ -6792,7 +6806,7 @@ public class SearchController implements Serializable {
             return;
         }
 
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText);
+        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, SmsType.Marketing);
 
     }
 
@@ -6816,7 +6830,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText);
+            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText,null,SmsType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

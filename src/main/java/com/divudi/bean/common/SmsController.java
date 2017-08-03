@@ -6,11 +6,18 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.SmsType;
+import com.divudi.entity.Bill;
+import com.divudi.entity.Sms;
+import com.divudi.facade.SmsFacade;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.Date;
+import javax.ejb.EJB;
+import javax.inject.Inject;
 
 /**
  *
@@ -19,6 +26,12 @@ import java.io.Serializable;
 @Named(value = "smsController")
 @SessionScoped
 public class SmsController implements Serializable {
+    
+    @EJB
+    SmsFacade smsFacade;
+    
+    @Inject
+    SessionController sessionController;
 
     /**
      * Creates a new instance of SmsController
@@ -26,7 +39,7 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg) {
+    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg,Bill b,SmsType smsType) {
 
         if (sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071") || sendingNo.contains("070") 
@@ -66,7 +79,33 @@ public class SmsController implements Serializable {
                 ex.printStackTrace();
                 return;
             }
+            
+            Sms sms = new Sms();
+            sms.setPassword(pw);
+            sms.setCreatedAt(new Date());
+            sms.setCreater(getSessionController().getLoggedUser());
+            sms.setBill(b);
+            sms.setSmsType(smsType);
+            sms.setSendingUrl(url);
+            sms.setSendingMessage(messageBody2);
+            getSmsFacade().create(sms);
         }
     }
 
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
+    }
+    
 }

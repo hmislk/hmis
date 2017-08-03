@@ -14,7 +14,7 @@
         <p:autoComplete   forceSelection="true" id="staff"
                           value="#{cc.attrs.value}" 
                           completeMethod="#{staffController.completeConsultant}" 
-                          var="mys" 
+                          var="mys" styleClass="mediuminput"
                           itemLabel="#{mys.person.nameWithTitle}" 
                           itemValue="#{mys}"
                           converter="stfcon"   >   

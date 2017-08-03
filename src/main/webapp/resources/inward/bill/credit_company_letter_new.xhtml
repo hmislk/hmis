@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="paySheet.css" ></h:outputStylesheet>
+        <div style="position: relative!important;
+             /*padding-left: 0.5%!important;*/
+             height:95%!important;
+             width:95%!important; 
+             /*             overflow:hidden!important; */
+             font-family: Times New Roman!important; 
+             font-size: 10px!important; 
+             margin:2px!important; 
+             padding: 5px!important;
+             /*             background-size: 100% auto!important;*/
+             letter-spacing: 0px;
+             /*             border: 1px solid!important;*/">
+
+            <div class="institutionName" style="text-align: center!important;
+                 font-weight: bold!important;
+                 font-size: 15px!important;
+                 font-weight: bold;">
+
+            </div>
+            <div style="font-size: 9px!important; font-family: Times New Roman!important;
+                 letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 18%;">
+                <table >
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{commonController.currentDateTime}">
+                                <f:convertDateTime pattern="dd-MMM-yy" />
+                            </h:outputLabel>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.name},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress1},"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress2}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress3 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress3 eq ''}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress3}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress4 eq '') 
+                                                                 and (cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress3 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress4}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress5 eq '') 
+                                                                 and (cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress4 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress5}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress6 eq '') 
+                                                                 and (cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress5 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress6}"/>
+                            <h:outputLabel value="." rendered="#{(cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq null or cc.attrs.bill.patientEncounter.creditCompany.transAddress7 eq '') 
+                                                                 and (cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress6 ne '')}"/>
+                            <h:outputLabel value="," rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress7}"/>
+                            <h:outputLabel value="." rendered="#{cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne null and cc.attrs.bill.patientEncounter.creditCompany.transAddress7 ne ''}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Dear Sir/Madam,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+
+                        <td colspan="2">
+                            <center>
+                                <b>
+                                    <h:outputLabel value="SETTLEMENT OF MEDICAL BILL" style="text-decoration: underline; font-size: 15px!important;"/>
+                                </b>
+                            </center>
+
+                        </td>
+                        <td></td>
+                    </tr>
+
+
+                    <tr>
+                        <td><p:spacer height="15" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+
+
+                    <tr>
+                        <td colspan="3">
+                            <p>
+                                Settlement of Hospital Charges Against Bill No : 
+                                <b> <h:outputLabel value=" #{cc.attrs.bill.insId}"/></b>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+
+
+                    <tr>
+                        <td colspan="3">
+                            <center>
+                                <b> <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" /> </b>
+                            </center>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+
+
+                    <tr>
+                        <td colspan="3">
+                            <p>
+                                I wish to inform you that the above person has received treatment at this Hospital.
+                                Enclosed please find our bill total for Rs.
+                                <h:outputLabel value="&nbsp;&nbsp;"/>
+                                <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}" >
+                                        <f:convertNumber pattern="#,###.##" ></f:convertNumber>
+                                    </h:outputLabel> </b>
+                                <h:outputLabel value="&nbsp;&nbsp;  "/>
+                                being his / her Hospital charges &amp; Professional Charges.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">
+                            <p>
+                                You are kindly requested to remit this amount by cheque written in favour of -
+                                <b> <h:outputLabel value='"#{cc.attrs.bill.institution.name} "'/> </b>
+                                <h:outputLabel value="&nbsp;"/>
+                                <h:outputLabel value ="with least possible."/>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="10" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3">
+                            <p>
+                                <b> <h:outputLabel value="* Please not that Prevailing Bank overdraft interest rate will be applied for all overdue debts"/> </b>
+                            </p>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td><p:spacer height="20" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+                    <!--                    <tr >
+                                            <td width="20%"><p:outputLabel value="Bank A/C Number  "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                            <td align="left"> <h:outputLabel value=" - 013-1-001-7-1924550 "  rendered="#{cc.attrs.con.withFooter}" style="white-space:normal;" /></td>
+                                            <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><p:outputLabel value="Bank"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                            <td  valign="left"><h:outputLabel value=" - People's bank, Galle Fort, Sri Lanka. "  rendered="#{cc.attrs.con.withFooter}"  style="float: next;"/></td>
+                                            <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><p:outputLabel value="BIC Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                            <td  valign="left">  <h:outputLabel value=" - 7135 "  rendered="#{cc.attrs.con.withFooter}"  style="float: outside;"/></td>
+                                            <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><p:outputLabel value="SWIFT Code"  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                            <td valign="left"><h:outputLabel value="  - PSBKLKLX "  rendered="#{cc.attrs.con.withFooter}"  style="float: left;"/></td>
+                                            <td><h:outputLabel value=" "  rendered="#{cc.attrs.con.withFooter}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><p:spacer height="10" /></td>
+                                            <td><h:outputLabel value=" "/></td>
+                                            <td><h:outputLabel value=" "/></td>
+                                        </tr>-->
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Thanking You,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Yours' Faithfully,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><p:spacer height="60" /></td>
+                        <td><h:outputLabel value=" "/></td>
+                        <td><h:outputLabel value=" "/></td>
+                    </tr>
+
+<!--                    <tr>
+                        <td colspan="2">
+                            <h:outputLabel value="(B.A Lahiru Priyabandu)" style="text-decoration: overline;"/>
+                        </td>
+                        <td></td>
+                    </tr>-->
+                    <tr>
+                        <td>
+                            <h:outputLabel value="Accountant,"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                </table>
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>

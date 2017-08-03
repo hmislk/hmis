@@ -15,7 +15,7 @@
         <p:autoComplete completeMethod="#{institutionController.completeCompany}" 
                         var="dept" itemLabel="#{dept.name}"
                         itemValue="#{dept}" forceSelection="true" 
-                        value="#{cc.attrs.value}" 
+                        value="#{cc.attrs.value}" styleClass="mediuminput"
                         converter="institutionConverter" id="institution">
             <p:column headerText="Name">
                 <h:outputLabel value="#{dept.name}"/>

@@ -1990,10 +1990,12 @@ public class ChannelBillController implements Serializable {
                 //or arogya add vat for full bill,is not forign,and vatable marked
                 if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
                     if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable()
-                            && !isForiegn()) {
+                            && !isForiegn()
+                            && f.getFeeType() == FeeType.Staff) {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
                         bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+                        System.out.println("f.getFeeType() = " + f.getFeeType());
                     } else {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(0.0);

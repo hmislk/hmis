@@ -514,13 +514,14 @@ public class StoreGrnController implements Serializable {
         //System.out.println("In");
         long b = billNumberBean.inventoryItemSerialNumberGeneraterForYear(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
 //        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
-        b = b + 1;
+//        b = b + 1;
+        System.out.println("b = " + b);
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
                 b++;
             }
         }
-        //System.out.println("b = " + b);
+        System.out.println("b = " + b);
         String code = "";
         code += getSessionController().getInstitution().getInstitutionCode();
         code += "/";
