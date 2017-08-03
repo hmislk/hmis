@@ -208,7 +208,7 @@
                         </f:facet>
 
                         <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                        <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Name" style="width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
                         <p:column headerText="Paid" style="width: 30px!important;">
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>

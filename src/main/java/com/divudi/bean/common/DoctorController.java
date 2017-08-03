@@ -172,6 +172,7 @@ public class DoctorController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
+        current=new Doctor();
         recreateModel();
        // getItems();
     }
