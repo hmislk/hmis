@@ -288,10 +288,8 @@ public class PharmacyPreSettleController implements Serializable {
     }
     
     private boolean errorCheckForSaleBillAraedyAddToStock() {
-        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
-        setPreBill(getBillFacade().find(getPreBill().getId()));
-        System.out.println("getPreBill().isCancelled() = " + getPreBill().isCancelled());
-        if (getPreBill().isCancelled()) {
+        Bill b=getBillFacade().find(getPreBill().getId());
+        if (b.isCancelled()) {
             return true;
         }
 
