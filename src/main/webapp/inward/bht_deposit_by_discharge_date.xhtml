@@ -138,9 +138,7 @@
                                 </p:column>
 
                                 <p:columnGroup type="footer">
-
                                     <p:row>
-
                                         <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.totalValue}" style="text-align: right">
                                             <f:facet name="footer">
@@ -148,6 +146,7 @@
                                                     <f:convertNumber pattern="#,##0.00"></f:convertNumber></p:outputLabel>
                                             </f:facet>
                                         </p:column>
+                                        <p:column ></p:column>
 
                                     </p:row>
 
@@ -157,7 +156,6 @@
 
                             <p:dataTable id="tbl2" styleClass="noBorder normalFont" value="#{mdInwardReportController.cancel}" 
                                          var="can">
-
                                 <p:column headerText="B H T No">
                                     <f:facet name="header">
                                         <h:outputLabel value="B H T No"/>
@@ -170,6 +168,12 @@
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{can.insId}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Ref. Bill No">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Ref. Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{can.billedBill.insId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">
@@ -214,10 +218,8 @@
                                 </p:column>
 
                                 <p:columnGroup type="footer">
-
                                     <p:row>
-
-                                        <p:column colspan="5" footerText="Total"></p:column>
+                                        <p:column colspan="6" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.cancelledTotal}" style="text-align: right">
                                             <f:facet name="footer">
                                                 <p:outputLabel value="#{mdInwardReportController.cancelledTotal}">
@@ -225,6 +227,7 @@
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
+                                        <p:column ></p:column>
 
                                     </p:row>
 
@@ -293,9 +296,7 @@
                                 </p:column>
 
                                 <p:columnGroup type="footer">
-
                                     <p:row>
-
                                         <p:column colspan="5" footerText="Total"></p:column>
                                         <p:column footerText="#{mdInwardReportController.refundTotal}" style="text-align: right">
                                             <f:facet name="footer">
@@ -304,6 +305,7 @@
                                                 </p:outputLabel>
                                             </f:facet>
                                         </p:column>
+                                        <p:column ></p:column>
 
                                     </p:row>
 

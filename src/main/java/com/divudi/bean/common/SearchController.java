@@ -6,12 +6,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
+import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.SmsType;
 import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
@@ -105,6 +107,8 @@ public class SearchController implements Serializable {
     private CommonController commonController;
     @Inject
     PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    SmsController smsController;
 
     /**
      * Properties
@@ -1607,11 +1611,11 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Search/(/faces/pharmacy/pharmacy_search.xhtml)");
     }
-    
+
     public void createGRNRegistory() {
-        if (getReportKeyWord().getDepartment()==null) {
+        if (getReportKeyWord().getDepartment() == null) {
             JsfUtil.addErrorMessage("Select Departmrnt.");
-            return ;
+            return;
         }
         String sql;
         Map m = new HashMap();
@@ -1621,7 +1625,7 @@ public class SearchController implements Serializable {
                 + " and b.department=:dep and b.billType = :billType "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        if (getReportKeyWord().getInstitution() != null ) {
+        if (getReportKeyWord().getInstitution() != null) {
             sql += " and  (upper(b.fromInstitution.name) like :frmIns )";
             m.put("frmIns", getReportKeyWord().getInstitution());
         }
@@ -1638,7 +1642,7 @@ public class SearchController implements Serializable {
         m.put("class1", BilledBill.class);
         m.put("class2", PreBill.class);
         m.put("billType", BillType.PharmacyGrnBill);
-        m.put("dep",getReportKeyWord().getDepartment());
+        m.put("dep", getReportKeyWord().getDepartment());
         m.put("toDate", getToDate());
         m.put("fromDate", getFromDate());
         //temMap.put("dep", getSessionController().getDepartment());
@@ -3272,7 +3276,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 //Starting of newly added code 
-                + " and b.bill.refunded=false "
+//                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -3321,6 +3325,19 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search/(/faces/inward/inward_search_professional_payment_due.xhtml)");
@@ -4076,7 +4093,12 @@ public class SearchController implements Serializable {
         System.out.println("jpql = " + jpql);
 
 //        return "/reports_list";
-        return "/reports_list_new";
+        if (userPatientInvestigations.size() > 0) {
+            return "/reports_list_new";
+        } else {
+            JsfUtil.addErrorMessage("Please Enter Correct Phone Number and Bill Number");
+            return "";
+        }
     }
 
     public void createPatientInvestigationsTableSingle() {
@@ -4998,6 +5020,13 @@ public class SearchController implements Serializable {
     }
 
     public void createSearchBill() {
+        System.err.println("****");
+        if (getSearchKeyword().getInsId() == null && getSearchKeyword().getDeptId() == null
+                && getSearchKeyword().getBhtNo() == null && getSearchKeyword().getRefBillNo() == null) {
+            JsfUtil.addErrorMessage("Enter BHT No or Bill No");
+            return;
+        }
+        System.err.println("****");
         bills = null;
         String sql;
         Map m = new HashMap();
@@ -5019,8 +5048,18 @@ public class SearchController implements Serializable {
             sql += " and b.patientEncounter.bhtNo=:bht";
             m.put("bht", getSearchKeyword().getBhtNo());
         }
-        sql += " order by b.insId ";
+        if (getSearchKeyword().getRefBillNo() != null) {
+            try {
+                long l = Long.parseLong(getSearchKeyword().getRefBillNo());
+                sql += " and b.id=:id";
+                m.put("id", l);
+            } catch (Exception e) {
+            }
 
+        }
+        sql += " order by b.insId ";
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
 //        m.put("class", PreBill.class);
         bills = getBillFacade().findBySQL(sql, m);
     }
@@ -6762,46 +6801,20 @@ public class SearchController implements Serializable {
 
     public void sendSms() {
 
-        String sendingNo = uniqueSmsText;
-        if (sendingNo.contains("077") || sendingNo.contains("076")
-                || sendingNo.contains("071") || sendingNo.contains("072")
-                || sendingNo.contains("075") || sendingNo.contains("078")) {
-        } else {
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
             return;
         }
 
-        StringBuilder sb = new StringBuilder(sendingNo);
-        sb.deleteCharAt(3);
-        sendingNo = sb.toString();
-
-        String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-        HttpResponse<String> stringResponse;
-        String pw = "&q=14488825498722";
-
-        String messageBody2 = smsText;
-
-        System.out.println("messageBody2 = " + messageBody2.length());
-
-        final StringBuilder request = new StringBuilder(url);
-        request.append(sendingNo.substring(1, 10));
-        request.append(pw);
-
-        try {
-            System.out.println("pw = " + pw);
-            System.out.println("sendingNo = " + sendingNo);
-            System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-            System.out.println("text = " + messageBody2);
-
-            stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return;
-        }
+        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, SmsType.Marketing);
 
     }
 
     public void sendSmsAll() {
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
+            return;
+        }
         System.out.println("selectedTelephoneNumbers.size() = " + selectedTelephoneNumbers.size());
         if (selectedTelephoneNumbers == null) {
             JsfUtil.addErrorMessage("Please Select Numbers");
@@ -6817,42 +6830,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            String sendingNo = stn;
-            if (sendingNo.contains("077") || sendingNo.contains("076")
-                    || sendingNo.contains("071") || sendingNo.contains("072")
-                    || sendingNo.contains("075") || sendingNo.contains("078")) {
-            } else {
-                return;
-            }
-
-            StringBuilder sb = new StringBuilder(sendingNo);
-            sb.deleteCharAt(3);
-            sendingNo = sb.toString();
-
-            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-            HttpResponse<String> stringResponse;
-            String pw = "&q=14488825498722";
-
-            String messageBody2 = smsText;
-
-            System.out.println("messageBody2 = " + messageBody2.length());
-
-            final StringBuilder request = new StringBuilder(url);
-            request.append(sendingNo.substring(1, 10));
-            request.append(pw);
-
-            try {
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
-
-                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
+            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText,null,SmsType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

@@ -197,7 +197,8 @@
                                 <tr>
                                     <td>
                                         <div class="cashierPrinting" style="text-decoration: overline;font-size: 12px;">
-                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}"   />
+                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}" rendered="#{cc.attrs.bill.cancelled eq false}"  />
+                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}" rendered="#{cc.attrs.bill.cancelled eq true}"  />
                                         </div>
 
                                     </td>

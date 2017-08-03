@@ -187,7 +187,9 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord eq null}" >
                         <h:outputText value="NOT YET ARRIVED." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" >
+                        <p:commandButton value="Mark Arrival" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" 
+                                         onclick="if (!confirm('Are you sure you want to Mark this Session as arival?'))
+                                                return false;">
                         </p:commandButton>
                     </h:panelGroup>
 
@@ -199,7 +201,9 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Departure" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsLeft()}" ></p:commandButton>
+                        <p:commandButton value="Mark Departure" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsLeft()}" 
+                                         onclick="if (!confirm('Are you sure you want to Mark this Session as Departure?'))
+                                                return false;"></p:commandButton>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{bookingController.arrivalRecord ne null and bookingController.arrivalRecord.approved ne false}" >
@@ -217,7 +221,9 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival Again" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" ></p:commandButton>
+                        <p:commandButton value="Mark Arrival Again" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" 
+                                         onclick="if (!confirm('Are you sure you want to Mark this Session as arival again?'))
+                                                return false;"></p:commandButton>
                     </h:panelGroup>
 
                 </p:panel>

@@ -95,6 +95,12 @@ public class Institution implements Serializable {
     @Transient
     String transAddress4;
     @Transient
+    private String transAddress5;
+    @Transient
+    private String transAddress6;
+    @Transient
+    private String transAddress7;
+    @Transient
     List<AgentReferenceBook> agentReferenceBooks;
     
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -103,6 +109,9 @@ public class Institution implements Serializable {
     String descreption;
     String accountNo;
     Institution bankBranch;
+    
+    //Inactive Status
+    private boolean inactive;
 
     public Institution() {
         split();
@@ -192,6 +201,9 @@ public class Institution implements Serializable {
             transAddress2=arr[1];
             transAddress3=arr[2];
             transAddress4=arr[3];
+            transAddress5=arr[4];
+            transAddress6=arr[5];
+            transAddress7=arr[6];
        }catch(Exception e){
            //System.out.println(e.getMessage());
        }
@@ -497,6 +509,38 @@ public class Institution implements Serializable {
 
     public void setBankBranch(Institution bankBranch) {
         this.bankBranch = bankBranch;
+    }
+
+    public boolean isInactive() {
+        return inactive;
+    }
+
+    public void setInactive(boolean inactive) {
+        this.inactive = inactive;
+    }
+
+    public String getTransAddress5() {
+        return transAddress5;
+    }
+
+    public void setTransAddress5(String transAddress5) {
+        this.transAddress5 = transAddress5;
+    }
+
+    public String getTransAddress6() {
+        return transAddress6;
+    }
+
+    public void setTransAddress6(String transAddress6) {
+        this.transAddress6 = transAddress6;
+    }
+
+    public String getTransAddress7() {
+        return transAddress7;
+    }
+
+    public void setTransAddress7(String transAddress7) {
+        this.transAddress7 = transAddress7;
     }
 
 }

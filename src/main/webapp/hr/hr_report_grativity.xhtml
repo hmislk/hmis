@@ -129,6 +129,9 @@
                                         <p:outputLabel value="Staff Code" />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.salary.staff.codeInterger}" style="font-size: 12px;"/>
+                                    <f:facet name="footer" >
+                                        <p:outputLabel value="Total" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column style="text-align: left;">
                                     <f:facet name="header" >
@@ -181,6 +184,11 @@
                                     <p:outputLabel value="#{ss.gratuity}" style="font-size: 12px;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
+                                    <f:facet name="footer" >
+                                        <p:outputLabel value="#{hrReportController.total}" style="font-size: 12px;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

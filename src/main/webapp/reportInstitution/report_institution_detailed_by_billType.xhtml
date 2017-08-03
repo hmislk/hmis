@@ -69,30 +69,38 @@
                                              sum"  fileName="Day_END_By_Bill_Type" />
                             </p:commandButton> 
                         </h:panelGrid>
-                            <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
+                        <h:panelGrid columns="7" styleClass="printBlock" style="min-width: 100%;">
 
-                                <h:outputLabel value="Cashier Day End Detailed Report "/>
-                                <p:spacer width="20" height="0"/>
-                                <h:outputLabel value="From" />
-                                <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                                </h:outputLabel>
-                                <p:spacer width="10" height="0"/>
-                                <h:outputLabel value="To"/>
-                                <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
-                                </h:outputLabel>
-                            </h:panelGrid>
+                            <h:outputLabel value="Cashier Day End Detailed Report "/>
+                            <p:spacer width="20" height="0"/>
+                            <h:outputLabel value="From" />
+                            <h:outputLabel  value="#{commonReport.fromDate}" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                            <p:spacer width="10" height="0"/>
+                            <h:outputLabel value="To"/>
+                            <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
+                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                            </h:outputLabel>
+                        </h:panelGrid>
                     </f:facet>
                     <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >                       
                         <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" rowStyleClass="noDisplayRow"
-                                     rendered="#{commonReport.billedBills.bills.size()>0}" sortBy="#{b.billType}"  style="width: 95%;" 
+                                     rendered="#{commonReport.billedBills.bills.size()>0}"   style="width: 95%;" 
                                      paginator="false"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15,20">
 
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Bills "/> 
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="Id" >
@@ -111,7 +119,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Cashier"  >
+                            <p:column headerText="Cashier" sortBy="#{b.creater.webUserPerson.name}">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cashier"/>
                                 </f:facet> 
@@ -260,6 +268,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Time"   >
@@ -421,6 +437,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Refunded" />
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Time"   >
@@ -585,6 +609,14 @@
 
                             <f:facet name="header">  
                                 <h:outputLabel value="Opd Bills "/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="Time"  >
@@ -749,6 +781,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time"   >
                                 <f:facet name="header">  
@@ -902,6 +942,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Refunded" />
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time"   >
                                 <f:facet name="header">  
@@ -1059,6 +1107,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Payments"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
@@ -1131,6 +1187,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="PaymentsCancel" />
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
@@ -1198,13 +1262,21 @@
 
                     <h:panelGroup rendered="#{commonReport.billType eq 'PettyCash'}">
                         <p:dataTable id="petty" value="#{commonReport.billedBills.bills}"
-                                     var="b4"   sortBy="#{b4.billType}"
+                                     var="b4"   
                                      rendered="#{commonReport.billedBills.bills.size()>0}" 
                                      paginator="false"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Petty Cash Payment"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="Time" style="width:16%; " >
@@ -1216,7 +1288,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Cashier"  >
+                            <p:column headerText="Cashier" sortBy="#{b4.creater.webUserPerson.name}" >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Cashier"/>
                                 </f:facet> 
@@ -1311,6 +1383,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel  value="Petty Cash Payment Cancel"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="Time" style="width:16%; " >
@@ -1419,6 +1499,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit Company Payment Recieve"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Time" style="width:16%; ">
@@ -1529,6 +1617,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Credit Company Payment Cancel"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" style="width:16%; " >
                                 <f:facet name="header">  
@@ -1662,6 +1758,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cashier Agent Payment Detail Report"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
 
                             <p:column headerText="Cashier Code"  >
@@ -1748,7 +1852,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
                             </p:column>  
-                            
+
                             <p:column headerText="Slip Date" style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Slip Date"/>
@@ -1817,6 +1921,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Agent Payment Cancel"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet>
 
                             <p:column headerText="Time" style="width:16%; " >
@@ -1878,7 +1990,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Slip'}" value="0.00"/>
                             </p:column> 
-                            
+
                             <p:column headerText="Credit Card" style="text-align: right;"   >
                                 <f:facet name="header">  
                                     <h:outputLabel value="Credit Card"/>
@@ -1888,7 +2000,7 @@
                                 </h:outputLabel>
                                 <h:outputLabel rendered="#{b7.paymentMethod!='Card'}" value="0.00"/>
                             </p:column>
-                            
+
                             <p:column headerText="Descripion"  style="">
                                 <f:facet name="header">  
                                     <h:outputLabel value="Descripion"/>
@@ -1963,6 +2075,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Inward Payments" />
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                                 <f:facet name="header">  
@@ -2030,6 +2150,14 @@
                                      rowsPerPageTemplate="5,10,15,20">
                             <f:facet name="header">  
                                 <h:outputLabel value="Inward Payments Cancel"/>
+                                <br></br><h:outputLabel value="From - " />
+                                <h:outputLabel  value="#{commonReport.fromDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
+                                <h:outputLabel value=" - To - "/>
+                                <h:outputLabel  value="#{commonReport.toDate}" >
+                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
                                 <f:facet name="header">  
@@ -2121,9 +2249,9 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
-                <f:facet name="footer" >
-                    <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                </f:facet>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
                     </p:dataTable>
                 </p:panel>
             </h:form>

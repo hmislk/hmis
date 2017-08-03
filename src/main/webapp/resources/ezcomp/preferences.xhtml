@@ -41,6 +41,7 @@
                 <h:panelGrid columns="2" styleClass="alignTop" >
                     <h:outputLabel value="Institution" ></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
+                        <f:selectItem itemLabel="Select Institution" />
                         <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
                     </p:selectOneMenu>
                     <h:outputLabel value="Logo Name"></h:outputLabel>
@@ -142,6 +143,8 @@
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
                     <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
+                    <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
                     <h:outputLabel value="Default Payment Method"></h:outputLabel>
                     <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
                         <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               

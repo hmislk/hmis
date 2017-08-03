@@ -12,15 +12,34 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>                   
-                    <h:panelGrid columns="6" >
+                    <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                        <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
-                        <h:panelGrid columns="3" style="float : right!important;">
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssuePharmacyReport()}"/>
+                        
+                        <h:outputLabel value="Staff "/>                           
+                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                        
+                        <h:outputLabel  value="Request From Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept1"
+                                         itemValue="#{dept1}" itemLabel="#{dept1.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
+                        
+                        <h:outputLabel  value="Request To Department"  ></h:outputLabel>
+                        <p:autoComplete  value="#{searchController.searchKeyword.tooDepartment}"  
+                                         completeMethod="#{departmentController.completeDept}" var="dept"
+                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                         forceSelection="true" rendered="true">
+                        </p:autoComplete>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3">
+                        
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createIssuePharmacyReport()}"/>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="datatable"  />
                             </p:commandButton>
@@ -28,26 +47,6 @@
                             <p:commandButton actionListener="#{searchController.createIssuePharmacyReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                                 <pe:exporter type="xlsx" target="tbl1" fileName="Pharmacy_Transfer_Issued_List_Report"  />
                             </p:commandButton>
-                        </h:panelGrid>
-
-                    </h:panelGrid>
-                    <h:panelGrid columns="6">
-                        <h:outputLabel value="Staff "/>                           
-                        <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                        
-                        <h:outputLabel  value="Request For Department"  ></h:outputLabel>
-                        <p:autoComplete  value="#{searchController.searchKeyword.frmDepartment}"  
-                                         completeMethod="#{departmentController.completeDept}" var="dept1"
-                                         itemValue="#{dept1}" itemLabel="#{dept1.name}" 
-                                         forceSelection="true" rendered="true">
-                        </p:autoComplete>
-                        
-                        <h:outputLabel  value="From Department"  ></h:outputLabel>
-                        <p:autoComplete  value="#{searchController.searchKeyword.tooDepartment}"  
-                                         completeMethod="#{departmentController.completeDept}" var="dept"
-                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                         forceSelection="true" rendered="true">
-                        </p:autoComplete>
                     </h:panelGrid>
                 </f:facet>              
 

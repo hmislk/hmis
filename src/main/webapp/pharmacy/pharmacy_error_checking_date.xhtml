@@ -19,13 +19,13 @@
                     <h:outputLabel value="Error Detection" ></h:outputLabel>
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>                             
-                        <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                        <p:calendar value="#{pharmacyErrorChecking.fromDate}" pattern="dd MM yyyy hh:mm:ss a" placeholder="From Date" ></p:calendar>
                         <h:outputLabel value="To Date " />
-                        <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                        <p:calendar value="#{pharmacyErrorChecking.toDate}" pattern="dd MM yyyy hh:mm:ss a" placeholder="To Date" ></p:calendar>
                         <h:outputLabel value="Department"/> 
                         <p:autoComplete id="dep" value="#{pharmacyErrorChecking.department}"  
                                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                        forceSelection="true" rendered="true" 
+                                        forceSelection="true" rendered="true" placeholder="Department"
                                         requiredMessage="You must select a department" >
                             <p:column headerText="Department">
                                 <h:outputLabel value="#{dept.name}"/>
@@ -35,7 +35,7 @@
                             </p:column>
                         </p:autoComplete>
                         <h:outputLabel value="Item"/> 
-                        <p:autoComplete id="itm" value="#{pharmacyErrorChecking.item}"  
+                        <p:autoComplete id="itm" value="#{pharmacyErrorChecking.item}"  placeholder="Item"
                                         completeMethod="#{itemController.completeAmpItemAll}" 
                                         var="item" itemValue="#{item}" itemLabel="#{item.name}" 
                                         forceSelection="true"  >

@@ -5,11 +5,14 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.SmsType;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -41,7 +44,8 @@ public class Sms implements Serializable {
     String userId;
     String password;
     String sendingUrl;
-    
+    @Enumerated(EnumType.STRING)
+    private SmsType smsType;    
     
         //Created Properties
     @ManyToOne
@@ -206,6 +210,14 @@ public class Sms implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.Sms[ id=" + id + " ]";
+    }
+
+    public SmsType getSmsType() {
+        return smsType;
+    }
+
+    public void setSmsType(SmsType smsType) {
+        this.smsType = smsType;
     }
     
 }

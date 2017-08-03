@@ -77,6 +77,7 @@ public class UserPreference implements Serializable {
     boolean channelSettleWithoutPatientPhoneNumber=false;
     boolean opdSettleWithoutPatientPhoneNumber=false;
     boolean channelBillDouble=false;
+    private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
@@ -498,9 +499,13 @@ public class UserPreference implements Serializable {
         this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
     }
     
-    
-    
-    
+    public boolean isChannelDoctorArivalMsgSend() {
+        return channelDoctorArivalMsgSend;
+    }
+
+    public void setChannelDoctorArivalMsgSend(boolean channelDoctorArivalMsgSend) {
+        this.channelDoctorArivalMsgSend = channelDoctorArivalMsgSend;
+    }
     
     @Override
     public int hashCode() {

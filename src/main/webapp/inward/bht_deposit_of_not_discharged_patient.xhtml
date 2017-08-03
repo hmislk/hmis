@@ -77,8 +77,8 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
-                                <pe:exporter type="xlsx" target="tbl,tbl2" fileName="All_Payment_by_Created_Date_Date"  />
+                            <p:commandButton action="#{mdInwardReportController.dipositsOfNotDischarged()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl2" fileName="All_Payment_by_Created_Date_Date"  />
                             </p:commandButton>  
                         </h:panelGrid>
 
@@ -138,6 +138,13 @@
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.insId}" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Payment Methord">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Methord"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.paymentMethod}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">

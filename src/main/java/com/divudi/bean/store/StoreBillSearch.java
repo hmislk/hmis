@@ -888,6 +888,15 @@ public class StoreBillSearch implements Serializable {
 
             can.getBillItems().add(b);
         }
+        
+        for (BillItem i : can.getBilledBill().getBillExpenses()) {
+            BillItem b = new BillItem();
+            b.copy(i);
+            b.invertValue(i);
+            b.setExpenseBill(can);
+            getBillItemFacede().create(b);
+            can.getBillExpenses().add(b);
+        }
 
         getBillFacade().edit(can);
     }

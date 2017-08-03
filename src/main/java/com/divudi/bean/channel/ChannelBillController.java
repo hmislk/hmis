@@ -210,9 +210,9 @@ public class ChannelBillController implements Serializable {
 
         getBillSession().getBill().setPaidAmount(b.getPaidAmount());
         getBillSession().getBill().setBalance(0.0);
-        Bill errBill=getBillFacade().find(getBillSession().getBill().getId());
-        System.err.println("errBill.getPaidBill() = "+ errBill.getPaidBill());
-        if (errBill.getPaidBill()!=null) {
+        Bill errBill = getBillFacade().find(getBillSession().getBill().getId());
+        System.err.println("errBill.getPaidBill() = " + errBill.getPaidBill());
+        if (errBill.getPaidBill() != null) {
             System.out.println("errBill.getPaidBill().getCreater().getWebUserPerson().getName() = " + errBill.getPaidBill().getCreater().getWebUserPerson().getName());
             System.out.println("errBill.getPaidBill().getCreatedAt() = " + errBill.getPaidBill().getCreatedAt());
         }
@@ -1565,10 +1565,10 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckAfterSaveBill(Bill b) {
-        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
+        if (b.getPaymentMethod() == null) {
             return true;
         }
-        if (b.getPaymentMethod() == null) {
+        if (b.getBillType() == BillType.ChannelAgent && b.getPaymentMethod() == PaymentMethod.Agent && b.getCreditCompany() == null) {
             return true;
         }
         return false;
@@ -1694,7 +1694,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
         //********************retier bill,billitem,billsession***********************************************
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution()==ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
         settleSucessFully = true;
@@ -1990,10 +1990,12 @@ public class ChannelBillController implements Serializable {
                 //or arogya add vat for full bill,is not forign,and vatable marked
                 if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
                     if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable()
-                            && !isForiegn()) {
+                            && !isForiegn()
+                            && f.getFeeType() == FeeType.Staff) {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
                         bf.setFeeVatPlusValue(bf.getFeeValue() * finalVariables.getVATPercentageWithAmount());
+                        System.out.println("f.getFeeType() = " + f.getFeeType());
                     } else {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(0.0);
@@ -2360,6 +2362,21 @@ public class ChannelBillController implements Serializable {
             }
         }
         return refundBillFee;
+    }
+
+    public String updatePrintStatus() {
+        System.out.println("getBillSession()= " + getBillSession());
+        if (getBillSession() != null) {
+            System.out.println("getBillSession().getBill().isPrinted() = " + getBillSession().getBill().isPrinted());
+            if (!getBillSession().getBill().isPrinted()) {
+                getBillSession().getBill().setPrinted(true);
+                getBillSession().getBill().setPrintedAt(new Date());
+                getBillSession().getBill().setPrintedUser(getSessionController().getLoggedUser());
+                getBillFacade().edit(getBillSession().getBill());
+                JsfUtil.addSuccessMessage("Bill Print Status Updated");
+            }
+        }
+        return "";
     }
 
     public void listnerSetBillSession(BillSession bs) {

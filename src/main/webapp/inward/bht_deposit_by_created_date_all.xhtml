@@ -150,6 +150,16 @@
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.insId}" ></h:outputLabel>
+                                    <h:outputLabel value=" - " rendered="#{i.cancelledBill ne null or i.billedBill ne null}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.cancelledBill.insId}" style="color: red" rendered="#{i.cancelledBill ne null}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.billedBill.insId}" style="color: red" rendered="#{i.billedBill ne null}"></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Payment Methord">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Payment Methord"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.paymentMethod.label}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">

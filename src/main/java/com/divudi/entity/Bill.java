@@ -305,6 +305,14 @@ public class Bill implements Serializable {
     @OneToMany(mappedBy = "bill")
     private List<Sms> sentSmses;
 
+    //Print Information
+    private boolean printed;
+    @ManyToOne
+    private WebUser printedUser;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date printedAt;
+    
+    
     @Transient
     double transTotalCCFee;
     @Transient
@@ -1734,6 +1742,30 @@ public class Bill implements Serializable {
 
     public void setVatPlusHosFee(double vatPlusHosFee) {
         this.vatPlusHosFee = vatPlusHosFee;
+    }
+
+    public boolean isPrinted() {
+        return printed;
+    }
+
+    public void setPrinted(boolean printed) {
+        this.printed = printed;
+    }
+
+    public WebUser getPrintedUser() {
+        return printedUser;
+    }
+
+    public void setPrintedUser(WebUser printedUser) {
+        this.printedUser = printedUser;
+    }
+
+    public Date getPrintedAt() {
+        return printedAt;
+    }
+
+    public void setPrintedAt(Date printedAt) {
+        this.printedAt = printedAt;
     }
 
 }

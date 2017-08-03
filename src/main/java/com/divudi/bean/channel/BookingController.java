@@ -6,12 +6,14 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.data.SmsType;
 import com.divudi.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
@@ -117,6 +119,8 @@ public class BookingController implements Serializable {
     DoctorSpecialityController doctorSpecialityController;
     @Inject
     ChannelStaffPaymentBillController channelStaffPaymentBillController;
+    @Inject
+    SmsController smsController;
 
     /**
      * Properties
@@ -1007,9 +1011,13 @@ public class BookingController implements Serializable {
                 ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
 
                 if (ss.getOriginatingSession().isVatable()) {
-                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
-                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
-
+                    //all Bill
+//                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
+//                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
+                    
+                    //only Doc Fee
+                    ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+                    ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
                 }
             } else {
                 ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
@@ -1280,6 +1288,81 @@ public class BookingController implements Serializable {
         return null;
     }
 
+    public void sendSmsDoctorArived(ServiceSession ss) {
+        System.out.println("ss.getSessionAt() = " + ss.getSessionAt());
+        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
+        System.out.println("ss.getSessionTime() = " + ss.getSessionTime());
+        System.out.println("ss.getStartingTime() = " + ss.getStartingTime());
+        System.out.println("ss.getEndingTime() = " + ss.getEndingTime());
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(ss.getStartingTime());
+        cal.add(Calendar.HOUR, 3);
+        System.out.println("cal.getTime() = " + cal.getTime());
+
+        List<ServiceSession> list = fetchServiceSessionsForTimeRange(ss.getStaff(), ss.getSessionDate(), ss.getStartingTime(), cal.getTime());
+        List<BillSession> bSessions = new ArrayList<>();
+        for (ServiceSession s : list) {
+            bSessions.addAll(fillBillSessions(s));
+            System.out.println("billSessions = " + bSessions.size());
+        }
+
+        String msg = "Dear Sir/Madam,\n"
+                + ss.getStaff().getPerson().getName() + " has arrived.\n"
+                + "** Now you can channel your doctor online on www.ruhunuhospitl.lk **";
+        System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName().length());
+        System.out.println("msg.length() = " + msg.length());
+//        fillBillSessions();
+        for (BillSession bs : bSessions) {
+            if (bs.getBill().isCancelled() || bs.getBill().isRefunded()) {
+                System.out.println("bs.getBill().getPatient().getPerson().getPhone() = " + bs.getBill().getPatient().getPerson().getPhone());
+                continue;
+            }
+            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg, bs.getBill(), SmsType.ChannelDoctorAraival);
+        }
+    }
+
+    public void sendSmsToinformLeave() {
+        String msg = "Dear Sir/Madam,\n"
+                + selectedServiceSession.getStaff().getPerson().getName() + " is Leave Today."
+                + "Thank you for using Ruhunu Hospital services.";
+        System.out.println("msg.length() = " + msg.length());
+        //fillBillSessions();
+        System.out.println("billSessions.size() = " + billSessions.size());
+        for (BillSession bs : billSessions) {
+            if (bs.getBill().isCancelled() || bs.getBill().isRefunded()) {
+                System.out.println("bs.getBill().getPatient().getPerson().getPhone() = " + bs.getBill().getPatient().getPerson().getPhone());
+                continue;
+            }
+//            smsController.sendSmsToNumberList(bs.getBill().getPatient().getPerson().getPhone(), getSessionController().getUserPreference().getApplicationInstitution(), msg,bs.getBill());
+        }
+    }
+
+    public List<ServiceSession> fetchServiceSessionsForTimeRange(Staff s, Date date, Date ft, Date tt) {
+        String sql;
+        Map m = new HashMap();
+        List<ServiceSession> tmp = new ArrayList<>();
+        sql = "Select s From ServiceSession s where s.retired=false "
+                + " and s.staff=:staff "
+                + " and s.originatingSession is not null "
+                + " and s.sessionDate=:d "
+                + " and s.startingTime between :ft and :tt "
+                + " and type(s)=:class "
+                + " order by s.sessionDate,s.startingTime ";
+        m.put("d", date);
+        m.put("ft", ft);
+        m.put("tt", tt);
+        m.put("staff", s);
+        m.put("class", ServiceSession.class);
+        try {
+            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            System.out.println("tmp.size() = " + tmp.size());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tmp;
+    }
+
     public void markAsArrived() {
         if (selectedServiceSession == null) {
             System.out.println("selectedServiceSession is null");
@@ -1300,6 +1383,10 @@ public class BookingController implements Serializable {
             arrivalRecord.setCreatedAt(new Date());
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
+            //
+            if (getSessionController().getInstitutionPreference().isChannelDoctorArivalMsgSend()) {
+                sendSmsDoctorArived(selectedServiceSession);
+            }
         }
         arrivalRecord.setRecordTimeStamp(new Date());
         arrivalRecord.setApproved(false);
@@ -1353,6 +1440,27 @@ public class BookingController implements Serializable {
 
     }
 
+    public List<BillSession> fillBillSessions(ServiceSession ss) {
+
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        String sql = "Select bs From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.serviceSession=:ss "
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class "
+                + " and bs.sessionDate= :ssDate "
+                + " order by bs.serialNo ";
+        HashMap hh = new HashMap();
+        hh.put("bt", bts);
+        hh.put("class", BilledBill.class);
+        hh.put("ssDate", ss.getSessionDate());
+        hh.put("ss", ss);
+        return getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+
+    }
+
     public void fillAbsentBillSessions(SelectEvent event) {
         selectedBillSession = null;
         selectedServiceSession = ((ServiceSession) event.getObject());
@@ -1401,7 +1509,7 @@ public class BookingController implements Serializable {
     public void onEditItem(RowEditEvent event) {
         ServiceSession tmp = (ServiceSession) event.getObject();
         ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo() != tmp.getMaxNo() || ss.getStartingNo() != tmp.getStartingNo()) {
+        if (ss.getMaxNo() != tmp.getMaxNo() || ss.getStartingNo() != tmp.getStartingNo() || ss.getSessionTime() != tmp.getStartingTime() || ss.isRetired() != tmp.isRetired()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
         }

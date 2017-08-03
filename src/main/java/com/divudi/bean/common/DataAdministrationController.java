@@ -852,8 +852,65 @@ public class DataAdministrationController {
             m.put("depT", departmentType);
         }
 
-        departments =getDepartmentFacade().findBySQL(sql, m);
+        departments = getDepartmentFacade().findBySQL(sql, m);
 
+    }
+
+    public void createAllBillTypesFirstAndLastBill() {
+        bills=new ArrayList<>();
+        System.err.println("Time 1 = " + new Date());
+        List<Object> objects = fetchAllBilledBillTypes();
+        System.err.println("Time 2 = " + new Date());
+        for (Object ob : objects) {
+            BillType bt = (BillType) ob;
+            System.out.println("bt = " + bt);
+            System.err.println("Time l1 = " + new Date());
+            Bill b = fetchBill(bt, true);
+            System.err.println("Time l2 = " + new Date());
+            if (b != null) {
+                bills.add(b);
+            }
+            System.err.println("Time l3 = " + new Date());
+            b = fetchBill(bt, false);
+            System.err.println("Time l4 = " + new Date());
+            if (b != null) {
+                bills.add(b);
+            }
+        }
+        System.err.println("Time 3 = " + new Date());
+        System.out.println("bills.size() = " + bills.size());
+    }
+
+    private List<Object> fetchAllBilledBillTypes() {
+        List<Object> objects = new ArrayList<>();
+        String sql;
+
+        sql = " select distinct(b.billType) from BilledBill b where "
+                + " b.retired=false "
+                + " and b.billType is not null ";
+
+        objects = getBillFacade().findObjectBySQL(sql);
+
+        System.out.println("objects.size() = " + objects.size());
+        return objects;
+    }
+
+    private Bill fetchBill(BillType bt, boolean frist) {
+        Bill b = new BilledBill();
+        String sql;
+        Map m = new HashMap();
+        sql = " select b from Bill b where "
+                + " b.retired=false "
+                + " and b.billType=:bt ";
+        if (frist) {
+            sql += " order by b.createdAt ";
+        } else {
+            sql += " order by b.createdAt desc";
+        }
+        m.put("bt", bt);
+        b = getBillFacade().findFirstBySQL(sql, m);
+        System.out.println("b = " + b);
+        return b;
     }
 
     public void itemChangeListener() {
@@ -1142,8 +1199,8 @@ public class DataAdministrationController {
     }
 
     public List<Department> getDepartments() {
-        if (departments==null) {
-            departments=new ArrayList<>();
+        if (departments == null) {
+            departments = new ArrayList<>();
         }
         return departments;
     }

@@ -63,7 +63,7 @@
                     </h:panelGrid>
                     <p:dataTable  value="#{personInstitutionController.institutionPersons}" 
                                   var="pi" 
-                                  id="tb1"
+                                  id="tb1" styleClass="noBorder summeryBorder"
                                   rowKey="#{pi.id}" 
                                   rowIndexVar="i"
                                   scrollable="true"
@@ -86,7 +86,7 @@
                             </f:facet>
                             <h:outputLabel value="#{pi.staff.speciality.name}"/>
                         </p:column>
-                        <p:column >
+                        <p:column rendered="#{personInstitutionController.reportKeyWord.institution eq null}" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Institution Name" />
                             </f:facet>
@@ -97,6 +97,18 @@
                                 <h:outputLabel value="Code" />
                             </f:facet>
                             <h:outputLabel value="#{pi.staff.code}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="phone" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.person.phone}"/>
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header" >
+                                <h:outputLabel value="Mobile" />
+                            </f:facet>
+                            <h:outputLabel value="#{pi.staff.person.mobile}"/>
                         </p:column>
                         <p:column >
                             <f:facet name="header" >

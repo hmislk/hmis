@@ -107,6 +107,27 @@ public class ConsultantController implements Serializable {
         getCurrent();
     }
 
+    public void createConsultantTable() {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select c from Consultant c "
+                + " where c.retired=false ";
+
+        if (speciality != null) {
+            sql += " and c.speciality=:s ";
+            m.put("s", speciality);
+        }
+
+        sql += " order by c.codeInterger , c.person.name ";
+
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + m);
+        items = getFacade().findBySQL(sql, m);
+        System.out.println("items.size() = " + items.size());
+        
+    }
+
     public void setSelectedItems(List<Consultant> selectedItems) {
         this.selectedItems = selectedItems;
     }

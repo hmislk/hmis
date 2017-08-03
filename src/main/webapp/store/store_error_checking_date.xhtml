@@ -19,9 +19,9 @@
                     <h:outputLabel value="Error Detection" ></h:outputLabel>
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>                             
-                        <p:calendar value="#{storeErrorChecking.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                        <p:calendar value="#{storeErrorChecking.fromDate}" pattern="dd MM yyyy" placeholder="From Date" ></p:calendar>
                         <h:outputLabel value="To Date" />
-                        <p:calendar value="#{storeErrorChecking.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                        <p:calendar value="#{storeErrorChecking.toDate}" pattern="dd MM yyyy" placeholder="To Date" ></p:calendar>
                         <h:outputLabel value="Department" />
                         <p:autoComplete value="#{storeErrorChecking.department}"  placeholder="Department"
                                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
@@ -60,10 +60,10 @@
 
 
                     <p:panel header="Stock Transaction Hisory" id="panelPrint">
-                        
-<!--                        <h:outputLabel value="Calculated Stock" ></h:outputLabel>
-                        <h:outputLabel value="#{storeErrorChecking.calculatedStock}" ></h:outputLabel>
-                        <br/>-->
+
+                        <!--                        <h:outputLabel value="Calculated Stock" ></h:outputLabel>
+                                                <h:outputLabel value="#{storeErrorChecking.calculatedStock}" ></h:outputLabel>
+                                                <br/>-->
 
 
                         <p:dataTable styleClass="noBorder summeryBorder" 
@@ -86,6 +86,22 @@
                                        (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'StoreTransferReceive' and pb.bill.createdAt ne null )
                                        )? 'greenText' : ''}"
                                      >
+
+                            <f:facet name="header">
+                                <p:outputLabel value="#{storeErrorChecking.department.name}" />
+                                <br></br>
+                                <p:outputLabel value="From - " />
+                                <p:outputLabel value="#{storeErrorChecking.fromDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                </p:outputLabel>
+                                <p:outputLabel value=" - To - " />
+                                <p:outputLabel value="#{storeErrorChecking.toDate}" >
+                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                </p:outputLabel>
+                                <br></br>
+                                <p:outputLabel value="#{storeErrorChecking.item.name} History" />
+                                <br></br>
+                            </f:facet>
 
                             <p:column >
                                 <h:outputLabel value="#{i+1}"/>

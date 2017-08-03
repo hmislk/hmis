@@ -7,7 +7,7 @@ package com.divudi.data.dataStructure;
 
 /**
  *
- * @author archmage
+ * @author Dushan
  */
 public class QuickBookFormat {
 

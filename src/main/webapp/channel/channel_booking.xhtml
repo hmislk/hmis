@@ -102,8 +102,8 @@
                                  selectionMode="single" 
                                  selection="#{bookingController.selectedServiceSession}"
                                  scrollable="true" 
-                                 scrollHeight="300" rowStyleClass="#{ses.deactivated ? 'redText':''}" styleClass="noBorder" 
-                                 style="min-height: 300px;">
+                                 scrollHeight="280" rowStyleClass="#{ses.deactivated ? 'redText':''}" styleClass="noBorder" 
+                                 style="height: 300px; width: 400px;">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
                                 update=":#{p:component('tblBookingsOfSelectedSession')} 
@@ -111,7 +111,7 @@
                                 :#{p:component('tabViewPatientDetails')} 
                                 :#{p:component('panelSelectedBookinDetails')}"
                                 listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
-                        <p:column style="text-wrap: none;width: 20px!important;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                        <p:column style="text-wrap: none;width: 30px!important;text-align: right;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
                             <h:outputText value="* " rendered="#{ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="E"/>
@@ -195,8 +195,8 @@
                 </h:panelGroup>
 
                 <h:panelGroup >
-                    <p:spacer height="30px" />
-                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
+                    <p:spacer height="10px" />
+                    <p:dataTable id="tblBookingsOfSelectedSession" style="height: 280px; width: 500px;"
                                  value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}" styleClass="noBorder" 
                                  rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
@@ -208,8 +208,8 @@
                         </f:facet>
 
                         <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                        <p:column headerText="Name" style="width: 60px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                        <p:column headerText="Paid" style="width: 20px!important;">
+                        <p:column headerText="Name" style="width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Paid" style="width: 30px!important;">
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
@@ -218,17 +218,17 @@
                             <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
                             <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                         </p:column>
-                        <p:column headerText="C/R" style="width: 10px!important;" >
+                        <p:column headerText="C/R" style="width: 20px!important;" >
                             <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                             <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                         </p:column>   
-                        <p:column headerText="Agent" style="width: 5px!important;">
+                        <p:column headerText="Agent" style="width: 10px!important;">
                             <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                             <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
                         </p:column> 
-                        <p:column headerText="P/A" style="width: 10px!important;">                           
+<!--                        <p:column headerText="P/A" style="width: 10px!important;">                           
                             <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                        </p:column> 
+                        </p:column> -->
                     </p:dataTable>    
                 </h:panelGroup>
 
@@ -238,178 +238,220 @@
 
             <h:panelGrid id="gdManageBookings" columns="2" styleClass="alignTop">
 
-                <p:panel id="gpThisBookingDetails" style="min-width: 500px; max-width: 500px; min-height:400px;max-height: 400px;"  >
+                <p:panel id="gpThisBookingDetails" style="min-width: 450px; max-width: 450px; min-height:400px;max-height: 520px;"  >
                     <f:facet name="header" >
-                        <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
-                            <p:outputLabel value="Amount"/>
+                        <p:tabView id="tabViewAgentBookDetails">
+                            <p:tab title="Payemnet Details">
+                                <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
+                                    <p:outputLabel value="Amount" style="width: 200px!important;"/>
 
-                            <h:panelGroup id="lblSessionTotal">
-                                <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
-                                    rendered="#{channelBillController.foriegn}">
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </p:outputLabel>
-                                <p:outputLabel  
-                                    value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
-                                    rendered="#{!channelBillController.foriegn}">
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </p:outputLabel>
+                                    <h:panelGroup id="lblSessionTotal">
+                                        <p:outputLabel  
+                                            value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
+                                            rendered="#{channelBillController.foriegn}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                        <p:outputLabel  
+                                            value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
+                                            rendered="#{!channelBillController.foriegn}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
 
-                            </h:panelGroup>
+                                    </h:panelGroup>
 
-                            <p:outputLabel value="Payment Method"/>
-                            <h:panelGroup >
-                                <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
-                                    <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
-                                    <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                                    <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2 :#{p:component('lblSessionTotal')} 
-                                            creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
-                                            lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')}" event="change" listener="#{bookingController.generateSessionsOnlyIdNew}" />
-                                </p:selectOneMenu>
-                                <h:outputScript>
-                                    $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
-                                    var keycode = (event.keyCode ? event.keyCode : event.which);
-                                    alert("sdf");
-                                    if (keycode == '13') {
-                                    document.getElementById("form:txtSearch3").focus();
-                                    return false;
-                                    }
+                                    <p:outputLabel value="Payment Method"/>
+                                    <h:panelGroup >
+                                        <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
+                                            <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                                            <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2 :#{p:component('lblSessionTotal')} 
+                                                    creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
+                                                    lblChequeDate ChequeDate bankSel :#{p:component('lblSessionTotal')} :#{p:component('tblSessionsOfSelectedConsultant')} tabViewAgentBookDetails" event="change" listener="#{bookingController.generateSessionsOnlyIdNew}" />
+                                        </p:selectOneMenu>
+                                        <h:outputScript>
+                                            $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
+                                            var keycode = (event.keyCode ? event.keyCode : event.which);
+                                            alert("sdf");
+                                            if (keycode == '13') {
+                                            document.getElementById("form:txtSearch3").focus();
+                                            return false;
+                                            }
 
-                                    });
-                                </h:outputScript>
-                            </h:panelGroup>
-                            <h:outputLabel rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
-                            <p:autoComplete rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
-                                            value="#{channelBillController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                <p:column>#{ix.institutionCode}</p:column>
-                                <p:column>#{ix.name}</p:column>                                
-                            </p:autoComplete>
-                            <p:outputLabel value="Discount Scheme"/>
-                            <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
-                                <f:selectItem itemLabel="Select Discount Scheme"/>
-                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}" 
-                                               var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                <p:ajax process="@this" 
-                                        update="lblSessionTotal" 
-                                        event="change" 
-                                        listener="#{channelBillController.changeListener()}"/>
-                            </p:selectOneMenu>
+                                            });
+                                        </h:outputScript>
+                                    </h:panelGroup>
+                                    <h:outputLabel rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
+                                    <p:autoComplete rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
+                                                    value="#{channelBillController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                    itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
+                                        <p:column>#{ix.institutionCode}</p:column>
+                                        <p:column>#{ix.name}</p:column>                                
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Discount Scheme"/>
+                                    <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
+                                        <f:selectItem itemLabel="Select Discount Scheme"/>
+                                        <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}" 
+                                                       var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                        <p:ajax process="@this" 
+                                                update="lblSessionTotal" 
+                                                event="change" 
+                                                listener="#{channelBillController.changeListener()}"/>
+                                    </p:selectOneMenu>
 
-                            <h:outputLabel/>
-                            <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
-                                <f:ajax event="change" execute="@this tblSessionsOfSelectedConsultant" render="lblSessionTotal :#{p:component('tabViewPatientDetails')}"/>
-                            </p:selectBooleanCheckbox>
-                            <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "
-                                            value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
-                                            itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="mediuminput" >
-                                <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} :#{p:component('tblAgentBooks2')} pgNewBookingDetail" listener="#{channelBillController.validateAgentBalance()}"/>
-                                <!--<p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />-->
-                                <p:column>#{ix.institutionCode}</p:column>
-                                <p:column>#{ix.name}</p:column>                                
-                            </p:autoComplete> 
+                                    <h:outputLabel/>
+                                    <p:selectBooleanCheckbox id="f" value="#{channelBillController.foriegn}" itemLabel="Foriegner">
+                                        <f:ajax event="change" execute="@this :#{p:component('tblSessionsOfSelectedConsultant')}" render="lblSessionTotal :#{p:component('tabViewPatientDetails')}"/>
+                                    </p:selectBooleanCheckbox>
+                                    <h:outputLabel id="agent" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <p:autoComplete id="agent2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'};"
+                                                    value="#{channelBillController.institution}"  completeMethod="#{agencyController.completeAgency}" var="ix"
+                                                    itemLabel="#{ix.name}" itemValue="#{ix}" styleClass="shortinput2">
+                                        <f:ajax  event="itemSelect" execute="@this"  render="ballance ballance2 lblSessionTotal agRefLbl agRefTxt :#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} :#{p:component('tblAgentBooks2')} pgNewBookingDetail :#{p:component('ballance2')} :#{p:component('ballance6')} :#{p:component('ballance4')}" listener="#{channelBillController.validateAgentBalance()}"/>
+                                        <!--<p:ajax event="click" process="@this" update=":#{p:component('agRefLbl')} :#{p:component('tblAgentBooks')} pgNewBookingDetail" />-->
+                                        <p:column>#{ix.institutionCode}</p:column>
+                                        <p:column>#{ix.name}</p:column>                                
+                                    </p:autoComplete> 
 
-                            <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
-                            <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <!--                            <p:tooltip for="agRefLbl agent" >
-                                                            <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                                                <p:column>
-                                                                    <f:facet name="header">
-                                                                        <p:outputLabel value="S.R.N." />
-                                                                    </f:facet>
-                                                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                                                        <f:convertNumber pattern="00000" />
-                                                                    </p:outputLabel>
-                                                                </p:column>
-                                                                <p:column>
-                                                                    <f:facet name="header">
-                                                                        <p:outputLabel value="E.R.N." />
-                                                                    </f:facet>
-                                                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                                        <f:convertNumber pattern="00000" />
-                                                                    </p:outputLabel>
-                                                                </p:column>
-                                                            </p:dataTable>
-                                                        </p:tooltip>-->
-                            <!--<p:outputLabel />-->
-                            <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; " id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                <p:column>
-                                    <f:facet name="header">
-                                        <p:outputLabel value="S.R.N." />
-                                    </f:facet>
-                                    <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                        <f:convertNumber pattern="00000" />
-                                    </p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                            <p:dataTable style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                <p:column>
-                                    <f:facet name="header">
-                                        <p:outputLabel value="E.R.N." />
-                                    </f:facet>
-                                    <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                        <f:convertNumber pattern="00000" />
-                                    </p:outputLabel>
-                                </p:column>
-                            </p:dataTable>
+                                    <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
+                                    <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <!--                            <p:tooltip for="agRefLbl agent" >
+                                                                    <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                                                        <p:column>
+                                                                            <f:facet name="header">
+                                                                                <p:outputLabel value="S.R.N." />
+                                                                            </f:facet>
+                                                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                                                <f:convertNumber pattern="00000" />
+                                                                            </p:outputLabel>
+                                                                        </p:column>
+                                                                        <p:column>
+                                                                            <f:facet name="header">
+                                                                                <p:outputLabel value="E.R.N." />
+                                                                            </f:facet>
+                                                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                                                <f:convertNumber pattern="00000" />
+                                                                            </p:outputLabel>
+                                                                        </p:column>
+                                                                    </p:dataTable>
+                                                                </p:tooltip>-->
+                                    <!--<p:outputLabel />-->
+<!--                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="S.R.N." />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                <f:convertNumber pattern="00000" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="E.R.N." />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                <f:convertNumber pattern="00000" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>-->
 
-                            <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                <f:convertNumber  pattern="#,##0.00"/>
-                            </h:outputLabel>
-                            <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                <f:convertNumber  pattern="#,##0.00"/>
-                            </h:outputLabel>
-                            <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                            <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                <f:convertNumber  pattern="#,##0.00"/>
-                            </h:outputLabel>
+<!--                                    <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>-->
 
-                            <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
-                            <h:panelGroup id="autoStaff" style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">
-                                <au:completeStaffChannel value="#{channelBillController.toStaff}" />
-                            </h:panelGroup>
+                                    <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
+                                    <h:panelGroup id="autoStaff" style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">
+                                        <au:completeStaffChannel value="#{channelBillController.toStaff}" />
+                                    </h:panelGroup>
 
-                            <h:outputLabel id="creditCardRef" value="Card Ref. No." style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                            <p:inputText id="creditCardTxt" autocomplete="off"   value="#{channelBillController.paymentMethodData.creditCard.no}" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                            <h:outputLabel id="creditCardbnkLbl" value="Select Bank" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
-                            <p:selectOneMenu id="creditCardSlc" value="#{channelBillController.paymentMethodData.creditCard.institution}" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;">
-                                <f:selectItem itemLabel="Select Bank"/>
-                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                            </p:selectOneMenu>
-
-
-
-
-                            <h:outputLabel id="lblCheque" value="Cheque No." style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                            <p:inputText autocomplete="off"  value="#{channelBillController.paymentMethodData.cheque.no}" id="chequNo" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
-                            <h:outputLabel id="lblBank" value="Select Bank" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                            <p:selectOneMenu  id="bankSel" value="#{channelBillController.paymentMethodData.cheque.institution}" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <f:selectItem itemLabel="Select Bank"/>
-                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                            </p:selectOneMenu>
-                <!--            <p:inputText autocomplete="off"   value="#{channelBillController.paymentMethodData.creditCard.comment}"  id="memo"/>-->
-
-                            <h:outputLabel id="lblChequeDate" value="Cheque Date" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                            <p:calendar   value="#{channelBillController.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
-                            </p:calendar>
+                                    <h:outputLabel id="creditCardRef" value="Card Ref. No." style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
+                                    <p:inputText id="creditCardTxt" autocomplete="off"   value="#{channelBillController.paymentMethodData.creditCard.no}" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
+                                    <h:outputLabel id="creditCardbnkLbl" value="Select Bank" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;"/>
+                                    <p:selectOneMenu id="creditCardSlc" value="#{channelBillController.paymentMethodData.creditCard.institution}" style="display: #{channelBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ;">
+                                        <f:selectItem itemLabel="Select Bank"/>
+                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                    </p:selectOneMenu>
 
 
 
 
-                            <h:outputLabel value="Select Bank" id="slipLblBank" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
-                            <p:selectOneMenu id="slipSelBank" value="#{channelBillController.paymentMethodData.slip.institution}" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <f:selectItem itemLabel="Select Bank"/>
-                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                            </p:selectOneMenu>
-                            <h:outputLabel value="Slip Date" id="slipLblDate" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
-                            <p:calendar  value="#{channelBillController.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">                            
-                            </p:calendar>
+                                    <h:outputLabel id="lblCheque" value="Cheque No." style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
+                                    <p:inputText autocomplete="off"  value="#{channelBillController.paymentMethodData.cheque.no}" id="chequNo" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                                    <h:outputLabel id="lblBank" value="Select Bank" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
+                                    <p:selectOneMenu  id="bankSel" value="#{channelBillController.paymentMethodData.cheque.institution}" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                        <f:selectItem itemLabel="Select Bank"/>
+                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                    </p:selectOneMenu>
+                        <!--            <p:inputText autocomplete="off"   value="#{channelBillController.paymentMethodData.creditCard.comment}"  id="memo"/>-->
+
+                                    <h:outputLabel id="lblChequeDate" value="Cheque Date" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
+                                    <p:calendar   value="#{channelBillController.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate" style="display: #{channelBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
+                                    </p:calendar>
 
 
-                        </h:panelGrid>                        
+
+
+                                    <h:outputLabel value="Select Bank" id="slipLblBank" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
+                                    <p:selectOneMenu id="slipSelBank" value="#{channelBillController.paymentMethodData.slip.institution}" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                        <f:selectItem itemLabel="Select Bank"/>
+                                        <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Slip Date" id="slipLblDate" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
+                                    <p:calendar  value="#{channelBillController.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date" style="display: #{channelBillController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">                            
+                                    </p:calendar>
+
+
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Agent Book" disabled="#{channelBillController.paymentMethod ne 'Agent'}" >
+                                <h:panelGrid id="pgNewBookingDetail2" columns="2"  styleClass="noBorder">
+
+                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="S.R.N." />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                <f:convertNumber pattern="00000" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <p:outputLabel value="E.R.N." />
+                                            </f:facet>
+                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                <f:convertNumber pattern="00000" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                    <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                    <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
+                                    <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ;">
+                                        <f:convertNumber  pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+
 
                     </f:facet>
                     <p:tabView id="tabViewPatientDetails" activeIndex="#{channelBillController.patientSearchTab}" >
@@ -595,7 +637,7 @@
                 </p:panel>
 
                 <p:panel id="panelSelectedBookinDetails">
-                    <p:tabView id="detail">
+                    <p:tabView id="detail" style="width: 800px!important;height: 450px!important;">
                         <p:tab title="Booking" id="booking" rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2" >
 
@@ -630,6 +672,10 @@
                                         </p:outputLabel>
                                         <p:outputLabel value="Tel "/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
+                                        <p:outputLabel value="Bill Total"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.netTotal+bookingController.selectedBillSession.bill.vat}" style="color: red;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment Method"/>
@@ -699,7 +745,12 @@
                                         <p:separator ></p:separator>
 
                                         <p:outputLabel value="Bill No"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
+                                        <p:outputLabel value="Bill Total"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.netTotal+bookingController.selectedBillSession.bill.vat}" style="color: red;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
                                         <p:outputLabel value="Payment"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paymentMethod}"/>
                                         <p:outputLabel value="Agent" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
@@ -712,6 +763,14 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
                                         <p:outputLabel value="Billed At"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.printed==true}" ></p:separator>
+                                        <p:separator rendered="#{bookingController.selectedBillSession.bill.printed==true}" ></p:separator>
+                                        <p:outputLabel value="Printed User"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.printedUser.webUserPerson.nameWithTitle}"/>
+                                        <p:outputLabel value="Printed At"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.printedAt}"> 
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
                                         <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
@@ -756,6 +815,10 @@
                                         </p:outputLabel>
                                         <p:outputLabel value="Tel "/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.phone}"/>
+                                        <p:outputLabel value="Bill Total"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.netTotal+bookingController.selectedBillSession.bill.vat}" style="color: red;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
                                         <p:outputLabel value="Payment"/>
@@ -784,7 +847,8 @@
                                 <p:panel header="Settling" rendered="#{(bookingController.selectedBillSession.bill.paidBill ne bookingController.selectedBillSession.bill) and bookingController.selectedBillSession.bill.balance eq 0.0}">
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Bill Id"/>
-                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.deptId}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.insId}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
                                         <p:outputLabel value="Cancel Id(Booking)" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.cancelledBill.deptId}" rendered="#{webUserController.hasPrivilege('Developers')}"/>
                                         <p:outputLabel value="Payment Method"/>
@@ -822,54 +886,74 @@
 
                         </p:tab>
 
-                        <p:tab title="Reprint" id="rePrint" rendered="#{webUserController.hasPrivilege('ChannelBookingReprint') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:tab title="Reprint" id="rePrint"
+                               rendered="#{webUserController.hasPrivilege('ChannelBookingReprint') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
 
-                            <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
+                            <h:commandButton value="Print" actionListener="#{channelBillController.updatePrintStatus}"
+                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}"
+                                             rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}">
+                                <f:ajax execute="@this" />
+                                <p:printer target="panelAddedBillPrintRe" />
+                                <!--<f:ajax event="click" execute="@this" listener="#{channelBillController.updatePrintStatus}" />-->
+                            </h:commandButton>
+                            <p:commandButton value="Print" ajax="false" action="#" 
+                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}"
+                                             rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna' or (channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna')}">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
                             </p:commandButton>
 
-
-                            <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
+                            <div style="width: 780px!important;height: 330px!important;overflow:scroll!important;" >
+                                <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
                                 <!--#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}-->
 
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
-                                        <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
-                                    </h:panelGroup>
-                                </div>
-                                <div>
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                        <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true"/>
-                                        <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true"/>
-                                        <!--<ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
-                                    </h:panelGroup>
-                                </div>
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-<!--                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
+                                    <div>
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
+                                            <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
                                         </h:panelGroup>
-                                    </h:panelGroup>
-                                </div>
-                                <div >
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                            <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                    </div>
+                                    <div>
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed eq true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed eq true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="false" hos="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed ne true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="false" doc="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed ne true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"/>
+                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true" 
+                                                                         rendered="#{channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"/>
+                                            <!--<ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
                                         </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
-                                            <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                    </div>
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                                <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+    <!--                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
+                                            </h:panelGroup>
                                         </h:panelGroup>
+                                    </div>
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
+                                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                                                <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                            </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                            <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
+                                                <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                                <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
+                                            </h:panelGroup>
+
                                         </h:panelGroup>
-
-                                    </h:panelGroup>
-                                </div>
-                            </h:panelGroup>
-
+                                    </div>
+                                </h:panelGroup>
+                            </div>
                         </p:tab>
 
                         <p:panel id="panelBillPrint" >
@@ -1165,7 +1249,7 @@
                             </h:panelGrid>
 
                             <p:dataTable id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var="bs"
-                                         styleClass="noBorder summeryBorder">
+                                         styleClass="noBorder" style="width: 780px!important;height: 270px!important;overflow:scroll!important;">
                                 <p:column>
                                     <p:commandButton value="view" action="#{bookingController.viewBill(bs)}" update=":#{p:component('panelSelectedBookinDetails')}" />
                                 </p:column>

@@ -13,7 +13,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="OPD CREDIT"/>
+                            <h:outputLabel value="Pharmacy Credit Due"/>
                         </f:facet>
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
@@ -24,12 +24,14 @@
                             <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
-                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createPharmacyCreditDue}" onclick="onSubmitButton();"/>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Process" action="#{creditCompanyDueController.createPharmacyCreditDue}" onclick="onSubmitButton();"/>
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="panIx" />
                             </p:commandButton>
-                            <p:commandButton value="Excel2" ajax="false" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="lst" fileName="Service_Summery" subTable="true"  />
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
+                                <pe:exporter type="xlsx" target="lst" fileName="credit_company_pharmacy_due" subTable="true"  />
                             </p:commandButton>
                         </h:panelGrid>
 

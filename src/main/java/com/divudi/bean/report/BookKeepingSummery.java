@@ -92,6 +92,7 @@ public class BookKeepingSummery implements Serializable {
     private List<Bill> agentCollections;
     List<Bill> collectingCentreCollections;
     List<Bill> creditCardBill;
+    List<Bill> onlineSettlementBill;
     List<Bill> slipBill;
     List<Bill> chequeBill;
     List<BillItem> creditCompanyCollections;
@@ -135,6 +136,7 @@ public class BookKeepingSummery implements Serializable {
     double departmentProfessionalPaymentTotalCredit;//opd credit
     double inwardProfessionalPaymentTotal;
     double creditCardTotal;
+    double onlineSettlementTotal;
     double chequeTotal;
     double slipTotal;
     double grantTotal;
@@ -4013,12 +4015,14 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentInwardByCategoryAndSpeciality();
 
         creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        onlineSettlementBill = getBillBean().fetchBills(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
         chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
         departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(new PaymentMethod[]{paymentMethod.Credit,}), null);
         inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate, institution);
         creditCardTotal = getBillBean().calBillTotalWithVat(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        onlineSettlementTotal = getBillBean().calBillTotalWithVat(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
@@ -4996,6 +5000,14 @@ public class BookKeepingSummery implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public double getOnlineSettlementTotal() {
+        return onlineSettlementTotal;
+    }
+
+    public void setOnlineSettlementTotal(double onlineSettlementTotal) {
+        this.onlineSettlementTotal = onlineSettlementTotal;
+    }
+
     public class ProfessionalPaymentsByAdmissionTypeAndCategory {
 
         String admissionType;
@@ -5472,6 +5484,14 @@ public class BookKeepingSummery implements Serializable {
 
     public void setCreditCompanyCollectionsInwardBill(List<Bill> creditCompanyCollectionsInwardBill) {
         this.creditCompanyCollectionsInwardBill = creditCompanyCollectionsInwardBill;
+    }
+
+    public List<Bill> getOnlineSettlementBill() {
+        return onlineSettlementBill;
+    }
+
+    public void setOnlineSettlementBill(List<Bill> onlineSettlementBill) {
+        this.onlineSettlementBill = onlineSettlementBill;
     }
 
 }
