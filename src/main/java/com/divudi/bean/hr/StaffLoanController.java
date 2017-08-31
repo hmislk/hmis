@@ -254,6 +254,67 @@ public class StaffLoanController implements Serializable {
 
         chequeDetails = false;
     }
+    public void createLonesDeleted() {
+        String sql;
+        HashMap hm = new HashMap();
+
+        sql = "Select ss from StaffPaysheetComponent ss "
+                + " where ss.retired=true ";
+        
+        if (getFromDate() != null) {
+            sql += " and ((ss.fromDate <=:fd "
+                    + " and ss.toDate >=:fd) or ss.fromDate >=:fd) ";
+            hm.put("fd", getFromDate());
+        }
+
+        if (paysheetComponent != null) {
+            sql += " and ss.paysheetComponent=:tp ";
+            hm.put("tp", getPaysheetComponent());
+        } else {
+            sql += " and ss.paysheetComponent.componentType in :tp ";
+            hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+                PaysheetComponentType.LoanNetSalary,
+                PaysheetComponentType.Advance_Payment_Deduction}));
+        }
+
+        if (getReportKeyWord().getStaff() != null) {
+            sql += " and ss.staff=:stf ";
+            hm.put("stf", getReportKeyWord().getStaff());
+        }
+
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and ss.staff.workingDepartment=:dep ";
+            hm.put("dep", getReportKeyWord().getDepartment());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and ss.staff.institution=:ins ";
+            hm.put("ins", getReportKeyWord().getInstitution());
+        }
+
+        if (getReportKeyWord().getStaffCategory() != null) {
+            sql += " and ss.staff.staffCategory=:stfCat ";
+            hm.put("stfCat", getReportKeyWord().getStaffCategory());
+        }
+
+        if (getReportKeyWord().getDesignation() != null) {
+            sql += " and ss.staff.designation=:des ";
+            hm.put("des", getReportKeyWord().getDesignation());
+        }
+
+        if (getReportKeyWord().getRoster() != null) {
+            sql += " and ss.staff.roster=:rs ";
+            hm.put("rs", getReportKeyWord().getRoster());
+        }
+
+
+//        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
+//            PaysheetComponentType.LoanNetSalary,
+//            PaysheetComponentType.Advance_Payment_Deduction}));
+        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+
+        chequeDetails = false;
+    }
 
     public void createsheduleForPaidLones() {
         String sql;

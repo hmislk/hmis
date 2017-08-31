@@ -510,6 +510,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
+            System.out.println("b.getInsId() = " + b.getInsId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
