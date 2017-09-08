@@ -322,11 +322,12 @@ public class Api {
         Long h_id = Long.parseLong(hospital_id);
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
-        Long ar_no = Long.parseLong(agent_reference_no);
+//        Long ar_no = Long.parseLong(agent_reference_no);
         URLDecoder decoder = new URLDecoder();
         try {
 
-            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
+            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no);
+//            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
             System.out.println("s = " + s);
             if (!"".equals(s)) {
                 jSONObjectOut.put("make_booking", s);
@@ -353,7 +354,8 @@ public class Api {
             }
             System.out.println("ss = " + ss);
 
-            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
+            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no);
+//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
             System.out.println("b = " + b);
 
             bill = billDetails(b.getId());
@@ -1060,7 +1062,8 @@ public class Api {
         return obj * 0.15;
     }
 
-    String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
+    String fetchErrors(String name, String phone, String doc, long ses, long agent, String agent_ref) {
+//    String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
         String s = "";
         if (name == null || "".equals(name)) {
             s = "Please Enter Name";
@@ -1099,11 +1102,16 @@ public class Api {
             s = "This Reference No Already Exists";
             return s;
         }
+//        if (checkAgentRefNo(agent_ref,institution)) {
+//            s = "This Reference No Already Exists";
+//            return s;
+//        }
 
         return s;
     }
 
-    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
+    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, String agent_ref) {
+//    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
         Bill savingBill = createBill(ss, name, phone, agent);
         BillItem savingBillItem = createBillItem(savingBill, agent_ref, ss);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem, ss);
@@ -1212,10 +1220,12 @@ public class Api {
         return bill;
     }
 
-    private BillItem createBillItem(Bill bill, long agent_ref, ServiceSession ss) {
+    private BillItem createBillItem(Bill bill, String agent_ref, ServiceSession ss) {
+//    private BillItem createBillItem(Bill bill, long agent_ref, ServiceSession ss) {
         BillItem bi = new BillItem();
         bi.setAdjustedValue(0.0);
-        bi.setAgentRefNo(String.valueOf(agent_ref));
+        bi.setAgentRefNo(agent_ref);
+//        bi.setAgentRefNo(String.valueOf(agent_ref));
         bi.setBill(bill);
         bi.setBillTime(new Date());
         bi.setCreatedAt(new Date());
@@ -1587,6 +1597,14 @@ public class Api {
     
     private boolean checkAgentRefNo(long agent_ref,Institution institution) {
         if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private boolean checkAgentRefNo(String agent_ref,Institution institution) {
+        if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;

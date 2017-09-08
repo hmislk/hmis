@@ -2370,8 +2370,8 @@ public class ChannelBillController implements Serializable {
             System.out.println("getBillSession().getBill().isPrinted() = " + getBillSession().getBill().isPrinted());
             if (!getBillSession().getBill().isPrinted()) {
                 getBillSession().getBill().setPrinted(true);
-                getBillSession().getBill().setPrintedAt(new Date());
-                getBillSession().getBill().setPrintedUser(getSessionController().getLoggedUser());
+//                getBillSession().getBill().setPrintedAt(new Date());
+//                getBillSession().getBill().setPrintedUser(getSessionController().getLoggedUser());
                 getBillFacade().edit(getBillSession().getBill());
                 JsfUtil.addSuccessMessage("Bill Print Status Updated");
             }

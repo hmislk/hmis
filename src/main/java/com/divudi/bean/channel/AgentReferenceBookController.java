@@ -253,12 +253,12 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public Boolean checkAgentReferenceNumberAlredyExsist(String refNumber, Institution institution, BillType bt, PaymentMethod pm) {
-        Double dbl = null;
-        try {
-            dbl = Double.parseDouble(refNumber);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        Double dbl = null;
+//        try {
+//            dbl = Double.parseDouble(refNumber);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         String sql;
         Map m = new HashMap();
