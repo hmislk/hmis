@@ -3276,7 +3276,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 //Starting of newly added code 
-//                + " and b.bill.refunded=false "
+                //                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -4057,11 +4057,21 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/reporting(/faces/lab/search_reports.xhtml)");
     }
 
-    public String fillUserPatientReport() {
+    public String fillUserPatientReportMobile() {
+        return fillUserPatientReport(false);
+    }
+
+    public String fillUserPatientReportWeb() {
+        return fillUserPatientReport(true);
+    }
+
+    private String fillUserPatientReport(boolean web) {
         String jpql;
         Map m = new HashMap();
         m.put("pn", getSessionController().getPhoneNo());
         m.put("bn", getSessionController().getBillNo());
+        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
+        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
         if (getSessionController().getPhoneNo() == null || getSessionController().getPhoneNo().equals("")) {
             JsfUtil.addErrorMessage("Please Enter Phone Number");
             return "";
@@ -4073,18 +4083,16 @@ public class SearchController implements Serializable {
 
         System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
         System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
-//        String s1=getSessionController().getPhoneNo().substring(0, 3);
-//        System.out.println("s1 = " + s1);
-//        String s2=getSessionController().getPhoneNo().substring(3, 10);
-//        System.out.println("s2 = " + s2);
-//        String no=s1+"-"+s2;
-//        System.out.println("no = " + no);
+
         jpql = " select pr from PatientInvestigation pr where pr.retired=false and "
                 + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
                 + " (upper(pr.billItem.bill.insId)=:bn or upper(pr.billItem.bill.deptId)=:bn) "
                 + " order by pr.id desc ";
-
-        m.put("pn", getSessionController().getPhoneNo());
+        if (web) {
+            m.put("pn", getSessionController().getPhoneNo());
+        } else {
+            m.put("pn", getSessionController().getPhoneNo().substring(0, 3)+"-"+getSessionController().getPhoneNo().substring(3));
+        }
         m.put("bn", getSessionController().getBillNo());
 
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
@@ -4094,7 +4102,11 @@ public class SearchController implements Serializable {
 
 //        return "/reports_list";
         if (userPatientInvestigations.size() > 0) {
-            return "/reports_list_new";
+            if (web) {
+                return "/reports_list_new";
+            } else {
+                return "/reports_list_new_1";
+            }
         } else {
             JsfUtil.addErrorMessage("Please Enter Correct Phone Number and Bill Number");
             return "";
@@ -6830,7 +6842,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText,null,SmsType.Marketing);
+            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, SmsType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

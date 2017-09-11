@@ -23,7 +23,9 @@ import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.TestFlagFacade;
+import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
+import java.awt.Window;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -57,6 +59,8 @@ import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import javax.faces.context.ExternalContext;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -585,7 +589,7 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
 
     }
-  
+
     static final String pdf_url = "http://localhost:8080/temp/faces/lab_patient_report.xhtml";
 
     public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
@@ -614,6 +618,29 @@ public class PatientReportController implements Serializable {
 
         facesContext.responseComplete();
 
+    }
+
+    public void createPDF() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        HttpSession session = (HttpSession) externalContext.getSession(true);
+//        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
+        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml";
+        try {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocument(new URL(url).toString());
+            renderer.layout();
+            HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "inline; filename=\"print.pdf\"");
+            OutputStream outputStream = response.getOutputStream();
+            renderer.createPDF(outputStream);
+            JsfUtil.addSuccessMessage("PDF Created");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        facesContext.responseComplete();
     }
 
     public String getSelectText() {
@@ -786,9 +813,9 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
-        
+
         this.currentPatientReport = currentPatientReport;
-        
+
         if (currentPatientReport != null) {
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
