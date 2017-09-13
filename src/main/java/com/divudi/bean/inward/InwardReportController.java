@@ -340,6 +340,8 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
+            System.out.println("p.getBhtNo() = " + p.getBhtNo());
+            System.out.println("p.getFinalBill() = " + p.getFinalBill());
             for (BillItem bi : p.getFinalBill().getBillItems()) {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     p.getFinalBill().setVat(bi.getNetValue() + p.getFinalBill().getVat());

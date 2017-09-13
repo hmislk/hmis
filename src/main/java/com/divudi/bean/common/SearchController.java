@@ -4073,16 +4073,15 @@ public class SearchController implements Serializable {
         System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
         System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
         if (getSessionController().getPhoneNo() == null || getSessionController().getPhoneNo().equals("")) {
+            getReportKeyWord().setString("Please Enter Phone Number");
             JsfUtil.addErrorMessage("Please Enter Phone Number");
             return "";
         }
         if (getSessionController().getBillNo() == null || getSessionController().getBillNo().equals("")) {
+            getReportKeyWord().setString("Please Enter Bill Number");
             JsfUtil.addErrorMessage("Please Enter Bill Number");
             return "";
         }
-
-        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
-        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
 
         jpql = " select pr from PatientInvestigation pr where pr.retired=false and "
                 + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
@@ -4105,9 +4104,15 @@ public class SearchController implements Serializable {
             if (web) {
                 return "/reports_list_new";
             } else {
+                System.out.println("1.getReportKeyWord().getString() = " + getReportKeyWord().getString());
+                getReportKeyWord().setString("0");
+                getSessionController().setPhoneNo("");
+                getSessionController().setBillNo("");
+                System.out.println("2.getReportKeyWord().getString() = " + getReportKeyWord().getString());
                 return "/reports_list_new_1";
             }
         } else {
+            getReportKeyWord().setString("Please Enter Correct Phone Number and Bill Number");
             JsfUtil.addErrorMessage("Please Enter Correct Phone Number and Bill Number");
             return "";
         }
