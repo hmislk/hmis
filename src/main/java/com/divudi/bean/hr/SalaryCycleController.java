@@ -34,6 +34,7 @@ import com.divudi.facade.StaffSalaryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -983,14 +984,31 @@ public class SalaryCycleController implements Serializable {
                     }
                 }
             }
+            Calendar cal=Calendar.getInstance();
+            cal.setTime(s.getSalaryCycle().getDayOffPhToDate());
+            cal.add(Calendar.DATE, 1);
             s.setWorkingDays(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(),commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
+            s.setWorkingDaysBefore(hrReportController.fetchWorkedDays(s.getStaff(), s.getSalaryCycle().getDayOffPhFromDate(), commonFunctions.getStartOfBeforeDay(s.getSalaryCycle().getSalaryFromDate())));
             s.setWorkingDaysThis(hrReportController.fetchWorkedDays(s.getStaff(), commonFunctions.getStartOfDay(s.getSalaryCycle().getSalaryFromDate()), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
-            
-            
+            s.setWorkingDaysAfter(hrReportController.fetchWorkedDays(s.getStaff(), cal.getTime(), commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate())));
+
+            if (checkDateRange(s.getStaff().getDateLeft())) {
+                s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
+                s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
+                s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateLeft()));
+
+            } else if (checkDateRange(s.getStaff().getDateRetired())) {
+                s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateRetired()));
+                s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateRetired()));
+                s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, s.getSalaryCycle().getSalaryFromDate(), s.getStaff().getDateRetired()));
+
+            } else {
+                s.setTransLeaveAnnual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Annual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+                s.setTransLeaveCasual(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Casual, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+                s.setTransLeaveMedical(humanResourceBean.calStaffLeave(s.getStaff(), LeaveType.Medical, s.getSalaryCycle().getDayOffPhFromDate(), s.getSalaryCycle().getDayOffPhToDate()));
+
+            }
+
             if (s.getStaff().getDateJoined() != null) {
                 if ((s.getSalaryCycle().getSalaryFromDate().getTime() <= s.getStaff().getDateJoined().getTime()
                         && s.getSalaryCycle().getSalaryToDate().getTime() >= s.getStaff().getDateJoined().getTime())) {
@@ -999,7 +1017,7 @@ public class SalaryCycleController implements Serializable {
                         extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
                     } else {
-                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime() 
+                        extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
                     System.out.println("New Come extraDays = " + extraDays);
@@ -1010,9 +1028,8 @@ public class SalaryCycleController implements Serializable {
                     s.setWorkingDaysAditional(0.0);
                 }
 
-                
             }
-            
+
         }
 
         for (PaysheetComponent psc : paysheetComponentsAddition) {
@@ -1861,6 +1878,21 @@ public class SalaryCycleController implements Serializable {
 
 //        m.put("ins", getSessionController().getLoggedUser().getInstitution());
         return departmentFacade.findBySQL(sql, m);
+
+    }
+
+    private boolean checkDateRange(Date date) {
+        if (date == null) {
+            return false;
+        }
+//#311
+        if ((getCurrent().getSalaryFromDate().getTime() <= date.getTime()
+                && getCurrent().getSalaryToDate().getTime() >= date.getTime())) {
+
+            return true;
+        }
+
+        return false;
 
     }
 
