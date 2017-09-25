@@ -838,19 +838,48 @@ public class PharmacyController implements Serializable {
         }
 
         String sql;
+        
+        sql = "select i "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " order by i.bill.department.name,i.bill.insId ";
+        
         Map m = new HashMap();
+        
+        
         m.put("itm", item);
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
+        
+        List<BillItem> billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (billItems!=null) {
+            grns.addAll(billItems);
+        }
+        System.out.println("billItems = " + billItems);
+        System.out.println("institution.getName() = " + institution.getName());
+        
+//        for (BillItem bi : billItems) {
+//            System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            System.out.println("bi.getInsId() = " + bi.getInsId());
+//            System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//        }
+        
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
                 + " and i.item=:itm "
                 + " and i.bill.billType=:btp "
                 + " and i.createdAt between :frm and :to  "
@@ -1560,7 +1589,7 @@ public class PharmacyController implements Serializable {
     public void setPharmacyItem(Item pharmacyItem) {
 
         makeNull();
-
+        grns=new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
         System.out.println("Time 1 = " + new Date());
         createInstitutionSale();

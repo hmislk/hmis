@@ -5,6 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:p="http://primefaces.org/ui">
 
 
@@ -51,14 +52,15 @@
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton"    >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-                        <p:commandLink ajax="false" value="Go To Special" 
-                                       action="/pharmacy/pharmacy_error_checking_date_1" />
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                        </p:commandButton>
                     </h:panelGrid>
 
                 </f:facet>
 
                 <p:panel id="panelPrint" >
-                    <p:dataTable styleClass="noBorder summeryBorder" 
+                    <p:dataTable styleClass="noBorder summeryBorder" id="tbl"
                                  value="#{pharmacyErrorChecking.billItems}" var="pb"  rowIndexVar="i"
                                  rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''} 
                                  #{((pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' )or
@@ -97,102 +99,51 @@
                         <p:column >
                             <h:outputLabel value="#{i+1}"/>
                         </p:column>
-                        <p:column styleClass="noPrintButton"  >
-                            <p:commandButton action="#{pharmacyBillSearch.viewBill}" value="View Bill" ajax="false">                                    
-                                <f:setPropertyActionListener value="#{pb.bill}" target="#{pharmacyBillSearch.bill}"/>                                    
-                            </p:commandButton>
+
+                        <p:column headerText="Dept Id" >                              
+                            <h:outputLabel value="#{pb.bill.deptId}" />                    
+                        </p:column>
+                        <p:column headerText="Ins Id" >                              
+                            <h:outputLabel value="#{pb.bill.insId}" />
                         </p:column>
 
-                        <p:column headerText="Bill No" >                              
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Dept Id"/>
-                                <h:outputLabel value="#{pb.bill.deptId}" >
-                                </h:outputLabel>                               
-                                <h:outputLabel value="Ins Id"/>
-                                <h:outputLabel value="#{pb.bill.insId}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Billed department"/>
-                                <h:outputLabel value="#{pb.bill.department.name}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="To department"/>
-                                <h:outputLabel value="#{pb.bill.toDepartment.name}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="From department"/>
-                                <h:outputLabel value="#{pb.bill.fromDepartment.name}" >
-                                </h:outputLabel>
-                            </h:panelGrid>
+                        <p:column headerText="Before" >
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty}"  />
+                        </p:column>
+                        <p:column headerText="After" >
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty+(pb.pharmaceuticalBillItem.qtyInUnit+pb.pharmaceuticalBillItem.freeQtyInUnit)}" rendered="#{pb.bill.billType ne 'PharmacyGrnReturn'}"/>
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty-(pb.pharmaceuticalBillItem.qtyInUnit)}" rendered="#{pb.bill.billType eq 'PharmacyGrnReturn'}"/>
                         </p:column>
 
-                        <p:column headerText="Stock History" >
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Stock Id "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stock.id}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Stock History Id "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.id}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Batch Id "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.id}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Batch No "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.batchNo}" >
-                                </h:outputLabel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="2">                                   
-                                <h:outputLabel value="Before "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty}"  />
-                            </h:panelGrid>
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="After "/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty+(pb.pharmaceuticalBillItem.qtyInUnit+pb.pharmaceuticalBillItem.freeQtyInUnit)}" rendered="#{pb.bill.billType ne 'PharmacyGrnReturn'}"/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty-(pb.pharmaceuticalBillItem.qtyInUnit)}" rendered="#{pb.bill.billType eq 'PharmacyGrnReturn'}"/>
-
-                            </h:panelGrid>
+                        <p:column headerText="Bill Qty" >
+                            <h:outputLabel value="#{pb.qty}" />
+                        </p:column>
+                        <p:column headerText="PhQty" >
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.qtyInUnit}" />
+                        </p:column>
+                        <p:column headerText="Ph Free Qty" >
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.freeQtyInUnit}" />
                         </p:column>
 
-                        <p:column headerText="Qty" >
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Bill Qty"/>
-                                <h:outputLabel value="#{pb.qty}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Ph Qty"/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.qtyInUnit}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Ph Free Qty"/>
-                                <h:outputLabel value="#{pb.pharmaceuticalBillItem.freeQtyInUnit}" >
-                                </h:outputLabel>
-                            </h:panelGrid>
-
+                        <p:column headerText="Bill Date" >
+                            <h:outputLabel value="#{pb.createdAt}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                            </h:outputLabel>
                         </p:column>
-
-                        <p:column headerText="Bill Item Detail" >
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Billed Date"/>
-                                <h:outputLabel value="#{pb.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
-                                </h:outputLabel>
-                                <h:outputLabel value="Retired"/>
-                                <h:outputLabel value="#{pb.retired}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="BillType"/>
-                                <h:outputLabel value="#{pb.bill.billType}" >
-                                </h:outputLabel>
-                                <h:outputLabel value="Bill Class"/>
-                                <h:outputLabel value="#{pb.bill.billClass}" >
-                                </h:outputLabel>
-                            </h:panelGrid>
+                        <p:column headerText="Dept Id" >                              
+                            <h:outputLabel value="#{pb.bill.billedBill.deptId}" />                    
                         </p:column>
-
-                        <p:column headerText="billItem Id" styleClass="noPrintButton"> 
-                            <p:outputLabel value="#{pb.id}"></p:outputLabel>
-
+                        <p:column headerText="Ins Id" >                              
+                            <h:outputLabel value="#{pb.bill.billedBill.insId}" />
                         </p:column>
-
-                        <p:column headerText="ph Id" styleClass="noPrintButton">
-                            <p:outputLabel value="#{pb.pharmaceuticalBillItem.id}"></p:outputLabel>
-
+                        <p:column headerText="Bill Date" >
+                            <h:outputLabel value="#{pb.bill.billedBill.createdAt}" >
+                                <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a" ></f:convertDateTime>
+                            </h:outputLabel>
                         </p:column>
-
+                        <p:column headerText="BillType" >
+                            <h:outputLabel value="#{pb.bill.billType}" />
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
 
