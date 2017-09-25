@@ -91,7 +91,7 @@
                                                                                                                                                         style="margin-left: 20px; height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.4;'}" ></p:graphicImage>-->
 
 
-                                                                    <h:commandButton  styleClass="btn btn-success" style="margin-left: 20px; height: 30px; }"  id="cmdViewReport" 
+                                                                    <h:commandButton  styleClass="btn btn-success btn-block btn-lg" id="cmdViewReport" 
                                                                                       value="View" rendered="#{dpr.dataEntered eq true}"
                                                                                       action="reports_customer_view_new_1">
                                                                         <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
