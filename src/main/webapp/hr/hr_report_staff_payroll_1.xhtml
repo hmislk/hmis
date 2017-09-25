@@ -115,6 +115,7 @@
                         <th>Wor. Days</th>
                         <th>Wor. Days Befo.</th>
                         <th>Wor. Days This</th>
+                        <th>Wor. Days Aft.</th>
                         <th>Wor. Days Adit.</th>
                         <th>Anual</th>
                         <th>Caual</th>
@@ -195,6 +196,10 @@
                                 </h:outputText>                                   
                             </td>
                             <td style="text-align: right;color: #8060b0;" ><h:outputText value="#{scc.workingDaysThis}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                   
+                            </td>
+                            <td style="text-align: right;color: #8060b0;" ><h:outputText value="#{scc.workingDaysAfter}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                   
                             </td>
@@ -353,7 +358,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
-                        <td colspan="9" ><h:outputLabel value=""/></td>
+                        <td colspan="10" ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.mercAll}" >
                                 <f:convertNumber pattern="#,##0.00" />
