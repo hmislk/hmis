@@ -98,6 +98,31 @@
                         </td>
 
                     </tr>
+                    
+                    <tr>
+                        <td style="width: 20%;text-align: left;" >
+                            <h:outputLabel value="Req No" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.deptId}"  >
+                            </h:outputLabel>
+                        </td>
+                        <td style="width: 10%" >
+
+                        </td>
+                        <td style="width: 15%" >
+                            <!--<h:outputLabel value="User" ></h:outputLabel>-->
+                        </td>
+
+                        <td style="width: 30%" >
+                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
+<!--                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" >
+                            </h:outputLabel>-->
+                        </td>
+
+                    </tr>
 
 
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
@@ -185,6 +210,14 @@
                                 </h:outputLabel>
                             </td>
 
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="overflow: visible;">
+                                <h:outputLabel value="#{bip.descreption}"  styleClass="itemsBlock"   >
+                                </h:outputLabel>
+
+
+                            </td>
                         </tr>
 
 

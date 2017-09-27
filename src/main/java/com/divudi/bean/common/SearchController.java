@@ -4090,7 +4090,7 @@ public class SearchController implements Serializable {
         if (web) {
             m.put("pn", getSessionController().getPhoneNo());
         } else {
-            m.put("pn", getSessionController().getPhoneNo().substring(0, 3)+"-"+getSessionController().getPhoneNo().substring(3));
+            m.put("pn", getSessionController().getPhoneNo().substring(0, 3) + "-" + getSessionController().getPhoneNo().substring(3));
         }
         m.put("bn", getSessionController().getBillNo());
 
@@ -6275,6 +6275,11 @@ public class SearchController implements Serializable {
     public void createInwardSurgeryBills() {
         Date startTime = new Date();
 
+        if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
+            JsfUtil.addErrorMessage("You Need To select Surgury to Search All");
+            return;
+        }
+
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where "
@@ -6318,6 +6323,11 @@ public class SearchController implements Serializable {
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getItem() != null) {
+            sql += " and b.procedure.item=:item ";
+            temMap.put("item", getSearchKeyword().getItem());
+        }
+
         if (getSearchKeyword().getTotal() != null
                 && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  (upper(b.total) like :total )";
@@ -6330,7 +6340,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        if (searchKeyword.isActiveAdvanceOption()) {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
 

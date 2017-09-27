@@ -64,6 +64,10 @@
                                     <h:outputText value="#{procedureController.current.department.name}" ></h:outputText>
                                     <h:outputText value="Creater" ></h:outputText>
                                     <h:outputText value="#{procedureController.current.creater.staff.person.name}" ></h:outputText>
+                                    <h:outputText value="Created At" ></h:outputText>
+                                    <h:outputText value="#{procedureController.current.createdAt}" >
+                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                    </h:outputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" action="#{procedureController.saveSelected()}" styleClass="buttons"  update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  process="gpDetail" onclick="onSubmitButton();" >

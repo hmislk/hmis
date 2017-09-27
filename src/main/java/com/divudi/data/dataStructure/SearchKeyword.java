@@ -8,6 +8,7 @@ package com.divudi.data.dataStructure;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
 
@@ -51,6 +52,7 @@ public class SearchKeyword {
     Institution ins;
     Department frmDepartment;
     Department tooDepartment;
+    Item item;
     
     boolean activeAdvanceOption;
     boolean withRetiered;
@@ -397,5 +399,13 @@ public class SearchKeyword {
 
     public void setWithRetiered(boolean withRetiered) {
         this.withRetiered = withRetiered;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 }

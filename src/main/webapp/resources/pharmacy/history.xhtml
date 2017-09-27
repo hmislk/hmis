@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core">
 
@@ -21,15 +22,15 @@
                 <h:outputLabel value="From Date"/>
                 <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
                             navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                    <!--<f:ajax event="dateSelect" execute="@this toDate" render="tab"/>-->
                 </p:calendar>
 
                 <h:outputLabel value="To Date"/>
                 <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                    <!--<f:ajax event="dateSelect" execute="@this toDate" render="tab"/>-->
                 </p:calendar>
                 <p:commandButton update=":#{p:component('grn')} :#{p:component('po')} :#{p:component('dp')} :#{p:component ('depIssue')}" 
-                                action="#{pharmacyController.createTable()}" value="View Detail"/>
+                                 action="#{pharmacyController.createTable()}" value="View Detail"/>
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >
@@ -177,7 +178,40 @@
 
                     </p:dataTable>                
                 </p:tab>
-                
+
+                <p:tab   title="Sale BillItem"    >
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" action="#{pharmacyController.createTable()}" >
+                        <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                    </p:commandButton>
+                    <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi">
+                        <p:column >
+                            <f:facet name="header">
+                                Ins Id
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.insId}" />
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header">
+                                deptId
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.deptId}" />
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header">
+                                department
+                            </f:facet>
+                            <p:outputLabel value="#{bi.bill.department.name}" />
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header">
+                                Qty
+                            </f:facet>
+                            <p:outputLabel value="#{bi.pharmaceuticalBillItem.qty}" />
+                        </p:column>
+
+                    </p:dataTable>
+                </p:tab>
+
                 <p:tab   title="Whole Sale"    >
                     <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
                         <p:columnGroup type="header">
@@ -262,7 +296,7 @@
 
                     </p:dataTable>                
                 </p:tab>
-                
+
                 <p:tab   title="BHT ISSUE"    >
                     <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
                         <p:columnGroup type="header">
@@ -518,7 +552,7 @@
 
                     </p:dataTable>                
                 </p:tab>
-                
+
                 <p:tab   title="Department Issue"    >
                     <p:dataTable styleClass="noBorder" id="depIssue"
                                  value="#{pharmacyController.institutionIssue}" var="ins">
@@ -687,8 +721,14 @@
                         <p:column headerText="Purchase Rate">
                             #{dd3.pharmaceuticalBillItem.purchaseRate}
                         </p:column>    
+                        <p:column headerText="Sale Rate">
+                            #{dd3.pharmaceuticalBillItem.retailRate}
+                        </p:column>    
                         <p:column headerText="Purchase Qty">
                             #{dd3.pharmaceuticalBillItem.qty}
+                        </p:column>    
+                        <p:column headerText="Free Qty">
+                            #{dd3.pharmaceuticalBillItem.freeQty}
                         </p:column>    
                         <p:column headerText="Purchase Value">
                             #{-dd3.netValue}

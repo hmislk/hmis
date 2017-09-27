@@ -3350,6 +3350,40 @@ public class HrReportController implements Serializable {
                             System.out.println("d = " + d);
                         }
                     }
+                    if (d == 0 && ss.getShift().getLeaveHourHalf() == 0) {
+                        HashMap hm = new HashMap();
+                        hm.put("cls", StaffShiftExtra.class);
+                        hm.put("d", ss.getShiftDate());
+                        hm.put("stf", ss.getStaff());
+                        hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
+                        String sql = "Select ss "
+                                + " from StaffShift ss "
+                                + " where ss.retired=false "
+                                //                + " and ss.leavedTime=0 "
+                                + " and type(ss)!=:cls"
+                                + " and ss.dayType not in :dtp "
+                                + " and ss.shiftDate=:d "
+                                + " and ss.staff=:stf ";
+                        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+                        for (StaffShift s : sss) {
+                            List<StaffLeave> staffLeave = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
+                            System.out.println("staffLeave = " + staffLeave);
+                            System.out.println("staffLeave.size() = " + staffLeave.size());
+                            for (StaffLeave sl : staffLeave) {
+                                if (sl.getLeaveType() != LeaveType.No_Pay_Half) {
+                                    if (s.getShift().isHalfShift()) {
+                                        if (sl.getQty() == 0.5) {
+                                            d += (s.getShift().getLeaveHourFull() * 60 * 60);
+                                        }
+                                    } else {
+                                        d += (s.getShift().getLeaveHourHalf() * 60 * 60);
+                                    }
+                                    System.out.println("sl.getLeaveType() = " + sl.getLeaveType());
+                                }
+                            }
+
+                        }
+                    }
                     if (d > 0) {
                         System.out.println("d = " + d);
                         System.out.println("value = " + value);
