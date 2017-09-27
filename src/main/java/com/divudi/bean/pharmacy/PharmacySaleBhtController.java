@@ -995,7 +995,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         clearBillItem();
         setActiveIndex(1);
-        errorMessage="";
+        errorMessage = "";
     }
 
     private void calTotal() {
@@ -1163,10 +1163,22 @@ public class PharmacySaleBhtController implements Serializable {
         } else {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        itemsWithoutStocks = completeRetailSaleItems(qry, department);
+
+        List<Stock> items = getStockFacade().findBySQL(sql, m, 20);
+        System.out.println("items.size() = " + items.size());
+
+        if (qry.length() > 5 && items.size() == 1) {
+            stock = items.get(0);
+            handleSelectAction();
+        } else if (!qry.trim().equals("") && qry.length() > 4) {
+            itemsWithoutStocks = completeRetailSaleItems(qry, department);
+            if (itemsWithoutStocks != null) {
+                fillReplaceableStocksForAmp((Amp) itemsWithoutStocks.get(0));
+            }
+        }
         System.out.println("itemsWithoutStocks.size() = " + itemsWithoutStocks.size());
 
-        return getStockFacade().findBySQL(sql, m, 20);
+        return items;
     }
 
     public void generateBillComponent(Bill b) {
@@ -1275,6 +1287,21 @@ public class PharmacySaleBhtController implements Serializable {
 
         return flag;
 
+    }
+
+    public void handleSelectAction() {
+        if (stock == null) {
+            ////System.out.println("Stock NOT selected.");
+        }
+        if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
+            ////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
+        }
+
+        getBillItem().getPharmaceuticalBillItem().setStock(stock);
+        calculateRates(billItem);
+        if (stock != null && stock.getItemBatch() != null) {
+            fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
+        }
     }
 
     private void clearBill() {

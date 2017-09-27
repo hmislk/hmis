@@ -1456,13 +1456,14 @@ public class PharmacyController implements Serializable {
         // //System.err.println("Getting GRNS : ");
         String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
                 + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
-                + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc ";
+                + " and (b.bill.billType=:btp or b.bill.billType=:btp2) and b.createdAt between :frm and :to order by b.id desc ";
         HashMap hm = new HashMap();
         hm.put("i", pharmacyItem);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
         hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp2", BillType.PharmacyGrnReturn);
 
         grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 

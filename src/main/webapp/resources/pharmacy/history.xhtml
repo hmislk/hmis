@@ -22,12 +22,12 @@
                 <h:outputLabel value="From Date"/>
                 <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
                             navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                    <!--<f:ajax event="dateSelect" execute="@this toDate" render="tab"/>-->
                 </p:calendar>
 
                 <h:outputLabel value="To Date"/>
                 <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                    <!--<f:ajax event="dateSelect" execute="@this toDate" render="tab"/>-->
                 </p:calendar>
                 <p:commandButton update=":#{p:component('grn')} :#{p:component('po')} :#{p:component('dp')} :#{p:component ('depIssue')}" 
                                  action="#{pharmacyController.createTable()}" value="View Detail"/>
@@ -180,7 +180,7 @@
                 </p:tab>
 
                 <p:tab   title="Sale BillItem"    >
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" action="#{pharmacyController.createTable()}" >
                         <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
                     </p:commandButton>
                     <p:dataTable id="tbl" styleClass="noBorder" value="#{pharmacyController.grns}" var="bi">

@@ -198,18 +198,18 @@
                                                             <p:column style="width:6%">  
                                                                 <p:rowEditor />  
                                                             </p:column>  
-<!--                                                            <p:column headerText="P.R.">
-                                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-
-                                                            </p:column>
-                                                            <p:column headerText="R.S.R." >
-                                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
-                                                                    <f:convertNumber pattern="#,##0.00" />
-                                                                </h:outputLabel>
-
-                                                            </p:column>-->
+                                                            <!--                                                            <p:column headerText="P.R.">
+                                                                                                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate}" >
+                                                                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                                                                            </h:outputLabel>
+                                                            
+                                                                                                                        </p:column>
+                                                                                                                        <p:column headerText="R.S.R." >
+                                                                                                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >
+                                                                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                                                                            </h:outputLabel>
+                                                            
+                                                                                                                        </p:column>-->
                                                             <p:column headerText="Expiry" >
                                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                                     <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
@@ -251,7 +251,7 @@
                                             </h:panelGroup>
 
 
-                                            <h:panelGroup id="pan">
+                                            <h:panelGroup >
                                                 <h:outputLabel value="Stocks " escape="false" ></h:outputLabel>
                                                 <b>
                                                     <h:outputLabel value=" NOT " escape="false" ></h:outputLabel>
@@ -310,8 +310,8 @@
                                                          selectionMode="single"
                                                          rowKey="#{si.id}"
                                                          emptyMessage="No items with that name without stocks.">
-                                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')} :#{p:component('pan')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
-                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')} :#{p:component('pan')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
+                                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
+                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
                                                 <p:column headerText="Generic">
                                                     #{si.vmp.name}
                                                 </p:column>
