@@ -580,6 +580,10 @@
 
                         <p:outputLabel value="Total : " />
                         <p:outputLabel value="#{channelBillController.printingBill.netTotal+channelBillController.printingBill.vat}" style="color: red;font-size: x-large;"/>
+                        <p:outputLabel value="Agency Balance : "  rendered="#{channelBillController.printingBill.creditCompany ne null}"/>
+                        <p:outputLabel value="#{channelBillController.printingBill.creditCompany.ballance}" style="color: red;font-size: x-large;" rendered="#{channelBillController.printingBill.creditCompany ne null}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
 
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
