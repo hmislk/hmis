@@ -132,7 +132,7 @@ public class SalaryCycleController implements Serializable {
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
                 + " order by c.id desc";
-        salaryCycles = getFacade().findBySQL(sql, 20);
+        salaryCycles = getFacade().findBySQL(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
     }

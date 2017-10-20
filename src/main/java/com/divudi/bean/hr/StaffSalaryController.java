@@ -445,10 +445,16 @@ public class StaffSalaryController implements Serializable {
                 if (checkDateRange(getCurrent().getStaff().getDateJoined())) {
                     long extraDays;
                     if (getCurrent().getStaff().getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime()) {
-                        extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - getCurrent().getStaff().getDateJoined().getTime()) / (1000 * 60 * 60 * 24);
+                        long l=commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime();
+                        System.out.println("l = " + l);
+                        extraDays = (l) / (1000 * 60 * 60 * 24);
                     } else {
                         extraDays = (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - salaryCycle.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
+                    System.out.println("commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
+                    System.out.println("commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime() = " + (commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()).getTime() + 1 - commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()).getTime()));
+                    System.out.println("commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()) = " + commonFunctions.getEndOfDay(salaryCycle.getSalaryToDate()));
+                    System.out.println("commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()) = " + commonFunctions.getStartOfDay(getCurrent().getStaff().getDateJoined()));
                     System.out.println("New Come extraDays = " + extraDays);
                     extraDays -= (int) (extraDays / 7);
                     System.out.println("New Come extraDays(After) = " + extraDays);

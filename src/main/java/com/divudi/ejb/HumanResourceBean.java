@@ -3274,6 +3274,10 @@ public class HumanResourceBean {
                     System.err.println("s.getShiftDate() = " + s.getShiftDate());
                     if (lastStaffShift.getShiftDate() != null) {
                         if (lastStaffShift.getShiftDate().getTime() == s.getShiftDate().getTime()) {
+                            if (lastStaffShift.getShift().isHalfShift() && !s.getShift().isHalfShift()) {
+                                lg = 1.0 * s.getMultiplyingFactorSalary() * salaryPerDay;
+                                System.err.println("Count 1");
+                            }
                             System.err.println("Dates Equal");
                             continue;
                         }
