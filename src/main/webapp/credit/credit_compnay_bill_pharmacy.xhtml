@@ -56,9 +56,15 @@
                                             itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>
                                     <f:facet name="header">
-                                        <h:outputLabel value="Name"/>
+                                        <h:outputLabel value="Bill No"/>
                                     </f:facet>
                                     <h:outputLabel value="#{ix.insId}"/>
+                                </p:column>                                  
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{ix.deptId}"/>
                                 </p:column>                                  
                                 <p:column>
                                     <f:facet name="header">
@@ -114,6 +120,12 @@
                                     <h:outputLabel value="Bill No"/>                                    
                                 </f:facet>                               
                                 <p:outputLabel value="#{b.referenceBill.insId}"/>
+                            </p:column>
+                            <p:column >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>                                    
+                                </f:facet>                               
+                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
                             </p:column>
                             <p:column headerText="Credit Company">     
                                 <p:outputLabel value="#{b.referenceBill.toInstitution.name}" />                                

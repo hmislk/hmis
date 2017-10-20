@@ -12,6 +12,7 @@ import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.PharmacyStockRow;
 import com.divudi.data.dataStructure.StockReportRecord;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Category;
@@ -78,6 +79,7 @@ public class ReportsStock implements Serializable {
     double totalRetailSaleValue;
     Vmp vmp;
     BillType[] billTypes;
+    ReportKeyWord reportKeyWord;
     /**
      * Managed Beans
      */
@@ -703,8 +705,93 @@ public class ReportsStock implements Serializable {
             totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
             totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
         }
-
+        getReportKeyWord().setBool1(false);
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Stock Reports/Category stock report(/faces/pharmacy/pharmacy_report_category_stock_by_batch.xhtml)");
+
+    }
+
+    public void fillCategoryStocksNew() {
+
+        if (department == null || category == null) {
+            UtilityController.addErrorMessage("Please select a department && Category");
+            return;
+        }
+        Map m;
+        String sql = "";
+
+        m = new HashMap();
+        m.put("cat", category);
+        m.put("dep", department);
+        m.put("st", 0.0);
+        if (getReportKeyWord().getString().equals("0")) {
+            sql = "select s ";
+        } else if (getReportKeyWord().getString().equals("1")) {
+            sql = "select s.itemBatch.item, sum(s.stock) ";
+        } else if (getReportKeyWord().getString().equals("2")) {
+            sql = "select s.itemBatch.item, sum(s.stock), s.itemBatch.retailsaleRate ";
+        }
+        sql += " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st "
+                + " and s.itemBatch.item.category=:cat ";
+
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        totalQty = 0.0;
+        totalPurchaseRate = 0.0;
+        totalRetailSaleRate = 0.0;
+        totalPurchaseValue = 0.0;
+        totalRetailSaleValue = 0.0;
+
+        if (getReportKeyWord().getString().equals("0")) {
+            sql += " order by s.itemBatch.item.name";
+            stocks = getStockFacade().findBySQL(sql, m);
+
+            for (Stock ts : stocks) {
+                stockPurchaseValue += (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+                stockSaleValue += (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                totalQty += ts.getStock();
+                totalPurchaseRate += ts.getItemBatch().getPurcahseRate();
+                totalRetailSaleRate += ts.getItemBatch().getRetailsaleRate();
+                totalPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+                totalRetailSaleValue += ts.getItemBatch().getRetailsaleRate() * ts.getStock();
+            }
+            getReportKeyWord().setBool1(false);
+        } else if (getReportKeyWord().getString().equals("1") || getReportKeyWord().getString().equals("2")) {
+            if (getReportKeyWord().getString().equals("1")) {
+                sql += " group by s.itemBatch.item ";
+            }
+            if (getReportKeyWord().getString().equals("2")) {
+                sql += " group by s.itemBatch.item, s.itemBatch.retailsaleRate ";
+            }
+            sql += " order by s.itemBatch.item.name ";
+            List<Object[]> objects = getStockFacade().findAggregates(sql, m);
+            System.out.println("objects.size() = " + objects.size());
+            stocks = new ArrayList<>();
+            for (Object[] ob : objects) {
+                Item i = (Item) ob[0];
+                double d = (double) ob[1];
+                Stock s = new Stock();
+                ItemBatch ib = new ItemBatch();
+                if (getReportKeyWord().getString().equals("2")) {
+                    double saleRate = (double) ob[2];
+                    ib.setRetailsaleRate(saleRate);
+                }
+                ib.setItem(i);
+                s.setItemBatch(ib);
+                s.setStock(d);
+                stocks.add(s);
+                totalQty += d;
+            }
+            getReportKeyWord().setBool1(true);
+        }else if(getReportKeyWord().getString().equals("3")){
+            stocks = new ArrayList<>();
+            for (int i = 0; i < 70; i++) {
+                Stock s = new Stock();
+                s.setStock(1.0);
+                stocks.add(s);
+            }
+        }
 
     }
 
@@ -1128,6 +1215,17 @@ public class ReportsStock implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
 }

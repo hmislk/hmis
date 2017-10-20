@@ -17,9 +17,24 @@
 
                     <p:outputLabel value="Purchase order Request Order"/>
                     <p:commandButton ajax="false" value="Request" 
-                                    action="#{storePurchaseOrderRequestController.request}"/>
+                                     action="#{storePurchaseOrderRequestController.request}"/>
                     <p:commandButton ajax="false"  value="New Order" 
-                                    action="#{storePurchaseOrderRequestController.recreate}"/>
+                                     action="#{storePurchaseOrderRequestController.recreate}"/>
+                    <hr></hr>
+                    <p:spacer height="5" />
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="Select Payment Method"/>
+                        <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
+                            <f:selectItem itemLabel="SelectPayment method"/>
+                            <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Qutation Number"/>
+                        <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
+                        <h:outputLabel value="Total "/>
+                        <p:outputLabel id="tot" style="font-weight: bold;" value="#{storePurchaseOrderRequestController.currentBill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </p:outputLabel>
+                    </h:panelGrid>
                 </f:facet>
 
                 <p:tabView>
@@ -51,7 +66,7 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:component('itemList')} tot" />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:component('itemList')} :#{p:component('tot')} " />
 
                     </p:tab>
 
@@ -70,10 +85,10 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:component('itemList')} tot" />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:component('itemList')} :#{p:component('tot')}" />
 
                     </p:tab>
-                    <p:tab title="Payment Method + Qutation">
+<!--                    <p:tab title="Payment Method + Qutation">
                         <h:panelGrid columns="2">
                             <h:outputLabel value="Select Payment Method"/>
                             <p:selectOneMenu   id="cmbPs" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
@@ -87,7 +102,7 @@
                             <h:outputLabel value="Qutation Number"/>
                             <p:inputText value="#{storePurchaseOrderRequestController.currentBill.qutationNumber}"/>
                         </h:panelGrid>
-                    </p:tab>
+                    </p:tab>-->
 
                 </p:tabView>
 
@@ -117,7 +132,7 @@
                         <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
                             <f:ajax event="blur" render="@this total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                             <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
-                            </p:inputText>
+                        </p:inputText>
                     </p:column>  
                     <p:column headerText="Purchase Price" style="width:20%">  
                         <h:panelGroup id="price">

@@ -3360,7 +3360,7 @@ public class SearchController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and type(b.bill)=:billClass "
                 //Starting of newly added code 
-                + " and b.bill.refunded=false "
+//                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -3406,6 +3406,19 @@ public class SearchController implements Serializable {
         //System.out.println("temMap = " + temMap);
         //System.out.println("sql = " + sql);
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search all/(/faces/inward/inward_search_professional_payment_due.xhtml)");
@@ -5463,6 +5476,12 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        if (billType != null) {
+            if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+                sql += " and  (upper(b.referenceBill.insId) like :reBillNo )";
+                temMap.put("reBillNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+            }
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {

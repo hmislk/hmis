@@ -771,6 +771,40 @@ public class BillController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
     }
+    
+    public void onLineSettleBills() {
+        Date startTime = new Date();
+
+        BillType[] billTypes = {BillType.OpdBill,billType.InwardPaymentBill};
+        PaymentMethod[] paymentMethods = {PaymentMethod.OnlineSettlement};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
+        if (r == null) {
+            r = new BillListWithTotals();
+            bills = r.getBills();
+            netTotal = r.getNetTotal();
+            discount = r.getDiscount();
+            grosTotal = r.getGrossTotal();
+            vat = r.getVat();
+            return;
+        }
+        if (r.getBills() != null) {
+            bills = r.getBills();
+        }
+        if (r.getNetTotal() != null) {
+            netTotal = r.getNetTotal();
+        }
+        if (r.getDiscount() != null) {
+            discount = r.getDiscount();
+        }
+        if (r.getVat() != null) {
+            vat = r.getVat();
+        }
+        if (r.getGrossTotal() != null) {
+            grosTotal = r.getGrossTotal();
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
+    }
 
     public void getPharmacySaleBills() {
         Date startTime = new Date();

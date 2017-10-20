@@ -364,6 +364,7 @@ public enum Privileges {
     HrLeaveForms,
     HrAdditionalForms,
     HrEditRetiedDate,
+    HrRemoveResignDate,
     
     Developers,
     //Cashier

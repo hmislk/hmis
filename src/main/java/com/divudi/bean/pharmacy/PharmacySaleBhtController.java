@@ -996,6 +996,8 @@ public class PharmacySaleBhtController implements Serializable {
         clearBillItem();
         setActiveIndex(1);
         errorMessage = "";
+        replaceableStocks = new ArrayList<>();
+        itemsWithoutStocks = new ArrayList<>();
     }
 
     private void calTotal() {
@@ -1169,6 +1171,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
+            replaceableStocks = new ArrayList<>();
+            itemsWithoutStocks = new ArrayList<>();
             handleSelectAction();
         } else if (!qry.trim().equals("") && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItems(qry, department);

@@ -15,7 +15,7 @@
         <p:dataTable id="#{cc.id}" value="#{bookKeepingSummery.onlineSettlementBill}" var="ch" sortBy="#{ch.billClass}" 
                      rendered="#{bookKeepingSummery.onlineSettlementBill.size()>0}">
             <f:facet name="header">              
-                <p:outputLabel value="Credit Card Transactions"/>    
+                <p:outputLabel value="Online Payment Transactions"/>    
             </f:facet>
             <p:column headerText="Bill No" style="width: 20%;">
                 <f:facet name="header">              
@@ -35,7 +35,7 @@
                 <h:outputLabel rendered="#{ch.billedBill ne null}" 
                                value="#{ch.billedBill.insId}"/>
             </p:column>
-            <p:column headerText="CC" style="width: 20%; "> 
+            <p:column headerText="Payment For Instiution" style="width: 20%; "> 
                 <f:facet name="header">
                     <h:outputLabel value="CC"/>
                 </f:facet>
@@ -47,12 +47,12 @@
                 </f:facet>
                 <h:outputLabel value="#{ch.creditCardRefNo}"/>                            
             </p:column>
-            <p:column headerText="Bank" style="width: 20%">
+<!--            <p:column headerText="Bank" style="width: 20%">
                 <f:facet name="header">              
                     <p:outputLabel value="Bank"/>    
                 </f:facet>
                 <h:outputLabel value="#{ch.bank.name}" style="width: 20%" />                            
-            </p:column>
+            </p:column>-->
 
             <p:column headerText="Memo" style="width: 20%">
                 <f:facet name="header">              

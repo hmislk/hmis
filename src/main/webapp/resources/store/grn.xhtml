@@ -279,14 +279,15 @@
 
             <div class="preparedBy">
                 <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;"/>
-
+                <h:outputLabel value="Received By : " style="position: absolute; left: 70%;"/>
             </div>
 
-            <div >
-                <h:outputLabel value="Received By : " style="text-align: right!important;"/>
-            </div>
-
+            <!--            <div >
+                            <h:outputLabel value="Received By : " style="text-align: right!important;"/>
+                        </div>-->
+            <p:spacer height="10" />
             <hr/>
+            <p:spacer height="10" />
             <div >
 
                 <h4 style="color: #000000; text-align: center " >
@@ -297,12 +298,13 @@
                 <div>
                     <h:outputLabel value="Payee : " />
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"/>
-                    <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
+                    <h:outputLabel value="Date :"  style="position: absolute;left:70%;" />
                 </div>
                 <div>
                     <br></br>
                     <h:outputLabel value="Prepared By :" /> 
                     <h:outputLabel value="................................................................."/>
+                    <h:outputLabel value="Petty Cash No :"  style="position: absolute;left:70%;" />
                     <br></br>                
                     <br></br>         
                     <h:outputLabel value="Approved By :"/>

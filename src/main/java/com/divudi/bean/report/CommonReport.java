@@ -3520,8 +3520,8 @@ public class CommonReport implements Serializable {
         //GRN Cancelled Bill
         getGrnCancelled().setBillItems(getBillItems(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
         getGrnCancelled().setCash(getBillItemsGrnNetTotal(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
-        getGrnCancelled().setExpense(getBillItemsExpensesTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
-        getGrnCancelled().setGrnNetTotalWithExpenses(getBillItemsNetTotal(new BilledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnCancelled().setExpense(getBillItemsExpensesTotal(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
+        getGrnCancelled().setGrnNetTotalWithExpenses(getBillItemsNetTotal(new CancelledBill(), BillType.StoreGrnBill, getDepartment()));
 
 //        //GRN Refunded Bill GRN Total
 //        getGrnReturn().setBillItems(getBillItems(new BilledBill(), BillType.StoreGrnReturn, getDepartment()));
@@ -4332,7 +4332,7 @@ public class CommonReport implements Serializable {
                 tmp += bt.getExpense();
             }
         }
-
+        System.out.println("tmp = " + tmp);
         return tmp;
     }
 
@@ -4829,21 +4829,21 @@ public class CommonReport implements Serializable {
         list.add(getGrnCancelled());
 
         dataTableData = new ArrayList<>();
-        String1Value1 tmp1 = new String1Value1();
-        tmp1.setString("Total");
-        tmp1.setValue(getFinalCashTotal(list));
+//        String1Value1 tmp1 = new String1Value1();
+//        tmp1.setString("Total");
+//        tmp1.setValue(getFinalCashTotal(list));
 
         String1Value1 tmp5 = new String1Value1();
         tmp5.setString("Expenses Total");
         tmp5.setValue(getFinalExpenses(list));
 
-        String1Value1 tmp6 = new String1Value1();
-        tmp6.setString("Final Total");
-        tmp6.setValue(getFinalCashTotal(list)+getFinalExpenses(list));
+//        String1Value1 tmp6 = new String1Value1();
+//        tmp6.setString("Final Total");
+//        tmp6.setValue(getFinalCashTotal(list)+getFinalExpenses(list));
 
-        dataTableData.add(tmp1);
+//        dataTableData.add(tmp1);
         dataTableData.add(tmp5);
-        dataTableData.add(tmp6);
+//        dataTableData.add(tmp6);
 
         return dataTableData;
     }

@@ -28,9 +28,9 @@
                                             value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="yyyy MM dd hh:mm:ss a" styleClass="dateTimePicker"></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="yyyy MM dd hh:mm:ss a" styleClass="dateTimePicker"></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="4">
@@ -115,7 +115,7 @@
 
                                 <p:column headerText="Cost Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Cost Rate"/>
+                                        <h:outputLabel value="Value"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -124,10 +124,17 @@
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="5"/>
-                                        <p:column style="text-align: right;" >
+                                        <p:column colspan="6"/>
+<!--                                        <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{storeReportsTransfer.purchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>                                        -->
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{storeReportsTransfer.saleValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>

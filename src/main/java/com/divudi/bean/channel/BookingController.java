@@ -1309,7 +1309,8 @@ public class BookingController implements Serializable {
 
         String msg = "Dear Sir/Madam,\n"
                 + ss.getStaff().getPerson().getName() + " has arrived.\n"
-                + "** Now you can channel your doctor online on www.ruhunuhospitl.lk **";
+//                + "** Now you can channel your doctor online on www.ruhunuhospital.lk **";
+                + "** Now you can channel your doctor online on https://goo.gl/aEbnDD **";
         System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName().length());
         System.out.println("msg.length() = " + msg.length());
 //        fillBillSessions();

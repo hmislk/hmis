@@ -97,7 +97,7 @@ public class StoreCalculation {
         String temSql;
         List<Item> tmp;
         if (i != null) {
-            temSql = "SELECT i.item FROM ItemsDistributors i where i.retired=false and i.institution.id = " + i.getId();
+            temSql = "SELECT i.item FROM ItemsDistributors i where i.retired=false and i.item.retired=false and i.institution.id = " + i.getId();
             tmp = getItemFacade().findBySQL(temSql);
         } else {
             tmp = null;
