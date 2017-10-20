@@ -580,6 +580,10 @@
 
                         <p:outputLabel value="Total : " />
                         <p:outputLabel value="#{channelBillController.printingBill.netTotal+channelBillController.printingBill.vat}" style="color: red;font-size: x-large;"/>
+                        <p:outputLabel value="Agency Balance : "  rendered="#{channelBillController.printingBill.creditCompany ne null}"/>
+                        <p:outputLabel value="#{channelBillController.printingBill.creditCompany.ballance}" style="color: red;font-size: x-large;" rendered="#{channelBillController.printingBill.creditCompany ne null}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
 
 
                         <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
@@ -767,12 +771,12 @@
                                         </p:outputLabel>
                                         <p:separator rendered="#{bookingController.selectedBillSession.bill.printed==true}" ></p:separator>
                                         <p:separator rendered="#{bookingController.selectedBillSession.bill.printed==true}" ></p:separator>
-                                        <p:outputLabel value="Printed User"/>
+<!--                                        <p:outputLabel value="Printed User"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.printedUser.webUserPerson.nameWithTitle}"/>
                                         <p:outputLabel value="Printed At"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.printedAt}"> 
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a" ></f:convertDateTime>
-                                        </p:outputLabel>
+                                        </p:outputLabel>-->
                                         <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
                                         <p:separator rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" ></p:separator>
                                         <p:outputLabel style="color: red" value="Payment" rendered="#{bookingController.selectedBillSession.bill.cancelled==true or bookingController.selectedBillSession.bill.refunded==true}" />

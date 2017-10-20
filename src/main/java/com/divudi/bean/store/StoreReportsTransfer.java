@@ -225,7 +225,7 @@ public class StoreReportsTransfer implements Serializable {
 
     public void fillDepartmentTransfersReceive() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -256,13 +256,13 @@ public class StoreReportsTransfer implements Serializable {
             purchaseValue = purchaseValue + (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
             saleValue = saleValue + (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill item(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
 
@@ -297,13 +297,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
     }
 
     public void fillDepartmentUnitIssueByBillItemStore() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
 
@@ -338,13 +338,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetValue();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by bill item(/faces/store/store_report_unit_issue_bill_item.xhtml)");
     }
 
     public void fillFromDepartmentUnitIssueByBillStore() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -367,7 +367,7 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit by department(/faces/store/store_report_unit_issue_department.xhtml)");
     }
 
@@ -381,16 +381,16 @@ public class StoreReportsTransfer implements Serializable {
 
     public void createDepartmentIssueStore() {
         Date startTime = new Date();
-        
+
         listz = new ArrayList<>();
-        List<Object[]> list ;
-        
-        if (department==null) {
+        List<Object[]> list;
+
+        if (department == null) {
             list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), getSessionController().getDepartment());
         } else {
             list = getBillBeanController().fetchBilledDepartmentItemStore(getFromDate(), getToDate(), department);
         }
-        
+
         if (list == null) {
             return;
         }
@@ -410,7 +410,7 @@ public class StoreReportsTransfer implements Serializable {
             listz.add(newD);
 
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue by department(summery)(/faces/store/store_report_unit_issue_department_by_departmaent.xhtm)");
 
 //        netTotalValues = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
@@ -455,8 +455,8 @@ public class StoreReportsTransfer implements Serializable {
         String sql;
         m.put("fd", fromDate);
         m.put("td", toDate);
-//        m.put("bt1", BillType.StoreTransferIssue);
-        m.put("bt1", BillType.StoreIssue);
+        m.put("bt1", BillType.StoreTransferIssue);
+//        m.put("bt1", BillType.StoreIssue);
 
         sql = " select bi from BillItem bi where "
                 + "  bi.bill.createdAt between :fd  and :td "
@@ -492,9 +492,10 @@ public class StoreReportsTransfer implements Serializable {
         ItemBillRow ibr = null;
 
         //System.out.println("transferItems = " + transferItems);
-        //System.out.println("transferItems.size() = " + transferItems.size());
+        System.out.println("transferItems.size() = " + transferItems.size());
         for (BillItem ts : transferItems) {
-            //System.out.println("ts = " + ts);
+            purchaseValue += ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQty();
+            saleValue += ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQty();
 
             if (dept != null && dept.equals(ts.getBill().getToDepartment())) {
                 //System.out.println("old dept");
@@ -571,7 +572,7 @@ public class StoreReportsTransfer implements Serializable {
 
     public void fillDepartmentTransfersIssueByBill() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -610,13 +611,13 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer issue by bill (/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 
     public void fillDepartmentTransfersRecieveByBill() {
         Date startTime = new Date();
-        
+
         Map m = new HashMap();
         String sql;
         m.put("fd", fromDate);
@@ -649,7 +650,7 @@ public class StoreReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
     }
 

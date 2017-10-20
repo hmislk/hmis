@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core" >
+    <h:head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta charset="utf-8" />
+        <title>Ruhunu Hospital</title>
+        <meta name="generator" content="Bootply" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link href="resources/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+        <!--[if lt IE 9]>
+                                <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+                        <![endif]-->
+        <link href="resources/css/styles.css" rel="stylesheet" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script> 
+        <script src="resources/js/bootstrap.min.js"></script>
+    </h:head>
+    <h:body>
+        <!--login modal-->
+        <div id="loginModal" class="modal show" tabindex="-1" role="dialog" aria-hidden="true" style="overflow: auto;">
+            <div class="container">
+                <div class="inner_wrap">
+                    <div class="form-horizontal">
+                        <h:form >
+                            <div class="section_top">
+                                <h3>Details</h3>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Name</label>
+                                    <div class="col-sm-10">
+                                        <!--<p class="form-control-static">H J ANUSHA</p>-->
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.name}" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Age</label>
+                                    <div class="col-sm-10">
+                                        <!--<p class="form-control-static">37 years.</p>-->
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.age}" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Gender</label>
+                                    <div class="col-sm-10">
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.patient.person.sex}" />
+                                        <!--<p class="form-control-static">Female</p>-->
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Bill No</label>
+                                    <div class="col-sm-10">
+                                        <p:outputLabel styleClass="form-control-static" value="#{searchController.userPatientInvestigations[0].billItem.bill.insId}" />
+                                        <!--<p class="form-control-static">Female</p>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="section_bottom">
+                                <h3>Reports</h3>
+                                <div class="table-responsive">
+                                    <table class="table"  >
+                                        <thead>
+                                            <th width="100 %">
+                                                <p>Investigation</p>
+                                            </th>
+                                            <!--                                            <th width="80%">
+                                                                                            <p>Reports</p>
+                                                                                        </th>-->
+                                        </thead>
+
+                                        <ui:repeat id="tblBills" value="#{searchController.userPatientInvestigations}" var="pi"  >
+
+                                            <tbody> 
+                                                <td >
+                                                    <h:outputLabel value="#{pi.billItem.item.name}" style="overflow: hidden!important;">
+                                                    </h:outputLabel>
+
+                                                    <table class="table" >
+                                                        <ui:repeat value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}"   >
+                                                            <tr >
+                                                                <td>
+
+                                                                    <!--                                                                    <p:graphicImage id="imgEntered" library="image/icon" name="data_entry.png" 
+                                                                                                                                                        style="margin-left: 20px; height: 30px; width: 30px; #{dpr.dataEntered ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                                                                                                        <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
+                                                                                                                                                        style="margin-left: 20px; height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.4;'}" ></p:graphicImage>
+                                                                                                                                        <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
+                                                                                                                                                        style="margin-left: 20px; height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.4;'}" ></p:graphicImage>-->
+
+
+                                                                    <h:commandButton  styleClass="btn btn-success btn-block btn-lg" id="cmdViewReport" 
+                                                                                      value="View" rendered="#{dpr.dataEntered eq true}"
+                                                                                      action="reports_customer_view_new_1">
+                                                                        <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                                    </h:commandButton>
+
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                        <tr style="display: #{pi.patientReports.size() eq 0 ? 'displayRow':'none'}">
+                                                            <td>
+                                                                <h:outputLabel value="Processing." rendered="#{pi.patientReports.size() eq 0}">
+                                                                </h:outputLabel>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tbody>
+
+                                        </ui:repeat>
+                                    </table>
+                                </div>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </h:body>
+</html>

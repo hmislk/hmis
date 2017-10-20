@@ -18,7 +18,7 @@
                             <h:outputLabel value="Department :#{storeTransferIssueController.requestedBill.department.name}" />
                         </f:facet>
                         <p:autoComplete converter="stfcon" completeMethod="#{staffController.completeStaffWithoutDoctors}" styleClass="noPrintButton"
-                                        forceSelection="true"
+                                        forceSelection="true" placeholder="Hand Over To"
                                         var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                         value="#{storeTransferIssueController.issuedBill.toStaff}" ></p:autoComplete>
                         <p:commandButton  value="Issue" action="#{storeTransferIssueController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">

@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" >
+    <h:head>
+        <meta http-equiv="content-type" content="text/html, charset=UTF-8"/>
+        <meta charset="utf-8"/>
+        <title>Ruhunu Hospital</title>
+        <meta name="generator" content="Bootply" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+        <!-- Latest compiled and minified CSS -->
+        <link  rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+        <!--[if lt IE 9]>
+                                <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+                        <![endif]-->
+        <link href="resources/css/styles.css" type="text/css" rel="stylesheet" />
+    </h:head>
+    <h:body>
+
+        <!--<h:outputStylesheet library="css" name="styles.css" />-->
+        <!--login modal-->
+        <div id="loginModal" class="" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="text-center">My Lab Report</h1>
+                    </div>
+                    <div class="modal-body clearfix">
+                        <h:form >
+                            <div class="form col-md-12 center-block">
+                                <div class="alert alert-danger alert-dismissable fade in" style="display: #{searchController.reportKeyWord.string eq '0' ? 'none' : ''};" >
+                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                    <strong>Warning! </strong> #{searchController.reportKeyWord.string}
+                                </div>
+                                <div class="form-group  clearfix">
+                                    <label for="inputEmail3" class="col-sm-4 control-label">Bill Number</label>
+                                    <div class="col-sm-8">
+                                        <p:inputText placeholder="Bill No" value="#{sessionController.billNo}" styleClass="form-control input-lg" autocomplete="off" />
+                                    <!--<input type="txt" value="#{sessionController.billNo}" class="form-control input-lg" id="inputEmail3" placeholder="Bill Number"/>-->
+                                    </div>
+                                </div>
+                                <div class="form-group  clearfix">
+                                    <label for="inputEmail3" class="col-sm-4 control-label">Phone Number</label>
+                                    <div class="col-sm-8">
+                                        <p:inputText placeholder="Phone Number" value="#{sessionController.phoneNo}" styleClass="form-control input-lg" maxlength="10" autocomplete="off"/>
+                                        <!--<input value="#{sessionController.phoneNo}" type="text" class="form-control input-lg" placeholder="Phone Number" maxlength="10"/>-->
+                                    </div>
+                                </div>
+                                <div class="form-group  clearfix">
+                                    <h:commandButton class="btn btn-success btn-lg btn-block"  action="#{searchController.fillUserPatientReportMobile}" value="View Reports" />
+                                    <!--<button class="btn btn-success btn-lg btn-block" >View Reports</button>-->
+                                </div>
+                            </div>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- script references --> 
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script> 
+        <script src="/resources/js/bootstrap.min.js"></script>
+    </h:body>
+</html>

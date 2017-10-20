@@ -307,10 +307,10 @@ public class Bill implements Serializable {
 
     //Print Information
     private boolean printed;
-    @ManyToOne
-    private WebUser printedUser;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    private Date printedAt;
+//    @ManyToOne
+//    private WebUser printedUser;
+//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+//    private Date printedAt;
     
     
     @Transient
@@ -1752,20 +1752,20 @@ public class Bill implements Serializable {
         this.printed = printed;
     }
 
-    public WebUser getPrintedUser() {
-        return printedUser;
-    }
-
-    public void setPrintedUser(WebUser printedUser) {
-        this.printedUser = printedUser;
-    }
-
-    public Date getPrintedAt() {
-        return printedAt;
-    }
-
-    public void setPrintedAt(Date printedAt) {
-        this.printedAt = printedAt;
-    }
+//    public WebUser getPrintedUser() {
+//        return printedUser;
+//    }
+//
+//    public void setPrintedUser(WebUser printedUser) {
+//        this.printedUser = printedUser;
+//    }
+//
+//    public Date getPrintedAt() {
+//        return printedAt;
+//    }
+//
+//    public void setPrintedAt(Date printedAt) {
+//        this.printedAt = printedAt;
+//    }
 
 }

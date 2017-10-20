@@ -96,6 +96,12 @@
                                 </f:facet>                               
                                 <p:outputLabel value="#{b.referenceBill.insId}"/>
                             </p:column>
+                            <p:column >  
+                                <f:facet name="header">
+                                    <h:outputLabel value="Bill No"/>                                    
+                                </f:facet>                               
+                                <p:outputLabel value="#{b.referenceBill.deptId}"/>
+                            </p:column>
                             <p:column headerText="Patient Name">
                                 <p:outputLabel value="#{b.referenceBill.patient.person.name}"/>                               
                             </p:column>

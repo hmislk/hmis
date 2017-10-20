@@ -26,15 +26,15 @@
                     <table class="headingPrinting" >
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel class="mark" value="**Final Bill Original**" 
+                                <h:outputLabel class="mark" value="**Original Bill**"
                                                rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**DUPLICATE**" rendered="#{cc.attrs.duplicate eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="**Hospital Bill**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/></td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**HOSPITAL COPY**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="**Hospital Bill**Original Bill**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
@@ -323,7 +323,7 @@
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                        <h:panelGroup >
                             <!--                            PAID AMOUNT-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
@@ -364,7 +364,7 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}" >
+                        <h:panelGroup >
                             <!--DUE AMOUNT-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">

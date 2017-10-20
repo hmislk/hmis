@@ -14,14 +14,15 @@
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel header="Detailed BHT Issuing Bill Items" >
+                    <p:panel header="BHT Addmission Details" >
 
-                        <h:panelGrid columns="6" >
+                        <h:panelGrid columns="2" >
 
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="From Date" />
+                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
+                            
+                            <h:outputLabel value="To Date" />
+                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -29,16 +30,27 @@
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
+                            
                             <p:outputLabel value="Without Canceled BHT" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
+                            
+                            <p:outputLabel value="Selection Methord" />
+                            <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}" >
+                                <f:selectItem itemLabel="All" itemValue="0" />
+                                <f:selectItem itemLabel="Not Discharged &amp; Payment Not Finalized" itemValue="1" />
+                                <f:selectItem itemLabel="Discharged &amp; Payment Not Finalized" itemValue="2" />
+                                <f:selectItem itemLabel="Discharged and Payment Finalized" itemValue="3" />
+                                <f:ajax execute="@this" render="@this" />
+                            </p:selectOneRadio>
                         </h:panelGrid>
 
-                        <p:panelGrid columns="7">
-                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}" onclick="onSubmitButton();" ></p:commandButton>
+<!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}" onclick="onSubmitButton();" ></p:commandButton>-->
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -47,8 +59,8 @@
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
-                        </p:panelGrid>
-                        <h:panelGrid columns="16">
+                        </h:panelGrid>
+                        <h:panelGrid columns="4">
                             <p:outputLabel value="BHT No" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
                             <p:outputLabel value="Payment Methord" />
@@ -240,6 +252,12 @@
                                     </f:facet>
                                 </p:column>
 
+                                <p:column styleClass="averageNumericColumn"  headerText="Discount" rendered="#{inwardReportController.finalBillTotal}">
+                                    <h:outputLabel value="#{i.finalBill.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                
                                 <p:column styleClass="averageNumericColumn"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
                                     <h:outputLabel value="#{i.transPaid}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -252,7 +270,7 @@
                                 </p:column>
 
                                 <p:column styleClass="averageNumericColumn" headerText="Due" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.transTotal-i.transPaid}">
+                                    <h:outputLabel value="#{i.transTotal-i.transPaid-i.finalBill.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

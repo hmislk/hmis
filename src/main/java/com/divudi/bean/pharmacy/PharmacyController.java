@@ -838,19 +838,48 @@ public class PharmacyController implements Serializable {
         }
 
         String sql;
+        
+        sql = "select i "
+                + " from BillItem i "
+                + " where i.bill.department.institution=:ins"
+                + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to  "
+                + " order by i.bill.department.name,i.bill.insId ";
+        
         Map m = new HashMap();
+        
+        
         m.put("itm", item);
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
+        
+        List<BillItem> billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        if (billItems!=null) {
+            grns.addAll(billItems);
+        }
+        System.out.println("billItems = " + billItems);
+        System.out.println("institution.getName() = " + institution.getName());
+        
+//        for (BillItem bi : billItems) {
+//            System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            System.out.println("bi.getInsId() = " + bi.getInsId());
+//            System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//        }
+        
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
                 + " and i.item=:itm "
                 + " and i.bill.billType=:btp "
                 + " and i.createdAt between :frm and :to  "
@@ -1427,13 +1456,14 @@ public class PharmacyController implements Serializable {
         // //System.err.println("Getting GRNS : ");
         String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
                 + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
-                + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc ";
+                + " and (b.bill.billType=:btp or b.bill.billType=:btp2) and b.createdAt between :frm and :to order by b.id desc ";
         HashMap hm = new HashMap();
         hm.put("i", pharmacyItem);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
         hm.put("btp", BillType.PharmacyGrnBill);
+        hm.put("btp2", BillType.PharmacyGrnReturn);
 
         grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
@@ -1560,7 +1590,7 @@ public class PharmacyController implements Serializable {
     public void setPharmacyItem(Item pharmacyItem) {
 
         makeNull();
-
+        grns=new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
         System.out.println("Time 1 = " + new Date());
         createInstitutionSale();

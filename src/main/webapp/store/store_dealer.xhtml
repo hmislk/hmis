@@ -59,6 +59,8 @@
                                 <h:panelGrid id="gpDetailText" columns="2" >
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{storeDealorController.current.name}"  ></h:inputText>
+                                    <h:outputText id="lblNameC" value="Printing Name" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtNameC" value="#{storeDealorController.current.chequePrintingName}"  ></h:inputText>
                                     <h:outputText id="lblCode" value="Code" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtCode" value="#{storeDealorController.current.institutionCode}"  ></h:inputText>
                                     <h:outputText  value="Adress" ></h:outputText>
@@ -110,6 +112,12 @@
                                 <p:outputLabel value="Distributor" />
                             </f:facet>
                             <p:outputLabel value="#{d.name}" />
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header" >
+                                <p:outputLabel value="Distributor Printing Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{d.chequePrintingName}" />
                         </p:column>
                         <p:column>
                             <f:facet name="header" >

@@ -3276,7 +3276,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 //Starting of newly added code 
-//                + " and b.bill.refunded=false "
+                //                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -3360,7 +3360,7 @@ public class SearchController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and type(b.bill)=:billClass "
                 //Starting of newly added code 
-                + " and b.bill.refunded=false "
+//                + " and b.bill.refunded=false "
                 //Ending of newly added code 
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
@@ -3406,6 +3406,19 @@ public class SearchController implements Serializable {
         //System.out.println("temMap = " + temMap);
         //System.out.println("sql = " + sql);
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("billFees.size() = " + billFees.size());
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                removeingBillFees.add(bf);
+            }
+
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
         calTotal();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Inward/Payment due search all/(/faces/inward/inward_search_professional_payment_due.xhtml)");
@@ -4057,34 +4070,41 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/reporting(/faces/lab/search_reports.xhtml)");
     }
 
-    public String fillUserPatientReport() {
+    public String fillUserPatientReportMobile() {
+        return fillUserPatientReport(false);
+    }
+
+    public String fillUserPatientReportWeb() {
+        return fillUserPatientReport(true);
+    }
+
+    private String fillUserPatientReport(boolean web) {
         String jpql;
         Map m = new HashMap();
         m.put("pn", getSessionController().getPhoneNo());
         m.put("bn", getSessionController().getBillNo());
+        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
+        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
         if (getSessionController().getPhoneNo() == null || getSessionController().getPhoneNo().equals("")) {
+            getReportKeyWord().setString("Please Enter Phone Number");
             JsfUtil.addErrorMessage("Please Enter Phone Number");
             return "";
         }
         if (getSessionController().getBillNo() == null || getSessionController().getBillNo().equals("")) {
+            getReportKeyWord().setString("Please Enter Bill Number");
             JsfUtil.addErrorMessage("Please Enter Bill Number");
             return "";
         }
 
-        System.out.println("getSessionController().getPhoneNo() = " + getSessionController().getPhoneNo());
-        System.out.println("getSessionController().getBillNo() = " + getSessionController().getBillNo());
-//        String s1=getSessionController().getPhoneNo().substring(0, 3);
-//        System.out.println("s1 = " + s1);
-//        String s2=getSessionController().getPhoneNo().substring(3, 10);
-//        System.out.println("s2 = " + s2);
-//        String no=s1+"-"+s2;
-//        System.out.println("no = " + no);
         jpql = " select pr from PatientInvestigation pr where pr.retired=false and "
                 + " upper(pr.billItem.bill.patient.person.phone)=:pn and "
                 + " (upper(pr.billItem.bill.insId)=:bn or upper(pr.billItem.bill.deptId)=:bn) "
                 + " order by pr.id desc ";
-
-        m.put("pn", getSessionController().getPhoneNo());
+        if (web) {
+            m.put("pn", getSessionController().getPhoneNo());
+        } else {
+            m.put("pn", getSessionController().getPhoneNo().substring(0, 3) + "-" + getSessionController().getPhoneNo().substring(3));
+        }
         m.put("bn", getSessionController().getBillNo());
 
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
@@ -4094,8 +4114,18 @@ public class SearchController implements Serializable {
 
 //        return "/reports_list";
         if (userPatientInvestigations.size() > 0) {
-            return "/reports_list_new";
+            if (web) {
+                return "/reports_list_new";
+            } else {
+                System.out.println("1.getReportKeyWord().getString() = " + getReportKeyWord().getString());
+                getReportKeyWord().setString("0");
+                getSessionController().setPhoneNo("");
+                getSessionController().setBillNo("");
+                System.out.println("2.getReportKeyWord().getString() = " + getReportKeyWord().getString());
+                return "/reports_list_new_1";
+            }
         } else {
+            getReportKeyWord().setString("Please Enter Correct Phone Number and Bill Number");
             JsfUtil.addErrorMessage("Please Enter Correct Phone Number and Bill Number");
             return "";
         }
@@ -5447,6 +5477,12 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.bill.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
+        if (billType != null) {
+            if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+                sql += " and  (upper(b.referenceBill.insId) like :reBillNo )";
+                temMap.put("reBillNo", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+            }
+        }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             sql += " and  (upper(b.bill.netTotal) like :netTotal )";
@@ -6258,6 +6294,11 @@ public class SearchController implements Serializable {
     public void createInwardSurgeryBills() {
         Date startTime = new Date();
 
+        if (searchKeyword.isActiveAdvanceOption() && searchKeyword.getItem() == null && searchKeyword.getItemName().equals("")) {
+            JsfUtil.addErrorMessage("You Need To select Surgury to Search All");
+            return;
+        }
+
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where "
@@ -6301,6 +6342,11 @@ public class SearchController implements Serializable {
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getItem() != null) {
+            sql += " and b.procedure.item=:item ";
+            temMap.put("item", getSearchKeyword().getItem());
+        }
+
         if (getSearchKeyword().getTotal() != null
                 && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  (upper(b.total) like :total )";
@@ -6313,7 +6359,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        if (searchKeyword.isActiveAdvanceOption()) {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Theater/Search(/faces/theater/inward_search_surgery.xhtml)");
 
@@ -6830,7 +6880,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText,null,SmsType.Marketing);
+            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, SmsType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

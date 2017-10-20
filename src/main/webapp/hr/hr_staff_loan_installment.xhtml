@@ -97,6 +97,7 @@
 <!--                        <h:outputLabel value="With Account No"/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.showAccountNo}" />-->
                         <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
+                        <p:commandButton ajax="false" value="Fill Deleted" action="#{staffLoanController.createLonesDeleted()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                             <pe:exporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />

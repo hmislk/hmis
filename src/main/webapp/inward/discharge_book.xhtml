@@ -144,6 +144,14 @@
                                         <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Discharge Date" sortBy="#{i.dateOfDischarge}" rendered="#{inwardReportController.dischargeDate}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discharge Date"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.dateOfDischarge}"  >
+                                        <f:convertDateTime pattern="hh:mm:ss a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Discharge By" sortBy="#{i.finalBill.creater.webUserPerson.name}" rendered="#{inwardReportController.billedBy}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharge By"/>

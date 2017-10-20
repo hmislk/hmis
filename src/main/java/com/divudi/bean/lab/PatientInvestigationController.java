@@ -511,8 +511,9 @@ public class PatientInvestigationController implements Serializable {
 //            
 //            System.out.println("messageBody = " + messageBody.length());
             String messageBody2 = "Dear Sir/Madam,\n"
-                    + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-                    + "\"RHD your trusted diagnostics partner\"";
+                    + "Report bearing number " + bill.getInsId() + " is ready for collection.\n"
+                    + "\"RHD your trusted diagnostics partner\"\n"
+                    + "Get your report online http://goo.gl/Ae8p6L";
 
             System.out.println("messageBody2 = " + messageBody2.length());
 

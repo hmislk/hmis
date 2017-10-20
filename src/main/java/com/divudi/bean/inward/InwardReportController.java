@@ -29,6 +29,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -140,6 +141,24 @@ public class InwardReportController implements Serializable {
         fillAdmissions(null, null);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild by admitted date/fill all(/faces/inward/admission_book.xhtml)");
+    }
+
+    public void fillAdmissionBookNew() {
+        if (getReportKeyWord().getString().isEmpty() || getReportKeyWord().getString() == null) {
+            JsfUtil.addErrorMessage("Select a Selection Methord");
+            return;
+        }
+        System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
+        if (getReportKeyWord().getString().equals("0")) {
+            fillAdmissions(null, null);
+        }else if (getReportKeyWord().getString().equals("1")) {
+            fillAdmissions(false, false);
+        }else if (getReportKeyWord().getString().equals("2")) {
+            fillAdmissions(true, false);
+        }else if (getReportKeyWord().getString().equals("3")) {
+            fillAdmissions(true, true);
+        }
+
     }
 
     public void fillAdmissionBookOnlyInward() {
@@ -340,6 +359,8 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
+            System.out.println("p.getBhtNo() = " + p.getBhtNo());
+            System.out.println("p.getFinalBill() = " + p.getFinalBill());
             for (BillItem bi : p.getFinalBill().getBillItems()) {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     p.getFinalBill().setVat(bi.getNetValue() + p.getFinalBill().getVat());
@@ -1307,7 +1328,7 @@ public class InwardReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = com.divudi.java.CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }

@@ -98,13 +98,31 @@
                                     <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                                 </p:column>
                                 <p:column headerText="Billed at" 
+                                          sortBy="#{bill.referenceBill.createdAt}">
+                                    <h:outputLabel value="#{bill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.referenceBill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" value="#{bill.referenceBill.cancelledBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.referenceBill.refunded}" >
+                                        <h:outputLabel style="color: red;" value="Refunded at " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" value="#{bill.referenceBill.refundedBill.createdAt}" >
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>  
+                                <p:column headerText="Accept at" 
                                           sortBy="#{bill.createdAt}">
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{bill.createdAt.time}" >
 
-                                    </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -120,6 +138,24 @@
                                     </h:panelGroup>
                                 </p:column>  
                                 <p:column headerText="Billed by" 
+                                          sortBy="#{bill.referenceBill.creater.webUserPerson.name}"
+                                          filterBy="#{bill.referenceBill.creater.webUserPerson.name}"
+                                          filterMatchMode="contains">
+                                    <h:outputLabel value="#{bill.referenceBill.creater.webUserPerson.name}" >                                      
+                                    </h:outputLabel>
+                                    <br/>
+                                    <h:panelGroup rendered="#{bill.referenceBill.cancelled}" >
+                                        <h:outputLabel style="color: red;" value="Cancelled By " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.cancelled}" value="#{bill.referenceBill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bill.referenceBill.refunded}" >
+                                        <h:outputLabel style="color: red;" value="Refunded By " />
+                                        <h:outputLabel style="color: red;" rendered="#{bill.referenceBill.refunded}" value="#{bill.referenceBill.refundedBill.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
+                                    </h:panelGroup>
+                                </p:column>    
+                                <p:column headerText="Accept by" 
                                           sortBy="#{bill.creater.webUserPerson.name}"
                                           filterBy="#{bill.creater.webUserPerson.name}"
                                           filterMatchMode="contains">

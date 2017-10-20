@@ -188,6 +188,8 @@ public class StaffSalary implements Serializable {
     @Transient
     double WorkingDaysThis;
     @Transient
+    double WorkingDaysAfter;
+    @Transient
     double WorkingDaysAditional;
     String comments;
 
@@ -1273,6 +1275,14 @@ public class StaffSalary implements Serializable {
 
     public void setWorkingDaysAditional(double WorkingDaysAditional) {
         this.WorkingDaysAditional = WorkingDaysAditional;
+    }
+
+    public double getWorkingDaysAfter() {
+        return WorkingDaysAfter;
+    }
+
+    public void setWorkingDaysAfter(double WorkingDaysAfter) {
+        this.WorkingDaysAfter = WorkingDaysAfter;
     }
 
 }

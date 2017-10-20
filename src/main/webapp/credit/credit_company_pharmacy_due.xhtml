@@ -52,6 +52,8 @@
                                     <p:row>
                                         <p:column headerText="Bill No">                                    
                                         </p:column>
+                                        <p:column headerText="Bill No">                                    
+                                        </p:column>
                                         <p:column headerText="Client Name">                                    
                                         </p:column>
                                         <p:column headerText="Billed Amount">                                    
@@ -70,6 +72,9 @@
                                     </f:facet>
                                     <p:column>                              
                                         <h:outputLabel value="#{b.insId}" />                                
+                                    </p:column>
+                                    <p:column>                              
+                                        <h:outputLabel value="#{b.deptId}" />                                
                                     </p:column>
                                     <p:column>                               
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
@@ -96,7 +101,7 @@
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
-                                            <p:column footerText="Total" colspan="2" />
+                                            <p:column footerText="Total" colspan="3" />
                                             <p:column style="text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">

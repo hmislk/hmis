@@ -34,10 +34,10 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**DUPLICATE**" rendered="#{cc.attrs.duplicate eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="**Professional Bill**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/></td>
                         </tr>
                         <tr>
-                            <td colspan="4"><h:outputLabel class="mark" value="**HOSPITAL COPY**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
+                            <td colspan="4"><h:outputLabel class="mark" value="**Professional Bill**Original Bill**" rendered="#{cc.attrs.hosCopy eq true}"/></td>
                         </tr>
                         <tr>
                             <td colspan="2">&nbsp;</td>
@@ -47,10 +47,35 @@
                     <table>
                         <tr >
                             <td >
-                                <h:outputLabel value="Patient Name : " />
+                                <h:outputLabel value="Patient Name" />
+                            </td>
+                            <td >
+                                <h:outputLabel value=" : " />
                             </td>
                             <td >
                                 <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
+                            </td>                           
+                        </tr>
+                        <tr >
+                            <td >
+                                <h:outputLabel value="BHT No" />
+                            </td>
+                            <td >
+                                <h:outputLabel value=" : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
+                            </td>                           
+                        </tr>
+                        <tr >
+                            <td >
+                                <h:outputLabel value="Bill No" />
+                            </td>
+                            <td >
+                                <h:outputLabel value=" : " />
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.insId}" />
                             </td>                           
                         </tr>
 <!--                        <tr>
@@ -122,11 +147,15 @@
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Amount" style="text-align: right;">
-                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false 
+                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted ne 0.0
                                                               and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
                                         <h:outputLabel value="#{fe.feeAdjusted}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted eq 0.0
+                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                        <h:outputLabel value="Free of Charge"/>
                                     </h:panelGroup>
                                 </p:column>
                                 <p:columnGroup type="footer">

@@ -15,38 +15,41 @@
                 <p:growl autoUpdate="true" />
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="1" >
                         <p:panel header="Item Distributor">
+                            <h:panelGrid columns="3" >
+                                <h:outputLabel value="Search"/>
+                                <p:autoComplete converter="deal"  id="lstSelect"   value="#{storeItemsDistributorsController.currentInstituion}" 
+                                                forceSelection="true"
+                                                style="min-width: 223px" completeMethod="#{storeDealorController.completeDealor}"   
+                                                var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                    <p:column headerText="Item">
+                                        <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                                    </p:column>
 
-                            <h:outputLabel value="Search"/>
-                            <p:autoComplete converter="deal"  id="lstSelect"   value="#{storeItemsDistributorsController.currentInstituion}" 
-                                            forceSelection="true"
-                                            style="min-width: 223px" completeMethod="#{storeDealorController.completeDealor}"   
-                                            var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
-                                <p:column headerText="Item">
-                                    <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
-                                </p:column>
-
-                                <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect" >
-                                </f:ajax>
-                            </p:autoComplete>
-
-                        </p:panel>
-                        <p:panel header="Select Item For Distributor">
-                            <p:autoComplete converter="itemcon" value="#{storeItemsDistributorsController.currentItem}" 
-                                            forceSelection="true"
-                                            completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                <p:column headerText="Name" >
-                                    <h:outputLabel value="#{vt.name}" ></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Code" >
-                                    <h:outputLabel value="#{vt.code}" ></h:outputLabel>
-                                </p:column>
-                            </p:autoComplete>  
-                            <h:commandButton id="btnAdd" value="Add" action="#{storeItemsDistributorsController.addToPackage()}">
+                                    <f:ajax event="itemSelect" render="gpDetail" execute="lstSelect" >
+                                    </f:ajax>
+                                </p:autoComplete>
+                                <h:outputLabel value=""/>
+                            
+                                <h:outputLabel value="Item"/>
+                                <p:autoComplete converter="itemcon" value="#{storeItemsDistributorsController.currentItem}" 
+                                                forceSelection="true"
+                                                completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    <p:column headerText="Name" style="max-width: 500px;">
+                                        <h:outputLabel value="#{vt.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" style="max-width: 200px;">
+                                        <h:outputLabel value="#{vt.code}" ></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>  
+                                <h:commandButton id="btnAdd" value="Add" action="#{storeItemsDistributorsController.addToPackage()}">
                                 </h:commandButton>
                                 <p:defaultCommand target="btnAdd"/>
+                            </h:panelGrid>
+
                         </p:panel>
+
                         <p:panel header="Items suply current Distributor">
                             <h:panelGroup id="gpDetail" >
                                 <p:dataTable scrollable="true" scrollHeight="450" id="packageItem" value="#{storeItemsDistributorsController.items}" var="i">
@@ -56,8 +59,8 @@
                                     <p:column headerText="Item Code">
                                         <h:outputLabel value="#{i.item.code}"/> 
                                     </p:column>
-                                     <p:column headerText="Item BarCode">
-                                         <h:outputLabel value="#{i.item.barcode}"/> 
+                                    <p:column headerText="Item BarCode">
+                                        <h:outputLabel value="#{i.item.barcode}"/> 
                                     </p:column>                                    
                                     <p:column headerText="Action">
                                         <p:commandButton ajax="false" value="Remove" action="#{storeItemsDistributorsController.removeFromPackage()}" >
@@ -67,9 +70,9 @@
                                 </p:dataTable>                              
                             </h:panelGroup>
                         </p:panel>
-                        
-                        
-                        
+
+
+
                     </h:panelGrid>
                 </p:panel>
             </h:form>

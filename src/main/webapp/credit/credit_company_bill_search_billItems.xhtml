@@ -31,14 +31,16 @@
 
                             </h:panelGrid>
 
-                            <h:panelGrid columns="6">
+                            <h:panelGrid columns="7">
                                 <h:outputLabel value="Bill No"/>    
+                                <h:outputLabel value="OPD Bill No"/>    
                                 <h:outputLabel value="Bht No"/>
                                 <h:outputLabel value="Credit Company"/>
                                 <h:outputLabel value="Value"/>
                                 <h:outputLabel value="Bank"/>
                                 <h:outputLabel value="Check No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.netTotal}"  />   

@@ -113,19 +113,19 @@
                                                    id="btnSample" 
                                                    action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                        <p:graphicImage library="image/icon" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
                                     <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                        <p:graphicImage library="image/icon" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                     </p:commandLink>
                                     <p:commandLink ajax="false" id="btnPrintWorksheets" action="lab_single_worksheet">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                        <p:graphicImage library="image/icon" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
                                     <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab_patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
-                                        <p:graphicImage library="image/icon" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                        <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>
                                 </h:panelGrid>
 
@@ -179,17 +179,17 @@
 
                                             <p:commandLink id="cmdOldReportEdit" ajax="false" action="lab_patient_report">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
-                                                <p:graphicImage library="image/icon" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                             </p:commandLink>
 
                                             <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/lab_patient_report_print">
-                                                <p:graphicImage library="image/icon" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
+                                                <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
 
-                                            <p:graphicImage id="imgApproved" library="image/icon" name="approved_icon.png" 
+                                            <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
-                                            <p:graphicImage id="imgPrinted" library="image/icon" name="print_ok.png" 
+                                            <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
                                                             style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
 
                                             <p:commandLink style="float: right" ajax="false" 
@@ -198,7 +198,7 @@
                                                            action="#{patientInvestigationController.revertMarkedSample()}" 
                                                            rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
                                                 <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                                <p:graphicImage library="image/icon" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
                                             </p:commandLink>
 
                                         </h:panelGrid>

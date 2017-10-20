@@ -119,6 +119,13 @@
                                     <p:outputLabel value="#{ss.staffPaysheetComponent.paysheetComponent.name}">
                                     </p:outputLabel>
                                 </p:column>  
+                                <p:column headerText="Paysheet Component ">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="ID"  />
+                                    </f:facet>
+                                    <p:outputLabel value="#{ss.staffPaysheetComponent.id}">
+                                    </p:outputLabel>
+                                </p:column>  
                                 <p:column headerText="Salary Cycle" rendered="#{hrReportController.reportKeyWord.salaryCycle eq null}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Salary Cycle"  />

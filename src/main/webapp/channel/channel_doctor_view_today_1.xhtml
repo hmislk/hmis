@@ -40,13 +40,13 @@
                         </f:facet>
                         <p:outputLabel value="#{i+1}" />
                     </p:column>
-                    <p:column style="width: 1000px!important;" sortBy="#{bs.consultant.person.name}">
+                    <p:column style="width: 1000px!important;" sortBy="#{a.serviceSession.staff.person.name}">
                         <f:facet name="header">
                             <p:outputLabel value="Consultant" style="float: left;"/>
                         </f:facet>
                         <p:outputLabel value="#{a.serviceSession.staff.person.name}" />
                     </p:column>   
-                    <p:column sortBy="#{bs.consultant.person.name}">
+                    <p:column sortBy="#{a.serviceSession.startingTime}">
                         <f:facet name="header">
                             <p:outputLabel value="Session Time" style="float: left;"/>
                         </f:facet>
@@ -54,7 +54,7 @@
                             <f:convertDateTime pattern="hh:mm a" />
                         </p:outputLabel>
                     </p:column>   
-                    <p:column sortBy="#{bs.consultant.person.name}">
+                    <p:column sortBy="#{a.recordTimeStamp}">
                         <f:facet name="header">
                             <p:outputLabel value="Arrival Time" style="float: left;"/>
                         </f:facet>
@@ -62,7 +62,7 @@
                             <f:convertDateTime pattern="hh:mm:ss a" />
                         </p:outputLabel>
                     </p:column>   
-                    <p:column sortBy="#{bs.consultant.person.name}">
+                    <p:column >
                         <f:facet name="header">
                             <p:outputLabel value="Departure Time" style="float: left;"/>
                         </f:facet>
