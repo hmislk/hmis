@@ -327,6 +327,9 @@ public class Bill implements Serializable {
     double vatPlusStaffFee;
     @Transient
     double vatPlusHosFee;
+    
+    @Transient
+    private boolean approvedAnyTest=false;
 
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
@@ -1767,5 +1770,13 @@ public class Bill implements Serializable {
 //    public void setPrintedAt(Date printedAt) {
 //        this.printedAt = printedAt;
 //    }
+
+    public boolean isApprovedAnyTest() {
+        return approvedAnyTest;
+    }
+
+    public void setApprovedAnyTest(boolean approvedAnyTest) {
+        this.approvedAnyTest = approvedAnyTest;
+    }
 
 }

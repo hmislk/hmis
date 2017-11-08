@@ -8,16 +8,19 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
+import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.BillFacade;
@@ -51,6 +54,8 @@ public class BhtEditController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    BillBeanController billBean;
     /////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -94,19 +99,37 @@ public class BhtEditController implements Serializable {
     }
 
     private boolean checkPaymentIsMade() {
+        boolean flag = false;
         String sql = "select b from BilledBill b"
                 + "  where b.retired=false "
                 + " and b.patientEncounter=:pEnc "
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
-        Bill bill = getBillFacade().findFirstBySQL(sql, hm);
-        if (bill != null) {
-            System.out.println("bill.getInsId() = " + bill.getInsId());
-            return true;
+        List<Bill> bills = getBillFacade().findBySQL(sql, hm);
+        System.out.println("bills.size() = " + bills.size());
+        if (bills.isEmpty()) {
+            System.err.println("empty");
+            return flag;
+        } else if (bills.size() == 1) {
+            Bill b = bills.get(0);
+            if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
+                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+                System.out.println("enc.size() = " + enc.size());
+                for (EncounterComponent e : enc) {
+                    if (!e.getBillFee().getPatientItem().isRetired()) {
+                        flag = true;
+                    }
+                }
+            } else {
+                flag=true;
+            }
         }
-
-        return false;
+        if (bills.size() > 1) {
+            flag = true;
+        }
+        System.out.println("flag = " + flag);
+        return flag;
     }
 
 //      private boolean checkServiceAdded() {
@@ -245,7 +268,7 @@ public class BhtEditController implements Serializable {
         patientList = null;
         current = null;
         selectText = "";
-        yearMonthDay=new YearMonthDay();
+        yearMonthDay = new YearMonthDay();
     }
 
     public void save() {
@@ -446,6 +469,14 @@ public class BhtEditController implements Serializable {
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
+    }
+
+    public BillBeanController getBillBean() {
+        return billBean;
+    }
+
+    public void setBillBean(BillBeanController billBean) {
+        this.billBean = billBean;
     }
 
     /**

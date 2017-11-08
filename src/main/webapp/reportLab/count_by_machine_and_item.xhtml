@@ -36,6 +36,9 @@
                             <p:commandButton ajax="false"  value="Refresh" 
                                              action="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType() }"
                                              styleClass="noPrintButton" style="float: right;" />
+                            <p:commandButton ajax="false"  value="Refresh new" 
+                                             action="#{investigationMonthSummeryOwnController.createLabServiceWithCountAndValueByMachineInvestigationAndBillType() }"
+                                             styleClass="noPrintButton" style="float: right;" />
 
 
 
@@ -74,13 +77,17 @@
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column rowspan="2" headerText="Investigation" />
-                                <p:column colspan="4" headerText="Counts" />
+                                <p:column colspan="8" headerText="Counts &amp; Totals" />
                             </p:row>
                             <p:row>
-                                <p:column headerText="OPD" />
-                                <p:column headerText="Collecting Centre" />
-                                <p:column headerText="Inward" />
-                                <p:column headerText="Total" />
+                                <p:column headerText="OPD Count" />
+                                <p:column headerText="OPD Value" />
+                                <p:column headerText="CC Count" />
+                                <p:column headerText="CC Value" />
+                                <p:column headerText="Inward Count" />
+                                <p:column headerText="Inward Value" />
+                                <p:column headerText="Total Count" />
+                                <p:column headerText="Total Value" />
                             </p:row>
                         </p:columnGroup>
 
@@ -92,24 +99,96 @@
                                 <h:outputText value="#{stats.investigation.name}" />
                             </p:column>
                             <p:column style="width: 100px!important; text-align: right;">
-                                <h:outputText value="#{stats.opdCount}" />
+                                <h:outputText value="#{stats.opdCount}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.opdTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column  style="width: 100px!important; text-align: right;">
-                                <h:outputText value="#{stats.ccCount}" />
+                                <h:outputText value="#{stats.ccCount}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.ccTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column  style="width: 100px!important; text-align: right;">
-                                <h:outputText value="#{stats.inwardCount}" />
+                                <h:outputText value="#{stats.inwardCount}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.inwardTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column  style="width: 100px!important; text-align: right;">
-                                <h:outputText value="#{stats.count}" />
+                                <h:outputText value="#{stats.count}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column style="width: 100px!important; text-align: right;">
+                                <h:outputText value="#{stats.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:columnGroup type="footer">
                                 <p:row>
                                     <p:column footerText="#{c.machine.name} Total" style="text-align:right"/>
-                                    <p:column footerText="#{c.opdCount}"  style="text-align:right"/>
-                                    <p:column footerText="#{c.ccCount}"  style="text-align:right"/>
-                                    <p:column footerText="#{c.inwardCount}"  style="text-align:right"/>
-                                    <p:column footerText="#{c.count}"  style="text-align:right"/>
+                                    <p:column footerText="#{c.opdCount}"  style="text-align:right">
+                                        <h:outputText value="#{c.opdCount}" >
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column footerText="#{c.opdTotal}"  style="text-align:right">
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{c.opdTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{c.ccCount}"  style="text-align:right">
+                                        <h:outputText value="#{c.ccCount}" >
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column footerText="#{c.ccTotal}"  style="text-align:right">
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{c.ccTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{c.inwardCount}"  style="text-align:right">
+                                        <h:outputText value="#{c.inwardCount}" >
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column  style="text-align:right">
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{c.inwardTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column footerText="#{c.count}"  style="text-align:right">
+                                        <h:outputText value="#{c.count}" >
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column footerText="#{c.total}"  style="text-align:right">
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{c.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
                                 </p:row>
                             </p:columnGroup>
                         </p:subTable>                        
@@ -120,24 +199,56 @@
                                 <p:column footerText="#{investigationMonthSummeryOwnController.totalOpdCount}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.totalOpdCount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalOpdCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalOpd}">
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.totalccCount}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.totalccCount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalccCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalcc}">
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.totalInwardCount}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.totalInwardCount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalInwardCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.totalInward}">
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                                 <p:column footerText="#{investigationMonthSummeryOwnController.totalCount}"  style="text-align:right">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{investigationMonthSummeryOwnController.totalCount}">
+                                            <f:convertNumber pattern="#,##0" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>                             
+                                <p:column footerText="#{investigationMonthSummeryOwnController.totalCount}"  style="text-align:right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{investigationMonthSummeryOwnController.total}">
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>                             

@@ -1354,11 +1354,12 @@ public class ServiceSummery implements Serializable {
             bi.setProFee(calFee(i, FeeType.Staff));
             bi.setHospitalFee(calFee(i, FeeType.OwnInstitution));
             bi.setStaffsNames(fetchStaffs(i, FeeType.Staff));
+            bi.setOutSideFee(calFee(i, FeeType.OtherInstitution));
             bi.setVatFee(calFeeVat(i));
             bi.setStaffFee(calFee(i, FeeType.Staff));
             billItemWithFees.add(bi);
         }
-
+        outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 

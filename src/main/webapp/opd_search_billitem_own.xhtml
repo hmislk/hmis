@@ -68,7 +68,7 @@
                                 <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}" >
                                 </h:outputLabel>
                                 &nbsp;&nbsp;&nbsp;&nbsp;
-                                <h:commandLink value="(edit)" action="patient" >
+                                <h:commandLink value="(edit)" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.bill.approvedAnyTest ne true}">
                                     <f:setPropertyActionListener value="#{pi.bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
                                 <br/>

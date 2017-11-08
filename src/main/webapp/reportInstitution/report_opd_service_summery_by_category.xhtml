@@ -136,6 +136,15 @@
                     <p:outputLabel value="#{d.hospitalFee}">
                         <f:convertNumber pattern="#,##0.00"/>
                     </p:outputLabel>
+                </p:column>   
+                
+                <p:column headerText="Out Side Fee" style="text-align: right;">
+                    <f:facet name="header">
+                        <h:outputLabel value="Out Side Fee" />
+                    </f:facet>
+                    <p:outputLabel value="#{d.outSideFee}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </p:outputLabel>
                 </p:column>     
 
                 <p:column headerText="Vat Fee" style="text-align: right;">
@@ -164,7 +173,14 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column style="text-align: right;" footerText="#{serviceSummery.value}" >
+                        <p:column colspan="4" style="text-align: right;" footerText="#{serviceSummery.outSideFeeTotoal}" >
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{serviceSummery.outSideFeeTotoal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+                        <p:column colspan="3" style="text-align: right;" footerText="#{serviceSummery.value}" >
                             <f:facet name="footer">
                                 <h:outputLabel value="#{serviceSummery.value}">
                                     <f:convertNumber pattern="#,##0.00"/>

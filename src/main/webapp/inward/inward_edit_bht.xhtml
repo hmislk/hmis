@@ -22,9 +22,9 @@
                                         value="#{bhtEditController.current}"
                                         completeMethod="#{bhtEditController.completePatient}" 
                                         var="myItem" itemValue="#{myItem}" 
-                                        itemLabel="#{myItem.bhtNo}" 
+                                        itemLabel="#{myItem.bhtNo}" disabled="#{bhtEditController.current.bhtNo ne null}"
                                         size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:component('panPrint')}"/>
+                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:component('panPrint')} @this"/>
                             <p:column>
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>

@@ -31,7 +31,7 @@
                                             <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{institutionController.fetchSelectedAgencys}" />
                                         </h:inputText>
 
-                                        <p:selectOneListbox  id="lstSelect"   value="#{institutionController.agency}" style="min-width: 223px; height: 300px;">
+                                        <p:selectOneListbox  id="lstSelect"   value="#{institutionController.agency}" style="min-width: 260px; height: 300px;">
                                             <f:selectItems  value="#{institutionController.selectedAgencies}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name} (#{myItem.institutionCode })" ></f:selectItems>
                                             <p:ajax event="change"   update="gpDetail gpSelectButtons" process="lstSelect" >
                                             </p:ajax>
@@ -41,6 +41,8 @@
                                     <h:panelGrid id="gpSelectButtons" columns="3"  >
 
                                         <h:commandButton id="btnAdd" value="Add" action="#{institutionController.prepareAddAgency()}" styleClass="buttons" >
+                                        </h:commandButton>
+                                        <h:commandButton rendered="false" id="btnAdd2" value="Upadate Code" action="#{institutionController.formatAgentSerial}" styleClass="buttons" >
                                         </h:commandButton>
 
                                         <h:commandButton disabled="#{institutionController.agency.id eq 20385287}" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -63,6 +65,9 @@
                                                 <h:outputText id="lblId" value="Id" rendered="#{webUserController.hasPrivilege('Developers')}" />
                                                 <h:outputLabel id="txtId" value="#{institutionController.agency.id}" rendered="#{webUserController.hasPrivilege('Developers')}" />
 
+                                                <h:outputText value="Status" style="color: red;" rendered="#{institutionController.agency.inactive eq true}"/>
+                                                <h:outputText value="Inactive" style="color: red;" rendered="#{institutionController.agency.inactive eq true}" />
+                                                
                                                 <h:outputText id="lblName" value="Name" />
                                                 <h:inputText autocomplete="off" id="txtName" value="#{institutionController.agency.name}" />
 

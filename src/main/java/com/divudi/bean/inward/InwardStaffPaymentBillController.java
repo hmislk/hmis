@@ -929,10 +929,17 @@ public class InwardStaffPaymentBillController implements Serializable {
         System.out.println("dueBillFees.size() = " + dueBillFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : dueBillFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+//            h = new HashMap();
+//            h.put("stf", currentStaff);
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                    + " and bi.bill.cancelled=false "
+//                    + " and bi.bill.toStaff=:stf "
+                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
 
             if (rbi != null) {
+                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
                 removeingBillFees.add(bf);
             }
 

@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pu="http://primefaces.org/ui/extensions">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -146,7 +147,7 @@
 
 
                             <p:column  headerText="Patient" styleClass="alignTop" >
-                                <h:commandLink id="colPtDetail" 
+                                <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
                                                action="patient" 
                                                style="text-decoration:underline;"
@@ -155,6 +156,17 @@
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                     <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billController.bill}"/>
                                 </h:commandLink>
+                                <h:commandLink id="colPtDetail1" rendered="#{!pi.billItem.bill.approvedAnyTest}"
+                                               value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
+                                               action="patient" 
+                                               style="text-decoration:underline;"
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
+                                               >
+                                    <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
+                                    <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billController.bill}"/>
+                                </h:commandLink>
+                                <p:outputLabel rendered="#{pi.billItem.bill.approvedAnyTest}"
+                                               value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" />
                                 <p:tooltip for="colPtDetail"  >
                                     <h:outputLabel value="Name : #{pi.billItem.bill.patient.person.nameWithTitle}" >
                                     </h:outputLabel>
@@ -293,10 +305,10 @@
                                         </h:panelGrid>
 
 
-                                        <p:tooltip for="imgApproved" >
+                                        <pu:tooltip for="imgApproved" >
                                             <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                             </h:outputLabel>
-                                        </p:tooltip>
+                                        </pu:tooltip>
                                         <p:tooltip for="imgPrinted" >
                                             <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                             </h:outputLabel>

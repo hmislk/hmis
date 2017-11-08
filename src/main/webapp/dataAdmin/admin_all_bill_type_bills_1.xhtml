@@ -13,8 +13,20 @@
                 <p:panel header="All Bills">
                     <p:panel styleClass="noBorder summeryBorder">
                         <f:facet name="header" >
-                            <p:commandButton value="Process" action="#{dataAdministrationController.createAllBillTypesFirstAndLastBill}" ajax="false" />
+                            <p:outputLabel value="Duplicate Bill Numbers" />
                         </f:facet>
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="From Date" />
+                            <p:calendar value="#{dataAdministrationController.fromDate}" styleClass="dateTimePicker" pattern="yyyy MM dd hh:mm:ss a" />
+                            <p:outputLabel value="To Date" />
+                            <p:calendar value="#{dataAdministrationController.toDate}" styleClass="dateTimePicker" pattern="yyyy MM dd hh:mm:ss a" />
+                            <p:outputLabel value="Bill Type" />
+                            <p:selectOneMenu value="#{dataAdministrationController.reportKeyWord.billType}" >
+                                <f:selectItem itemLabel="Select Bill Type" />
+                                <f:selectItems value="#{enumController.billTypes}" var="t" itemLabel="#{t}" itemValue="#{t}" />
+                            </p:selectOneMenu>
+                            <p:commandButton value="Process" action="#{dataAdministrationController.createDuplicateBillTableByBillType}" ajax="false" />
+                        </h:panelGrid>
                         <p:dataTable id ="dtable" value="#{dataAdministrationController.bills}" var="b" rowIndexVar="a" >
                             <p:column>
                                 <f:facet name="header">
@@ -22,7 +34,7 @@
                                 </f:facet>
                                 <p:outputLabel value="#{a+1}" />
                             </p:column>
-                            <p:column>
+                            <p:column rendered="#{dataAdministrationController.reportKeyWord.billType eq null}">
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill Type" />
                                 </f:facet>
@@ -34,11 +46,16 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.id}" />
                             </p:column>
+                            <p:column sortBy="#{b.insId}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill Id" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.insId}" />
+                            </p:column>
                             <p:column>
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill Id" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.insId}" />/
                                 <p:outputLabel value="#{b.deptId}" />
                             </p:column>
                             <p:column>
@@ -46,6 +63,12 @@
                                     <p:outputLabel value="payment Methord" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.paymentMethod}" />
+                            </p:column>
+                            <p:column sortBy="#{b.creater.webUserPerson.name}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.creater.webUserPerson.name}" />
                             </p:column>
                             <p:column sortBy="#{b.createdAt}">
                                 <f:facet name="header">
@@ -59,7 +82,7 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Total" />
                                 </f:facet>
-                                <p:outputLabel value="#{b.netTotal+b.vat}" >
+                                <p:outputLabel value="#{b.netTotal+b.vat}" style="float: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>

@@ -2553,7 +2553,11 @@ public class ChannelReportTempController implements Serializable {
                 + " and c.institutionType=:typ ";
 
         m.put("typ", InstitutionType.Agency);
-
+        if (getReportKeyWord()!=null) {
+            if (getReportKeyWord().isAdditionalDetails()) {
+                sql+= " and c.inactive!=true ";   
+            }
+        }
         agencies = getInstitutionFacade().findBySQL(sql, m);
         getChannelTotal().setNetTotal(0);
         for (Institution a : agencies) {

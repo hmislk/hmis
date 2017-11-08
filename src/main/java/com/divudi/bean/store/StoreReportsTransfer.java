@@ -569,6 +569,128 @@ public class StoreReportsTransfer implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
+    
+    public void fillDepartmentIssueByBillItem() {
+        Date startTime = new Date();
+
+        Map m = new HashMap();
+        String sql;
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+//        m.put("bt1", BillType.StoreTransferIssue);
+        m.put("bt1", BillType.StoreIssue);
+
+        sql = " select bi from BillItem bi where "
+                + "  bi.bill.createdAt between :fd  and :td "
+                + " and (bi.bill.billType=:bt1)  ";
+
+        if (fromDepartment != null) {
+            m.put("fdept", fromDepartment);
+            sql += " and bi.bill.department=:fdept ";
+        }
+
+        if (toDepartment != null) {
+            m.put("tdept", toDepartment);
+            sql += " and bi.bill.toDepartment=:tdept ";
+        }
+
+        sql += " order by bi.bill.toDepartment.name, "
+                + " bi.item.category.name, "
+                + " bi.item.name, "
+                + " bi.id";
+
+        //System.out.println("sql = " + sql);
+        //System.out.println("m = " + m);
+        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        purchaseValue = 0.0;
+        saleValue = 0.0;
+        Map<Item, ItemBillRow> ibrs = new HashMap<>();
+        Department dept = null;
+        Category cat = null;
+        Item item = null;
+        drows = new ArrayList<>();
+        DepartmentBillRow dbr = null;
+        CategoryBillRow cbr = null;
+        ItemBillRow ibr = null;
+
+        //System.out.println("transferItems = " + transferItems);
+        System.out.println("transferItems.size() = " + transferItems.size());
+        for (BillItem ts : transferItems) {
+            purchaseValue += ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQty();
+            saleValue += ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQty();
+
+            if (dept != null && dept.equals(ts.getBill().getToDepartment())) {
+                //System.out.println("old dept");
+
+                if (cat != null && cat.equals(ts.getItem().getCategory())) {
+                    //System.out.println("old cat");
+
+                    if (item != null && item.equals(ts.getItem())) {
+                        //System.out.println("old item");
+
+                    } else {
+                        //System.out.println("new item");
+
+                        item = ts.getItem();
+
+                        ibr = new ItemBillRow();
+                        ibr.setItem(ts.getItem());
+
+                        cbr.getItemBillRows().add(ibr);
+                    }
+                } else {
+                    //System.out.println("new cat");
+
+                    cbr = new CategoryBillRow();
+                    ibr = new ItemBillRow();
+
+                    cbr.setCategory(ts.getItem().getCategory());
+                    ibr.setItem(ts.getItem());
+
+                    cat = ts.getItem().getCategory();
+                    item = ts.getItem();
+
+                    cbr.getItemBillRows().add(ibr);
+                    dbr.getCategoryBillRows().add(cbr);
+                }
+
+            } else {
+
+                //System.out.println("new dept");
+                dbr = new DepartmentBillRow();
+                cbr = new CategoryBillRow();
+                ibr = new ItemBillRow();
+
+                cbr.setCategory(ts.getItem().getCategory());
+                ibr.setItem(ts.getItem());
+                dbr.setDepartment(ts.getBill().getToDepartment());
+
+                cat = ts.getItem().getCategory();
+                item = ts.getItem();
+                dept = ts.getBill().getToDepartment();
+
+                dbr.getCategoryBillRows().add(cbr);
+                cbr.getItemBillRows().add(ibr);
+                drows.add(dbr);
+                //System.out.println("drows = " + drows);
+            }
+
+            ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
+            ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
+
+            cbr.getBill().setNetTotal(cbr.getBill().getNetTotal() + ts.getNetValue());
+            cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() + ts.getQty());
+
+            dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
+            dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
+
+//            purchaseValue += ts.getNetValue();
+        }
+
+        purchaseValue = getBillBeanController().calNetTotalBilledDepartmentItemStore(fromDate, toDate, department);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
+    }
 
     public void fillDepartmentTransfersIssueByBill() {
         Date startTime = new Date();
