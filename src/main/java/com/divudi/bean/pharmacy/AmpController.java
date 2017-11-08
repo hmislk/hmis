@@ -25,7 +25,9 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -224,11 +226,11 @@ public class AmpController implements Serializable {
         Date toDate = null;
 
         Map m = new HashMap();
-        m.put("dep", DepartmentType.Store);
+        m.put("dep", DepartmentType.Pharmacy);
         String sql = "select c from Amp c "
                 + " where c.retired=false "
-                + " and (c.departmentType is null"
-                + " or c.departmentType!=:dep )"
+                + " and (c.departmentType is null "
+                + " or c.departmentType=:dep) "
                 + " order by c.name";
 
         items = getFacade().findBySQL(sql, m);
@@ -300,7 +302,7 @@ public class AmpController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(delete)(/faces/dataAdmin/store_item_list.xhtml)");
     }
 
@@ -309,7 +311,7 @@ public class AmpController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Item Master/Store Item list(no delete)(/faces/dataAdmin/store_item_list.xhtml)");
     }
 
@@ -363,10 +365,10 @@ public class AmpController implements Serializable {
         }
         return ampList;
     }
-    
+
     public List<Vmp> completeVmpByName(String qry) {
 
-        List<Vmp> vmps=new ArrayList<>();
+        List<Vmp> vmps = new ArrayList<>();
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
@@ -433,6 +435,44 @@ public class AmpController implements Serializable {
         //(dangerous function dont touch)current.setCode(billNumberBean.pharmacyItemNumberGenerator());
     }
 
+    public void listnerCategorySelect() {
+        System.out.println("getCurrent().getCategory().getDescription() = " + getCurrent().getCategory().getDescription());
+        if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().equals("")) {
+            JsfUtil.addErrorMessage("Please Select Category Code");
+            getCurrent().setCode("");
+            return;
+        }
+
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and c.category=:cat "
+                + " and (c.departmentType is null "
+                + " or c.departmentType=:dep) "
+                + " order by c.code desc";
+
+        m.put("dep", DepartmentType.Pharmacy);
+        m.put("cat", getCurrent().getCategory());
+
+        Amp amp = getFacade().findFirstBySQL(sql, m);
+
+        DecimalFormat df = new DecimalFormat("0000");
+        if (amp != null) {
+            System.out.println("amp.getCode() = " + amp.getCode());
+
+            String s = amp.getCode().substring(2);
+            System.out.println("s = " + s);
+
+            int i = Integer.valueOf(s);
+            System.out.println("i = " + i);
+            i++;
+            getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(i));
+        } else {
+            getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(1));
+        }
+
+    }
+
     public void setSelectedItems(List<Amp> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -452,6 +492,7 @@ public class AmpController implements Serializable {
 //            return true;
 //        }
 
+        listnerCategorySelect();
         if (current.getCategory() == null) {
             UtilityController.addErrorMessage("Please Select Category");
             return true;
@@ -462,6 +503,11 @@ public class AmpController implements Serializable {
                 UtilityController.addErrorMessage("Please Select VMP");
                 return true;
             }
+        }
+        System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
+        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+            UtilityController.addErrorMessage("Code Empty.You Can't Save Item without Code.");
+            return true;
         }
 
         return false;

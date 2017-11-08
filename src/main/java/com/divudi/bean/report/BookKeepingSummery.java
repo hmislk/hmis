@@ -3967,7 +3967,7 @@ public class BookKeepingSummery implements Serializable {
 //            UtilityController.addErrorMessage("Date Range is too Long");
 //            return;
 //        }
-        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
+        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card,PaymentMethod.OnlineSettlement};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit,}));

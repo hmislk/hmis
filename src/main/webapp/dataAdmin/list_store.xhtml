@@ -12,19 +12,28 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Pharmaceutical Item List" >
+                    <p:panel header="Store Item Assign Codes" >
+                        <p:selectOneMenu id="parentCategory" 
+                                         value="#{dataAdministrationController.itemCategory}" >
+                            <f:selectItem itemLabel="Select Category"/>
+                            <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
+                                           var="parentCategoryItem"
+                                           itemValue="#{parentCategoryItem}"/>
+                        </p:selectOneMenu>
                         <p:commandButton ajax="false" value="Excel">
                             <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Refresh"
-                                         action="#{ampController.createItemList()}"/>
+                        <p:commandButton ajax="false" value="Update Code"
+                                         action="#{dataAdministrationController.createCodeSelectedCategoryStores()}"/>
+                        <p:commandButton ajax="false" value="Remove Code"
+                                         action="#{dataAdministrationController.createremoveAllCodesStores()}"/>
 
 
                         <p:panel id="paItems">
 
-                            <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
+                            <p:dataTable id="tblItem" value="#{dataAdministrationController.items}" var="i"
                                          rowIndexVar="n"
-                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rowKey="#{i.id}" 
                                          rows="10"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

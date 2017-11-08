@@ -21,7 +21,8 @@
                     </p:commandButton>
                 </f:facet>
                 <h:panelGrid>
-                    <h:panelGrid columns="3" >
+                    <h:panelGrid columns="4" >
+                        <p:selectBooleanCheckbox value="#{channelReportTempController.reportKeyWord.additionalDetails}" itemLabel="Without Inactive" />
                         <p:commandButton value="Fill" action="#{channelReportTempController.createAgencyBalanceTable()}" ajax="false" ></p:commandButton> 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
@@ -32,7 +33,8 @@
                     </h:panelGrid> 
                 </h:panelGrid>
                 <p:panel id="reportPrint" styleClass="summeryBorder noBorder">
-                    <p:dataTable value="#{channelReportTempController.agencies}" var="a" id="tbl1" rowIndexVar="i">
+                    <p:dataTable value="#{channelReportTempController.agencies}" var="a" id="tbl1" 
+                                 rowIndexVar="i" rowStyleClass="#{a.inactive ? 'redText':'' }">
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>

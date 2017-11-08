@@ -7,6 +7,7 @@ package com.divudi.bean.report;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
@@ -1113,6 +1114,35 @@ public class CommonReport1 implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+    
+    public void createGRNBillItemForAsset() {
+        billItems = new ArrayList<>();
+        billItems = createStoreGRNBillItem(DepartmentType.Inventry);
+    }
+    
+    public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
+        String sql;
+        Map m = new HashMap();
+        List<BillItem> bs = new ArrayList<>();
+
+        sql = " SELECT bi FROM BillItem bi WHERE "
+                + " type(bi.bill)=:bill "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billType = :btp "
+                + " and bi.item.departmentType=:dt "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " order by bi.bill.createdAt  ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("bill", BilledBill.class);
+        m.put("btp", BillType.StoreGrnBill);
+        m.put("dt", dt);
+
+        bs = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+        return bs;
     }
 
     public BillsTotals getInstitutionBilledBillsOwn() {

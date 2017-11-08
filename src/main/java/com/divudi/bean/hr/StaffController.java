@@ -117,7 +117,8 @@ public class StaffController implements Serializable {
     Category formCategory;
     private List<CommonReportItem> formItems = null;
     List<Staff> itemsToRemove;
-    Date tempRetireDate=null;
+    Date tempRetireDate = null;
+    boolean removeResign=false;
 
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
@@ -985,7 +986,8 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
-        tempRetireDate=null;
+        tempRetireDate = null;
+        removeResign=false;
     }
 
     public void delete() {
@@ -1020,7 +1022,7 @@ public class StaffController implements Serializable {
     private void recreateModel() {
         items = null;
         formItems = null;
-        tempRetireDate=null;
+        tempRetireDate = null;
     }
 
     public void saveSelected() {
@@ -1057,17 +1059,21 @@ public class StaffController implements Serializable {
             return;
         }
 
-        if (tempRetireDate != null && checkDateBetwenSalaryCycle(tempRetireDate)) {
-            UtilityController.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
-            tempRetireDate=null;
-            return;
+        if (removeResign) {
+            current.setDateLeft(null);
+            removeResign=false;
+        } else {
+            if (tempRetireDate != null && checkDateBetwenSalaryCycle(tempRetireDate)) {
+                UtilityController.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
+                tempRetireDate = null;
+                return;
+            }
         }
-        
-        if(tempRetireDate != null){
+
+        if (tempRetireDate != null) {
             System.err.println("asdfasfas");
             current.setDateLeft(tempRetireDate);
         }
-        
 
         //System.out.println("current.getId() = " + current.getId());
         //System.out.println("current.getPerson().getId() = " + current.getPerson().getId());
@@ -1270,7 +1276,8 @@ public class StaffController implements Serializable {
 
     public void changeStaff() {
         formItems = null;
-        tempRetireDate=null;
+        tempRetireDate = null;
+        removeResign=false;
         listFormItems();
     }
 
@@ -1427,6 +1434,14 @@ public class StaffController implements Serializable {
             return false;
         }
 
+    }
+
+    public boolean isRemoveResign() {
+        return removeResign;
+    }
+
+    public void setRemoveResign(boolean removeResign) {
+        this.removeResign = removeResign;
     }
 
     /**

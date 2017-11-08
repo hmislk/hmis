@@ -6,6 +6,7 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.SearchKeyword;
@@ -182,8 +183,11 @@ public class StorePurchaseOrderController implements Serializable {
         getAprovedBill().setReferenceBill(getRequestedBill());
         getAprovedBill().setBackwardReferenceBill(getRequestedBill());
 
-        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
-        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
+//        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getDepartment(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
+//        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorWithReference(getRequestedBill().getInstitution(), getAprovedBill(), BillType.StoreOrder, BillNumberSuffix.PO));
+        
+        getAprovedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getDepartment(), BillType.StoreOrder, BillClassType.BilledBill, BillNumberSuffix.PO));
+        getAprovedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getRequestedBill().getInstitution(), BillType.StoreOrder, BillClassType.BilledBill, BillNumberSuffix.PO));
 
         getAprovedBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getAprovedBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());

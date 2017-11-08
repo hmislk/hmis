@@ -131,7 +131,7 @@ public class PatientEncounter implements Serializable {
     long transDayCount;
     @ManyToOne
     Bill finalBill;
-    
+
     @ManyToOne
     Institution referredByInstitution;
     String referralId;
@@ -151,8 +151,6 @@ public class PatientEncounter implements Serializable {
     public void setTransPaidByPatient(double transPaidByPatient) {
         this.transPaidByPatient = transPaidByPatient;
     }
-    
-    
 
     public double getTransTotal() {
         return transTotal;
@@ -496,8 +494,8 @@ public class PatientEncounter implements Serializable {
     }
 
     public Patient getPatient() {
-        if(patient==null){
-            patient=new Patient();
+        if (patient == null) {
+            patient = new Patient();
         }
         return patient;
     }

@@ -170,6 +170,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node214 = new PrivilageNode("Report Print", node2, Privileges.LabPrinting);
         TreeNode node214a = new PrivilageNode("Report Reprint", node214, Privileges.LabReprinting);
         TreeNode node215 = new PrivilageNode("Lab Report Formats Editing", node2, Privileges.LabReportFormatEditing);
+        TreeNode node215a = new PrivilageNode("Report Edit After Authorized", node2, Privileges.LabReportEdit);
         TreeNode node216 = new PrivilageNode("Lab Summeries", node2);
         TreeNode node216a = new PrivilageNode("Lab Summeries Menu", node216, Privileges.LabSummeries);
         TreeNode node216b = new PrivilageNode("Lab Summeries Level1", node216, Privileges.LabSummeriesLevel1);
@@ -325,7 +326,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode node98 = new PrivilageNode("HR Administration", node9);
         TreeNode node980 = new PrivilageNode("HR Administration Menu", node98, Privileges.HrAdmin);
         TreeNode node981 = new PrivilageNode("HR Delete Late Leave", node98, Privileges.hrDeleteLateLeave);
-        TreeNode node982 = new PrivilageNode("Edit Retied Date", node98, Privileges.HrEditRetiedDate);
+        TreeNode node982 = new PrivilageNode("HR Edit Retied Date", node98, Privileges.HrEditRetiedDate);
+        TreeNode node983 = new PrivilageNode("HR Remove Resign Date", node98, Privileges.HrRemoveResignDate);
         
         TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
         TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);

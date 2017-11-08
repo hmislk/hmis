@@ -12,19 +12,25 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Pharmaceutical Item List" >
+                    <p:panel header="Pharmacy Item Assign Codes" >
+                        <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                                        itemLabel="#{dept.name}" itemValue="#{dept}" placeholder="Category"
+                                        forceSelection="true" value="#{dataAdministrationController.itemCategory}" >
+                        </p:autoComplete>
                         <p:commandButton ajax="false" value="Excel">
                             <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Refresh"
-                                         action="#{ampController.createItemList()}"/>
+                        <p:commandButton ajax="false" value="Update Code"
+                                         action="#{dataAdministrationController.createCodeSelectedCategory()}"/>
+<!--                        <p:commandButton ajax="false" value="Remove Code"
+                                         action="#{dataAdministrationController.createremoveAllCodes}"/>-->
 
 
                         <p:panel id="paItems">
 
-                            <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
+                            <p:dataTable id="tblItem" value="#{dataAdministrationController.items}" var="i"
                                          rowIndexVar="n"
-                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rowKey="#{i.id}" 
                                          rows="10"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

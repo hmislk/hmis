@@ -1449,6 +1449,11 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Please select Agency");
                 return true;
             }
+            if (institution.isInactive()) {
+                errorText = "This Agency is Inactve. Please contact Channel Agency Cordinator.";
+                UtilityController.addErrorMessage("This Agency is Inactve. Please contact Channel Agency Cordinator.");
+                return true;
+            }
             System.out.println("amount = " + getAmount());
             System.out.println("institution.getBallance() = " + institution.getBallance());
             System.out.println("institution.getAllowedCredit() = " + institution.getAllowedCredit());

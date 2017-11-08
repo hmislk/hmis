@@ -18,7 +18,7 @@
 
 
 
-                <p:panel header="Manage Agency Credit Limits" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel header="Manage Agency Credit Limits" >
 
                     <div id="Temp" style="position: relative;left: 0%;">
                         <h:panelGrid id ="gpVeda" columns="2" >
@@ -41,62 +41,112 @@
                                 </p:panel>
                             </h:panelGrid  >
 
-                            <p:panel>
+                            <p:panel id="gpDetail">
+                                <p:tabView>
+                                    <p:tab title="Credit Detail">
+                                        <h:panelGrid  columns="1">
+                                            <h:panelGrid id="gpDetailText" columns="2">
 
-                                <h:panelGrid id="gpDetail" columns="1">
-                                    <h:panelGrid id="gpDetailText" columns="2">
+                                                <h:outputText id="lblId" value="Id" ></h:outputText>
+                                                <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
+                                                
+                                                <h:outputText value="Status" style="color: red;" rendered="#{institutionController.current.inactive eq true}"/>
+                                                <h:outputText value="Inactive" style="color: red;" rendered="#{institutionController.current.inactive eq true}" />
 
-                                        <h:outputText id="lblId" value="Id" ></h:outputText>
-                                        <h:outputLabel id="txtId" value="#{institutionController.current.id}" />
+                                                <h:outputText id="lblName" value="Name" ></h:outputText>
+                                                <h:outputText id="txtName" value="#{institutionController.current.name}"  />
 
-                                        <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:outputText id="txtName" value="#{institutionController.current.name}"  />
+                                                <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
+                                                <h:outputText id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}" />
 
-                                        <h:outputText id="lblChqPrnName" value="Cheque Printing Name" ></h:outputText>
-                                        <h:outputText id="txtChqPrnName" value="#{institutionController.current.chequePrintingName}" />
+                                                <h:outputText value="Code" >                                        
+                                                </h:outputText>
+                                                <h:outputText value="#{institutionController.current.institutionCode}" />
 
-                                        <h:outputText value="Code" >                                        
-                                        </h:outputText>
-                                        <h:outputText value="#{institutionController.current.institutionCode}" />
+                                                <h:outputText value="Standerd Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}" 
+                                                             disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}"  >
+                                                </h:inputText>
 
-                                        <h:outputText value="Standerd Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.standardCreditLimit}" 
-                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}"  >
-                                        </h:inputText>
+                                                <h:outputText value="Allowed Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}" 
+                                                             disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel') and !webUserController.hasPrivilege('ChannellingEditCreditLimitUserLevel')}" >
+                                                </h:inputText>
 
-                                        <h:outputText value="Allowed Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.allowedCredit}" 
-                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel') and !webUserController.hasPrivilege('ChannellingEditCreditLimitUserLevel')}" >
-                                        </h:inputText>
+                                                <h:outputText value="Allowed Maximum Credit Limit" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}" 
+                                                             disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}" >
+                                                    <f:ajax event="keyup" execute="@this" render="remain" />
+                                                </h:inputText>
 
-                                        <h:outputText value="Allowed Maximum Credit Limit" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.maxCreditLimit}" 
-                                                     disabled="#{!webUserController.hasPrivilege('ChannellingEditCreditLimitAdminLevel')}" >
-                                            <f:ajax event="keyup" execute="@this" render="remain" />
-                                        </h:inputText>
+                                                <h:outputText value="Balance" >                                        
+                                                </h:outputText>
+                                                <h:inputText autocomplete="off" value="#{institutionController.current.ballance}" disabled="true" >
+                                                </h:inputText>
+                                                <h:outputText value="Remain" style="color: green;" >                                        
+                                                </h:outputText>
+                                                <p:outputLabel id="remain" value="#{institutionController.current.ballance+institutionController.current.maxCreditLimit}" style="color: green;" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:outputLabel>
+                                                <h:outputText value="Memo" >                                        
+                                                </h:outputText>
+                                                <h:inputTextarea  value="#{institutionController.current.descreption}"  >
+                                                </h:inputTextarea>
+                                            </h:panelGrid>
+                                            <h:panelGrid id="gpDetailButtons" columns="2">
+                                                <h:commandButton id="btnSave" value="Update Credit" action="#{institutionController.updateAgentCreditLimit}" styleClass="buttons">
+                                                </h:commandButton>
+                                            </h:panelGrid>
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Agent Detail">
+                                        <h:panelGrid  columns="1">
+                                            <p:panelGrid columns="2">
+                                                <h:outputText value="Moble" />
+                                                <h:outputText value="#{institutionController.current.mobile}" />
 
-                                        <h:outputText value="Balance" >                                        
-                                        </h:outputText>
-                                        <h:inputText autocomplete="off" value="#{institutionController.current.ballance}" disabled="true" >
-                                        </h:inputText>
-                                        <h:outputText value="Remain" style="color: green;" >                                        
-                                        </h:outputText>
-                                        <p:outputLabel id="remain" value="#{institutionController.current.ballance+institutionController.current.maxCreditLimit}" style="color: green;" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                        <h:outputText value="Memo" >                                        
-                                        </h:outputText>
-                                        <h:inputTextarea  value="#{institutionController.current.descreption}"  >
-                                        </h:inputTextarea>
-                                    </h:panelGrid>
-                                    <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <h:commandButton id="btnSave" value="Update Credit" action="#{institutionController.updateAgentCreditLimit}" styleClass="buttons">
-                                        </h:commandButton>
-                                    </h:panelGrid>
-                                </h:panelGrid>
+                                                <h:outputText value="Fax" />
+                                                <h:outputText value="#{institutionController.current.fax}" />
+
+                                                <h:outputText value="Email" />
+                                                <h:outputText value="#{institutionController.current.email}" />
+
+                                                <h:outputText value="Adress" />
+                                                <h:outputText value="#{institutionController.current.address}" />
+
+                                                <h:outputText value="Web" />
+                                                <h:outputText value="#{institutionController.current.web}" />
+
+                                                <h:outputText value="Status" />
+                                                <h:outputText value="Active" rendered="#{institutionController.current.inactive ne true}" style="color: green;"/>
+                                                <h:outputText value="Inactive" rendered="#{institutionController.current.inactive eq true}" style="color: red;"/>
+                                            </p:panelGrid>
+                                        </h:panelGrid>
+
+                                    </p:tab>
+                                    <p:tab title=" Contact Person Detail">
+                                        <h:panelGrid  columns="1">
+                                            <p:panelGrid columns="2">
+                                                <h:outputText value="Contact Person Name" />
+                                                <h:outputText value="#{institutionController.current.contactPerson.name}" />
+
+                                                <h:outputText value="Contact Person Tel" />
+                                                <h:outputText value="#{institutionController.current.contactPerson.phone}" />
+
+                                                <h:outputText value="Contact Person Mobile" />
+                                                <h:outputText value="#{institutionController.current.contactPerson.mobile}" />
+
+                                                <h:outputText value="Contact Person Email" />
+                                                <h:outputText value="#{institutionController.current.contactPerson.email}" />
+                                            </p:panelGrid>
+                                        </h:panelGrid>
+
+                                    </p:tab>
+                                </p:tabView>
+
 
                             </p:panel>
 

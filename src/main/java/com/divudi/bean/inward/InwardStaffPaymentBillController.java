@@ -918,7 +918,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and (b.bill.billType=:btp"
                 + " or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
-                + " and b.bill.refunded=false "
+//                + " and b.bill.refunded=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
                 + " and b.staff=:stf ";
 //            h.put("btp", BillType.ChannelPaid);
@@ -926,6 +926,26 @@ public class InwardStaffPaymentBillController implements Serializable {
         h.put("btp", BillType.InwardBill);
         h.put("btp2", BillType.InwardProfessional);
         dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+        System.out.println("dueBillFees.size() = " + dueBillFees.size());
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        for (BillFee bf : dueBillFees) {
+//            h = new HashMap();
+//            h.put("stf", currentStaff);
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                    + " and bi.bill.cancelled=false "
+//                    + " and bi.bill.toStaff=:stf "
+                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+
+            if (rbi != null) {
+                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
+                removeingBillFees.add(bf);
+            }
+
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        dueBillFees.removeAll(removeingBillFees);
 
     }
 

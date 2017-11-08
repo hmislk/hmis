@@ -63,7 +63,7 @@
                                 </h:outputText>
                                 <p:spacer width="30" height="1" ></p:spacer>
                                 <p:commandButton id="btnSave" value="Save" ajax="false" 
-                                                 action="#{ampController.saveSelected()}" styleClass="buttons">
+                                                 action="#{ampController.saveSelected}" styleClass="buttons">
                                 </p:commandButton>
                             </f:facet>
                             <h:panelGrid id="gpDetail" columns="1">
@@ -75,7 +75,7 @@
                                         <h:outputText value="" ></h:outputText>
 
                                         <h:outputText  value="Code" ></h:outputText>
-                                        <p:inputText autocomplete="off"  value="#{ampController.current.code}"  ></p:inputText>
+                                        <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" disabled="true" ></p:inputText>
                                         <h:outputText value="" ></h:outputText>
 
                                         <h:outputText  value="Department Type" ></h:outputText>
@@ -95,9 +95,10 @@
 
                                         <h:outputLabel value="Category"/>
                                         <p:autoComplete  value="#{ampController.current.category}" 
-                                                         forceSelection="true"
+                                                         forceSelection="true" converter="categoryConverter"
                                                          completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                            <f:ajax event="itemSelect" render="code" execute="@this"  listener="#{ampController.listnerCategorySelect()}"/>
                                         </p:autoComplete>      
                                         <h:outputText value="" ></h:outputText>
 

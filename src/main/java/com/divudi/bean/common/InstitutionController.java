@@ -7,6 +7,7 @@ import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -507,10 +508,10 @@ public class InstitutionController implements Serializable {
         current = null;
         getCurrent();
     }
-    
+
     public void deleteAgency() {
 
-        if (getAgency()!= null) {
+        if (getAgency() != null) {
             getAgency().setRetired(true);
             getAgency().setRetiredAt(new Date());
             getAgency().setRetirer(getSessionController().getLoggedUser());
@@ -534,6 +535,20 @@ public class InstitutionController implements Serializable {
             items = getFacade().findBySQL(j);
         }
         return items;
+    }
+
+    public void formatAgentSerial() {
+        InstitutionType[] types = {InstitutionType.Agency};
+        selectedAgencies = completeInstitution(null, types);
+        for (Institution a : selectedAgencies) {
+//            System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+            DecimalFormat df=new DecimalFormat("000");
+            double d=Double.parseDouble(a.getInstitutionCode());
+//            System.out.println("d = " + d);
+            a.setInstitutionCode(df.format(d));
+//            System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+            getFacade().edit(a);
+        }
     }
 
     public Boolean getCodeDisabled() {

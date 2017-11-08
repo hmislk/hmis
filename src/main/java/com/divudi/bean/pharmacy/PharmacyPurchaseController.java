@@ -398,6 +398,10 @@ public class PharmacyPurchaseController implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
+        if (getBill().getPaymentMethod() == null) {
+            UtilityController.addErrorMessage("Select Payment Method");
+            return;
+        }
         if (getBill().getFromInstitution() == null) {
             UtilityController.addErrorMessage("Select Dealor");
             return;
@@ -406,7 +410,11 @@ public class PharmacyPurchaseController implements Serializable {
             UtilityController.addErrorMessage("Select Reference Institution");
         }
         if (getBill().getInvoiceNumber() == null || "".equals(getBill().getInvoiceNumber().trim())) {
-            UtilityController.addErrorMessage("Please Fill invoice number");
+            UtilityController.addErrorMessage("Please Fill Invoice Number");
+            return;
+        }
+        if (getBill().getInvoiceDate() == null) {
+            UtilityController.addErrorMessage("Please Fill Invoice Date");
             return;
         }
 

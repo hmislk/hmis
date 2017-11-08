@@ -16,21 +16,29 @@
 
                     <p:panel header="Before Stock Taking Report" >
 
-                        <h:panelGrid columns="7" >
+                        <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter"/>
-                            
+
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.category}" >
                             </p:autoComplete>
-                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillCategoryStocks()}" ></p:commandButton>
+                            <p:outputLabel value="Filter Type" />
+                            <p:selectOneRadio value="#{reportsStock.reportKeyWord.string}" >
+                                <f:selectItem itemLabel="All Batch" itemValue="0" />
+                                <f:selectItem itemLabel="Only Item" itemValue="1" />
+                                <f:selectItem itemLabel="Item By Sale Rate" itemValue="2" />
+                                <f:selectItem itemLabel="Extra Medicine" itemValue="3" />
+                                <f:selectItem itemLabel="Extra Note" itemValue="4" />
+                            </p:selectOneRadio>
+                            <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillCategoryStocksNew()}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
                                 <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -43,56 +51,69 @@
                                     <h:outputLabel value="for #{reportsStock.category.name}"/> <br/><br/>
                                     <h:outputLabel value="Date : "><p:clock pattern="dd MM yy hh:mm:ss a" /></h:outputLabel>
                                 </f:facet> 
-                                
-                                <p:column headerText="No">
+
+                                <p:column headerText="No" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="No"/>    
                                     </f:facet>
-                                    <h:outputLabel value="#{a+1}" ></h:outputLabel>
+                                    <h:outputLabel value="#{a+1}" rendered="#{reportsStock.reportKeyWord.string ne '3'}" ></h:outputLabel>
+                                    <h:outputLabel value="Ex - #{a+1}" rendered="#{reportsStock.reportKeyWord.string eq '3'}" ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Item"
-                                          sortBy="#{i.itemBatch.item.name}"
-                                          filterBy="#{i.itemBatch.item.name}"
-                                          filterMatchMode="contains"
-                                          >
+                                <p:column headerText="Serial No" rendered="#{reportsStock.reportKeyWord.string eq '4'}">
+                                    <f:facet name="header">
+                                    </f:facet>
+                                    <h:outputLabel value="........."  ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="Code" style="text-align: center;"
-                                          sortBy="#{i.itemBatch.item.code}"
-                                          filterBy="#{i.itemBatch.item.code}"
-                                          filterMatchMode="contains"
-                                          
-                                          >
+                                <p:column headerText="Item" rendered="#{reportsStock.reportKeyWord.string eq '3'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="........................................" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Code" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;" ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Stock Quentity" styleClass="noPrintButton" >
+
+                                <p:column headerText="Stock Quentity" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Before Stock Quantity"/>    
                                     </f:facet>
-                                    <h:outputLabel value="#{i.stock}"  >
+                                    <h:outputLabel value="#{i.stock}" style="float: right;" >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
-                                
-                                <p:column headerText="Purchase Rate" styleClass="noPrintButton">
+
+                                <p:column headerText="Purchase Rate" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string eq '0' and reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>    
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
+                                    <h:outputLabel value="#{i.itemBatch.purcahseRate}" style="float: right;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Purchase Value" styleClass="noPrintButton" >
+
+                                <p:column headerText="Sale Rate" rendered="#{reportsStock.reportKeyWord.string eq '2'and reportsStock.reportKeyWord.string ne '4'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Rate" />    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="float: right;" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Purchase Value" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>    
                                     </f:facet>
@@ -105,29 +126,29 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
-                                <p:column headerText="Physical Stock(Total)" style="text-align: center;">
+
+                                <p:column headerText="Physical Stock(Total)" style="text-align: center;" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Physical Stock(Total)"/>    
                                     </f:facet>
-                                    <h:outputLabel value="__________"  ></h:outputLabel>
+                                    <h:outputLabel value="#{a+1})__________"  ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="Physical Stock" style="text-align: center;">
+
+                                <p:column headerText="Physical Stock" style="text-align: center;" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Physical Stock"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{a+1})__________________"  ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="DOE" style="text-align: center;">
+
+                                <p:column headerText="DOE" style="text-align: center;" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="DOE"/>    
                                     </f:facet>
-                                    <h:outputLabel value="______/___/___"  ></h:outputLabel>
+                                    <h:outputLabel value="____________"  ></h:outputLabel>
                                 </p:column>
-                                
-                                <p:column headerText="DOE" styleClass="noPrintButton">
+
+                                <p:column headerText="DOE" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="DOE"/>    
                                     </f:facet>
@@ -136,12 +157,100 @@
                                     </h:outputLabel>                                  
                                 </p:column>
                                 
-                                
+                                <p:column headerText="Note" rendered="#{reportsStock.reportKeyWord.string eq '4'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Note"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="..........................................................................................................................................................." />                                
+                                </p:column>
+
+
 
                             </p:dataTable>
-                            
-                            
-                            
+                            <p:panel header="Checking Details - Count By" >
+                                <table>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Signature</th>
+                                        <th>Date &amp; Time</th>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>1)_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2)_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>3)_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>4)_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>5)_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Authorized By</th>
+                                        <th>Signature</th>
+                                        <th>Date &amp; Time</th>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>_____________________________</td>
+                                        <td>_________________</td>
+                                        <td>_________________</td>
+                                    </tr>
+                                    <tr>
+                                        <td><p:spacer height="10" /></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </table>
+                            </p:panel>
                         </h:panelGroup>
                     </p:panel>
                 </h:form>

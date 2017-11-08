@@ -76,6 +76,22 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">
+                                            <p:outputLabel value="Purcahse Rate" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{s.itemBatch.purcahseRate}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <p:outputLabel value="Retailsale Rate" />
+                                        </f:facet>
+                                        <p:outputLabel value="#{s.itemBatch.retailsaleRate}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
                                             <p:outputLabel value="Date Of Expiry" />
                                         </f:facet>
                                         <p:outputLabel value="#{s.itemBatch.dateOfExpire}" >

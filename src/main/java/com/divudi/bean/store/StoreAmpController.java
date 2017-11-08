@@ -14,7 +14,9 @@ import com.divudi.data.DepartmentType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.facade.AmpFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,7 +111,7 @@ public class StoreAmpController implements Serializable {
         if (current == null) {
             current = new Amp();
             current.setDepartmentType(DepartmentType.Store);
-            current.setCode(billNumberBean.storeItemNumberGenerator());
+//            current.setCode(billNumberBean.storeItemNumberGenerator());
         }
         return current;
     }
@@ -178,6 +180,39 @@ public class StoreAmpController implements Serializable {
 
     public void setItemsAll(List<Amp> itemsAll) {
         this.itemsAll = itemsAll;
+    }
+    
+    public void listnerCategorySelect() {
+        System.out.println("getCurrent().getCategory().getCode() = " + getCurrent().getCategory().getCode());
+        if (getCurrent().getCategory().getCode() == null || getCurrent().getCategory().getCode().equals("")) {
+            JsfUtil.addErrorMessage("Please Select Category Code");
+            getCurrent().setCode("");
+            return;
+        }
+
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and c.category=:cat "
+                + " and c.departmentType=:dep "
+                + " order by c.code desc";
+
+        m.put("dep", DepartmentType.Store);
+        m.put("cat", getCurrent().getCategory());
+
+        Amp amp = getFacade().findFirstBySQL(sql, m);
+
+        System.out.println("amp.getCode() = " + amp.getCode());
+
+        String s = amp.getCode().substring(2);
+        System.out.println("s = " + s);
+
+        int i = Integer.valueOf(s);
+        System.out.println("i = " + i);
+        i++;
+        DecimalFormat df = new DecimalFormat("0000");
+        getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
+
     }
 
     /**
