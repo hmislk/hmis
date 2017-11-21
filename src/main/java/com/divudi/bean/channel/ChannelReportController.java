@@ -4049,7 +4049,41 @@ public class ChannelReportController implements Serializable {
         hm.put("fd", getFromDate());
         hm.put("td", getToDate());
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        if (!createdDate) {
+            List<Bill> bills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+            List<Bill> rangeBills = new ArrayList<>();
+            for (Bill b : bills) {
+//                System.out.println("b.getSingleBillSession().getSessionDate() = " + b.getSingleBillSession().getSessionDate());
+//                System.out.println("b.getSingleBillSession().getSessionTime() = " + b.getSingleBillSession().getSessionTime());
+                Calendar d = Calendar.getInstance();
+                d.setTime(b.getSingleBillSession().getSessionDate());
+                Calendar t = Calendar.getInstance();
+                t.setTime(b.getSingleBillSession().getSessionTime());
+//                System.out.println("t.get(Calendar.HOUR) = " + t.get(Calendar.HOUR));
+//                System.out.println("t.get(Calendar.HOUR_OF_DAY) = " + t.get(Calendar.HOUR_OF_DAY));
+//                System.out.println("t.get(Calendar.MINUTE) = " + t.get(Calendar.MINUTE));
+//                System.out.println("t.get(Calendar.SECOND) = " + t.get(Calendar.SECOND));
+//                Calendar cal = Calendar.getInstance();
+                
+                t.set(Calendar.YEAR, d.get(Calendar.YEAR));
+                t.set(Calendar.MONTH, d.get(Calendar.MONTH));
+                t.set(Calendar.DATE, d.get(Calendar.DATE));
+//                cal.set(Calendar.HOUR, 00);
+                System.out.println("t.getTime() = " + t.getTime());
+//                cal.add(Calendar.HOUR, t.get(Calendar.HOUR));
+//                cal.set(Calendar.MINUTE, t.get(Calendar.MINUTE));
+//                cal.set(Calendar.SECOND, t.get(Calendar.SECOND));
+//                System.out.println("cal.getTime() = " + cal.getTime());
+                if (getFromDate().getTime() <= t.getTime().getTime() 
+                        && t.getTime().getTime() <= getToDate().getTime()) {
+                    rangeBills.add(b);
+                    System.err.println("added*************************************************");
+                }
+            }
+            return rangeBills;
+        } else {
+            return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        }
 
     }
 

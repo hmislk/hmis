@@ -8,6 +8,7 @@ package com.divudi.bean.store;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
 import com.divudi.data.table.String1Value3;
@@ -77,6 +78,8 @@ public class StoreReportsTransfer implements Serializable {
     List<String1Value3> listz;
 
     ArrayList<DepartmentBillRow> drows;
+    List<DepartmentCategoryRow> departmentCategoryRows;
+    List<CaregoryRow> caregoryRows;
     /**
      * EJBs
      */
@@ -569,7 +572,7 @@ public class StoreReportsTransfer implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/(/faces/pharmacy/item_supplier_prices.xhtml)");
     }
-    
+
     public void fillDepartmentIssueByBillItem() {
         Date startTime = new Date();
 
@@ -774,6 +777,389 @@ public class StoreReportsTransfer implements Serializable {
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Transfer/Report/Transfer receieve by bill(/faces/store/store_report_transfer_receive_bill_item.xhtml)");
+    }
+
+    public void createStoreIssueReport() {
+        Date startTime = new Date();
+        departmentCategoryRows = new ArrayList<>();
+        List<Object[]> objects = fetchBillItemDetails(fromDepartment, null, fromDate, toDate, BillType.StoreIssue);
+        Department lastDepartment = null;
+        Category lastCategory = null;
+        Item lastItem = null;
+        DepartmentCategoryRow dcr = new DepartmentCategoryRow();
+        CaregoryRow cr = new CaregoryRow();
+        ItemRow ir = new ItemRow();
+        for (Object[] ob : objects) {
+            Department d = (Department) ob[0];
+            System.out.println("d.getName() = " + d.getName());
+            Category c = (Category) ob[1];
+            System.out.println("c.getName() = " + c.getName());
+            Item i = (Item) ob[2];
+            System.out.println("i.getName() = " + i.getName());
+            BillClassType type = (BillClassType) ob[3];
+            System.out.println("type = " + type);
+            double count = (double) ob[4];
+            System.out.println("count = " + count);
+            double unitValue = (double) ob[5];
+            System.out.println("unitValue = " + unitValue);
+            double total = (double) ob[6];
+            System.out.println("total = " + total);
+            if (lastDepartment == null) {
+                lastDepartment = d;
+                dcr.setD(d);
+                if (lastCategory == null) {
+                    lastCategory = c;
+                    cr.setC(c);
+                    if (lastItem == null) {
+                        lastItem = i;
+                        ir.setI(i);
+                        ir = createItemRow(ir, type, count, unitValue, total);
+                    } else {
+                        if (lastItem == i) {
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            cr.getItemRows().add(ir);
+                            ir = new ItemRow();
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        }
+                    }
+                } else {
+                    if (lastCategory == c) {
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    } else {
+                        lastCategory = c;
+                        cr.getItemRows().add(ir);
+                        dcr.getCaregoryRows().add(cr);
+                        cr = new CaregoryRow();
+                        cr.setC(c);
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (lastDepartment == d) {
+                    if (lastCategory == c) {
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    } else {
+                        lastCategory = c;
+                        cr.getItemRows().add(ir);
+                        dcr.getCaregoryRows().add(cr);
+                        cr = new CaregoryRow();
+                        cr.setC(c);
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    }
+                } else {
+                    cr.getItemRows().add(ir);
+                    dcr.getCaregoryRows().add(cr);
+                    departmentCategoryRows.add(dcr);
+                    System.out.println("dcr.getD().getName(Add) = " + dcr.getD().getName());
+                    cr = new CaregoryRow();
+                    dcr = new DepartmentCategoryRow();
+                    dcr.setD(d);
+                    lastDepartment = d;
+                    if (lastCategory == c) {
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    } else {
+                        lastCategory = c;
+                        cr.getItemRows().add(ir);
+                        dcr.getCaregoryRows().add(cr);
+                        cr = new CaregoryRow();
+                        cr.setC(c);
+                        if (lastItem == null) {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                        } else {
+                            if (lastItem == i) {
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            } else {
+                                cr.getItemRows().add(ir);
+                                ir = new ItemRow();
+                                lastItem = i;
+                                ir.setI(i);
+                                ir = createItemRow(ir, type, count, unitValue, total);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        cr.getItemRows().add(ir);
+        dcr.getCaregoryRows().add(cr);
+        departmentCategoryRows.add(dcr);
+        System.out.println("dcr.getD().getName(Add) = " + dcr.getD().getName());
+        System.out.println("departmentCategoryRows.size() = " + departmentCategoryRows.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
+    }
+
+    public void createStoreIssueCategoryReport() {
+        Date startTime = new Date();
+        caregoryRows = new ArrayList<>();
+        saleValue=0.0;
+        List<Object[]> objects = fetchBillItemDetails(fromDepartment, fromDate, toDate, BillType.StoreIssue);
+        Category lastCategory = null;
+        Item lastItem = null;
+        DepartmentCategoryRow dcr = new DepartmentCategoryRow();
+        CaregoryRow cr = new CaregoryRow();
+        ItemRow ir = new ItemRow();
+        for (Object[] ob : objects) {
+            Category c = (Category) ob[0];
+//            System.out.println("c.getName() = " + c.getName());
+            Item i = (Item) ob[1];
+//            System.out.println("i.getName() = " + i.getName());
+            BillClassType type = (BillClassType) ob[2];
+//            System.out.println("type = " + type);
+            double count = (double) ob[3];
+//            System.out.println("count = " + count);
+            double unitValue = (double) ob[4];
+//            System.out.println("unitValue = " + unitValue);
+            double total = (double) ob[5];
+//            System.out.println("total = " + total);
+            if (lastCategory == null) {
+                lastCategory = c;
+                cr.setC(c);
+                if (lastItem == null) {
+                    lastItem = i;
+                    ir.setI(i);
+                    ir = createItemRow(ir, type, count, unitValue, total);
+                    cr.setTotal(cr.getTotal() + ir.getValue());
+                } else {
+                    if (lastItem == i) {
+                        ir = createItemRow(ir, type, count, unitValue, total);
+                        cr.setTotal(cr.getTotal() + ir.getValue());
+                    } else {
+                        cr.getItemRows().add(ir);
+                        ir = new ItemRow();
+                        lastItem = i;
+                        ir.setI(i);
+                        ir = createItemRow(ir, type, count, unitValue, total);
+                        cr.setTotal(cr.getTotal() + ir.getValue());
+                    }
+                }
+            } else {
+                if (lastCategory == c) {
+                    if (lastItem == null) {
+                        lastItem = i;
+                        ir.setI(i);
+                        ir = createItemRow(ir, type, count, unitValue, total);
+                        cr.setTotal(cr.getTotal() + ir.getValue());
+                    } else {
+                        if (lastItem == i) {
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                            cr.setTotal(cr.getTotal() + ir.getValue());
+                        } else {
+                            cr.getItemRows().add(ir);
+                            ir = new ItemRow();
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                            cr.setTotal(cr.getTotal() + ir.getValue());
+                        }
+                    }
+                } else {
+                    lastCategory = c;
+                    cr.getItemRows().add(ir);
+//                    cr.setTotal(cr.getTotal() + ir.getValue());
+                    saleValue += cr.getTotal();
+                    caregoryRows.add(cr);
+                    ir = new ItemRow();
+                    cr = new CaregoryRow();
+                    cr.setC(c);
+                    if (lastItem == null) {
+                        lastItem = i;
+                        ir.setI(i);
+                        ir = createItemRow(ir, type, count, unitValue, total);
+                        cr.setTotal(cr.getTotal() + ir.getValue());
+                    } else {
+                        if (lastItem == i) {
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                            cr.setTotal(cr.getTotal() + ir.getValue());
+                        } else {
+                            lastItem = i;
+                            ir.setI(i);
+                            ir = createItemRow(ir, type, count, unitValue, total);
+                            cr.setTotal(cr.getTotal() + ir.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        cr.getItemRows().add(ir);
+        saleValue += cr.getTotal();
+        caregoryRows.add(cr);
+        System.out.println("departmentCategoryRows.size() = " + caregoryRows.size());
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Unit Issue Category Wise Summery(/faces/store/store_report_unit_issue_bill_1.xhtml)");
+    }
+
+    private ItemRow createItemRow(ItemRow ir, BillClassType bct, double count, double unitValue, double total) {
+        if (bct == BillClassType.PreBill) {
+            ir.setQty(ir.getQty() + count);
+            ir.setUnitValue(unitValue);
+            ir.setValue(ir.getValue() + total);
+        }
+        if (bct == BillClassType.RefundBill) {
+            ir.setQty(ir.getQty() - count);
+            ir.setUnitValue(unitValue);
+            ir.setValue(ir.getValue() + total);
+        }
+        return ir;
+    }
+
+    public List<Object[]> fetchBillItemDetails(Department fdep, Department tdep, Date fd, Date td, BillType bt) {
+        Map m = new HashMap();
+        String sql;
+        List<Object[]> objects = new ArrayList<>();
+
+        sql = "select bi.bill.toDepartment, "
+                + " bi.item.category, "
+                + " bi.item, "
+                + " bi.bill.billClassType, "
+                + " sum(bi.qty), "
+                + " bi.Rate,"
+                + " sum(bi.netValue) "
+                + " from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td"
+                + " and bi.bill.billType=:bt";
+
+        if (fdep != null) {
+            sql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fdep);
+        }
+
+        if (tdep != null) {
+            sql += " and bi.bill.toDepartment=:tdept  ";
+            m.put("tdept", tdep);
+        }
+
+        sql += " group by bi.bill.toDepartment,"
+                + " bi.item.category,"
+                + " bi.item,"
+                + " bi.bill.billClassType "
+                + " order by bi.bill.toDepartment.name, "
+                + " bi.item.category.name, "
+                + " bi.item.name, "
+                + " bi.bill.billClassType ";
+
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("bt", bt);
+
+        objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        return objects;
+
+    }
+
+    public List<Object[]> fetchBillItemDetails(Department fdep, Date fd, Date td, BillType bt) {
+        Map m = new HashMap();
+        String sql;
+        List<Object[]> objects = new ArrayList<>();
+
+        sql = "select bi.item.category, "
+                + " bi.item, "
+                + " bi.bill.billClassType, "
+                + " sum(bi.qty), "
+                + " bi.Rate,"
+                + " sum(bi.netValue) "
+                + " from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td"
+                + " and bi.bill.billType=:bt";
+
+        if (fdep != null) {
+            sql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fdep);
+        }
+
+        sql += " group by bi.item.category,"
+                + " bi.item,"
+                + " bi.bill.billClassType "
+                + " order by bi.item.category.name, "
+                + " bi.item.name, "
+                + " bi.bill.billClassType ";
+
+        m.put("fd", fd);
+        m.put("td", td);
+        m.put("bt", bt);
+
+        objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        System.out.println("objects.size() = " + objects.size());
+        return objects;
+
     }
 
     /**
@@ -983,6 +1369,130 @@ public class StoreReportsTransfer implements Serializable {
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
+    }
+
+    public List<DepartmentCategoryRow> getDepartmentCategoryRows() {
+        return departmentCategoryRows;
+    }
+
+    public void setDepartmentCategoryRows(List<DepartmentCategoryRow> departmentCategoryRows) {
+        this.departmentCategoryRows = departmentCategoryRows;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    public List<CaregoryRow> getCaregoryRows() {
+        return caregoryRows;
+    }
+
+    public void setCaregoryRows(List<CaregoryRow> caregoryRows) {
+        this.caregoryRows = caregoryRows;
+    }
+
+    public class DepartmentCategoryRow {
+
+        Department d;
+        List<CaregoryRow> caregoryRows;
+
+        public Department getD() {
+            return d;
+        }
+
+        public void setD(Department d) {
+            this.d = d;
+        }
+
+        public List<CaregoryRow> getCaregoryRows() {
+            if (caregoryRows == null) {
+                caregoryRows = new ArrayList<>();
+            }
+            return caregoryRows;
+        }
+
+        public void setCaregoryRows(List<CaregoryRow> caregoryRows) {
+            this.caregoryRows = caregoryRows;
+        }
+    }
+
+    public class CaregoryRow {
+
+        Category c;
+        List<ItemRow> itemRows;
+        double total;
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public Category getC() {
+            return c;
+        }
+
+        public void setC(Category c) {
+            this.c = c;
+        }
+
+        public List<ItemRow> getItemRows() {
+            if (itemRows == null) {
+                itemRows = new ArrayList<>();
+            }
+            return itemRows;
+        }
+
+        public void setItemRows(List<ItemRow> itemRows) {
+            this.itemRows = itemRows;
+        }
+
+    }
+
+    public class ItemRow {
+
+        Item i;
+        double qty;
+        double unitValue;
+        double value;
+
+        public Item getI() {
+            return i;
+        }
+
+        public void setI(Item i) {
+            this.i = i;
+        }
+
+        public double getQty() {
+            return qty;
+        }
+
+        public void setQty(double qty) {
+            this.qty = qty;
+        }
+
+        public double getUnitValue() {
+            return unitValue;
+        }
+
+        public void setUnitValue(double unitValue) {
+            this.unitValue = unitValue;
+        }
+
+        public double getValue() {
+            return value;
+        }
+
+        public void setValue(double value) {
+            this.value = value;
+        }
     }
 
     public class DepartmentBillRow {

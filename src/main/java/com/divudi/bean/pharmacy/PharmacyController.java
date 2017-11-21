@@ -852,12 +852,12 @@ public class PharmacyController implements Serializable {
         Map m = new HashMap();
         
         
-//        m.put("itm", item);
-//        m.put("ins", institution);
-//        m.put("frm", getFromDate());
-//        m.put("to", getToDate());
-//        m.put("btp", BillType.PharmacyPre);
-//        m.put("refType", BillType.PharmacySale);
+        m.put("itm", item);
+        m.put("ins", institution);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyPre);
+        m.put("refType", BillType.PharmacySale);
 //        
 //        List<BillItem> billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //        if (billItems!=null) {

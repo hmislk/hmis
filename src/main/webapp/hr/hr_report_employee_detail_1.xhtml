@@ -15,28 +15,22 @@
             <ui:define name="content">
 
                 <h:form>
-                    <p:panel header="Employe List" >
+                    <p:panel header="Employe Retired Report" >
 
                         <h:panelGrid columns="2">  
-                            <h:outputLabel value="Institution"/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Specility : "/>
-                            <hr:completeSpeciality value="#{hrReportController.reportKeyWord.speciality}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
+                            <h:outputLabel value="Time Range"/>
+                            <p:selectOneRadio value="#{hrReportController.reportKeyWord.string}" >
+                                <f:selectItem itemLabel="3 Months" itemValue="0" />
+                                <f:selectItem itemLabel="6 Months" itemValue="1" />
+                                <f:selectItem itemLabel="9 Months" itemValue="2" />
+                                <f:selectItem itemLabel="12 Months" itemValue="3" />
+                            </p:selectOneRadio>
                         </h:panelGrid>
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" action="#{hrReportController.createStaffList}" value="Fill" />
+                            <p:commandButton ajax="false" action="#{hrReportController.createRetiedStaffs}" value="Fill" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
-
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_employee_detail"  />
                             </p:commandButton> 
@@ -72,13 +66,13 @@
                                 <p:column headerText="Id" filterBy="#{s.id}" exportable="false" rendered="false">
                                     #{s.id}
                                 </p:column>
-                                <p:column headerText="Code NO" sortBy="#{s.codeInterger}" >
+                                <p:column headerText="Code NO" sortBy="#{s.codeInterger}" style="max-width: 15px;">
                                     <f:facet name="header" >
                                         <p:outputLabel value="Code NO" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.codeInterger}" />
                                 </p:column>
-                                <p:column headerText="EPF Code" >
+                                <p:column headerText="EPF Code" style="max-width: 15px;" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="EPF Code" />
                                     </f:facet>
@@ -90,7 +84,7 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.name}" />
                                 </p:column>
-                                <p:column headerText="Full Name" >
+<!--                                <p:column headerText="Full Name" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Full Name" />
                                     </f:facet>
@@ -101,7 +95,7 @@
                                         <p:outputLabel value="Name with Initials" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.person.nameWithInitials}" />
-                                </p:column>
+                                </p:column>-->
                                 <p:column headerText="Speciality" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Speciality" />
@@ -116,7 +110,7 @@
                                     <p:outputLabel value="#{s.roster.name}" />
                                 </p:column>
 
-                                <p:column headerText="Working Time For Over Time Per Week" >
+<!--                                <p:column headerText="Working Time For Over Time Per Week" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Working Time For Over Time Per Week" />
                                     </f:facet>
@@ -128,7 +122,7 @@
                                         <p:outputLabel value="Working Time For Over Time Per Week" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.workingTimeForNoPayPerWeek}" />
-                                </p:column>
+                                </p:column>-->
 
                                 <p:column headerText="Employee Status">
                                     <f:facet name="header" >
@@ -192,7 +186,7 @@
                                     </f:facet>
                                     <p:outputLabel value="#{s.workingDepartment.name}" />
                                 </p:column>
-                                <p:column headerText="Account Number" >
+<!--                                <p:column headerText="Account Number" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Account Number" />
                                     </f:facet>
@@ -203,7 +197,7 @@
                                         <p:outputLabel value="Bank" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.bankBranch.institution.name}" />
-                                </p:column>
+                                </p:column>-->
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />

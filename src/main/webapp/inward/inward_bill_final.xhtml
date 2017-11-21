@@ -522,8 +522,9 @@
 
                     <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" 
                                   rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
-                        <bi:finalBill  bill="#{bhtSummeryController.current}" />
-                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}"  />
+                        <bi:finalBill  bill="#{bhtSummeryController.current}" hosCopy="true" />
+                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}" hosCopy="true"  />
+                        <bi:finalBill_1 bill="#{bhtSummeryController.current}" hosCopy="true"/>
                     </h:panelGroup>
                     <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                  
                         <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="false"/>

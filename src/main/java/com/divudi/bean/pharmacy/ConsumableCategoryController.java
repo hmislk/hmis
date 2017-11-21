@@ -58,6 +58,9 @@ public class ConsumableCategoryController implements Serializable {
     }
 
     public void create() {
+        if (errorCheck()) {
+            return;
+        }
         persist(PersistAction.CREATE, "ConsumableCategoryCreated");
         if (!JsfUtil.isValidationFailed()) {
             items = null;    // Invalidate list of items to trigger re-query.

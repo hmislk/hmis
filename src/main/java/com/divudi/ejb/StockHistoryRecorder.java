@@ -147,7 +147,7 @@ public class StockHistoryRecorder {
     }
 
 //    @SuppressWarnings("unused")
-//    @Schedule(hour = "01", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
+//    @Schedule(hour = "03", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
 //    public void myTimerDailyChannelShedule() {
 //        Date startTime = new Date();
 //        System.out.println("Start Create Shedule " + startTime);

@@ -37,7 +37,7 @@
                                  effect="fade" var="t" 
                                  filter="true" 
                                  filterMatchMode="startsWith">
-
+                    <f:selectItem itemLabel="Select Salary Cycle" />
                     <f:selectItems value="#{salaryCycleController.salaryCycles}" 
                                    var="theme" 
                                    itemLabel="#{theme.name}" 
@@ -71,8 +71,8 @@
             <p:commandButton value="Print" ajax="false" action="#" styleClass="noPrintButton" >
                 <p:printer target="print" ></p:printer>
             </p:commandButton>
-            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" styleClass="noPrintButton" ></p:commandButton>
-            <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlocked()}" styleClass="noPrintButton" ></p:commandButton>
+            <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRollNew()}" styleClass="noPrintButton" ></p:commandButton>
+            <p:commandButton value="Process Hold List" ajax="false" action="#{salaryCycleController.fillStaffPayRollBlockedNew()}" styleClass="noPrintButton" ></p:commandButton>
 
             <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
 
@@ -109,6 +109,7 @@
                         <th>Retierd</th>
                         <th>Satff </th>
                         <th>Des</th>
+                        <th>Cycle</th>
                         <th>Basic Val</th>
                         <th>Basic+BR</th>
                         <th>Sal. Gen. days</th>
@@ -175,6 +176,7 @@
                             </td>
                             <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.person.name}" /></td>                                
                             <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.roster.name}" /></td>  
+                            <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.salaryCycle.name}" /></td>  
                             <td style="text-align: right;color: green;" ><h:outputText value="#{scc.basicVal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                   
@@ -351,7 +353,7 @@
                         </tr>
                     </ui:repeat>
                     <tr>
-                        <td colspan="7"><h:outputLabel value="Totals"/></td>
+                        <td colspan="8"><h:outputLabel value="Totals"/></td>
                         <td ><h:outputLabel value=""/></td>
                         <td style="text-align: right;;">
                             <h:outputText value="#{salaryCycleController.basicVal}" >

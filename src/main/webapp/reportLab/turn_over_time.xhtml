@@ -6,6 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:pe="http://primefaces.org/ui/extensions">
 
 
@@ -20,11 +21,19 @@
                          header="Turn Around Time">
 
                     <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
+                        <h:outputLabel value="Bill Type"/>
+                        <p:selectOneMenu value="#{investigationMonthSummeryOwnControllerSession.summeryType}" >
+                            <f:selectItem itemValue="1" itemLabel="All Bill Types" />
+                            <f:selectItem itemValue="2" itemLabel="Collecting Center Bill" />
+                            <f:selectItem itemValue="3" itemLabel="OPD Bill" />
+                            <f:selectItem itemValue="4" itemLabel="Inward Bill" />
+                            <f:selectItem itemValue="5" itemLabel="OPD + Inward Bill" />
+                        </p:selectOneMenu>
                         <h:outputLabel value="Investigation"/>
                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
                                         value="#{investigationMonthSummeryOwnControllerSession.item}" 
                                         completeMethod="#{investigationController.completeInvest}" 
-                                        var="apt" itemLabel="#{apt.name}" 
+                                        var="apt" itemLabel="#{apt.name}" placeholder="Investigation"
                                         itemValue="#{apt}" size="30"  style="width: 400px;">
                             <p:column>
                                 #{apt.name}
@@ -37,7 +46,8 @@
                             </p:column>
                             
                         </p:autoComplete> 
-
+                        <h:outputLabel value="Department"/>
+                        <au:department value="#{investigationMonthSummeryOwnControllerSession.department}" />
 
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >

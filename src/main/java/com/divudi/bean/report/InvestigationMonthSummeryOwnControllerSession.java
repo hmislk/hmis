@@ -368,15 +368,31 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         double averateMins = 0;
         double totalMins = 0;
         double averageCount = 0;
+        BillType[] billTypes=new BillType[]{};
+        if (summeryType.equals("1")) {
+            billTypes=new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill};
+        } else if (summeryType.equals("2")) {
+            billTypes=new BillType[]{BillType.CollectingCentreBill, BillType.LabBill};
+        } else if (summeryType.equals("3")) {
+            billTypes=new BillType[]{BillType.OpdBill};
+        } else if (summeryType.equals("4")) {
+            billTypes=new BillType[]{BillType.InwardBill};
+        } else if (summeryType.equals("5")) {
+            billTypes=new BillType[]{BillType.OpdBill, BillType.InwardBill,};
+        }
+        boolean flag=true;
+        if (department!=null) {
+            flag=false;
+        }
         List<PatientInvestigation> temPis = billEjb.getPatientInvestigations(item,
                 fromDate,
                 toDate,
-                new BillType[]{BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill},
+                billTypes,
                 new Class[]{BilledBill.class},
                 true,
                 null,
-                true,
-                null,
+                flag,
+                department,
                 true,
                 null,
                 true,
@@ -484,19 +500,19 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 sql = "select b.toDepartment,count(b),sum(b.netTotal) ";
             }
         }
-        
+
         if (summeryType.equals("3")) {
             sql += "select distinct(bi.bill) ";
         }
 
         if (summeryType.equals("2")) {
             sql += "from Bill b where b.retired=false "
-                + " and b.createdAt between :fd and :td "
-                + " and b.billType=:bt ";
+                    + " and b.createdAt between :fd and :td "
+                    + " and b.billType=:bt ";
         } else {
             sql += "from BillItem bi where bi.retired=false "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billType=:bt ";
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.billType=:bt ";
         }
 
         if (!summeryType.equals("2")) {
