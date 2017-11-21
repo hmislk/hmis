@@ -1073,7 +1073,8 @@ public class QuickBookReportController implements Serializable {
                 }
                 if (i.getDepartment() != null) {
                     if (i.getInwardChargeType() == InwardChargeType.VAT) {
-                        qbf.setQbClass("VAT Control Account:Output");
+                        qbf.setQbClass("HSS");
+//                        qbf.setQbClass("VAT Control Account:Output");
                     } else {
                         qbf.setQbClass(i.getDepartment().getName());
                     }
@@ -1152,7 +1153,8 @@ public class QuickBookReportController implements Serializable {
                     }
                     if (i.getDepartment() != null) {
                         if (i.getInwardChargeType() == InwardChargeType.VAT) {
-                            qbf.setQbClass("VAT Control Account:Output");
+                            qbf.setQbClass("HSS");
+//                            qbf.setQbClass("VAT Control Account:Output");
                         } else {
                             qbf.setQbClass(i.getDepartment().getName());
                         }

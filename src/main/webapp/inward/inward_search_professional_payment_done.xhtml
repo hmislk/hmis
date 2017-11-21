@@ -70,7 +70,9 @@
                             <p:column headerText="Bht No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.bhtNo}" ></h:outputLabel>
                             </p:column>
-
+                            <p:column headerText="Credit Company" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
+                            </p:column>
                             <p:column headerText="Discharged At" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.patientEncounter.dateOfDischarge}" >
                                     <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
@@ -95,6 +97,11 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
+                            <p:column headerText="Bill at"  >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
                             <p:column headerText="Paid by" >
                                 <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
