@@ -921,6 +921,20 @@ public class DataAdministrationController {
 
     }
 
+    public void createBillTable() {
+        bills = new ArrayList<>();
+        System.err.println("Time 1 = " + new Date());
+        BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
+        System.out.println("totals.getBills() = " + totals.getBills().size());
+        System.err.println("Time 2 = " + new Date());
+        for (Bill b : totals.getBills()) {
+            bills.add(b);
+        }
+        System.err.println("Time 3 = " + new Date());
+        System.out.println("bills.size() = " + bills.size());
+
+    }
+
     private List<Object> fetchAllBilledBillTypes() {
         List<Object> objects = new ArrayList<>();
         String sql;
@@ -1393,8 +1407,8 @@ public class DataAdministrationController {
     }
 
     public Date getFromDate() {
-        if (fromDate==null) {
-            fromDate=commonFunctionsController.getStartOfMonth(new Date());
+        if (fromDate == null) {
+            fromDate = commonFunctionsController.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -1404,8 +1418,8 @@ public class DataAdministrationController {
     }
 
     public Date getToDate() {
-        if (toDate==null) {
-            toDate=commonFunctionsController.getEndOfMonth(new Date());
+        if (toDate == null) {
+            toDate = commonFunctionsController.getEndOfMonth(new Date());
         }
         return toDate;
     }

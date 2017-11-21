@@ -2398,18 +2398,21 @@ public class SearchController implements Serializable {
         }
         if (billItems != null) {
             for (BillItem bii : billItems) {
-                row = new PharmacyAdjustmentRow(bii.getItem(),
-                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate(),
-                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate(),
-                        bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
-                        bii.getQty(),
-                        bii.getQty() - bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
-                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getBatchNo(),
-                        bii.getPharmaceuticalBillItem().getStock().getItemBatch().getDateOfExpire());
-                dueTotal += row.getBefoerVal();
-                doneTotal += row.getAfterVal();
-                netTotal += row.getAdjusetedVal();
-                pharmacyAdjustmentRows.add(row);
+                try {
+                    row = new PharmacyAdjustmentRow(bii.getItem(),
+                            bii.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate(),
+                            bii.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate(),
+                            bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                            bii.getQty(),
+                            bii.getQty() - bii.getPharmaceuticalBillItem().getStockHistory().getStockQty(),
+                            bii.getPharmaceuticalBillItem().getStock().getItemBatch().getBatchNo(),
+                            bii.getPharmaceuticalBillItem().getStock().getItemBatch().getDateOfExpire());
+                    dueTotal += row.getBefoerVal();
+                    doneTotal += row.getAfterVal();
+                    netTotal += row.getAdjusetedVal();
+                    pharmacyAdjustmentRows.add(row);
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -3723,6 +3726,10 @@ public class SearchController implements Serializable {
             sql += " and  (upper(b.paidForBillFee.feeValue) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
+            temMap.put("cc", getReportKeyWord().getInstitution());
+        }
 
         sql += " order by b.createdAt desc  ";
 
@@ -3784,6 +3791,10 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  (upper(b.paidForBillFee.feeValue) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+        if (getReportKeyWord().getInstitution() != null) {
+            sql += " and  b.paidForBillFee.bill.creditCompany=:cc ";
+            temMap.put("cc", getReportKeyWord().getInstitution());
         }
 
         sql += " order by b.createdAt desc  ";

@@ -12,43 +12,58 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Bills" >
-                        <f:facet name="header" >                         
-                            <h:panelGrid columns="7" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
-                                </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPaymentTable}"/>
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPaymentTableAll}"/>
-                                <p:commandButton actionListener="#{searchController.createPaymentTableAll}" value="Excel" ajax="false">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
-                                </p:commandButton>
-                                <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
-                                <h:outputLabel value="Opd Bill No"/>
-                                <h:outputLabel value="Payment Bill No"/>
-                                <h:outputLabel value="Patient Name"/>
-                                <h:outputLabel value="Speciality"/> 
-                                <h:outputLabel value="Staff Name"/>      
-                                <h:outputLabel value="Service Name"/>  
-                                <h:outputLabel value="Charges"/>                              
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
-                                <p:selectOneMenu  value="#{searchController.searchKeyword.paymentMethod}">
-                                    <f:selectItem itemLabel="select Payment Methord" />
-                                    <f:selectItems value="#{enumController.paymentMethods}" />
-                                </p:selectOneMenu>
+                        <f:facet name="header" >   
+                            <h:panelGrid columns="1" >
+
+
+                                <h:panelGrid columns="7" >
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                    </p:calendar>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPaymentTable}"/>
+                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPaymentTableAll}"/>
+                                    <p:commandButton actionListener="#{searchController.createPaymentTableAll}" value="Excel" ajax="false">
+                                        <pe:exporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
+                                    </p:commandButton>
+                                    <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                    <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
+                                </h:panelGrid>
+                                <h:panelGrid columns="9" >
+                                    <h:outputLabel value="Opd Bill No"/>
+                                    <h:outputLabel value="Payment Bill No"/>
+                                    <h:outputLabel value="Patient Name"/>
+                                    <h:outputLabel value="Speciality"/> 
+                                    <h:outputLabel value="Staff Name"/>      
+                                    <h:outputLabel value="Service Name"/>  
+                                    <h:outputLabel value="Charges"/>                              
+                                    <h:outputLabel value="Payment Methord"/>                              
+                                    <h:outputLabel value="Credit Company"/>                              
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.insId}" />
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" />
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" />
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.total}"/>
+                                    <p:selectOneMenu  value="#{searchController.searchKeyword.paymentMethod}">
+                                        <f:selectItem itemLabel="select Payment Methord" />
+                                        <f:selectItems value="#{enumController.paymentMethods}" />
+                                    </p:selectOneMenu>
+                                    <p:autoComplete id="creditCompany" 
+                                                    forceSelection="true"
+                                                    value="#{searchController.reportKeyWord.institution}"  
+                                                    completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                    itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
+
+                                    </p:autoComplete>
+                                </h:panelGrid>
                             </h:panelGrid>
                         </f:facet>
 
-                        <p:defaultCommand target="btnSearch" />
+                        <!--<p:defaultCommand target="btnSearch" />-->
 
                         <p:dataTable id="tblBills" value="#{searchController.billItems}" var="bi" rowIndexVar="i" >
                             <p:column>
@@ -58,6 +73,9 @@
                             </p:column>
                             <p:column headerText="Opd Bill No" >
                                 <h:outputLabel value="#{bi.paidForBillFee.bill.insId}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Credit Company" >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="Payment Bill No" >
                                 <h:outputLabel value="#{bi.bill.insId}" ></h:outputLabel>
@@ -89,6 +107,11 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
+                            </p:column>  
+                            <p:column headerText="Bill at"  >
+                                <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
                             </p:column>  
                             <p:column headerText="Paid by" >
 

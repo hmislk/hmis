@@ -730,7 +730,7 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnP = new ArrayList<>();
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
-        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.PurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
+        for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate))) {
             System.out.println("d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), getCommonFunctions().getStartOfDay(fromDate), getCommonFunctions().getEndOfDay(toDate)));
@@ -939,6 +939,8 @@ public class QuickBookReportController implements Serializable {
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
+            System.out.println("b.getInsId() = " + b.getInsId());
+            System.out.println("b.getDeptId() = " + b.getDeptId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
@@ -1071,7 +1073,8 @@ public class QuickBookReportController implements Serializable {
                 }
                 if (i.getDepartment() != null) {
                     if (i.getInwardChargeType() == InwardChargeType.VAT) {
-                        qbf.setQbClass("VAT Control Account:Output");
+                        qbf.setQbClass("HSS");
+//                        qbf.setQbClass("VAT Control Account:Output");
                     } else {
                         qbf.setQbClass(i.getDepartment().getName());
                     }
@@ -1150,7 +1153,8 @@ public class QuickBookReportController implements Serializable {
                     }
                     if (i.getDepartment() != null) {
                         if (i.getInwardChargeType() == InwardChargeType.VAT) {
-                            qbf.setQbClass("VAT Control Account:Output");
+                            qbf.setQbClass("HSS");
+//                            qbf.setQbClass("VAT Control Account:Output");
                         } else {
                             qbf.setQbClass(i.getDepartment().getName());
                         }

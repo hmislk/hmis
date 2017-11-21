@@ -49,6 +49,9 @@
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
+                        <p:commandButton actionListener="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Excel" ajax="false">
+                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_count"  subTable="true"/>
+                        </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
