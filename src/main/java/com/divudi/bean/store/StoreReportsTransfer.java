@@ -19,10 +19,12 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.RefundBill;
 import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -679,13 +681,22 @@ public class StoreReportsTransfer implements Serializable {
             }
 
             ibr.getBill().setNetTotal(ibr.getBill().getNetTotal() + ts.getNetValue());
-            ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
 
             cbr.getBill().setNetTotal(cbr.getBill().getNetTotal() + ts.getNetValue());
-            cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() + ts.getQty());
 
             dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
-            dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
+            System.out.println("ts.getBill().getBillClass() = " + ts.getBill().getBillClass());
+            if (ts.getBill() instanceof RefundBill) {
+                System.out.println("**************ts.getBill().getBillClass() = " + ts.getBill().getBillClass());
+                ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() - ts.getQty());
+                cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() - ts.getQty());
+                dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() - ts.getQty());
+            } else {
+                ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() + ts.getQty());
+                cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() + ts.getQty());
+                dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() + ts.getQty());
+
+            }
 
 //            purchaseValue += ts.getNetValue();
         }
@@ -965,10 +976,14 @@ public class StoreReportsTransfer implements Serializable {
     }
 
     public void createStoreIssueCategoryReport() {
+        if (fromDepartment == null) {
+            JsfUtil.addErrorMessage("Please Select Issued Department");
+            return;
+        }
         Date startTime = new Date();
         caregoryRows = new ArrayList<>();
-        saleValue=0.0;
-        List<Object[]> objects = fetchBillItemDetails(fromDepartment, fromDate, toDate, BillType.StoreIssue);
+        saleValue = 0.0;
+        List<Object[]> objects = fetchBillItemDetails(fromDepartment, fromDate, toDate, BillType.StoreIssue, toDepartment);
         Category lastCategory = null;
         Item lastItem = null;
         DepartmentCategoryRow dcr = new DepartmentCategoryRow();
@@ -976,17 +991,17 @@ public class StoreReportsTransfer implements Serializable {
         ItemRow ir = new ItemRow();
         for (Object[] ob : objects) {
             Category c = (Category) ob[0];
-//            System.out.println("c.getName() = " + c.getName());
+            System.out.println("c.getName() = " + c.getName());
             Item i = (Item) ob[1];
-//            System.out.println("i.getName() = " + i.getName());
+            System.out.println("i.getName() = " + i.getName());
             BillClassType type = (BillClassType) ob[2];
-//            System.out.println("type = " + type);
+            System.out.println("type = " + type);
             double count = (double) ob[3];
 //            System.out.println("count = " + count);
             double unitValue = (double) ob[4];
 //            System.out.println("unitValue = " + unitValue);
             double total = (double) ob[5];
-//            System.out.println("total = " + total);
+            System.out.println("total = " + total);
             if (lastCategory == null) {
                 lastCategory = c;
                 cr.setC(c);
@@ -994,18 +1009,18 @@ public class StoreReportsTransfer implements Serializable {
                     lastItem = i;
                     ir.setI(i);
                     ir = createItemRow(ir, type, count, unitValue, total);
-                    cr.setTotal(cr.getTotal() + ir.getValue());
+//                    cr.setTotal(cr.getTotal() + ir.getValue());
                 } else {
                     if (lastItem == i) {
                         ir = createItemRow(ir, type, count, unitValue, total);
-                        cr.setTotal(cr.getTotal() + ir.getValue());
+//                        cr.setTotal(cr.getTotal() + ir.getValue());
                     } else {
                         cr.getItemRows().add(ir);
                         ir = new ItemRow();
                         lastItem = i;
                         ir.setI(i);
                         ir = createItemRow(ir, type, count, unitValue, total);
-                        cr.setTotal(cr.getTotal() + ir.getValue());
+//                        cr.setTotal(cr.getTotal() + ir.getValue());
                     }
                 }
             } else {
@@ -1014,24 +1029,26 @@ public class StoreReportsTransfer implements Serializable {
                         lastItem = i;
                         ir.setI(i);
                         ir = createItemRow(ir, type, count, unitValue, total);
-                        cr.setTotal(cr.getTotal() + ir.getValue());
+//                        cr.setTotal(cr.getTotal() + ir.getValue());
                     } else {
                         if (lastItem == i) {
                             ir = createItemRow(ir, type, count, unitValue, total);
-                            cr.setTotal(cr.getTotal() + ir.getValue());
+//                            System.out.println("ir.getValue() = " + ir.getValue());
+//                            cr.setTotal(cr.getTotal() + ir.getValue());
                         } else {
                             cr.getItemRows().add(ir);
+                            cr.setTotal(cr.getTotal() + ir.getValue());
                             ir = new ItemRow();
                             lastItem = i;
                             ir.setI(i);
                             ir = createItemRow(ir, type, count, unitValue, total);
-                            cr.setTotal(cr.getTotal() + ir.getValue());
+//                            cr.setTotal(cr.getTotal() + ir.getValue());
                         }
                     }
                 } else {
                     lastCategory = c;
                     cr.getItemRows().add(ir);
-//                    cr.setTotal(cr.getTotal() + ir.getValue());
+                    cr.setTotal(cr.getTotal() + ir.getValue());
                     saleValue += cr.getTotal();
                     caregoryRows.add(cr);
                     ir = new ItemRow();
@@ -1041,22 +1058,24 @@ public class StoreReportsTransfer implements Serializable {
                         lastItem = i;
                         ir.setI(i);
                         ir = createItemRow(ir, type, count, unitValue, total);
-                        cr.setTotal(cr.getTotal() + ir.getValue());
+//                        cr.setTotal(cr.getTotal() + ir.getValue());
                     } else {
                         if (lastItem == i) {
                             ir = createItemRow(ir, type, count, unitValue, total);
-                            cr.setTotal(cr.getTotal() + ir.getValue());
+//                            cr.setTotal(cr.getTotal() + ir.getValue());
                         } else {
                             lastItem = i;
                             ir.setI(i);
                             ir = createItemRow(ir, type, count, unitValue, total);
-                            cr.setTotal(cr.getTotal() + ir.getValue());
+//                            cr.setTotal(cr.getTotal() + ir.getValue());
                         }
                     }
                 }
             }
+            System.out.println("cr.getTotal() = " + cr.getTotal());
         }
         cr.getItemRows().add(ir);
+        cr.setTotal(cr.getTotal() + ir.getValue());
         saleValue += cr.getTotal();
         caregoryRows.add(cr);
         System.out.println("departmentCategoryRows.size() = " + caregoryRows.size());
@@ -1123,7 +1142,7 @@ public class StoreReportsTransfer implements Serializable {
 
     }
 
-    public List<Object[]> fetchBillItemDetails(Department fdep, Date fd, Date td, BillType bt) {
+    public List<Object[]> fetchBillItemDetails(Department fdep, Date fd, Date td, BillType bt, Department tdep) {
         Map m = new HashMap();
         String sql;
         List<Object[]> objects = new ArrayList<>();
@@ -1141,6 +1160,11 @@ public class StoreReportsTransfer implements Serializable {
         if (fdep != null) {
             sql += " and bi.bill.fromDepartment=:fdept ";
             m.put("fdept", fdep);
+        }
+
+        if (tdep != null) {
+            sql += " and bi.bill.toDepartment=:tdept ";
+            m.put("tdept", tdep);
         }
 
         sql += " group by bi.item.category,"

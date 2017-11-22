@@ -17,10 +17,15 @@
                     <p:panel header="Unit Issue Category Wise Summery" >
 
                         <h:panelGrid columns="2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <h:outputLabel value="From Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="To Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" />
