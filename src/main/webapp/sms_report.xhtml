@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Sms Report" >
+                        <f:facet name="header" >   
+                            <h:panelGrid columns="2" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" 
+                                            value="#{smsController.reportKeyWord.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="toDate" 
+                                            value="#{smsController.reportKeyWord.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:selectOneMenu  value="#{smsController.reportKeyWord.smsType}">
+                                    <f:selectItem itemLabel="select Type" />
+                                    <f:selectItems value="#{enumController.smsType}" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Summery"/>
+                                <p:selectBooleanCheckbox value="#{smsController.reportKeyWord.additionalDetails}" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                                 action="#{smsController.createSmsTable()}"/>
+                                <p:commandButton actionListener="#{smsController.createSmsTable}" value="Excel" ajax="false">
+                                    <pe:exporter type="xlsx" target="tblBills tblBills1" fileName="sms_report"  />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </f:facet>
+                        <p:dataTable id="tblBills" value="#{smsController.smses}" 
+                                     var="s" rowIndexVar="i" rendered="#{smsController.reportKeyWord.additionalDetails ne true}" >
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="No" />
+                                </f:facet>
+                                <h:outputLabel value="#{i+1}" />
+                            </p:column>.
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bill Type" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.bill.billType}" />                                      
+                            </p:column>  
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Investigation" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.patientInvestigation.investigation.name}" />                                      
+                            </p:column>  
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Url" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.sendingUrl}" />                                      
+                            </p:column>  
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Message" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.sendingMessage}" />                                      
+                            </p:column>  
+                            <p:column rendered="#{smsController.reportKeyWord.smsType eq null}" >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Sms Type" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.smsType}" />
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Created At" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Creater" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.creater.webUserPerson.name}" />                                      
+                            </p:column>    
+                        </p:dataTable>
+                        <p:dataTable id="tblBills1" value="#{smsController.smsSummeryRows}" 
+                                     var="s" rowIndexVar="i" rendered="#{smsController.reportKeyWord.additionalDetails eq true}" >
+                            <!--                            <p:column >
+                                                            <f:facet name="header">
+                                                                <p:outputLabel value="No" />
+                                                            </f:facet>
+                                                            <h:outputLabel value="#{i+1}" />
+                                                        </p:column>.-->
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Sms Type" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.smsType}" rendered="#{s.smsType ne null}" />                                      
+                                <h:outputLabel value="Total" rendered="#{s.smsType eq null}" style="font-weight: bold;" />                                      
+                            </p:column>  
+                            <p:column >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Count" />
+                                </f:facet>
+                                <h:outputLabel value="#{s.count}" style="float: right;" rendered="#{s.smsType ne null}">
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputLabel>                                      
+                                <h:outputLabel value="#{s.count}" style="float: right; font-weight: bold;" rendered="#{s.smsType eq null}" >
+                                    <f:convertNumber pattern="#,##0" />
+                                </h:outputLabel>                                      
+                            </p:column>  
+                        </p:dataTable>
+                    </p:panel>
+                    
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -686,7 +686,7 @@
                                     <p:menuitem  ajax="false"  action="/hr/hr_reports" value="Reports" rendered="#{webUserController.hasPrivilege('HrReports')}" />
                                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration" rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                                 </p:submenu>
-                                
+
                                 <p:submenu styleClass="rightBordrOnly" label="EHR"  rendered="#{webUserController.hasPrivilege('Clinical')}">
                                     <p:menuitem ajax="false" action="/clinical/clinical_patient_for_receptionist" value="Patients"/>
                                     <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration"/>
@@ -849,7 +849,7 @@
                 <p:panel rendered ="#{sessionController.logged and sessionController.department eq null}" 
                          styleClass="verticalAndHorizontalCentering">
                     <h:form id="formDept" >
-                        
+
                         <p:panel header="Select Department" >
                             <h:panelGrid columns="3" >
                                 <h:outputText value="Department" ></h:outputText>
@@ -918,10 +918,40 @@
 
 
             </h:panelGrid>
-            <div style="height: 30px" class="nonPrintBlock" >
+            <div style="height: 50px" class="nonPrintBlock" >
             </div>
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
+            </div>
+            <div class="nonPrintBlock" >
+                <h:form>
+                    <p:dock position="bottom" 
+                            rendered="#{webUserController.hasPrivilege('Developers') 
+                                        and (sessionController.loggedUser.id eq 3151
+                                        or  sessionController.loggedUser.id eq 1101795)
+                                                          and sessionController.logged
+                                                          and !sessionController.firstLogin 
+                                                          and sessionController.department ne null}">
+                        <p:menuitem value="Opd Summery" 
+                                    icon="/resources/image/ico/analytics_1.png" action="/reportCashier/report_cashier"/>
+                        <p:menuitem value="Lab Summery" 
+                                    icon="/resources/image/ico/syringe.png" action="/reportLab/lab_summeries_index"/>
+                        <p:menuitem value="Channel Reports" 
+                                    icon="/resources/image/ico/stethoscope.png" action="/channel/channel_reports"/>
+                        <p:menuitem value="Institution Reports" 
+                                    icon="/resources/image/ico/analytics_2.png" action="/reportInstitution/report_own"/>
+                        <p:menuitem value="Bill Edit" 
+                                    icon="/resources/image/ico/search.png" action="/search_bill"/>
+                        <p:menuitem value="BHT Edit" 
+                                    icon="/resources/image/ico/edit.png" action="/developers/edit_bht"/>
+                        <p:menuitem value="Pharmacy History" 
+                                    icon="/resources/image/ico/antibiotic.png" action="/pharmacy/pharmacy_error_checking_date"/>
+                        <p:menuitem value="Bulk Sms" 
+                                    icon="/resources/image/ico/sms.png" action="/admin/bill_contact_numbers"/>
+                        <p:menuitem value="Sms Report" 
+                                    icon="/resources/image/ico/send.png" action="/sms_report"/>
+                    </p:dock>
+                </h:form>
             </div>
 
         </div>

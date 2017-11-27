@@ -297,7 +297,7 @@ public class CommonFunctions {
     }
 
     public static Date getEndOfMonth() {
-        return getStartOfMonth(new Date());
+        return getEndOfMonth(new Date());
     }
 
     public static Date getEndOfMonth(Date date) {
