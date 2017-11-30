@@ -88,7 +88,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item">
+                                <p:column sortBy="#{i.itemBatch.item.name}" headerText="Item">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
@@ -145,7 +145,7 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column style="text-align: right;">
+                                <p:column sortBy="#{i.itemBatch.lastPurchaseBillItem.bill.deptId}" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="GRN No"/>                                     
                                     </f:facet>
