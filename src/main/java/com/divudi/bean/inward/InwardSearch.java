@@ -782,9 +782,14 @@ public class InwardSearch implements Serializable {
         hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
         //System.out.println("getBillFacade().findFirstBySQL(sql, hm) = " + getBillFacade().findFirstBySQL(sql, hm));
-        if (getBillFacade().findFirstBySQL(sql, hm) == null && checkBathcReferenceBillTimeService()) {
+        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {
+            System.out.println("b = " + b);
+            if (b!=null) {
+                System.out.println("b.getInsId() = " + b.getInsId());
+            }
             return true;
         }
     }
@@ -808,6 +813,7 @@ public class InwardSearch implements Serializable {
                 //System.out.println("e = " + e);
                 //System.out.println("e.getBillFee().getPatientItem().isRetired() = " + e.getBillFee().getPatientItem().isRetired());
                 if (!e.getBillFee().getPatientItem().isRetired()) {
+                    System.out.println("e.getBillFee().getBill().getInsId() = " + e.getBillFee().getBill().getInsId());
                     return false;
                 }
             }

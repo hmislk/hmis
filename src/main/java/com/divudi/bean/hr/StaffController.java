@@ -118,7 +118,7 @@ public class StaffController implements Serializable {
     private List<CommonReportItem> formItems = null;
     List<Staff> itemsToRemove;
     Date tempRetireDate = null;
-    boolean removeResign=false;
+    boolean removeResign = false;
 
     public void removeSelectedItems() {
         for (Staff s : itemsToRemove) {
@@ -987,7 +987,7 @@ public class StaffController implements Serializable {
     public void prepareAdd() {
         current = new Staff();
         tempRetireDate = null;
-        removeResign=false;
+        removeResign = false;
     }
 
     public void delete() {
@@ -1061,7 +1061,7 @@ public class StaffController implements Serializable {
 
         if (removeResign) {
             current.setDateLeft(null);
-            removeResign=false;
+            removeResign = false;
         } else {
             if (tempRetireDate != null && checkDateBetwenSalaryCycle(tempRetireDate)) {
                 UtilityController.addErrorMessage("This Retire Date Inside in Salary Cycle. Please Check and add Retire date");
@@ -1103,9 +1103,10 @@ public class StaffController implements Serializable {
                 System.out.println("dor.getTime = " + dor.getTime());
                 System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
                 if (getCurrent().getDateRetired() != null) {
-                    if (dor.getTime().after(getCurrent().getDateRetired())) {
-                        getCurrent().setDateRetired(dor.getTime());
-                    }
+//                    if (dor.getTime().after(getCurrent().getDateRetired())) {
+//                        getCurrent().setDateRetired(dor.getTime());
+//                    }
+                    getCurrent().setDateRetired(dor.getTime());
                 } else {
                     getCurrent().setDateRetired(dor.getTime());
                 }
@@ -1277,7 +1278,7 @@ public class StaffController implements Serializable {
     public void changeStaff() {
         formItems = null;
         tempRetireDate = null;
-        removeResign=false;
+        removeResign = false;
         listFormItems();
     }
 

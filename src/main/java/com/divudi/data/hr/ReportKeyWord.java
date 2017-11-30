@@ -8,6 +8,8 @@ package com.divudi.data.hr;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
+import com.divudi.data.SmsType;
+import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Area;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -25,6 +27,8 @@ import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
+import java.util.Date;
+import javax.inject.Inject;
 import javax.persistence.Transient;
 
 /**
@@ -32,6 +36,9 @@ import javax.persistence.Transient;
  * @author safrin
  */
 public class ReportKeyWord {
+
+    @Inject
+    CommonFunctions commonFunctions;
 
     DayType[] dayTypes;
     Staff staff;
@@ -67,6 +74,7 @@ public class ReportKeyWord {
     String address;
     AdmissionType admissionType;
     Area area;
+    SmsType smsType;
     BillType billType;
     @Transient
     String transAddress1;
@@ -76,6 +84,9 @@ public class ReportKeyWord {
     String transAddress3;
     @Transient
     String transAddress4;
+
+    Date fromDate;
+    Date toDate;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -449,6 +460,36 @@ public class ReportKeyWord {
 
     public void setBillType(BillType billType) {
         this.billType = billType;
+    }
+
+    public SmsType getSmsType() {
+        return smsType;
+    }
+
+    public void setSmsType(SmsType smsType) {
+        this.smsType = smsType;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctions.getEndOfMonth();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
 }

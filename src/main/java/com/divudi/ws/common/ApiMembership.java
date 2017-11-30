@@ -183,11 +183,13 @@ public class ApiMembership {
             person.setAddress(decoder.decode(address, "+"));
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
+            person.setCreatedAt(new Date());
             getPersonFacade().create(person);
 
             Patient patient = new Patient();
             patient.setPerson(person);
             patient.setCode(getPatientController().getCountPatientCode());
+            patient.setCreatedAt(new Date());
             getPatientFacade().create(patient);
 
             JSONObject object = new JSONObject();

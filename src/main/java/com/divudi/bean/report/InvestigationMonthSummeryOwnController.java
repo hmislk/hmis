@@ -541,6 +541,26 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     }
 
+    private List<Object[]> getCountWithInvestigation(List<BillType> bts) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select bi.item.machine, bi.item, bi.bill.billType, bi.bill.billClassType, count(bi), sum(bi.netValue+bi.vat) "
+                + " FROM BillItem bi where"
+                + " bi.bill.billType in :bts "
+                //                + " and bi.item.machine =:mac"
+                + " and (bi.bill.toInstitution=:ins or bi.item.department.institution=:ins ) "
+                + " and bi.bill.createdAt between :fromDate and :toDate "
+                + " group by bi.item.machine, bi.item, bi.bill.billType, bi.bill.billClassType "
+                + " order by bi.item.machine.name, bi.item.name";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+//        m.put("mac", ma);
+        m.put("bts", bts);
+        m.put("ins", institution);
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+
+    }
+
     private long getCount(Bill bill, Machine m, BillType bt) {
         List<BillType> bts = new ArrayList<>();
         bts.add(bt);
@@ -1082,7 +1102,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
     public void setTotalInward(double totalInward) {
         this.totalInward = totalInward;
     }
-    
+
     double totalOpdCount;
     double totalOpd;
     double totalccCount;
@@ -1348,6 +1368,180 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml) new ");
+    }
+
+    public void createLabServiceWithCountAndValueByMachineInvestigationAndBillType() {
+
+        Date startTime = new Date();
+        investigationCountWithMachines = new ArrayList<>();
+        totalCount = 0;
+        totalOpdCount = 0;
+        totalccCount = 0;
+        totalInwardCount = 0;
+        total = 0;
+        totalOpd = 0;
+        totalcc = 0;
+        totalInward = 0;
+
+        BillType[] bts = {BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill};
+        List<Object[]> objects = getCountWithInvestigation(Arrays.asList(bts));
+//        List<Object[]> objects = getCount(Arrays.asList(new BillType[]{BillType.OpdBill}));
+        System.out.println("objects.size() = " + objects.size());
+        InvestigationCountWithMachine row = new InvestigationCountWithMachine();
+        InvestigationCountWithMachine rowInv = new InvestigationCountWithMachine();
+        List<InvestigationCountWithMachine> listRowInv = new ArrayList<>();
+        int j = 1;
+        Machine lastMachine = null;
+        Investigation lastInvestigation = null;
+        for (Object[] ob : objects) {
+            Machine m = (Machine) ob[0];
+            Investigation i = (Investigation) ob[1];
+            BillType bt = (BillType) ob[2];
+            BillClassType classType = (BillClassType) ob[3];
+            long count = (long) ob[4];
+            double tot = (double) ob[5];
+            if (m == null) {
+                continue;
+            }
+            if (lastMachine == null) {
+                row.setMachine(m);
+                lastMachine = m;
+                if (lastInvestigation == null) {
+                    rowInv.setInvestigation(i);
+                    rowInv.setCountAndTotal(count, bt, classType, tot);
+                    lastInvestigation = i;
+                } else {
+                    if (lastInvestigation == i) {
+                        rowInv.setCountAndTotal(count, bt, classType, tot);
+                    } else {
+                        listRowInv.add(rowInv);
+                        rowInv = new InvestigationCountWithMachine();
+                        rowInv.setInvestigation(i);
+                        rowInv.setCountAndTotal(count, bt, classType, tot);
+                        lastInvestigation = i;
+                    }
+                }
+            } else {
+                if (lastMachine == m) {
+                    if (lastInvestigation == null) {
+                        rowInv.setInvestigation(i);
+                        rowInv.setCountAndTotal(count, bt, classType, tot);
+                        lastInvestigation = i;
+                    } else {
+                        if (lastInvestigation == i) {
+                            rowInv.setCountAndTotal(count, bt, classType, tot);
+                        } else {
+                            rowInv.setCount(rowInv.getOpdCount() + rowInv.getCcCount() + rowInv.getInwardCount());
+                            rowInv.setTotal(rowInv.getOpdTotal() + rowInv.getCcTotal() + rowInv.getInwardTotal());
+
+                            row.setOpdCount(row.getOpdCount() + rowInv.getOpdCount());
+                            row.setCcCount(row.getCcCount() + rowInv.getCcCount());
+                            row.setInwardCount(row.getInwardCount() + rowInv.getInwardCount());
+                            row.setCount(row.getOpdCount() + row.getCcCount() + row.getInwardCount());
+
+                            row.setOpdTotal(row.getOpdTotal() + rowInv.getOpdTotal());
+                            row.setCcTotal(row.getCcTotal() + rowInv.getCcTotal());
+                            row.setInwardTotal(row.getInwardTotal() + rowInv.getInwardTotal());
+                            row.setTotal(row.getOpdTotal() + row.getCcTotal() + row.getInwardTotal());
+
+                            listRowInv.add(rowInv);
+                            rowInv = new InvestigationCountWithMachine();
+                            rowInv.setInvestigation(i);
+                            rowInv.setCountAndTotal(count, bt, classType, tot);
+                            lastInvestigation = i;
+                        }
+                    }
+                } else {
+                    rowInv.setCount(rowInv.getOpdCount() + rowInv.getCcCount() + rowInv.getInwardCount());
+                    rowInv.setTotal(rowInv.getOpdTotal() + rowInv.getCcTotal() + rowInv.getInwardTotal());
+
+                    row.setOpdCount(row.getOpdCount() + rowInv.getOpdCount());
+                    row.setCcCount(row.getCcCount() + rowInv.getCcCount());
+                    row.setInwardCount(row.getInwardCount() + rowInv.getInwardCount());
+                    row.setCount(row.getOpdCount() + row.getCcCount() + row.getInwardCount());
+
+                    row.setOpdTotal(row.getOpdTotal() + rowInv.getOpdTotal());
+                    row.setCcTotal(row.getCcTotal() + rowInv.getCcTotal());
+                    row.setInwardTotal(row.getInwardTotal() + rowInv.getInwardTotal());
+                    row.setTotal(row.getOpdTotal() + row.getCcTotal() + row.getInwardTotal());
+
+                    listRowInv.add(rowInv);
+                    rowInv = new InvestigationCountWithMachine();
+                    row.setListOfInvestigationCounts(listRowInv);
+                    listRowInv = new ArrayList<>();
+
+                    totalOpdCount += row.getOpdCount();
+                    totalccCount += row.getCcCount();
+                    totalInwardCount += row.getInwardCount();
+                    totalCount += (totalOpdCount + totalccCount + totalInwardCount);
+
+                    totalOpd += row.getOpdTotal();
+                    totalcc += row.getCcTotal();
+                    totalInward += row.getInwardTotal();
+                    total += (totalOpd + totalcc + totalInward);
+
+                    investigationCountWithMachines.add(row);
+                    System.err.println("********Add********");
+                    row = new InvestigationCountWithMachine();
+                    row.setMachine(m);
+                    lastMachine = m;
+                    if (lastInvestigation == null) {
+                        System.err.println("****LIN****");
+                        rowInv.setInvestigation(i);
+                        rowInv.setCountAndTotal(count, bt, classType, tot);
+                        lastInvestigation = i;
+                    } else {
+                        if (lastInvestigation == i) {
+                            rowInv.setCountAndTotal(count, bt, classType, tot);
+                        } else {
+                            rowInv = new InvestigationCountWithMachine();
+                            rowInv.setInvestigation(i);
+                            rowInv.setCountAndTotal(count, bt, classType, tot);
+                            lastInvestigation = i;
+                        }
+                    }
+                }
+            }
+
+            System.err.println("***" + j + "***");
+            System.out.println("m.getName() = " + m.getName());
+            System.out.println("i.getName() = " + i.getName());
+//            System.out.println("bt = " + bt);
+//            System.out.println("classType = " + classType);
+//            System.out.println("count = " + count);
+//            System.out.println("tot = " + tot);
+            System.err.println("*****");
+            j++;
+        }
+        listRowInv.add(rowInv);
+        row.setListOfInvestigationCounts(listRowInv);
+
+        rowInv.setCount(rowInv.getOpdCount() + rowInv.getCcCount() + rowInv.getInwardCount());
+        rowInv.setTotal(rowInv.getOpdTotal() + rowInv.getCcTotal() + rowInv.getInwardTotal());
+
+        row.setOpdCount(row.getOpdCount() + rowInv.getOpdCount());
+        row.setCcCount(row.getCcCount() + rowInv.getCcCount());
+        row.setInwardCount(row.getInwardCount() + rowInv.getInwardCount());
+        row.setCount(row.getOpdCount() + row.getCcCount() + row.getInwardCount());
+
+        row.setOpdTotal(row.getOpdTotal() + rowInv.getOpdTotal());
+        row.setCcTotal(row.getCcTotal() + rowInv.getCcTotal());
+        row.setInwardTotal(row.getInwardTotal() + rowInv.getInwardTotal());
+        row.setTotal(row.getOpdTotal() + row.getCcTotal() + row.getInwardTotal());
+
+        totalOpdCount += row.getOpdCount();
+        totalccCount += row.getCcCount();
+        totalInwardCount += row.getInwardCount();
+        totalCount += (totalOpdCount + totalccCount + totalInwardCount);
+
+        totalOpd += row.getOpdTotal();
+        totalcc += row.getCcTotal();
+        totalInward += row.getInwardTotal();
+        total += (totalOpd + totalcc + totalInward);
+
+        investigationCountWithMachines.add(row);
+        System.out.println("investigationCountWithMachines.size() = " + investigationCountWithMachines.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml) new ");
     }

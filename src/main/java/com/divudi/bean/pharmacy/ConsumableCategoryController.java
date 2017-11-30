@@ -32,7 +32,6 @@ public class ConsumableCategoryController implements Serializable {
 
     public ConsumableCategoryController() {
     }
-    
 
     public ConsumableCategory getSelected() {
         return selected;
@@ -59,18 +58,24 @@ public class ConsumableCategoryController implements Serializable {
     }
 
     public void create() {
-        persist(PersistAction.CREATE,"ConsumableCategoryCreated");
+        if (errorCheck()) {
+            return;
+        }
+        persist(PersistAction.CREATE, "ConsumableCategoryCreated");
         if (!JsfUtil.isValidationFailed()) {
             items = null;    // Invalidate list of items to trigger re-query.
         }
     }
 
     public void update() {
-        persist(PersistAction.UPDATE,"ConsumableCategoryUpdated");
+        if (errorCheck()) {
+            return;
+        }
+        persist(PersistAction.UPDATE, "ConsumableCategoryUpdated");
     }
 
     public void destroy() {
-        persist(PersistAction.DELETE,"ConsumableCategoryDeleted");
+        persist(PersistAction.DELETE, "ConsumableCategoryDeleted");
         if (!JsfUtil.isValidationFailed()) {
             selected = null; // Remove selection
             items = null;    // Invalidate list of items to trigger re-query.
@@ -123,7 +128,7 @@ public class ConsumableCategoryController implements Serializable {
     public List<ConsumableCategory> getItemsAvailableSelectOne() {
         return getFacade().findAll();
     }
-    
+
     public List<ConsumableCategory> completeConsumableCategory(String qry) {
         List<ConsumableCategory> cc;
         String sql;
@@ -144,6 +149,35 @@ public class ConsumableCategoryController implements Serializable {
             cc = new ArrayList<>();
         }
         return cc;
+    }
+
+    private boolean errorCheck() {
+        if (getSelected() != null) {
+            System.out.println("getSelected().getCode() = " + getSelected().getCode());
+            if (getSelected().getCode() == null || getSelected().getCode().isEmpty()) {
+                return false;
+            } else {
+                String sql;
+                Map m = new HashMap();
+
+                sql = " select c from ConsumableCategory c where "
+                        + " c.retired=false "
+                        + " and c.code=:code ";
+
+                m.put("code", getSelected().getCode());
+                List<ConsumableCategory> list = getFacade().findBySQL(sql, m);
+                System.out.println("list.size() = " + list.size());
+                if (list.size() > 0) {
+                    JsfUtil.addErrorMessage("Category Code " + getSelected().getCode() + " is alredy exsist.");
+                    getSelected().setCode("");
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return false;
     }
 
     @FacesConverter(forClass = ConsumableCategory.class)
@@ -186,7 +220,7 @@ public class ConsumableCategoryController implements Serializable {
         }
 
     }
-    
+
     /**
      *
      */
@@ -230,5 +264,3 @@ public class ConsumableCategoryController implements Serializable {
         }
     }
 }
-
-

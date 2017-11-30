@@ -116,6 +116,13 @@
                     </f:facet>
                     <p:outputLabel value="#{d.billItem.bill.billedBill.insId}" />
                 </p:column>
+                
+                <p:column headerText="Credit Company" rendered="#{serviceSummery.credit}">
+                    <f:facet name="header">
+                        <p:outputLabel value="Credit Company"/>
+                    </f:facet>
+                    <p:outputLabel value="#{d.billItem.bill.creditCompany.name}" />
+                </p:column>
 
                 <p:column headerText="Name">
                     <f:facet name="header">

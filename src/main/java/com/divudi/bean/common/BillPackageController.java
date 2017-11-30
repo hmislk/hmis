@@ -333,9 +333,9 @@ public class BillPackageController implements Serializable {
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
-            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
-            getBillBean().calculateBillItems(b, getLstBillEntries());
+//            getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser());
             b.setBillItems(getBillBean().saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser()));
+            getBillBean().calculateBillItems(b, getLstBillEntries());
             getBills().add(b);
 
         } else {

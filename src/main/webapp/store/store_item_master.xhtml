@@ -65,7 +65,7 @@
                                             <p:outputLabel  value="Display Name" ></p:outputLabel>
                                             <p:inputText autocomplete="off" id="txtName"  value="#{storeAmpController.current.name}"  />
                                             <p:outputLabel  value="Item Code" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  value="#{storeAmpController.current.code}"  ></p:inputText>
+                                            <p:inputText autocomplete="off" id="code"  value="#{storeAmpController.current.code}"  ></p:inputText>
                                             <p:outputLabel  value="Bar Code" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  value="#{storeAmpController.current.barcode}"  ></p:inputText>
 
@@ -85,8 +85,9 @@
                                                              value="#{storeAmpController.current.category}" >
                                                 <f:selectItem itemLabel="Select Category"/>
                                                 <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
-                                                               var="parentCategoryItem"
+                                                               var="parentCategoryItem" 
                                                                itemValue="#{parentCategoryItem}"/>
+                                                <f:ajax event="change" render="code" execute="parentCategory" listener="#{storeAmpController.listnerCategorySelect()}" />
                                             </p:selectOneMenu>
 
 

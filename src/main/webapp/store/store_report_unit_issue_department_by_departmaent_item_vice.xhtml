@@ -38,7 +38,7 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentTransfersIssueByBillItem}" />
+                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.fillDepartmentIssueByBillItem}" />
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" />
@@ -48,7 +48,7 @@
                         </h:panelGrid>
 
 
-                        <h:panelGroup id="gpBillPreview" styleClass="summeryBorder" >
+                        <h:panelGroup id="gpBillPreview" styleClass="summeryBorder noBorder " >
 
 
                             <p:dataTable id="tbl"  value="#{storeReportsTransfer.drows}" var="i"  >
@@ -70,7 +70,7 @@
                                             </p:row>
                                             <p:row>
                                                 <p:column headerText="App. Rate" />
-                                                <p:column headerText="Value" />
+                                                <p:column headerText="Qty" />
                                                 <p:column headerText="Total" />
                                             </p:row>
                                         </p:columnGroup>

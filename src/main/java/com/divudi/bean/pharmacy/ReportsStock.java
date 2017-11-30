@@ -791,6 +791,13 @@ public class ReportsStock implements Serializable {
                 s.setStock(1.0);
                 stocks.add(s);
             }
+        }else if(getReportKeyWord().getString().equals("4")){
+            stocks = new ArrayList<>();
+            for (int i = 0; i < 30; i++) {
+                Stock s = new Stock();
+                s.setStock(1.0);
+                stocks.add(s);
+            }
         }
 
     }

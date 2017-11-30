@@ -7,10 +7,12 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,9 +45,9 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     private PharmaceuticalItemCategory current;
     private List<PharmaceuticalItemCategory> items = null;
     List<PharmaceuticalItemCategory> pharmaceuticalItemCategoryList = null;
-  
+
     public List<PharmaceuticalItemCategory> completeCategory(String qry) {
-        
+
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from PharmaceuticalItemCategory c where "
@@ -64,14 +66,14 @@ public class PharmaceuticalItemCategoryController implements Serializable {
         current = new PharmaceuticalItemCategory();
     }
 
-   
-    
-
     private void recreateModel() {
         items = null;
     }
 
     public void saveSelected() {
+        if (errorCheck()) {
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -86,7 +88,34 @@ public class PharmaceuticalItemCategoryController implements Serializable {
         getItems();
     }
 
-   
+    private boolean errorCheck() {
+        if (getCurrent() != null) {
+            System.out.println("getCurrent().getDescription() = " + getCurrent().getDescription());
+            if (getCurrent().getDescription() == null || getCurrent().getDescription().isEmpty()) {
+                return false;
+            } else {
+                String sql;
+                Map m = new HashMap();
+
+                sql = " select c from PharmaceuticalItemCategory c where "
+                        + " c.retired=false "
+                        + " and c.description=:dis ";
+
+                m.put("dis", getCurrent().getDescription());
+                List<PharmaceuticalItemCategory> list = getFacade().findBySQL(sql, m);
+                System.out.println("list.size() = " + list.size());
+                if (list.size() > 0) {
+                    JsfUtil.addErrorMessage("Category Code " + getCurrent().getDescription() + " is alredy exsist.");
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public PharmaceuticalItemCategoryFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -139,7 +168,12 @@ public class PharmaceuticalItemCategoryController implements Serializable {
     }
 
     public List<PharmaceuticalItemCategory> getItems() {
-        items = getFacade().findAll("name", true);
+//        items = getFacade().findAll("name", true);
+        String sql= " select c from PharmaceuticalItemCategory c where "
+                + " c.retired=false "
+                + " order by c.description, c.name ";
+
+        items= getFacade().findBySQL(sql);
         return items;
     }
 

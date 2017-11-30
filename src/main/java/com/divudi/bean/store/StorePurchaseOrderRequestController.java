@@ -260,6 +260,11 @@ public class StorePurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage("Distributor ?");
             return;
         }
+        
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select Item or Items");
+            return;
+        }
 
 //
 //        if (checkItemPrice()) {

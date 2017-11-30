@@ -102,6 +102,7 @@ public enum Privileges {
     LabRevertSample,
     LabPrinting,
     LabReprinting,
+    LabReportEdit,
     LabSummeries,
     LabSummeriesLevel1,
     LabSummeriesLevel2,

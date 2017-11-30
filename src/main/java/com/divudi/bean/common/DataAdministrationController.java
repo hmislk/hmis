@@ -8,7 +8,9 @@ package com.divudi.bean.common;
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.ejb.BillEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -46,6 +48,7 @@ import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -96,12 +99,16 @@ public class DataAdministrationController {
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     InstitutionFacade institutionFacade;
+
     @Inject
     SessionController sessionController;
     @Inject
     BillSearch billSearch;
     @Inject
     InstitutionController institutionController;
+    @Inject
+    CommonFunctionsController commonFunctionsController;
+
     @EJB
     ItemFacade itemFacade;
     @EJB
@@ -116,6 +123,9 @@ public class DataAdministrationController {
     ServiceSessionFacade serviceSessionFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+
+    @EJB
+    BillEjb billEjb;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -143,6 +153,9 @@ public class DataAdministrationController {
     private Category itemCategory;
     private Double vatPrecentage = 0.0;
     private DepartmentType departmentType;
+
+    Date fromDate;
+    Date toDate;
 
     public void addWholesalePrices() {
         List<ItemBatch> ibs = itemBatchFacade.findAll();
@@ -857,7 +870,7 @@ public class DataAdministrationController {
     }
 
     public void createAllBillTypesFirstAndLastBill() {
-        bills=new ArrayList<>();
+        bills = new ArrayList<>();
         System.err.println("Time 1 = " + new Date());
         List<Object> objects = fetchAllBilledBillTypes();
         System.err.println("Time 2 = " + new Date());
@@ -879,6 +892,47 @@ public class DataAdministrationController {
         }
         System.err.println("Time 3 = " + new Date());
         System.out.println("bills.size() = " + bills.size());
+    }
+
+    public void createDuplicateBillTableByBillType() {
+        bills = new ArrayList<>();
+        System.err.println("Time 1 = " + new Date());
+        BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
+        System.out.println("totals.getBills() = " + totals.getBills().size());
+        System.err.println("Time 2 = " + new Date());
+        for (Bill b : totals.getBills()) {
+//            System.err.println("Time For In = " + new Date());
+            for (Bill bb : totals.getBills()) {
+                try {
+                    if (b.getInsId().equals(bb.getInsId()) && !b.getId().equals(bb.getId())) {
+                        System.err.println("********");
+                        System.out.println("b.getInsId() = " + b.getInsId());
+                        System.out.println("bb.getInsId() = " + bb.getInsId());
+                        System.err.println("********");
+                        bills.add(b);
+                    }
+                } catch (Exception e) {
+                }
+            }
+//            System.err.println("Time For Out = " + new Date());
+        }
+        System.err.println("Time 3 = " + new Date());
+        System.out.println("bills.size() = " + bills.size());
+
+    }
+
+    public void createBillTable() {
+        bills = new ArrayList<>();
+        System.err.println("Time 1 = " + new Date());
+        BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
+        System.out.println("totals.getBills() = " + totals.getBills().size());
+        System.err.println("Time 2 = " + new Date());
+        for (Bill b : totals.getBills()) {
+            bills.add(b);
+        }
+        System.err.println("Time 3 = " + new Date());
+        System.out.println("bills.size() = " + bills.size());
+
     }
 
     private List<Object> fetchAllBilledBillTypes() {
@@ -911,6 +965,141 @@ public class DataAdministrationController {
         b = getBillFacade().findFirstBySQL(sql, m);
         System.out.println("b = " + b);
         return b;
+    }
+
+    public void createCodeSelectedCategory() {
+        if (itemCategory == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            return;
+        }
+        if (itemCategory.getDescription().equals("") || itemCategory.getDescription() == null) {
+            JsfUtil.addErrorMessage("Please Check Category Code");
+            return;
+        }
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false"
+                + " and c.category=:cat "
+                + " and (c.departmentType is null "
+                + " or c.departmentType=:dep) "
+                + " order by c.name";
+
+        m.put("dep", DepartmentType.Pharmacy);
+        m.put("cat", itemCategory);
+
+        items = itemFacade.findBySQL(sql, m);
+
+        System.out.println("itemCategory.getName() = " + itemCategory.getName());
+        System.out.println("items.size() = " + items.size());
+
+        int j = 1;
+
+        for (Item i : items) {
+            System.out.println("i.getName() = " + i.getName());
+            DecimalFormat df = new DecimalFormat("0000");
+            System.out.println("df = " + df.format(j));
+//            df=new DecimalFormat("####");
+//            System.out.println("df = " + df.format(j));
+            i.setCode(itemCategory.getDescription() + df.format(j));
+            System.out.println("i.getCode() = " + i.getCode());
+            itemFacade.edit(i);
+            j++;
+        }
+
+    }
+
+    public void createremoveAllCodes() {
+
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false"
+                //                + " and c.category=:cat "
+                + " and (c.departmentType is null "
+                + " or c.departmentType=:dep) "
+                + " order by c.name";
+
+        m.put("dep", DepartmentType.Pharmacy);
+//        m.put("cat", itemCategory);
+
+        items = itemFacade.findBySQL(sql, m);
+
+        System.out.println("items.size() = " + items.size());
+
+        int j = 1;
+
+        for (Item i : items) {
+            i.setCode("");
+            itemFacade.edit(i);
+        }
+
+    }
+
+    public void createCodeSelectedCategoryStores() {
+        if (itemCategory == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            return;
+        }
+        if (itemCategory.getCode().equals("") || itemCategory.getCode() == null) {
+            JsfUtil.addErrorMessage("Please Check Category Code");
+            return;
+        }
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false "
+                + " and c.category=:cat "
+                + " and c.departmentType=:dep "
+                + " order by c.name ";
+
+        m.put("dep", DepartmentType.Store);
+        m.put("cat", itemCategory);
+
+        items = itemFacade.findBySQL(sql, m);
+
+        System.out.println("itemCategory.getName() = " + itemCategory.getName());
+        System.out.println("items.size() = " + items.size());
+
+        int j = 1;
+
+        for (Item i : items) {
+            System.out.println("i.getName() = " + i.getName());
+            DecimalFormat df = new DecimalFormat("0000");
+            System.out.println("df = " + df.format(j));
+//            df=new DecimalFormat("####");
+//            System.out.println("df = " + df.format(j));
+            i.setCode(itemCategory.getCode() + df.format(j));
+            System.out.println("i.getCode() = " + i.getCode());
+            itemFacade.edit(i);
+            j++;
+        }
+
+    }
+
+    public void createremoveAllCodesStores() {
+        Map m = new HashMap();
+        String sql = "select c from Amp c "
+                + " where c.retired=false "
+                //                + " and c.category=:cat "
+                + " and c.departmentType=:dep "
+                + " order by c.name ";
+
+        m.put("dep", DepartmentType.Store);
+//        m.put("cat", itemCategory);
+
+        items = itemFacade.findBySQL(sql, m);
+
+        System.out.println("items.size() = " + items.size());
+
+        for (Item i : items) {
+//            System.out.println("i.getName() = " + i.getName());
+//            DecimalFormat df = new DecimalFormat("0000");
+//            System.out.println("df = " + df.format(j));
+//            df=new DecimalFormat("####");
+//            System.out.println("df = " + df.format(j));
+            i.setCode("");
+//            System.out.println("i.getCode() = " + i.getCode());
+            itemFacade.edit(i);
+        }
+
     }
 
     public void itemChangeListener() {
@@ -1215,6 +1404,28 @@ public class DataAdministrationController {
 
     public void setDepartmentType(DepartmentType departmentType) {
         this.departmentType = departmentType;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = commonFunctionsController.getStartOfMonth(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = commonFunctionsController.getEndOfMonth(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
 }

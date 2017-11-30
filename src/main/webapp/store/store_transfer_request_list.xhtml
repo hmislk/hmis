@@ -11,16 +11,17 @@
             <p:panel >
                 <f:facet name="header">
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>      
-                    <h:panelGrid columns="5" >
+                    <h:panelGrid columns="6" >
                         <h:outputLabel value="From Date"/>
                         <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                         </p:calendar>
+                        <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" itemLabel="Search All" />
                         <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createRequestTableStore()}"/>
-                        <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
-
+                    </h:panelGrid>
+                    <h:panelGrid columns="5" >
                         <h:outputLabel value="Request No"/>   
                         <h:outputLabel value="From Deprtment"/> 
                         <h:outputLabel/><h:outputLabel/><h:outputLabel/>

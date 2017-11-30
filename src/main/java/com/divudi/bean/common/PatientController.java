@@ -5,6 +5,7 @@ import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Patient;
@@ -75,6 +76,7 @@ public class PatientController implements Serializable {
     CommonFunctions commonFunctions;
 
     StreamedContent barcode;
+    ReportKeyWord reportKeyWord;
 
     public void patientSelected() {
         getPatientEncounterController().fillCurrentPatientLists(current);
@@ -188,8 +190,9 @@ public class PatientController implements Serializable {
     public void dateChangeListen() {
         getCurrent().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
     }
+
     public void dobChangeListen() {
-        yearMonthDay=getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
+        yearMonthDay = getCommonFunctions().guessAge(getCurrent().getPerson().getDob());
     }
 
     public StreamedContent getPhoto(Patient p) {
@@ -388,6 +391,20 @@ public class PatientController implements Serializable {
         System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
     }
 
+    public void createPatientList() {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select p from Patient p where p.retired=false ";
+        
+        if (getReportKeyWord().isAdditionalDetails()) {
+            sql += " and p.code is not null";
+        }
+        
+        sql += " order by p.code ";
+        patientList = getFacade().findBySQL(sql);
+        System.err.println("patientList.size() = " + patientList.size());
+    }
+
     public PatientFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -417,7 +434,6 @@ public class PatientController implements Serializable {
         }
         return current;
     }
-    
 
     public void setCurrent(Patient current) {
         this.current = current;
@@ -519,6 +535,25 @@ public class PatientController implements Serializable {
 
     public void setFamilyMembers(List<Person> familyMembers) {
         this.familyMembers = familyMembers;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<Patient> getPatientList() {
+        return patientList;
+    }
+
+    public void setPatientList(List<Patient> patientList) {
+        this.patientList = patientList;
     }
 
     /**

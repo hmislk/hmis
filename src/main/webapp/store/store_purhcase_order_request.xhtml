@@ -74,13 +74,13 @@
                         <p:autoComplete id="exItem" value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
                                         completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <p:column headerText="Item" >
+                            <p:column headerText="Item" style="max-width: 600px;">
                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Code" >
+                            <p:column headerText="Code" style="max-width: 100px;overflow-wrap: break-word;">
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
-                            <p:column headerText="Pack Size" >
+                            <p:column headerText="Pack Size" style="max-width: 50px;">
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>

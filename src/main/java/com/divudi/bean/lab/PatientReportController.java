@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
@@ -25,10 +26,6 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
-import java.awt.Window;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,20 +42,19 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import java.util.Date;
 import javax.faces.context.ExternalContext;
 import javax.servlet.http.HttpSession;
 
@@ -96,6 +92,9 @@ public class PatientReportController implements Serializable {
     String selectText = "";
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    CommonController commonController;
+
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
     Investigation currentReportInvestigation;
@@ -237,6 +236,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
+        Date startTime = new Date();
         if (currentPatientReport == null) {
             UtilityController.addErrorMessage("No Report to calculate");
             return;
@@ -342,6 +342,8 @@ public class PatientReportController implements Serializable {
 //            //System.out.println("priv = " + priv);
         }
 //        getFacade().edit(currentPatientReport);
+        commonController.printReportDetails(null, null, startTime, "Calculate Lab Calculations");
+
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
@@ -516,6 +518,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void savePatientReport() {
+        Date startTime = new Date();
         if (currentPatientReport == null || currentPtIx == null) {
             UtilityController.addErrorMessage("Nothing to save");
             return;
@@ -538,11 +541,13 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
+        commonController.printReportDetails(null, null, startTime, "Lab Report Save");
 
         //UtilityController.addSuccessMessage("Saved");
     }
 
     public void approvePatientReport() {
+        Date startTime = new Date();
         if (currentPatientReport == null) {
             UtilityController.addErrorMessage("Nothing to approve");
             return;
@@ -567,6 +572,7 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
         UtilityController.addSuccessMessage("Approved");
+        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
     public void printPatientReport() {

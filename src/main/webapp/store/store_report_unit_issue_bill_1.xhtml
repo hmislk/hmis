@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Unit Issue Category Wise Summery" >
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="To Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" />
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" />
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="40">
+                            <p:spacer width="80" height="1"/>
+                            <p:commandButton ajax="false" value="Fill" action="#{storeReportsTransfer.createStoreIssueCategoryReport}" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="Unit_Issue_Report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+<!--                            <p:dataGrid value="#{storeReportsTransfer.departmentCategoryRows}" var="d" columns="1">
+                                <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{d.caregoryRows}" var="c"  >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="#{d.d.name}" style="text-align: left;"/>
+                                    </f:facet>
+                                    <p:columnGroup  type="header">
+                                        <p:row>
+                                            <p:column headerText="Item Name" style="max-width: 200px;"/>
+                                            <p:column headerText="Qty" style="max-width: 100px;"/>
+                                            <p:column headerText="Unit Value" style="max-width: 100px;"/>
+                                            <p:column headerText="Value" style="max-width: 100px;"  />
+                                        </p:row>
+                                    </p:columnGroup> 
+                                    <p:subTable value="#{c.itemRows}" var="i" >
+                                        <f:facet name="header">
+                                            <p:outputLabel value="#{c.c.name}"/>
+                                        </f:facet>
+                                        <p:column style="max-width: 200px;" >
+                                            <p:outputLabel value="#{i.i.name}" />
+                                        </p:column>
+                                        <p:column style="max-width: 100px;" styleClass="numberCol">
+                                            <p:outputLabel value="#{i.qty}" >
+                                                <f:convertNumber pattern="#,##0" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                        <p:column style="max-width: 100px;" styleClass="numberCol">
+                                            <p:outputLabel value="#{i.unitValue}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>    
+                                        </p:column>
+                                        <p:column style="max-width: 100px;" styleClass="numberCol">
+                                            <p:outputLabel value="#{i.value}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </p:outputLabel>
+                                        </p:column>
+                                    </p:subTable>
+                                </p:dataTable>
+                            </p:dataGrid>-->
+
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{storeReportsTransfer.caregoryRows}" var="c"  >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Category Report" />
+                                </f:facet>
+                                <p:columnGroup  type="header">
+                                    <p:row>
+                                        <p:column headerText="Item Name" style="max-width: 200px;"/>
+                                        <p:column headerText="Qty" style="max-width: 100px;"/>
+                                        <p:column headerText="Unit Value" style="max-width: 100px;"/>
+                                        <p:column headerText="Value" style="max-width: 100px;"  />
+                                    </p:row>
+                                </p:columnGroup> 
+                                <p:subTable value="#{c.itemRows}" var="i" >
+                                    <f:facet name="header">
+                                        <p:outputLabel value="#{c.c.name}"/>
+                                    </f:facet>
+                                    <p:column style="max-width: 200px;" >
+                                        <p:outputLabel value="#{i.i.name}" />
+                                    </p:column>
+                                    <p:column style="max-width: 100px;" styleClass="numberCol">
+                                        <p:outputLabel value="#{i.qty}" >
+                                            <f:convertNumber pattern="#,##0" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:column style="max-width: 100px;" styleClass="numberCol">
+                                        <p:outputLabel value="#{i.unitValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>    
+                                    </p:column>
+                                    <p:column style="max-width: 100px;" styleClass="numberCol">
+                                        <p:outputLabel value="#{i.value}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="Total" style=" text-align: left">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column colspan="2"/>
+                                            <p:column footerText="#{c.total}" style=" text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{c.total}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+
+                                    </p:columnGroup>
+                                </p:subTable>
+                                <p:columnGroup  type="footer">
+                                    <p:row>
+                                        <p:column headerText="Total" colspan="3" />
+                                        <p:column footerText="#{storeReportsTransfer.saleValue}" style=" text-align: right">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{storeReportsTransfer.saleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column> 
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

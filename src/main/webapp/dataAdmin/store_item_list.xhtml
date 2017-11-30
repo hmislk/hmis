@@ -4,6 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -13,9 +14,14 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Store Item List">
-                        <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.storeDeleteItem()}" onclick="onSubmitButton();" ></p:commandButton>
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" 
+                                             onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="deleted Item" action="#{ampController.storeDeleteItem()}" 
+                                             onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton value="Excel" ajax="false" >
+                                <pe:exporter target="tbl" type="xlsx" fileName="Items_list" />
+                            </p:commandButton>
                         </h:panelGrid>
                         <h:panelGroup id="storeItem">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" value="#{ampController.itemList}" var="i"  >
@@ -35,6 +41,27 @@
                                     <h:outputLabel value="#{i.name}"  >
                                     </h:outputLabel>
                                 </p:column>
+                                <p:column headerText="item Code" sortBy="#{i.code}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Code"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.code}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Category Name" sortBy="#{i.category.name}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category Name"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.category.name}"  >
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Category Code" sortBy="#{i.category.code}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category Code"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.category.code}"  >
+                                    </h:outputLabel>
+                                </p:column>
                                 
                                 <p:column headerText="created At">
                                     <f:facet name="header">
@@ -52,7 +79,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 
-                                <p:column headerText="delete">
+                                <p:column headerText="delete" rendered="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="Deleted or Not"/>
                                     </f:facet>                                    

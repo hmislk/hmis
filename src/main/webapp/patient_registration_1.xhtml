@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+
+                <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
+
+                <h:form>
+
+                    <p:panel header="Patient Details" styleClass="alignTop" style="height: 600px;">
+                        <h:panelGrid columns="1" >
+                            <h:panelGrid columns="2" >
+                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
+                                                         itemLabel="Only Registed Patient"/>
+                                <p:commandButton value="Process" ajax="false" action="#{patientController.createPatientList()}" />
+                            </h:panelGrid>
+                            <p:panel id="panelSearch" header="Patient Details" >
+                                <p:dataTable value="#{patientController.patientList}" var="p" >
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Name" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.nameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Age" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.age}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="NIC" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.nic}"/>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Code" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.code}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="PHN" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.phn}"/>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Sex" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.sex}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Address" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.address}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Date of Birth" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.dob}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Created At" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Creater" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.creater.webUserPerson.name}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

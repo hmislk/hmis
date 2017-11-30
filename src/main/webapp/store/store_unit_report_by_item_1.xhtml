@@ -34,11 +34,12 @@
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
                             <h:outputLabel value="Item Category"/>
-                            <p:autoComplete  value="#{reportsTransfer.category}" 
-                                             forceSelection="true"
-                                             completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
-                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            </p:autoComplete> 
+                            <p:selectOneMenu value="#{reportsTransfer.category}" >
+                                <f:selectItem itemLabel="Select Category"/>
+                                <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}"
+                                               var="parentCategoryItem"
+                                               itemValue="#{parentCategoryItem}"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
                         <p:spacer width="95" height="1"/>
                         <p:commandButton ajax="false" value="Fill" 

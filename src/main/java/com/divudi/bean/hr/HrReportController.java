@@ -874,6 +874,74 @@ public class HrReportController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Administration/ Employee details(/faces/hr/hr_report_employee_detail.xhtml)");
     }
 
+    public void createRetiedStaffs(){
+        int i=0;
+        if (getReportKeyWord().getString().equals("0")) {
+            i=3;
+        } 
+        if (getReportKeyWord().getString().equals("1")) {
+            i=6;
+        } 
+        if (getReportKeyWord().getString().equals("2")) {
+            i=9;
+        } 
+        if (getReportKeyWord().getString().equals("3")) {
+            i=12;
+        } 
+        System.out.println("i = " + i);
+        fetchCheckStaffRetierd(i);
+    }
+    public void listnerCheckStaffRetierd() {
+        int months = 3;
+        List<Staff> staffs = fetchCheckStaffRetierd(months);
+
+        String st = "\n";
+        for (Staff s : staffs) {
+            st += s.getPerson().getName() + " - " + s.getCodeInterger() + ", \n";
+        }
+        System.out.println("st = " + st);
+        if (!staffs.isEmpty()) {
+            JsfUtil.addErrorMessage("This Employes Retierd within " + months + " Months (" + st + ")");
+        }
+    }
+
+    public List<Staff> fetchCheckStaffRetierd(int months) {
+
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        Calendar f = Calendar.getInstance();
+        f.setTime(new Date());
+        f.set(Calendar.HOUR, 0);
+        f.set(Calendar.MINUTE, 0);
+        f.set(Calendar.SECOND, 0);
+        System.out.println("f.getTime() = " + f.getTime());
+        Calendar t = Calendar.getInstance();
+        t.setTime(new Date());
+        t.add(Calendar.MONTH, months);
+        t.set(Calendar.HOUR, 23);
+        t.set(Calendar.MINUTE, 59);
+        t.set(Calendar.SECOND, 59);
+        System.out.println("t.getTime() = " + t.getTime());
+
+        String sql;
+        HashMap m = new HashMap();
+
+        sql = "select ss from Staff ss "
+                + " where ss.retired=false "
+                + " and ss.dateRetired between :fd and :td "
+                + " order by ss.codeInterger ";
+        m.put("fd", f.getTime());
+        m.put("td", t.getTime());
+        System.out.println("m = " + m);
+        System.out.println("sql = " + sql);
+        staffs = getStaffFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("staffs.size() = " + staffs.size());
+        commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Administration/ Employee details(/faces/hr/hr_report_employee_detail.xhtml)");
+        return staffs;
+    }
+
     public String createStaffShiftQuary(HashMap hm) {
 
         String sql = "";

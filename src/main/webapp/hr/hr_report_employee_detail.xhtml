@@ -69,10 +69,10 @@
                                         <br/>
                                     </h:panelGroup>
                                 </f:facet>
-                                <p:column headerText="Id" filterBy="#{s.id}" exportable="false">
+                                <p:column headerText="Id" filterBy="#{s.id}" exportable="false" rendered="false">
                                     #{s.id}
                                 </p:column>
-                                <p:column headerText="Code NO" >
+                                <p:column headerText="Code NO" sortBy="#{s.codeInterger}" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="Code NO" />
                                     </f:facet>
@@ -162,11 +162,27 @@
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="DO Join" >
+                                <p:column headerText="DO Join" sortBy="#{s.dateJoined}" >
                                     <f:facet name="header" >
                                         <p:outputLabel value="DO Join" />
                                     </f:facet>
                                     <p:outputLabel value="#{s.dateJoined}" >
+                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="DO Retierd" sortBy="#{s.dateRetired}" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="DO Retierd" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.dateRetired}" >
+                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="DO Resign" sortBy="#{s.dateLeft}" >
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="DO Resign" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{s.dateLeft}" >
                                         <f:convertDateTime pattern="dd MM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
