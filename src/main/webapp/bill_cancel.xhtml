@@ -16,7 +16,7 @@
                             <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
                                                disabled="#{billSearch.bill.paymentMethod eq 'Cash'}" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                 <f:selectItem itemLabel="Select paymentMethod"/>
-                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                                <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
                             </p:selectOneMenu>
 
                             <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  

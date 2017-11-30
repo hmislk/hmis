@@ -3328,8 +3328,13 @@ public class SearchController implements Serializable {
         System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            temMap = new HashMap();
+            temMap.put("btp", BillType.InwardBill);
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                    + " and bi.bill.cancelled=false "
+                    + " and bi.bill.billType=:btp "
+                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql,temMap);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -3409,8 +3414,13 @@ public class SearchController implements Serializable {
         System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
-            sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            temMap = new HashMap();
+            temMap.put("btp", BillType.InwardBill);
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                    + " and bi.bill.cancelled=false "
+                    + " and bi.bill.billType=:btp "
+                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            BillItem rbi = getBillItemFacade().findFirstBySQL(sql,temMap);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);

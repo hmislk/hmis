@@ -106,6 +106,9 @@
                         <p:column headerText="Ins Id" >                              
                             <h:outputLabel value="#{pb.bill.insId}" />
                         </p:column>
+                        <p:column headerText="Batch" >                              
+                            <h:outputLabel value="#{pb.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                        </p:column>
 
                         <p:column headerText="Before" >
                             <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty}"  />

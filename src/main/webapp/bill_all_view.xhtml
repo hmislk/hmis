@@ -77,6 +77,13 @@
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
+                                        
+                                        <h:outputLabel value="Refunded :" ></h:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{billSearch.billSearch.refunded}" ></p:selectBooleanCheckbox>
+                                        
+                                        <h:outputLabel value="Refunded Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.refundedBill}" />
+                                        
 
                                         <h:outputLabel value="Canceled Bill(Ins Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
@@ -84,8 +91,8 @@
                                         <h:outputLabel value="Canceled Bill(Dept Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill.deptId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
 
-                                        <h:outputLabel value="Reference Bill(Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
-                                        <p:inputText value="#{billSearch.billSearch.referenceBill}" rendered="#{billSearch.billSearch.referenceBill ne null}" />
+                                        <h:outputLabel value="Reference Bill(Id) :" ></h:outputLabel>
+                                        <p:inputText value="#{billSearch.billSearch.referenceBill}"  />
 
                                         <h:outputLabel value="Reference Bill(Ins Id) :" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.referenceBill.insId}" rendered="#{billSearch.billSearch.referenceBill ne null}" ></h:outputLabel>
