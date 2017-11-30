@@ -6,6 +6,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -23,8 +24,10 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
+import com.divudi.entity.Person;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import java.io.Serializable;
@@ -494,7 +497,7 @@ public class CommonReport1 implements Serializable {
                 + " WHERE b.retired=false "
                 + " and b.referredBy is not null "
                 + " and b.createdAt between :fromDate and :toDate ";
-        
+
         if (radio.equals("0")) {
             sql += " and (b.billType=:bt1 or b.billType=:bt2) ";
             m.put("bt1", BillType.OpdBill);
@@ -510,7 +513,7 @@ public class CommonReport1 implements Serializable {
             sql += " and b.billType=:bt ";
             m.put("bt", BillType.OpdBill);
         }
-        
+
         sql += " group by b.referredBy "
                 + " order by b.referredBy.person.name ";
 
@@ -530,6 +533,209 @@ public class CommonReport1 implements Serializable {
             biledBillsTotal += tot;
         }
         System.out.println("docTotals.size() = " + docTotals.size());
+
+    }
+
+    public void listBillItemsByReferringDoctorSummeryCount() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals = new ArrayList<>();
+        if (radio.equals("3")) {
+            sql = "SELECT b.patientEncounter.referringDoctor, ";
+        } else {
+            sql = "SELECT b.referredBy, ";
+        }
+
+        sql += " b.billClassType, "
+                + " count(bi), "
+                + " sum(bi.netValue+bi.vat) "
+                + " FROM BillItem bi join bi.bill b "
+                + " WHERE b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and type(bi.item)=:inv ";
+
+        if (radio.equals("0")) {
+            sql += " and b.billType in :bts ";
+            m.put("bts", Arrays.asList(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}));
+        }
+
+        if (radio.equals("1")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("2")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.OpdBill);
+        }
+        if (radio.equals("3")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.InwardBill);
+        }
+
+        if (radio.equals("3")) {
+            sql += " group by b.patientEncounter.referringDoctor,";
+        } else {
+            sql += " group by b.referredBy, ";
+        }
+        sql += " b.billClassType ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("inv", Investigation.class);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + objects.size());
+        List<Object[]> obj = fetchReferingDoctoerNull();
+        if (objects == null) {
+            objects = new ArrayList<>();
+            objects.addAll(obj);
+        } else {
+            objects.addAll(obj);
+        }
+        System.out.println("objects.size() = " + objects.size());
+        biledBillsTotal = 0.0;
+        DocTotal row = new DocTotal();
+        Doctor lastDoctor = null;
+        double total = 0.0;
+        long count = 0l;
+        for (Object[] o : objects) {
+            Doctor d = (Doctor) o[0];
+            if (d == null) {
+                System.out.println("d = " + d);
+                Doctor doc = new Doctor();
+                Person p = new Person();
+                p.setName("No Name");
+                doc.setPerson(p);
+                d = doc;
+            }
+            System.out.println("d.getName() = " + d.getPerson().getName());
+            BillClassType billClassType = (BillClassType) o[1];
+            System.out.println("billClassType = " + billClassType);
+            long l = (long) o[2];
+            System.out.println("l = " + l);
+            if (billClassType == BillClassType.CancelledBill || billClassType == BillClassType.RefundBill) {
+                if (l > 0) {
+                    l *= -1;
+                }
+            }
+            System.out.println("l = " + l);
+            double tot = (double) o[3];
+            System.out.println("tot = " + tot);
+            if (lastDoctor == null) {
+                row.setDoctor(d);
+                row.setTotal(tot);
+                row.setCount(l);
+                count += l;
+                total += tot;
+                lastDoctor = d;
+            } else {
+                if (lastDoctor == d) {
+                    row.setTotal(row.getTotal() + tot);
+                    row.setCount(row.getCount() + l);
+                    count += l;
+                    total += tot;
+                } else {
+                    docTotals.add(row);
+                    row = new DocTotal();
+                    row.setDoctor(d);
+                    row.setTotal(tot);
+                    row.setCount(l);
+                    count += l;
+                    total += tot;
+                    lastDoctor = d;
+                }
+            }
+        }
+        docTotals.add(row);
+        row = new DocTotal();
+        row.setDoctor(null);
+        row.setTotal(total);
+        row.setCount(count);
+        docTotals.add(row);
+        System.out.println("docTotals.size() = " + docTotals.size());
+
+    }
+
+    private List<Object[]> fetchReferingDoctoerNull() {
+
+        Map m = new HashMap();
+        String sql;
+        docTotals = new ArrayList<>();
+        sql = "SELECT b.billClassType, "
+                + " count(bi), "
+                + " sum(bi.netValue+bi.vat) "
+                + " FROM BillItem bi join bi.bill b "
+                + " WHERE b.retired=false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and type(bi.item)=:inv ";
+
+        if (radio.equals("0")) {
+            sql += " and b.billType in :bts ";
+            m.put("bts", Arrays.asList(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}));
+        }
+
+        if (radio.equals("1")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.CollectingCentreBill);
+        }
+
+        if (radio.equals("2")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.OpdBill);
+        }
+        if (radio.equals("3")) {
+            sql += " and b.billType=:bt ";
+            m.put("bt", BillType.InwardBill);
+        }
+
+        if (radio.equals("3")) {
+            sql += " and b.patientEncounter.referringDoctor is null";
+        } else {
+            sql += " and b.referredBy is null ";
+        }
+
+        sql += " group by b.billClassType ";
+
+        m.put("fromDate", getFromDate());
+        m.put("toDate", getToDate());
+        m.put("inv", Investigation.class);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
+        List<Object[]> obj = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("objects.size() = " + obj.size());
+        List<Object[]> objects = new ArrayList<>();
+        if (!obj.isEmpty()) {
+            Object[] o = new Object[4];
+            o[0] = null;
+            o[1] = BillClassType.BilledBill;
+            long count = 0l;
+            double total = 0.0;
+            for (Object[] ob : obj) {
+                BillClassType bct = (BillClassType) ob[0];
+                long c = (long) ob[1];
+                double t = (double) ob[2];
+                if (bct == BillClassType.CancelledBill || bct == BillClassType.RefundBill) {
+                    System.out.println("c = " + c);
+                    if (c < 0) {
+                        count += c;
+                    } else {
+                        count -= c;
+                    }
+                    total += t;
+                } else {
+                    count += c;
+                    total += t;
+                }
+            }
+            o[2] = count;
+            o[3] = total;
+            objects.add(o);
+        }
+        System.out.println("objects.size() = " + objects.size());
+        return objects;
 
     }
 
@@ -1115,12 +1321,12 @@ public class CommonReport1 implements Serializable {
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void createGRNBillItemForAsset() {
         billItems = new ArrayList<>();
         billItems = createStoreGRNBillItem(DepartmentType.Inventry);
     }
-    
+
     public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
         String sql;
         Map m = new HashMap();
@@ -1924,6 +2130,15 @@ public class CommonReport1 implements Serializable {
 
         Doctor doctor;
         double total;
+        long count;
+
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
 
         public Doctor getDoctor() {
             return doctor;

@@ -146,6 +146,7 @@ public class ApiMembership {
 //"bank_id": 16664599,
 //"bank_name": "Amana Bank"
 //},
+//    /apiMembership/savePatient/Mr/Dushan+Maduranga/Male/1990-10-17/Karapitiya,Galle/0788044212/13456789v
     @GET
     @Path("/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}")
     @Produces("application/json")
@@ -157,7 +158,7 @@ public class ApiMembership {
             @PathParam("address") String address,
             @PathParam("phone") String phone,
             @PathParam("nic") String nic) {
-
+        
         JSONObject jSONObjectOut = new JSONObject();
         String json;
         URLDecoder decoder = new URLDecoder();
@@ -604,7 +605,7 @@ public class ApiMembership {
             return s;
         }
         if (nic == null || "".equals(nic)) {
-            s = "Please Enter Name";
+            s = "Please Enter Nic";
             return s;
         }
 

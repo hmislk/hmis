@@ -65,6 +65,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.json.Json;
 import javax.persistence.TemporalType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -180,6 +181,7 @@ public class Api {
         return json;
     }
 
+//    /sessions/DR0001
     @GET
     @Path("/doctors/{doc_code}")
     @Produces("application/json")
@@ -224,6 +226,8 @@ public class Api {
 //    public User getUser(@PathParam("userid") int userid) {
 //        return userDao.getUser(userid);
 //    }
+    
+//    /sessions/DR0001
     @GET
     @Path("/sessions/{doc_code}")
     @Produces("application/json")
@@ -250,6 +254,8 @@ public class Api {
                     object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
                     object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
                     object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
+                    object.put("session_forign_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, true)));
+                    object.put("session_forign_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, true)));
                     object.put("session_is_leaved", s.isDeactivated());
                     array.put(object);
 //            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
@@ -307,13 +313,15 @@ public class Api {
 
         return json;
     }
-
+    
+//    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451/1
     @GET
-    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
+    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}/{foriegn}")
     @Produces("application/json")
     public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
-            @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
+            @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no,
+            @PathParam("foriegn") String st_foriegn) {
 
         JSONArray bill = new JSONArray();
         String json = new String();
@@ -326,7 +334,7 @@ public class Api {
         URLDecoder decoder = new URLDecoder();
         try {
 
-            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no);
+            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, st_foriegn);
 //            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
             System.out.println("s = " + s);
             if (!"".equals(s)) {
@@ -353,8 +361,12 @@ public class Api {
                 return jSONObjectOut.toString();
             }
             System.out.println("ss = " + ss);
-
-            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no);
+            Bill b;
+            if ("0".equals(st_foriegn)) {
+                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no,false);
+            }else{
+                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no,true);
+            }
 //            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
             System.out.println("b = " + b);
 
@@ -413,6 +425,7 @@ public class Api {
         return json;
     }
 
+//    /bookings/20385287/2017-11-22/2017-11-22
     @GET
     @Path("/bookings/{agent_id}/{from_date}/{to_date}")
     @Produces("application/json")
@@ -504,7 +517,7 @@ public class Api {
 
         return json;
     }
-    
+
     @GET
     @Path("/doc/{spec_id}/")
     @Produces("application/json")
@@ -613,14 +626,14 @@ public class Api {
                 } else {
                     jSONObject.put("app_status", "");
                 }
-                if (bs.getBill().getPaymentMethod()==PaymentMethod.Staff) {
+                if (bs.getBill().getPaymentMethod() == PaymentMethod.Staff) {
                     jSONObject.put("staff_agent_status", bs.getBill().getToStaff().getCode());
-                }else if(bs.getBill().getPaymentMethod()==PaymentMethod.Agent){
+                } else if (bs.getBill().getPaymentMethod() == PaymentMethod.Agent) {
                     jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getInstitutionCode());
-                }else{
+                } else {
                     jSONObject.put("staff_agent_status", "");
                 }
-                
+
                 array.put(jSONObject);
             }
         }
@@ -1062,7 +1075,7 @@ public class Api {
         return obj * 0.15;
     }
 
-    String fetchErrors(String name, String phone, String doc, long ses, long agent, String agent_ref) {
+    String fetchErrors(String name, String phone, String doc, long ses, long agent, String agent_ref, String st_foriegn) {
 //    String fetchErrors(String name, String phone, String doc, long ses, long agent, long agent_ref) {
         String s = "";
         if (name == null || "".equals(name)) {
@@ -1098,8 +1111,16 @@ public class Api {
             s = "Please Enter Agency Reference No";
             return s;
         }
-        if (checkAgentRefNo(agent_ref,institution)) {
+        if (checkAgentRefNo(agent_ref, institution)) {
             s = "This Reference No Already Exists";
+            return s;
+        }
+        if ("".equals(st_foriegn)) {
+            s = "Please Enter Foriegner Or Not";
+            return s;
+        }
+        if (!("0".equals(st_foriegn) || "1".equals(st_foriegn))) {
+            s = "Please Enter Foriegner Status 0 or 1";
             return s;
         }
 //        if (checkAgentRefNo(agent_ref,institution)) {
@@ -1110,13 +1131,13 @@ public class Api {
         return s;
     }
 
-    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, String agent_ref) {
+    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, String agent_ref, boolean foriegn) {
 //    private Bill saveBilledBill(ServiceSession ss, String name, String phone, String doc, long agent, long agent_ref) {
         Bill savingBill = createBill(ss, name, phone, agent);
         BillItem savingBillItem = createBillItem(savingBill, agent_ref, ss);
         BillSession savingBillSession = createBillSession(savingBill, savingBillItem, ss);
 
-        List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem, ss);
+        List<BillFee> savingBillFees = createBillFee(savingBill, savingBillItem, ss, foriegn);
         List<BillItem> savingBillItems = new ArrayList<>();
         savingBillItems.add(savingBillItem);
 
@@ -1268,7 +1289,7 @@ public class Api {
         return bs;
     }
 
-    private List<BillFee> createBillFee(Bill bill, BillItem billItem, ServiceSession ss) {
+    private List<BillFee> createBillFee(Bill bill, BillItem billItem, ServiceSession ss, boolean foriegn) {
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpTotalNet = 0;
@@ -1315,7 +1336,12 @@ public class Api {
             }
 
             bf.setPatient(bill.getPatient());
-            bf.setFeeValue(f.getFee());
+
+            if (foriegn) {
+                bf.setFeeValue(f.getFfee());
+            } else {
+                bf.setFeeValue(f.getFee());
+            }
 
             if (f.getFeeType() == FeeType.Staff) {
                 bf.setStaff(f.getStaff());
@@ -1594,16 +1620,16 @@ public class Api {
 
         return specilities;
     }
-    
-    private boolean checkAgentRefNo(long agent_ref,Institution institution) {
+
+    private boolean checkAgentRefNo(long agent_ref, Institution institution) {
         if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(Long.toString(agent_ref), institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
             return false;
         }
     }
-    
-    private boolean checkAgentRefNo(String agent_ref,Institution institution) {
+
+    private boolean checkAgentRefNo(String agent_ref, Institution institution) {
         if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(agent_ref, institution, BillType.ChannelAgent, PaymentMethod.Agent)) {
             return true;
         } else {
