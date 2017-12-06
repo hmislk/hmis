@@ -144,8 +144,7 @@ public class CommonController implements Serializable {
     public Date getConvertDateTimeFormat24(String dateString) throws ParseException {
         DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
         Date date = d.parse(dateString);
-        System.out.println("date = " + date);
-        System.out.println("dateString = " + dateString);
+//        System.out.println("date = " + date +" ~ dateString = " + dateString);
         return date;
     }
 
@@ -153,7 +152,7 @@ public class CommonController implements Serializable {
         String s = "";
         NumberFormat myFormatter = new DecimalFormat("##0.00");
         s = myFormatter.format(d);
-        System.out.println("s = " + s);
+//        System.out.println("s = " + s);
         return s;
     }
 

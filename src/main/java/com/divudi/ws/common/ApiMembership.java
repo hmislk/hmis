@@ -112,6 +112,7 @@ public class ApiMembership {
     @Path("/banks")
     @Produces("application/json")
     public String getBanks() {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Banks(/banks)");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -137,7 +138,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Banks) = " + json);
         return json;
 
     }
@@ -158,13 +159,13 @@ public class ApiMembership {
             @PathParam("address") String address,
             @PathParam("phone") String phone,
             @PathParam("nic") String nic) {
-        
+        System.err.println("~~~~~~Membership API~~~~~~ Get Save Patient(/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic})");
         JSONObject jSONObjectOut = new JSONObject();
         String json;
         URLDecoder decoder = new URLDecoder();
 
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
-        System.out.println("s = " + s);
+//        System.out.println("s = " + s);
 
         if (!"".equals(s)) {
             jSONObjectOut.put("save_patient", s);
@@ -175,7 +176,7 @@ public class ApiMembership {
         }
 
         try {
-            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
+//            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
             person.setName(decoder.decode(name, "+"));
@@ -214,7 +215,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Save Patient) = " + json);
         return json;
 
     }
@@ -223,6 +224,7 @@ public class ApiMembership {
     @Path("/patient/{patient_id}")
     @Produces("application/json")
     public String getPatient(@PathParam("patient_id") String patient_id) {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Patient(/patient/{patient_id})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             long l = Long.valueOf(patient_id);
@@ -255,7 +257,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Patient) = " + json);
         return json;
 
     }
@@ -264,6 +266,7 @@ public class ApiMembership {
     @Path("/serviceValue")
     @Produces("application/json")
     public String getServiceValue() {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Service Value(/serviceValue)");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             Item i = getItemFacade().find(32768435l);
@@ -292,7 +295,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Service Value) = " + json);
         return json;
 
     }
@@ -305,6 +308,7 @@ public class ApiMembership {
             @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref,
             @PathParam("memo") String memo) {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Pay For Membership(/payForMembership/{patient_id}/{bank_id}/{credit_card_ref}/{memo})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             fetchErrorsPay(patient_id, bank_id, credit_card_ref, memo);
@@ -345,7 +349,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Pay For Membership) = " + json);
         return json;
     }
 
@@ -378,11 +382,11 @@ public class ApiMembership {
         temp.setToDepartment(i.getDepartment());
         temp.setToInstitution(i.getDepartment().getInstitution());
 
-        System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
-        System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
-
-        System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
-        System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
+//        System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
+//        System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
+//
+//        System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
+//        System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
 
 //        temp.setStaff(staff);
 //        temp.setToStaff(toStaff);
@@ -546,13 +550,13 @@ public class ApiMembership {
     }
 
     private Institution fetchBank(Long id) {
-        System.out.println("id = " + id);
+//        System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
         Institution bank = getInstitutionFacade().findFirstBySQL(sql);
-        System.out.println("bank = " + bank);
+//        System.out.println("bank = " + bank);
         return bank;
     }
 
@@ -569,7 +573,7 @@ public class ApiMembership {
 
         Bill b = getBillFacade().findFirstBySQL(sql, m);
 
-        System.out.println("b = " + b);
+//        System.out.println("b = " + b);
 
         return b;
     }

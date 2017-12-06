@@ -24,7 +24,7 @@
                             </h:panelGrid>
                             <p:panel id="panelSearch" header="Patient Details" >
                                 <p:dataTable value="#{patientController.patientList}" var="p" >
-                                    <p:column>
+                                    <p:column sortBy="#{p.person.nameWithTitle}">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Name" />
                                         </f:facet>
@@ -43,7 +43,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.nic}"/>
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.code}">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Code" />
                                         </f:facet>
@@ -67,7 +67,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.address}" />
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.person.dob}">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Date of Birth" />
                                         </f:facet>
@@ -75,7 +75,7 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.createdAt}" >
                                         <f:facet name="header" >
                                             <p:outputLabel value="Created At" />
                                         </f:facet>
