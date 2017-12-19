@@ -54,7 +54,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column headerText="View">
-                                <p:commandButton ajax="false" value="View Bill" action="bill_reprint">
+                                <p:commandButton ajax="false" value="View Bill" action="#{searchController.viewOPD(bill)}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
                                 </p:commandButton>
                             </p:column>
@@ -63,7 +63,7 @@
                             </p:column>
                             
                             <p:column>
-                                #{bill.id}
+                                #{bill.billDate}
                             </p:column>
                             
                             <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                

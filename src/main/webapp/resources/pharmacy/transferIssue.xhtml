@@ -81,6 +81,13 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
+                    
+                    <p:column>
+                        <f:facet name="header">
+                            <h:outputLabel value="Item Code"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.item.code}"/>
+                    </p:column>
 
                     <p:column>
                         <f:facet name="header">
@@ -134,7 +141,7 @@
 
                     <p:columnGroup type="footer">
                         <p:row>
-                            <p:column colspan="4">
+                            <p:column colspan="5">
                                 <f:facet name="footer">
                                     <h:outputLabel value="Total"/>
                                 </f:facet>
@@ -144,6 +151,11 @@
                                     <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column colspan="2">
+                                <f:facet name="footer">
+                                    <h:outputLabel value=""/>
                                 </f:facet>
                             </p:column>
                         </p:row>

@@ -4520,6 +4520,11 @@ public class SearchController implements Serializable {
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", getReportKeyWord().getDepartment());
+        }
+
         return sql;
 
     }
@@ -5072,6 +5077,16 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         System.out.println("size" + bills.size());
 
+    }
+
+    public String viewOPD(Bill b) {
+        if (b.getBillType() == BillType.OpdBill) {
+            return "bill_reprint";
+        } else {
+            JsfUtil.addErrorMessage("Please Search Again and View Bill");
+            bills = new ArrayList<>();
+            return "";
+        }
     }
 
     public void createTableCashIn() {
@@ -6208,6 +6223,12 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardFinalBills() {
+        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
+        System.out.println("d = " + d);
+        if (d > 32 && getReportKeyWord().isBool1()) {
+            JsfUtil.addErrorMessage("Date Range To Long");
+            return;
+        }
         Date startTime = new Date();
 
         String sql;
@@ -6248,7 +6269,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        if (getReportKeyWord().isBool1()) {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final bill search(/faces/inward/inward_search_final.xhtml)");
     }
@@ -6942,6 +6967,7 @@ public class SearchController implements Serializable {
                 number = cell.getContents();
                 System.out.println("number = " + number);
                 if (number.contains("077") || number.contains("076")
+                        || number.contains("070")
                         || number.contains("071") || number.contains("072")
                         || number.contains("075") || number.contains("078")) {
                     telephoneNumbers.add(number);
@@ -6988,6 +7014,104 @@ public class SearchController implements Serializable {
         }
 
     }
+
+    public void createDocPaymentDue() {
+        if (getReportKeyWord().getString().equals("0")) {
+            fetchDueFeeTable(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}, false);
+        } else {
+            fetchDueFeeTable(new BillType[]{BillType.InwardBill, BillType.InwardProfessional}, true);
+        }
+    }
+
+    private void fetchDueFeeTable(BillType[] billTypes, boolean isInward) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = "select b from BillFee b where"
+                + " b.retired=false "
+                + " and b.bill.billType in :bts "
+                + " and b.bill.cancelled=false "
+                + " and (b.feeValue - b.paidValue) > 0 "
+                + " and b.bill.createdAt between :fromDate and :toDate ";
+
+        sql += " order by b.staff.person.name ";
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        System.out.println("1.cal.getTime() = " + cal.getTime());
+        cal.set(2013, 00, 01, 00, 00, 00);
+        System.out.println("2.cal.getTime() = " + cal.getTime());
+        m.put("fromDate", cal.getTime());
+        m.put("toDate", getToDate());
+        m.put("bts", Arrays.asList(billTypes));
+//        temMap.put("btp", BillType.OpdBill);
+//        temMap.put("btpc", BillType.CollectingCentreBill);
+//        temMap.put("btp", BillType.InwardBill);
+//        temMap.put("btp2", BillType.InwardProfessional);
+
+        billFees = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("billFees.size() = " + billFees.size());
+
+        List<BillFee> afterPaid = new ArrayList<>();
+
+        sql = "Select bi.paidForBillFee FROM BillItem bi "
+                + " where bi.retired=false "
+                + " and bi.bill.billType=:bType "
+                + " and bi.referenceBill.billType in :refType "
+                + " and bi.bill.createdAt > :toDate "
+                + " and bi.paidForBillFee.bill.createdAt <= :toDate";
+
+//        sql += " order by b.createdAt desc  ";
+        m = new HashMap();
+        m.put("toDate", getToDate());
+        m.put("bType", BillType.PaymentBill);
+        m.put("refType", Arrays.asList(billTypes));
+//        temMap.put("refType", BillType.OpdBill);
+
+        afterPaid = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("afterPaid.size() = " + afterPaid.size());
+        billFees.addAll(afterPaid);
+        List<BillFee> removeingBillFees = new ArrayList<>();
+        System.out.println("billFees.size() = " + billFees.size());
+
+        for (BillFee bf : billFees) {
+            sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                    + " and bi.bill.cancelled=false "
+                    + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+
+            BillItem rbi = null;
+            if (isInward) {
+                m = new HashMap();
+                m.put("btp", BillType.InwardBill);
+                sql = "SELECT bi FROM BillItem bi where bi.retired=false "
+                        + " and bi.bill.cancelled=false "
+                        + " and bi.bill.billType=:btp "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            } else {
+                m = new HashMap();
+                m.put("class", RefundBill.class);
+                sql = "SELECT bi FROM BillItem bi where "
+                        + " bi.retired=false"
+                        + " and bi.bill.cancelled=false "
+                        + " and type(bi.bill)=:class "
+                        + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
+            }
+            rbi = getBillItemFacade().findFirstBySQL(sql, m);
+
+            if (rbi != null) {
+                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
+                removeingBillFees.add(bf);
+            }
+        }
+        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
+        billFees.removeAll(removeingBillFees);
+        System.out.println("billFees.size() = " + billFees.size());
+        total=0.0;
+        for (BillFee bf : billFees) {
+            total+=bf.getFeeValue();
+        }
+    }
+
 //    public void createAllBillContacts() {
 //        Map temMap = new HashMap();
 //        bills=new ArrayList<>();
@@ -7011,7 +7135,6 @@ public class SearchController implements Serializable {
 //        System.out.println("bills.size() = " + bills.size());
 //
 //    }
-
 //     public List<Bill> getInstitutionPaymentBills() {
 //        if (bills == null) {
 //            String sql;

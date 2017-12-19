@@ -84,6 +84,8 @@ public class ReportKeyWord {
     String transAddress3;
     @Transient
     String transAddress4;
+    
+    int numOfRows=50;
 
     Date fromDate;
     Date toDate;
@@ -490,6 +492,14 @@ public class ReportKeyWord {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public int getNumOfRows() {
+        return numOfRows;
+    }
+
+    public void setNumOfRows(int numOfRows) {
+        this.numOfRows = numOfRows;
     }
 
 }

@@ -26,6 +26,7 @@
                             <f:selectItem itemLabel="Store GRN and Purchase Bills" itemValue="3"/>
                             <f:selectItem itemLabel="Inward Income" itemValue="4"/>
                             <f:selectItem itemLabel="OPD Credit" itemValue="5"/>
+                            <f:selectItem itemLabel="Pharmacy Credit" itemValue="6"/>
                             <f:ajax event="change" execute="@this" render="tbl pan" listener="#{quickBookReportController.listnerReportNameChange}" />
                         </p:selectOneMenu>
                         <h:outputLabel value="BHT Type" rendered="#{quickBookReportController.report eq '4'}" />
