@@ -12,6 +12,7 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.QuickBookFormat;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.AdmissionTypeEnum;
@@ -129,6 +130,9 @@ public class QuickBookReportController implements Serializable {
                 break;
             case "5":
                 createQBFormatOpdDayCredit();
+                break;
+            case "6":
+                createQBFormatPharmacyCredit();
                 break;
             default:
                 throw new AssertionError();
@@ -250,6 +254,7 @@ public class QuickBookReportController implements Serializable {
 
     }
 
+    //-------Main Functions
     public void createQBFormatOpdDayIncome() {
 
         grantTot = 0.0;
@@ -978,6 +983,16 @@ public class QuickBookReportController implements Serializable {
 
     }
 
+    public void createQBFormatPharmacyCredit() {
+        quickBookFormats = new ArrayList<>();
+
+        List<PaymentMethod> paymentMethods = Arrays.asList(PaymentMethod.Credit);
+
+        quickBookFormats.addAll(fetchPharmacySaleTable(Arrays.asList(new PaymentMethod[]{PaymentMethod.Credit}), fromDate,
+                toDate, institution, Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale})));
+    }
+
+    //-------Main Functions
     public List<QuickBookFormat> fetchOPdListWithProDayEndTable(List<PaymentMethod> paymentMethods, Date fd, Date td, Institution creditCompany) {
         List<QuickBookFormat> qbfs = new ArrayList<>();
         Map temMap = new HashMap();
@@ -1995,6 +2010,81 @@ public class QuickBookReportController implements Serializable {
         }
         System.out.println("qbfs.size(Other Service) = " + qbfs.size());
         return qbfs;
+    }
+
+    public List<QuickBookFormat> fetchPharmacySaleTable(List<PaymentMethod> paymentMethods, Date fd, Date td,
+            Institution creditCompany, List<BillType> bts) {
+        List<QuickBookFormat> qbfs = new ArrayList<>();
+        Map temMap = new HashMap();
+        String jpql;
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.institution=:ins "
+                + " and b.billType in :bts  "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.paymentMethod in :pms "
+                + " and b.retired=false "
+                + " and b.toInstitution is not null"
+                + " and b.toStaff is null "
+                + " order by b.toInstitution.name ";
+
+        temMap.put("toDate", td);
+        temMap.put("fromDate", fd);
+        temMap.put("ins", institution);
+        temMap.put("bts", bts);
+        temMap.put("pms", paymentMethods);
+
+        List<Bill> bills = getBillFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("bills.size = " + bills.size());
+
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
+        for (Bill b : bills) {
+            QuickBookFormat qbf = new QuickBookFormat();
+
+            qbf.setRowType("TRNS");
+            qbf.setTrnsType("INVOICE");
+            qbf.setDate(sdf.format(b.getCreatedAt()));
+            qbf.setAccnt("Accounts Receivable:Debtors Control - OPD Credit");
+            if (b.getToInstitution() != null) {
+                qbf.setName("CREDIT COMPANY:" + b.getToInstitution().getChequePrintingName());
+            } else {
+                qbf.setName("CREDIT COMPANY:No Name");
+            }
+            qbf.setAmount(b.getNetTotal());
+            qbf.setMemo("Sales");
+            qbf.setDocNum(sdf2.format(fromDate));
+            qbfs.add(qbf);
+
+            qbf = new QuickBookFormat();
+            qbf.setRowType("SPL");
+            qbf.setTrnsType("INVOICE");
+            qbf.setAccnt("PHARMACY SALES:Pharmacy OPD Sales");
+            if (b.getToInstitution() != null) {
+                qbf.setName("CREDIT COMPANY:" + b.getToInstitution().getChequePrintingName());
+            } else {
+                qbf.setName("CREDIT COMPANY:No Name");
+            }
+            qbf.setInvItemType("SERV");
+            qbf.setInvItem("Drugs:Drugs OPD Credit");
+            qbf.setAmount(0 - b.getNetTotal());
+            qbf.setQbClass(b.getDepartment().getName());
+            qbf.setMemo("Drugs");
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            qbfs.add(qbf);
+
+            qbf = new QuickBookFormat();
+            qbf.setRowType("ENDTRNS");
+            qbf.setEditQbClass(false);
+            qbf.setEditAccnt(false);
+            qbfs.add(qbf);
+
+        }
+        System.out.println("qbfs.size() = " + qbfs.size());
+        return qbfs;
+
     }
 
     public double fetchOutSideFee(Date fd, Date td, PatientEncounter pe, AdmissionType admissionType, PaymentMethod paymentMethod, Institution cc) {

@@ -1397,7 +1397,8 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
-        if (getArea() == null && getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
+        if (getArea() == null && !getPatientTabId().equals("tabSearchPt")
+                && getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
             errorText = "Please Select Area.";
             UtilityController.addErrorMessage("Please Select Area.");
             return true;
@@ -2027,7 +2028,16 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                 tmpDiscount += d;
             }
-
+            System.out.println("bf.getFeeVat() = " + bf.getFeeVat());
+            System.out.println("bf.getFeeVatPlusValue() = " + bf.getFeeVatPlusValue());
+            System.out.println("Math.round(bf.getFeeVat()) = " + Math.round(bf.getFeeVat()));
+            System.out.println("Math.round(bf.getFeeVatPlusValue()) = " + Math.round(bf.getFeeVatPlusValue()));
+            //-------------runding Vat--------------
+            bf.setFeeVat(Math.round(bf.getFeeVat()));
+            bf.setFeeVatPlusValue(Math.round(bf.getFeeVatPlusValue()));
+            //-------------runding Vat--------------
+            System.out.println("bf.getFeeVat() = " + bf.getFeeVat());
+            System.out.println("bf.getFeeVatPlusValue() = " + bf.getFeeVatPlusValue());
             tmpTotal += bf.getFeeGrossValue();
             tmpTotalVat += bf.getFeeVat();
             tmpTotalVatPlusNet += bf.getFeeVatPlusValue();

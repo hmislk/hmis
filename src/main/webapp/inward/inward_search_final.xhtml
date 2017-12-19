@@ -14,15 +14,14 @@
                     <p:panel header="Search Inpatient Bills by Bill Created Date" >
                         <f:facet name="header" >
                             <h:panelGroup>
-                                <h:panelGrid columns="5">
+                                <h:panelGrid columns="6">
                                     <h:outputLabel value="From"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-
                                     </p:calendar>
                                     <h:outputLabel value="To"/>
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
-
                                     </p:calendar>
+                                    <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.bool1}" />
                                     <p:commandButton ajax="false" action="#{searchController.createInwardFinalBills()}" value="Search" onclick="onSubmitButton();" />
                                 </h:panelGrid>
 

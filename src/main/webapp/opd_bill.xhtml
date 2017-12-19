@@ -189,7 +189,10 @@
                                         <p:tab id="tabSearchPt" title="Search Patient">
 
                                             <h:panelGrid columns="1" >
-
+                                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
+                                                                         itemLabel="Serch Only Registed Patient" >
+                                                    <f:ajax execute="@this" render="acPt" />
+                                                </p:selectBooleanCheckbox>
                                                 <p:autoComplete styleClass="mediuminput" converter="patientConverter"
                                                                 disabled="#{billController.fromOpdEncounter}"
                                                                 widgetVar="aPt" id="acPt" forceSelection="true" 

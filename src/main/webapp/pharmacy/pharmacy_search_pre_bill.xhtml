@@ -23,21 +23,26 @@
                                 <p:commandButton ajax="false" value="Not Paid Only" action="#{searchController.createPharmacyPreTableNotPaid}"/>
                                 <p:commandButton ajax="false" value="Paid Only" action="#{searchController.createPharmacyPreTablePaid}"/>
                                 <h:outputLabel/>
-                                <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml"/>
+                                <p:commandButton  ajax="false" value="OPD Payment" action="/opd_search_pre_batch_bill.xhtml" rendered="false"/>
 
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
+                            </h:panelGrid>
+                            <h:panelGrid columns="5" >
                                 <h:outputLabel value="Bill No"/>
                                 <h:outputLabel value="Patient Name"/>                               
                                 <h:outputLabel value="Total"/>
                                 <h:outputLabel value="Net Total"/>   
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel value="Pharmacy"/>   
 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                                <h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                <p:selectOneMenu value="#{searchController.reportKeyWord.department}">
+                                    <f:selectItem itemLabel="Select Department"/>
+                                    <f:selectItems value="#{departmentController.pharmacies}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
 
                             </h:panelGrid>
 
@@ -98,7 +103,7 @@
 
                             <p:column headerText="Accept" style="width: 150px">
                                 <p:commandButton ajax="false"  value="AcceptPayment" 
-                                                action="#{pharmacyPreSettleController.toSettle(bill)}" 
+                                                 action="#{pharmacyPreSettleController.toSettle(bill)}" 
                                                  disabled="#{bill.referenceBill ne null or bill.cancelled}">   
                                 </p:commandButton>
                             </p:column>

@@ -447,6 +447,7 @@ public class AmpController implements Serializable {
         String sql = "select c from Amp c "
                 + " where c.retired=false"
                 + " and c.category=:cat "
+                + " and c.code is not null "
                 + " and (c.departmentType is null "
                 + " or c.departmentType=:dep) "
                 + " order by c.code desc";
@@ -457,7 +458,7 @@ public class AmpController implements Serializable {
         Amp amp = getFacade().findFirstBySQL(sql, m);
 
         DecimalFormat df = new DecimalFormat("0000");
-        if (amp != null) {
+        if (amp != null && !amp.getCode().equals("")) {
             System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(2);

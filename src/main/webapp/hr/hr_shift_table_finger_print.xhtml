@@ -80,7 +80,7 @@
 
             <p:dataGrid  id="lst" columns="1" var="data"
                          value="#{shiftFingerPrintAnalysisController.shiftTables}" >
-                <p:dataTable value="#{data.staffShift}" var="sts"
+                <p:dataTable value="#{data.staffShift}" var="sts" rowIndexVar="i"
                              rowStyleClass="#{sts.shift.dayType eq 'DayOff'
                                               or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                     <f:facet name="header">
@@ -88,13 +88,15 @@
                             <f:convertDateTime pattern="dd MM yyyy"/>
                         </h:outputLabel>
                     </f:facet>
+                    <p:column headerText="No" styleClass="singleLine">
+                        <h:outputLabel value="#{i+1}" />
+                    </p:column>
                     <p:column headerText="Shift Name" styleClass="singleLine">
                         <h:outputLabel id="lblShift"  value="#{sts.shift.name}" />
                         <p:tooltip for="lblShift" >
                             <h:outputLabel value="#{sts.shift.id}" />
                         </p:tooltip>
                     </p:column>
-
                     <p:column>
                         <f:facet name="header">
                             <h:outputLabel value="Shift Duration"/>
