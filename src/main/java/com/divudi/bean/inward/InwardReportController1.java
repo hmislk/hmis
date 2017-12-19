@@ -284,7 +284,7 @@ public class InwardReportController1 implements Serializable {
                 + " and pr.admittedAt is not null "
                 + " and pr.dischargedAt is not null "
                 + " and pr.roomFacilityCharge.roomCategory=:cat "
-                + " and pr.patientEncounter.dateOfAdmission between :fromDate and :toDate ";
+                + " and pr.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
 
         if (admissionType != null) {
             sql = sql + " and pr.patientEncounter.admissionType=:at ";

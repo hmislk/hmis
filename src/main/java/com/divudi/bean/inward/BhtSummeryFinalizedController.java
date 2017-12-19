@@ -484,8 +484,11 @@ public class BhtSummeryFinalizedController implements Serializable {
             double doc = 0.0;
             double hos = 0.0;
             double room = 0.0;
+            if (pe.getFinalBill()==null) {
+                continue;
+            }
             for (BillItem bi : pe.getFinalBill().getBillItems()) {
-                if (bi.getInwardChargeType() == InwardChargeType.VAT) {
+                if (bi.getInwardChargeType() == InwardChargeType.VAT || bi.getInwardChargeType() == InwardChargeType.HospitalSupportService) {
                     vat += bi.getNetValue();
                 }
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
@@ -496,7 +499,8 @@ public class BhtSummeryFinalizedController implements Serializable {
                 }
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
-                        && bi.getInwardChargeType() != InwardChargeType.RoomCharges) {
+                        && bi.getInwardChargeType() != InwardChargeType.RoomCharges
+                        && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
                     hos += bi.getNetValue();
                 }
                 if (bi.getInwardChargeType() == InwardChargeType.RoomCharges) {

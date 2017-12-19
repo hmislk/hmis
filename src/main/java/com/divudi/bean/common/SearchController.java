@@ -6947,6 +6947,7 @@ public class SearchController implements Serializable {
                     telephoneNumbers.add(number);
                 }
             }
+            System.out.println("telephoneNumbers.size() = " + telephoneNumbers.size());
             UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted.");
         } catch (Exception e) {
         }

@@ -314,8 +314,12 @@ public class PatientController implements Serializable {
                 + " or upper(p.person.mobile) like :q "
                 + " or upper(p.person.phone) like :q "
                 + " or upper(p.person.address) like :q "
-                + " or upper(p.phn) like :q)"
-                + " order by p.person.name";
+                + " or upper(p.phn) like :q)";
+        if (getReportKeyWord().isAdditionalDetails()) {
+            sql += " and p.code is not null ";
+        }
+
+        sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.err.println("patientList.size() = " + patientList.size());
@@ -395,11 +399,11 @@ public class PatientController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false ";
-        
+
         if (getReportKeyWord().isAdditionalDetails()) {
             sql += " and p.code is not null";
         }
-        
+
         sql += " order by p.code ";
         patientList = getFacade().findBySQL(sql);
         System.err.println("patientList.size() = " + patientList.size());
