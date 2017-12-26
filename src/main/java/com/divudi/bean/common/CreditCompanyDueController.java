@@ -465,14 +465,14 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
-
+        System.out.println("inst.getName() = " + inst.getName());
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
         for (PatientEncounter b : lst) {
-
+            System.out.println("b.getBhtNo() = " + b.getBhtNo());
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
-            double finalValue = b.getFinalBill().getNetTotal() - (b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
-
+            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
+            System.out.println("finalValue = " + finalValue);
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -649,13 +649,14 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
         finalPaidTotalPatient = 0.0;
         finalTransPaidTotal = 0.0;
         finalTransPaidTotalPatient = 0.0;
+        System.out.println("setIns.size() = " + setIns.size());
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, true);
 
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
-
+            System.out.println("lst.size() = " + lst.size());
             for (PatientEncounter b : lst) {
                 b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
                 b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
@@ -717,7 +718,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
         m.put("toDate", td);
         m.put("fromDate", fd);
         m.put("cl", BilledBill.class);
-        System.out.println("sql = " + sql);
+//        System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -759,7 +760,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
                 + " and b.dateOfDischarge between :fd and :td "
-                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 1 ";
+                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 0.1 ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";

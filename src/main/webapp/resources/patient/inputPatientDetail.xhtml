@@ -70,9 +70,10 @@
                              value="#{cc.attrs.patient.person.mobile}" >
                 </p:inputMask>
                 <!--<p:outputLabel value="Home Phone"/>-->
-                <p:inputMask id="hno" mask="999-9999999" autocomplete="off" maxlength="11" style="margin-top: 8px;"
+                <p:inputText id="hno" value="#{cc.attrs.patient.person.phone}" />
+<!--                <p:inputMask id="hno" mask="999-9999999" autocomplete="off" maxlength="11" style="margin-top: 8px;"
                              value="#{cc.attrs.patient.person.phone}" >
-                </p:inputMask>
+                </p:inputMask>-->
             </h:panelGroup>
         </p:panelGrid>    
         <poue:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
