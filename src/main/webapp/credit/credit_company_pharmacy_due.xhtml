@@ -54,6 +54,8 @@
                                         </p:column>
                                         <p:column headerText="Bill No">                                    
                                         </p:column>
+                                        <p:column headerText="Bill Date">                                    
+                                        </p:column>
                                         <p:column headerText="Client Name">                                    
                                         </p:column>
                                         <p:column headerText="Billed Amount">                                    
@@ -75,6 +77,11 @@
                                     </p:column>
                                     <p:column>                              
                                         <h:outputLabel value="#{b.deptId}" />                                
+                                    </p:column>
+                                    <p:column>                                
+                                        <h:outputLabel value="#{b.createdAt}" >
+                                            <f:convertDateTime pattern="yyyy MM dd" />
+                                        </h:outputLabel>                                 
                                     </p:column>
                                     <p:column>                               
                                         <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
