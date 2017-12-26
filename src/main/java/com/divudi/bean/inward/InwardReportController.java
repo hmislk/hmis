@@ -144,6 +144,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillAdmissionBookNew() {
+        Date startTime = new Date();
         if (getReportKeyWord().getString().isEmpty() || getReportKeyWord().getString() == null) {
             JsfUtil.addErrorMessage("Select a Selection Methord");
             return;
@@ -151,14 +152,14 @@ public class InwardReportController implements Serializable {
         System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
         if (getReportKeyWord().getString().equals("0")) {
             fillAdmissions(null, null);
-        }else if (getReportKeyWord().getString().equals("1")) {
+        } else if (getReportKeyWord().getString().equals("1")) {
             fillAdmissions(false, false);
-        }else if (getReportKeyWord().getString().equals("2")) {
+        } else if (getReportKeyWord().getString().equals("2")) {
             fillAdmissions(true, false);
-        }else if (getReportKeyWord().getString().equals("3")) {
+        } else if (getReportKeyWord().getString().equals("3")) {
             fillAdmissions(true, true);
         }
-
+        commonController.printReportDetails(fromDate, toDate, startTime, "Admission detaild");
     }
 
     public void fillAdmissionBookOnlyInward() {
@@ -192,6 +193,7 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
+        System.err.println("Time = " + new Date());
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.dateOfAdmission between :fd and :td ";
@@ -226,9 +228,11 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.err.println("Time = " + new Date());
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        calTtoal();
+//        calTtoal();
+        calTtoal(patientEncounters);
     }
 
     @Inject
@@ -250,6 +254,22 @@ public class InwardReportController implements Serializable {
             netTotal += p.getTransTotal();
             netPaid += p.getTransPaid();
         }
+    }
+
+    private void calTtoal(List<PatientEncounter> patientEncounters) {
+        System.err.println("Time = " + new Date());
+        if (patientEncounters == null) {
+            return;
+        }
+        netTotal = 0;
+        netPaid = 0;
+        for (PatientEncounter p : patientEncounters) {
+            if (p.getFinalBill() != null) {
+                netTotal += p.getFinalBill().getNetTotal();
+                netPaid += p.getPaidByCreditCompany() + p.getFinalBill().getPaidAmount();
+            }
+        }
+        System.err.println("Time = " + new Date());
     }
 
     public void fillAdmissionBookOnlyInwardDeleted() {

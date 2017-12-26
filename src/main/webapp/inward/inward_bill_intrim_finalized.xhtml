@@ -84,6 +84,14 @@
                                 <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.finalBill.paidAmount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
+                                <h:outputLabel value="Credit Paid Amount : " style="min-width: 100px;font-weight: bold;"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.creditPaidAmount}" >         
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel value="Credit Used Amount : " style="min-width: 100px;font-weight: bold;"/>
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.creditUsedAmount}" >         
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
                                 <h:outputLabel value="Due : " style="min-width: 100px;font-weight: bold;"/>
                                 <h:outputLabel value="#{bhtSummeryFinalizedController.patientEncounter.finalBill.netTotal
                                                         -(bhtSummeryFinalizedController.patientEncounter.creditPaidAmount

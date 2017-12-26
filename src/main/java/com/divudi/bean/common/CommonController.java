@@ -40,6 +40,15 @@ public class CommonController implements Serializable {
     public Date getCurrentDateTime() {
         return new Date();
     }
+    
+    public Date getDateAfterThreeMonthsCurrentDateTime() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        System.out.println("1.cal.getTime() = " + cal.getTime());
+        cal.add(Calendar.MONTH, 3);
+        System.out.println("2.cal.getTime() = " + cal.getTime());
+        return cal.getTime();
+    }
 
     public boolean sameDate(Date date1, Date date2) {
         Calendar d1 = Calendar.getInstance();

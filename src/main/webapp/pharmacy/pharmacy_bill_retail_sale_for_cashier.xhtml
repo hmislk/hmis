@@ -58,7 +58,9 @@
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
                                                 <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;
+                                                                   #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
@@ -78,7 +80,9 @@
                                                 </p:column>
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
-                                                                   style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
+                                                                   style="width: 100px!important;
+                                                                   #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red;': 
+                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>

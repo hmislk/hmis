@@ -196,10 +196,15 @@ public class CreditBean {
         HashMap hm;
         sql = "Select b From PatientEncounter b "
                 + " where b.retired=false ";
+//        if (lessThan) {
+//            sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) >:val ";
+//        } else {
+//            sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) <:val ";
+//        }
         if (lessThan) {
-            sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) >:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
         } else {
-            sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) <:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
         }
         sql += " and b.dateOfDischarge between :frm and :to "
                 + " and b.discharged = true "
@@ -216,7 +221,7 @@ public class CreditBean {
 
         return lst;
     }
-
+    
     public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm;
@@ -226,10 +231,15 @@ public class CreditBean {
                 + " and b.discharged=true "
                 + " and b.paymentMethod=:pm ";
 
+//        if (lessThan) {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+//        } else {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+//        }
         if (lessThan) {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
         } else {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
         }
 
         hm = new HashMap();
@@ -600,10 +610,16 @@ public class CreditBean {
                 + " and b.paymentMethod=:pm "
                 + " and (b.creditCompany=:ins ) ";
 
+//        if (lessThan) {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+//        } else {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+//        }
+        
         if (lessThan) {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)> :val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
         } else {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
         }
 
         hm.put("val", 0.1);
