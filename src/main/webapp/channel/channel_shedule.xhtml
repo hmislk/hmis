@@ -69,6 +69,10 @@
                                          styleClass="buttons" onclick="onSubmitButton();">
 
                         </p:commandButton>
+                        <p:commandButton value="Go To Channel Booking"
+                                         rendered="#{webUserController.hasPrivilege('Developers')}"
+                                         action="/channel/channel_booking" 
+                                         ajax="false" onclick="onSubmitButton();" />
                     </f:facet>
 
                     <h:panelGrid columns="1" > 
@@ -135,7 +139,7 @@
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
-                                    
+
                                     <p:outputLabel value="Weekday or Session Date"></p:outputLabel>
                                     <p:outputLabel value="Sunday" rendered="#{sheduleController.current.sessionWeekday eq 1 and sheduleController.current.sessionWeekday ne null}"/>
                                     <p:outputLabel value="Monday" rendered="#{sheduleController.current.sessionWeekday eq 2 and sheduleController.current.sessionWeekday ne null}"/>

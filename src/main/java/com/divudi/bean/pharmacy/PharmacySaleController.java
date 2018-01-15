@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -759,6 +760,11 @@ public class PharmacySaleController implements Serializable {
         if (checkItemBatch()) {
             errorMessage = "This batch is already there in the bill.";
             UtilityController.addErrorMessage("Already added this item batch");
+            return;
+        }
+        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+            errorMessage = "This batch is Expire With in 31 Days.";
+            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
             return;
         }
         //Checking User Stock Entity
@@ -1737,6 +1743,22 @@ public class PharmacySaleController implements Serializable {
         stock = null;
         editingQty = null;
         errorMessage = "";
+    }
+    
+    public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
+        Calendar calDateOfExpiry = Calendar.getInstance();
+        calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
+        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        System.out.println("1.cal.getTime() = " + cal.getTime());
+        cal.add(Calendar.DATE, 31);
+        System.out.println("2.cal.getTime() = " + cal.getTime());
+        if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public SessionController getSessionController() {

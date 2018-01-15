@@ -60,7 +60,9 @@
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
                                                 <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;"></h:outputLabel>
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;
+                                                                   #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
@@ -80,7 +82,9 @@
                                                 </p:column>
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
-                                                                   style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
+                                                                   style="width: 100px!important;
+                                                                   #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red;': 
+                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -99,7 +103,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{pharmacySaleController2.addBillItemNew()}" 
+                                                          action="#{pharmacySaleController2.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
                                                           update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
 
@@ -317,16 +321,16 @@
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
                                                          onclick="onSubmitButton();"
-                                                        action="#{pharmacySaleController2.settleBillWithPay}" >
+                                                         action="#{pharmacySaleController2.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                                       ajax="false" action="pharmacy_bill_retail_sale_2"
+                                                         ajax="false" action="pharmacy_bill_retail_sale_2"
                                                          onclick="onSubmitButton();"
-                                                        actionListener="#{pharmacySaleController2.resetAll()}"  ></p:commandButton>
+                                                         actionListener="#{pharmacySaleController2.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -390,7 +394,10 @@
 
                                         <p:tab id="tabSearchPt" title="Search Patient" >
 
-
+                                            <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
+                                                                     itemLabel="Serch Only Registed Patient" >
+                                                <f:ajax execute="@this" render="acPt" />
+                                            </p:selectBooleanCheckbox>
                                             <p:autoComplete
                                                 widgetVar="aPt" 
                                                 id="acPt" forceSelection="true" 
@@ -400,6 +407,32 @@
                                                 itemValue="#{apt}" size="30"  
                                                 style="width: 400px;"
                                                 disabled="#{pharmacySaleController2.fromOpdEncounter}">
+                                                <p:column headerText="Name">
+                                                    <h:outputLabel value="#{apt.person.nameWithTitle}" />
+                                                </p:column>
+                                                <p:column headerText="Age">
+                                                    <h:outputLabel value="#{apt.age}" />
+                                                </p:column>
+                                                <p:column headerText="NIC">
+                                                    <h:outputLabel value="#{apt.person.nic}"/>
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{apt.code}" />
+                                                </p:column>
+                                                <p:column headerText="PHN">
+                                                    <h:outputLabel value="#{apt.phn}"/>
+                                                </p:column>
+                                                <p:column headerText="Sex">
+                                                    <h:outputLabel value="#{apt.person.sex}" />
+                                                </p:column>
+                                                <p:column headerText="Address">
+                                                    <h:outputLabel value="#{apt.person.address}" />
+                                                </p:column>
+                                                <p:column headerText="Date of Birth">
+                                                    <h:outputLabel value="#{apt.person.dob}" >
+                                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                    </h:outputLabel>
+                                                </p:column>
                                                 <p:ajax event="itemSelect" process="@this" update=":#{p:component('cmbPs')} :#{p:component('pBillDetails')} panSearch"
                                                         listener="#{pharmacySaleController2.searchPatientListener}"/>
                                             </p:autoComplete>  
@@ -491,7 +524,7 @@
 
 
                         <p:commandButton id="nullButton3" value="No Action"
-                                        action="#" style="display: none;" ></p:commandButton>
+                                         action="#" style="display: none;" ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -499,9 +532,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
-                                           ajax="false" action="pharmacy_bill_retail_sale_2" 
+                                             ajax="false" action="pharmacy_bill_retail_sale_2" 
                                              onclick="onSubmitButton();"
-                                            actionListener="#{pharmacySaleController2.resetAll()}" ></p:commandButton>
+                                             actionListener="#{pharmacySaleController2.resetAll()}" ></p:commandButton>
                             <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton disabled="true" value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />

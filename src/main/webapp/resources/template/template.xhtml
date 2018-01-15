@@ -661,7 +661,7 @@
                                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance" rendered="#{webUserController.hasPrivilege('HrUploadAttendance')}" ></p:menuitem>
-                                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}" ></p:menuitem>
+                                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"></p:menuitem>
                                         <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff" value="Analyse Attendance By Staff" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByStaff')}" ></p:menuitem>
                                     </p:submenu>                                   
                                     <p:submenu label="Forms" rendered="#{webUserController.hasPrivilege('HrForms')}">                                       
@@ -923,15 +923,19 @@
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
             </div>
-            <div class="nonPrintBlock" >
+<!--            <div class="nonPrintBlock" >
                 <h:form>
-                    <p:dock position="bottom" 
+                    <p:dock position="bottom" itemWidth="35"   proximity="50"  
                             rendered="#{webUserController.hasPrivilege('Developers') 
                                         and (sessionController.loggedUser.id eq 3151
                                         or  sessionController.loggedUser.id eq 1101795)
-                                                          and sessionController.logged
-                                                          and !sessionController.firstLogin 
-                                                          and sessionController.department ne null}">
+                                        and sessionController.logged
+                                        and !sessionController.firstLogin 
+                                        and sessionController.department ne null}">
+                        <p:menuitem value="Channel Booking" 
+                                    icon="/resources/image/ico/doc.png" action="/channel/channel_booking"/>
+                        <p:menuitem value="Doctor Arrival" 
+                                    icon="/resources/image/ico/arrival.png" action="/channel/channel_doctor_view_today_1"/>
                         <p:menuitem value="Opd Summery" 
                                     icon="/resources/image/ico/analytics_1.png" action="/reportCashier/report_cashier"/>
                         <p:menuitem value="Lab Summery" 
@@ -952,7 +956,7 @@
                                     icon="/resources/image/ico/send.png" action="/sms_report"/>
                     </p:dock>
                 </h:form>
-            </div>
+            </div>-->
 
         </div>
 

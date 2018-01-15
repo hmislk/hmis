@@ -97,6 +97,9 @@
                                 </h:commandLink>
                             </p:column>                          
                             <p:column headerText="Comments" >
+                                <h:outputLabel value="#{bill.comments}" />
+                            </p:column>
+                            <p:column headerText="Cancel Comments" >
                                 <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
                                 </h:outputLabel>
                                 <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >

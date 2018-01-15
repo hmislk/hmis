@@ -230,6 +230,7 @@ public class ShiftTableController implements Serializable {
 
             for (Staff stf : getHumanResourceBean().fetchStaff(getRoster())) {
                 List<StaffShift> staffShifts = getHumanResourceBean().fetchStaffShift(nowDate, stf);
+                System.out.println("staffShifts.size() = " + staffShifts.size());
                 if (staffShifts.isEmpty()) {
                     for (int i = getRoster().getShiftPerDay(); i > 0; i--) {
                         StaffShift ss = new StaffShift();
@@ -240,6 +241,7 @@ public class ShiftTableController implements Serializable {
                     }
                 } else {
                     for (StaffShift ss : staffShifts) {
+                        System.out.println("ss.getRoster() = " + ss.getRoster());
                         netT.getStaffShift().add(ss);
                     }
                 }

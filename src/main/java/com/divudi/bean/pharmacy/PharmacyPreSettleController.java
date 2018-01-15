@@ -6,10 +6,12 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
@@ -72,6 +74,8 @@ public class PharmacyPreSettleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    SearchController searchController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -129,21 +133,27 @@ public class PharmacyPreSettleController implements Serializable {
     Double editingQty;
 
     public String toSettleReturn(Bill args) {
-        String sql = "Select b from RefundBill b"
-                + " where b.referenceBill=:bil"
-                + " and b.retired=false "
-                + " and b.refundedBill is null "
-                + " and b.cancelled=false ";
-        HashMap hm = new HashMap();
-        hm.put("bil", args);
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.RefundBill) {
+            String sql = "Select b from RefundBill b"
+                    + " where b.referenceBill=:bil"
+                    + " and b.retired=false "
+                    + " and b.refundedBill is null "
+                    + " and b.cancelled=false ";
+            HashMap hm = new HashMap();
+            hm.put("bil", args);
+            Bill b = getBillFacade().findFirstBySQL(sql, hm);
 
-        if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
-            return "";
+            if (b != null) {
+                UtilityController.addErrorMessage("Allready Paid");
+                return "";
+            } else {
+                setPreBill(args);
+                return "/pharmacy/pharmacy_bill_return_pre_cash";
+            }
         } else {
-            setPreBill(args);
-            return "/pharmacy/pharmacy_bill_return_pre_cash";
+            searchController.makeListNull();
+            UtilityController.addErrorMessage("Please Search Again and Refund Bill");
+            return "";
         }
     }
 
@@ -286,9 +296,9 @@ public class PharmacyPreSettleController implements Serializable {
 //        }
         return false;
     }
-    
+
     private boolean errorCheckForSaleBillAraedyAddToStock() {
-        Bill b=getBillFacade().find(getPreBill().getId());
+        Bill b = getBillFacade().find(getPreBill().getId());
         if (b.isCancelled()) {
             return true;
         }
@@ -351,14 +361,14 @@ public class PharmacyPreSettleController implements Serializable {
             getBillFacade().create(getSaleReturnBill());
         }
 
-           updateSaleReturnPreBill();
+        updateSaleReturnPreBill();
     }
 
-     private void updateSaleReturnPreBill() {
+    private void updateSaleReturnPreBill() {
         getPreBill().setReferenceBill(getSaleReturnBill());
         getBillFacade().edit(getPreBill());
     }
-  
+
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
 
@@ -464,7 +474,7 @@ public class PharmacyPreSettleController implements Serializable {
         }
         getBillFacade().edit(getSaleReturnBill());
     }
-    
+
     private void saveSaleReturnBillItems(Payment p) {
         for (BillItem tbi : getPreBill().getBillItems()) {
 
@@ -490,7 +500,7 @@ public class PharmacyPreSettleController implements Serializable {
             if (ph.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
-            
+
             saveBillFee(sbi, p);
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
@@ -501,6 +511,15 @@ public class PharmacyPreSettleController implements Serializable {
 
     public void settleBillWithPay2() {
         editingQty = null;
+        System.out.println("getPreBill().getBillType() = " + getPreBill().getBillType());
+        System.out.println("getPreBill().getBillClassType() = " + getPreBill().getBillClassType());
+        if (getPreBill().getBillType() == BillType.PharmacyPre
+                && getPreBill().getBillClassType() != BillClassType.PreBill) {
+            System.err.println("settle");
+            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
+            makeNull();
+            return;
+        }
         if (errorCheckForSaleBill()) {
             return;
         }
@@ -598,10 +617,20 @@ public class PharmacyPreSettleController implements Serializable {
 
     public void settleReturnBillWithPay() {
         editingQty = null;
+        System.out.println("getPreBill().getBillType() = " + getPreBill().getBillType());
+        System.out.println("getPreBill().getBillClassType() = " + getPreBill().getBillClassType());
+        if (getPreBill().getBillType() == BillType.PharmacyPre
+                && getPreBill().getBillClassType() != BillClassType.RefundBill) {
+            System.err.println("***Return**");
+            JsfUtil.addErrorMessage("This Bill isn't Return. Please Try Again.");
+            clearBill();
+            clearBillItem();
+            return;
+        }
 
         saveSaleReturnBill();
 //        saveSaleReturnBillItems();
-        
+
         Payment p = createPayment(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod());
         saveSaleReturnBillItems(p);
 
@@ -737,20 +766,26 @@ public class PharmacyPreSettleController implements Serializable {
     }
 
     public String toSettle(Bill args) {
-        String sql = "Select b from BilledBill b"
-                + " where b.referenceBill=:bil"
-                + " and b.retired=false "
-                + " and b.cancelled=false ";
-        HashMap hm = new HashMap();
-        hm.put("bil", args);
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        if (args.getBillType() == BillType.PharmacyPre && args.getBillClassType() == BillClassType.PreBill) {
+            String sql = "Select b from BilledBill b"
+                    + " where b.referenceBill=:bil"
+                    + " and b.retired=false "
+                    + " and b.cancelled=false ";
+            HashMap hm = new HashMap();
+            hm.put("bil", args);
+            Bill b = getBillFacade().findFirstBySQL(sql, hm);
 
-        if (b != null) {
-            UtilityController.addErrorMessage("Allready Paid");
-            return "";
+            if (b != null) {
+                UtilityController.addErrorMessage("Allready Paid");
+                return "";
+            } else {
+                setPreBill(args);
+                return "/pharmacy/pharmacy_bill_pre_settle";
+            }
         } else {
-            setPreBill(args);
-            return "/pharmacy/pharmacy_bill_pre_settle";
+            searchController.makeListNull();
+            UtilityController.addErrorMessage("Please Search Again and Accept Bill");
+            return "";
         }
     }
 

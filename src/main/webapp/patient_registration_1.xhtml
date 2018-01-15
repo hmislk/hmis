@@ -18,24 +18,32 @@
                     <p:panel header="Patient Details" styleClass="alignTop" style="height: 600px;">
                         <h:panelGrid columns="1" >
                             <h:panelGrid columns="2" >
-                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
-                                                         itemLabel="Only Registed Patient"/>
+                                <p:outputLabel value="Only Active Patient" />
+                                <p:selectOneRadio value="#{patientController.reportKeyWord.string}" >
+                                    <f:selectItem itemLabel="All" itemValue="0" />
+                                    <f:selectItem itemLabel="Active" itemValue="1" />
+                                    <f:selectItem itemLabel="De-Active" itemValue="2" />
+                                </p:selectOneRadio>
+                                <p:outputLabel value="Only Registed Patient" />
+                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" />
+                                <p:outputLabel value="Only Active Patient" />
+                                <p:inputText value="#{patientController.reportKeyWord.numOfRows}" />
                                 <p:commandButton value="Process" ajax="false" action="#{patientController.createPatientList()}" />
                             </h:panelGrid>
-                            <p:panel id="panelSearch" header="Patient Details" >
-                                <p:dataTable value="#{patientController.patientList}" var="p" >
-                                    <p:column>
+                            <p:panel id="panelSearch" header="Patient Details" styleClass="summeryBorder" >
+                                <p:dataTable value="#{patientController.patientList}" var="p" rowIndexVar="i"
+                                             rowStyleClass="#{p.retired ? 'redText':''}" >
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="No" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{i+1}" />
+                                    </p:column>
+                                    <p:column sortBy="#{p.person.nameWithTitle}" style="min-width: 300px">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Name" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.nameWithTitle}" />
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Age" />
-                                        </f:facet>
-                                        <h:outputLabel value="#{p.age}" />
                                     </p:column>
                                     <p:column >
                                         <f:facet name="header" >
@@ -43,7 +51,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.nic}"/>
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.code}">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Code" />
                                         </f:facet>
@@ -61,33 +69,80 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.sex}" />
                                     </p:column>
-                                    <p:column >
+                                    <p:column style="min-width: 300px">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Address" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.address}" />
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.person.dob}" style="min-width: 80px">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Date of Birth" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.dob}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="dd MM yyyy"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column >
+                                    <p:column sortBy="#{p.createdAt}" style="min-width: 160px">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Created At" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.createdAt}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column >
+                                    <p:column style="max-width: 160px;">
                                         <f:facet name="header" >
                                             <p:outputLabel value="Creater" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.creater.webUserPerson.name}" />
+                                    </p:column>
+                                    <p:column >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Bill" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.bill.insId}" />
+                                    </p:column>
+                                    <p:column style="min-width: 160px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Bill Created At" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.bill.createdAt}" >
+                                            <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="min-width: 160px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Last Editer" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.editer.webUserPerson.name}" />
+                                    </p:column>
+                                    <p:column style="min-width: 160px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Last Edited At" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.editedAt}" >
+                                            <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="min-width: 90px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Comment" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.retireComments}" />
+                                    </p:column>
+                                    <p:column style="min-width: 100px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Update Status" />
+                                        </f:facet>
+                                        <p:commandButton value="Re-Active" action="#{patientController.activePatient(p)}" 
+                                                         rendered="#{p.retired eq true}" ajax="false"
+                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberReActive')}" 
+                                                         onclick="if (!confirm('Are you sure you want to Re-Active this Patient?')) return false;" />
+                                        <p:commandButton value="De-Active" action="#{patientController.deActivePatient(p)}" 
+                                                         rendered="#{p.retired eq false}" ajax="false"
+                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberDeActive')}" 
+                                                         onclick="if (!confirm('Are you sure you want to De-Active this Patient?')) return false;" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>

@@ -70,7 +70,7 @@
 
                 </p:panel>
                 <p:panel  id="panelPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" 
+                    <p:dataTable id="tbl" value="#{commonReport1.referralBillItems}" var="d" rowIndexVar="i"
                                  rowStyleClass="#{d.bill.billClassType eq 'CancelledBill' or d.bill.billClassType eq 'RefundBill' ? 'redText':''}" 
                                  >
                         <f:facet name="header">
@@ -86,6 +86,13 @@
                                 <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a"/>
                             </h:outputLabel>
                         </f:facet>
+
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}"/>
+                        </p:column>
 
                         <p:column headerText="Bill No" 
                                   sortBy="#{d.bill.insId}">

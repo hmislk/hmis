@@ -67,7 +67,7 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(ins, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-        System.out.println("b = " + b);
+//        System.out.println("b = " + b);
 
         result.append(ins.getInstitutionCode());
         result.append(billNumberSuffix.getSuffix());
@@ -207,7 +207,7 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(dep, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-        System.out.println("b = " + b);
+//        System.out.println("b = " + b);
         result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
@@ -688,8 +688,8 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("dep", department);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
-        System.out.println("billNumber = " + billNumber);
-        System.out.println("billType = " + billType);
+//        System.out.println("billNumber = " + billNumber);
+//        System.out.println("billType = " + billType);
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
                     + " Bill b "
@@ -842,7 +842,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
-        System.out.println("billNumber = " + billNumber);
+//        System.out.println("billNumber = " + billNumber);
         
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "

@@ -75,6 +75,9 @@
                             <p:column headerText="Refering Institution"  >                                
                                 <h:outputLabel value="#{bill.referredByInstitution.name}" />
                             </p:column>
+                            <p:column headerText="Refering Doctor"  >                                
+                                <h:outputLabel value="#{bill.referredBy.person.name}" />
+                            </p:column>
                             <p:column headerText="Billed At"  >                                
                                 <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
                             </p:column>

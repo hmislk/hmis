@@ -19,10 +19,12 @@
                         <h:panelGrid columns="2" >
 
                             <h:outputLabel value="From Date" />
-                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" styleClass="dateTimePicker"
+                                        navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
                             
                             <h:outputLabel value="To Date" />
-                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" styleClass="dateTimePicker"
+                                        navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -242,7 +244,7 @@
 
 
                                 <p:column styleClass="averageNumericColumn"  headerText="Total" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.transTotal}">
+                                    <h:outputLabel value="#{i.finalBill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -259,7 +261,7 @@
                                 </p:column>
                                 
                                 <p:column styleClass="averageNumericColumn"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.transPaid}">
+                                    <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -270,7 +272,7 @@
                                 </p:column>
 
                                 <p:column styleClass="averageNumericColumn" headerText="Due" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.transTotal-i.transPaid-i.finalBill.discount}">
+                                    <h:outputLabel value="#{i.finalBill.netTotal-(i.paidByCreditCompany+i.finalBill.paidAmount)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

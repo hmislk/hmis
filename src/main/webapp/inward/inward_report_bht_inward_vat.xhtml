@@ -17,10 +17,10 @@
                     <p:panel header="BHT VAT Report" styleClass="alignTop" >
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar  id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
                             </p:calendar>
                             <h:outputText value="Admission Type" ></h:outputText>
                             <p:selectOneMenu  id="lstSelect"   value="#{bhtSummeryFinalizedController.admissionType}" >
@@ -77,11 +77,17 @@
                                     <f:convertDateTime pattern="yy MM dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column>
+                            <p:column sortBy="#{bwv.pe.bhtNo}">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT No"/> 
                                 </f:facet>
                                 <h:outputLabel   value="#{bwv.pe.bhtNo}"/>
+                            </p:column>
+                            <p:column sortBy="#{bwv.pe.referringDoctor.person.name}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Ref. Doctor"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bwv.pe.referringDoctor.person.name}"/>
                             </p:column>
                             <p:column style="width: 80%!important;">
                                 <f:facet name="header">

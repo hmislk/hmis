@@ -112,6 +112,7 @@ public class ApiMembership {
     @Path("/banks")
     @Produces("application/json")
     public String getBanks() {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Banks(/banks)");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -137,7 +138,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Banks) = " + json);
         return json;
 
     }
@@ -146,6 +147,7 @@ public class ApiMembership {
 //"bank_id": 16664599,
 //"bank_name": "Amana Bank"
 //},
+//    /apiMembership/savePatient/Mr/Dushan+Maduranga/Male/1990-10-17/Karapitiya,Galle/0788044212/13456789v
     @GET
     @Path("/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}")
     @Produces("application/json")
@@ -157,13 +159,13 @@ public class ApiMembership {
             @PathParam("address") String address,
             @PathParam("phone") String phone,
             @PathParam("nic") String nic) {
-
+        System.err.println("~~~~~~Membership API~~~~~~ Get Save Patient(/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic})");
         JSONObject jSONObjectOut = new JSONObject();
         String json;
         URLDecoder decoder = new URLDecoder();
 
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
-        System.out.println("s = " + s);
+//        System.out.println("s = " + s);
 
         if (!"".equals(s)) {
             jSONObjectOut.put("save_patient", s);
@@ -174,7 +176,7 @@ public class ApiMembership {
         }
 
         try {
-            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
+//            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
             person.setName(decoder.decode(name, "+"));
@@ -184,12 +186,14 @@ public class ApiMembership {
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
             person.setCreatedAt(new Date());
+            person.setRetired(true);
             getPersonFacade().create(person);
 
             Patient patient = new Patient();
             patient.setPerson(person);
             patient.setCode(getPatientController().getCountPatientCode());
             patient.setCreatedAt(new Date());
+            patient.setRetired(true);
             getPatientFacade().create(patient);
 
             JSONObject object = new JSONObject();
@@ -202,6 +206,11 @@ public class ApiMembership {
             object.put("save_patient_address", patient.getPerson().getAddress());
             object.put("save_patient_phone", patient.getPerson().getPhone());
             object.put("save_patient_nic", patient.getPerson().getNic());
+            if (patient.isRetired()) {
+                object.put("save_patient_status", "De-Active");
+            } else {
+                object.put("save_patient_status", "Active");
+            }
 
             jSONObjectOut.put("save_patient", object);
             jSONObjectOut.put("error", "0");
@@ -213,7 +222,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Save Patient) = " + json);
         return json;
 
     }
@@ -222,6 +231,7 @@ public class ApiMembership {
     @Path("/patient/{patient_id}")
     @Produces("application/json")
     public String getPatient(@PathParam("patient_id") String patient_id) {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Patient(/patient/{patient_id})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             long l = Long.valueOf(patient_id);
@@ -238,6 +248,11 @@ public class ApiMembership {
                 object.put("save_patient_address", p.getPerson().getAddress());
                 object.put("save_patient_phone", p.getPerson().getPhone());
                 object.put("save_patient_nic", p.getPerson().getNic());
+                if (p.isRetired()) {
+                    object.put("save_patient_status", "De-Active");
+                } else {
+                    object.put("save_patient_status", "Active");
+                }
 
                 jSONObjectOut.put("patient", object);
                 jSONObjectOut.put("error", "0");
@@ -254,7 +269,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Patient) = " + json);
         return json;
 
     }
@@ -263,6 +278,7 @@ public class ApiMembership {
     @Path("/serviceValue")
     @Produces("application/json")
     public String getServiceValue() {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Service Value(/serviceValue)");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             Item i = getItemFacade().find(32768435l);
@@ -291,7 +307,7 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Service Value) = " + json);
         return json;
 
     }
@@ -304,6 +320,7 @@ public class ApiMembership {
             @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref,
             @PathParam("memo") String memo) {
+        System.err.println("~~~~~~Membership API~~~~~~ Get Pay For Membership(/payForMembership/{patient_id}/{bank_id}/{credit_card_ref}/{memo})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             fetchErrorsPay(patient_id, bank_id, credit_card_ref, memo);
@@ -316,7 +333,14 @@ public class ApiMembership {
             pmd.getCreditCard().setNo(credit_card_ref);
             pmd.getCreditCard().setInstitution(bank);
 
-            Bill b = saveBill(i, pmd, p,memo);
+            Bill b = saveBill(i, pmd, p, memo);
+            
+            p.setRetired(false);
+            getPatientFacade().edit(p);
+            
+            p.getPerson().setRetired(false);
+            getPersonFacade().edit(p.getPerson());
+            
             if (b != null) {
                 JSONObject object = new JSONObject();
                 object.put("bill_no_ins", b.getInsId());
@@ -328,7 +352,7 @@ public class ApiMembership {
                 object.put("bill_amount_with_vat", b.getVatPlusNetTotal());
                 object.put("bill_bank", b.getBank().getName());
                 object.put("bill_crad_ref_no", b.getCreditCardRefNo());
-
+                
                 jSONObjectOut.put("PayForMembership", object);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
@@ -344,12 +368,12 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-
+        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Pay For Membership) = " + json);
         return json;
     }
 
     //--Methords
-    private Bill saveBill(Item i, PaymentMethodData pmd, Patient p,String memo) {
+    private Bill saveBill(Item i, PaymentMethodData pmd, Patient p, String memo) {
         Bill temp = new BilledBill();
         temp.setBillType(BillType.OpdBill);
 
@@ -377,12 +401,11 @@ public class ApiMembership {
         temp.setToDepartment(i.getDepartment());
         temp.setToInstitution(i.getDepartment().getInstitution());
 
-        System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
-        System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
-
-        System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
-        System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
-
+//        System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
+//        System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
+//
+//        System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
+//        System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
 //        temp.setStaff(staff);
 //        temp.setToStaff(toStaff);
 //        temp.setReferredBy(referredBy);
@@ -391,7 +414,7 @@ public class ApiMembership {
 //        temp.setCreditCompany(creditCompany);
 //        temp.setComments(comment);
         getBillBean().setPaymentMethodData(temp, PaymentMethod.OnlineSettlement, pmd);
-        
+
         temp.setComments(memo);
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
@@ -545,13 +568,13 @@ public class ApiMembership {
     }
 
     private Institution fetchBank(Long id) {
-        System.out.println("id = " + id);
+//        System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
         Institution bank = getInstitutionFacade().findFirstBySQL(sql);
-        System.out.println("bank = " + bank);
+//        System.out.println("bank = " + bank);
         return bank;
     }
 
@@ -568,8 +591,7 @@ public class ApiMembership {
 
         Bill b = getBillFacade().findFirstBySQL(sql, m);
 
-        System.out.println("b = " + b);
-
+//        System.out.println("b = " + b);
         return b;
     }
 
@@ -606,7 +628,7 @@ public class ApiMembership {
             return s;
         }
         if (nic == null || "".equals(nic)) {
-            s = "Please Enter Name";
+            s = "Please Enter Nic";
             return s;
         }
 

@@ -56,6 +56,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.apache.poi.hssf.record.PrecisionRecord;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.model.DefaultScheduleModel;
@@ -1020,10 +1021,13 @@ public class BookingController implements Serializable {
                     ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
                 }
             } else {
-                ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
-                ss.setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
-                ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
-                ss.getOriginatingSession().setTotalFfee(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
+                ss.setTotalFee(Math.round(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod)));
+                ss.setTotalFfee(Math.round(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod)));
+                ss.getOriginatingSession().setTotalFee(Math.round(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod)));
+                ss.getOriginatingSession().setTotalFfee(Math.round(fetchForiegnFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod)));
+                System.out.println("ss.getTotalFee() = " + ss.getTotalFee());
+                System.out.println("ss.getTotalFee() = " + ss.getTotalFfee());
+//                System.out.println("Math.round(ss.getTotalFee()) = " + Math.round(ss.getTotalFee()));
             }
             ss.setItemFees(fetchFee(ss.getOriginatingSession()));
             //For Settle bill

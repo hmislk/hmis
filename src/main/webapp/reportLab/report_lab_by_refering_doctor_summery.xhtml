@@ -28,18 +28,24 @@
                         </p:calendar>
                         <p:outputLabel value="select Bill Type" />
                         <p:selectOneRadio value="#{commonReport1.radio}">
-                            <f:selectItem itemLabel="All" itemValue="0" />
+                            <f:selectItem itemLabel="Collecting Center and OPD" itemValue="0" />
                             <f:selectItem itemLabel="Collecting Center Only" itemValue="1" />
                             <f:selectItem itemLabel="OPD Only" itemValue="2" />
+                            <f:selectItem itemLabel="Inward Only" itemValue="3" />
                         </p:selectOneRadio>
-
+                        <p:outputLabel value="Channel Doctors Only" />
+                        <p:selectBooleanCheckbox value="#{commonReport1.onlyOPD}" />
                     </h:panelGrid>
                     <h:panelGrid columns="4">
-                        <p:spacer height="1" width="110"/>
                         <p:commandButton value="Process"
                                          ajax="false" style="float: right;"
                                          styleClass="noPrintButton"
                                          action="#{commonReport1.listBillItemsByReferringDoctorSummery}"
+                                         />
+                        <p:commandButton value="Process New"
+                                         ajax="false" style="float: right;"
+                                         styleClass="noPrintButton"
+                                         action="#{commonReport1.listBillItemsByReferringDoctorSummeryCount}"
                                          />
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="panelPrint" />
@@ -74,32 +80,46 @@
                             <f:facet name="header">
                                 <h:outputLabel value="No"/>
                             </f:facet>
-                            <h:outputLabel value="#{i+1}"/>
-                            <f:facet name="footer">
+                            <h:outputLabel value="#{i+1}" rendered="#{d.doctor ne null}"/>
+                            <h:outputLabel value="Total" rendered="#{d.doctor eq null}" style="font-weight: bold;"/>
+<!--                            <f:facet name="footer">
                                 <h:outputLabel value="Total"/>
-                            </f:facet>
+                            </f:facet>-->
                         </p:column>
 
                         <p:column >
                             <f:facet name="header">
                                 <h:outputLabel value="Referring Doctor" />
                             </f:facet>
-                            <h:outputLabel value="#{d.doctor.person.name}"/>
+                            <h:outputLabel value="#{d.doctor.person.name}" rendered="#{d.doctor ne null}"/>
                         </p:column>
 
 
+                        <p:column styleClass="numberCol" sortBy="#{d.count}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Count"/>
+                            </f:facet>
+                            <h:outputLabel value="#{d.count}" style="font-weight: #{d.doctor eq null ? 'Bold':''};">
+                                <f:convertNumber pattern="#,###,##0" />
+                            </h:outputLabel>
+<!--                            <f:facet name="footer">
+                                <h:outputLabel  value="#{commonReport1.biledBillsTotal}" style="float: right;">
+                                    <f:convertNumber pattern="#,###,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>-->
+                        </p:column>
                         <p:column styleClass="numberCol" >
                             <f:facet name="header">
                                 <h:outputLabel value="Net Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{d.total}">
+                            <h:outputLabel value="#{d.total}" style="font-weight: #{d.doctor eq null ? 'Bold':''};">
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
-                            <f:facet name="footer">
+<!--                            <f:facet name="footer">
                                 <h:outputLabel  value="#{commonReport1.biledBillsTotal}" style="float: right;">
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </h:outputLabel>
-                            </f:facet>
+                            </f:facet>-->
                         </p:column>
                     </p:dataTable>
                 </p:panel>        

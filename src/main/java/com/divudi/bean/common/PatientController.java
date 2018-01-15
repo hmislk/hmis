@@ -2,16 +2,20 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.Bill;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.facade.BillFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,6 +73,8 @@ public class PatientController implements Serializable {
 
     @Inject
     PatientEncounterController PatientEncounterController;
+    @Inject
+    CommonController commonController;
 
     @EJB
     BillNumberGenerator billNumberBean;
@@ -77,6 +83,9 @@ public class PatientController implements Serializable {
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
+
+    @EJB
+    BillFacade billFacade;
 
     public void patientSelected() {
         getPatientEncounterController().fillCurrentPatientLists(current);
@@ -305,6 +314,7 @@ public class PatientController implements Serializable {
         if (query == null) {
             return null;
         }
+        Date startTime = new Date();
         String sql;
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
@@ -314,11 +324,21 @@ public class PatientController implements Serializable {
                 + " or upper(p.person.mobile) like :q "
                 + " or upper(p.person.phone) like :q "
                 + " or upper(p.person.address) like :q "
-                + " or upper(p.phn) like :q)"
-                + " order by p.person.name";
+                + " or upper(p.phn) like :q) ";
+
+        if (getReportKeyWord().isAdditionalDetails()) {
+            System.err.println("*** Additonal ***");
+            sql += " and p.code is not null ";
+        }
+
+        sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
+        System.out.println("getReportKeyWord().isAdditionalDetails() = " + getReportKeyWord().isAdditionalDetails());
+        System.out.println("query = " + query);
+        System.out.println("sql = " + sql);
         System.err.println("patientList.size() = " + patientList.size());
+        commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
         return patientList;
     }
 
@@ -393,16 +413,93 @@ public class PatientController implements Serializable {
 
     public void createPatientList() {
         String sql;
-        HashMap hm = new HashMap();
-        sql = "select p from Patient p where p.retired=false ";
-        
+        Map m = new HashMap();
+        sql = " select p from Patient p ";
+
         if (getReportKeyWord().isAdditionalDetails()) {
-            sql += " and p.code is not null";
+            sql += " where ( p.code is not null "
+                    + " or p.code=:code ) ";
+            if (getReportKeyWord().getString().equals("0")) {
+            }
+            if (getReportKeyWord().getString().equals("1")) {
+                sql += " and p.retired=false ";
+            }
+            if (getReportKeyWord().getString().equals("2")) {
+                sql += " and p.retired=true ";
+            }
+            m.put("code", "");
+            sql += " order by p.code ";
+            patientList = getFacade().findBySQL(sql, m, getReportKeyWord().getNumOfRows());
+            for (Patient p : patientList) {
+                if (p.getCreatedAt() != null) {
+                    m = new HashMap();
+                    System.out.println("p.getCreatedAt() = " + p.getCreatedAt());
+                    sql = "select b from Bill b where b.retired=false "
+                            + " and b.billDate=:d "
+                            + " and b.patient.id=:p "
+                            + " and b.paymentMethod=:pm ";
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(p.getCreatedAt());
+                    cal.set(Calendar.HOUR, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    m.put("pm", PaymentMethod.OnlineSettlement);
+                    m.put("d", cal.getTime());
+                    m.put("p", p.getId());
+                    System.out.println("m = " + m);
+                    Bill b = getBillFacade().findFirstBySQL(sql, m);
+                    System.out.println("b = " + b);
+                    if (b != null) {
+                        p.setBill(b);
+                    }
+                }
+            }
+        } else {
+            if (getReportKeyWord().getString().equals("0")) {
+            }
+            if (getReportKeyWord().getString().equals("1")) {
+                sql += " where p.retired=false ";
+            }
+            if (getReportKeyWord().getString().equals("2")) {
+                sql += " where p.retired=true ";
+            }
+            sql += " order by p.createdAt desc ";
+            patientList = getFacade().findBySQL(sql, getReportKeyWord().getNumOfRows());
         }
-        
-        sql += " order by p.code ";
-        patientList = getFacade().findBySQL(sql);
+
         System.err.println("patientList.size() = " + patientList.size());
+    }
+
+    public void activePatient(Patient p) {
+        p.setEditedAt(new Date());
+        p.setEditer(getSessionController().getLoggedUser());
+        p.setRetired(false);
+        p.setRetireComments("Re-Activated");
+        getFacade().edit(p);
+
+        p.getPerson().setEditedAt(new Date());
+        p.getPerson().setEditer(getSessionController().getLoggedUser());
+        p.getPerson().setRetired(false);
+        p.getPerson().setRetireComments("Re-Activated");
+        getPersonFacade().edit(p.getPerson());
+        createPatientList();
+        JsfUtil.addSuccessMessage("Re-Activated");
+    }
+
+    public void deActivePatient(Patient p) {
+        p.setEditedAt(new Date());
+        p.setEditer(getSessionController().getLoggedUser());
+        p.setRetired(true);
+        p.setRetireComments("De-Activated");
+        getFacade().edit(p);
+
+        p.getPerson().setEditedAt(new Date());
+        p.getPerson().setEditer(getSessionController().getLoggedUser());
+        p.getPerson().setRetired(true);
+        p.getPerson().setRetireComments("De-Activated");
+        getPersonFacade().edit(p.getPerson());
+        createPatientList();
+        JsfUtil.addSuccessMessage("De-Activated");
     }
 
     public PatientFacade getEjbFacade() {
@@ -554,6 +651,14 @@ public class PatientController implements Serializable {
 
     public void setPatientList(List<Patient> patientList) {
         this.patientList = patientList;
+    }
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
     }
 
     /**

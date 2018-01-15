@@ -344,6 +344,8 @@ public enum Privileges {
     MemberShipOpdMemberShipDisByDepartment,
     MemberShipOpdMemberShipDisByCategory,
     MemberShipOpdMemberShipDisOpdMemberShipReport,
+    MemberShipMemberDeActive,
+    MemberShipMemberReActive,
     
     HrAdmin,
     HrReports,

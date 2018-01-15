@@ -272,9 +272,9 @@ public class ServiceSessionBean {
             temStr = serviceSession.getCreditNumbers();
         }
 
-        System.out.println("temStr = " + temStr);
+//        System.out.println("temStr = " + temStr);
         availabeNumbers = stringNumbersToInts(temStr, serviceSession);
-        System.out.println("availableNumbers = " + availabeNumbers.toString());
+//        System.out.println("availableNumbers = " + availabeNumbers.toString());
 
         boolean numberGiven;
 
@@ -282,15 +282,15 @@ public class ServiceSessionBean {
             numberGiven = false;
             for (BillSession bs : lgValue) {
                 if (i == bs.getSerialNo()) {
-                    System.out.println("i = " + i);
-                    System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
+//                    System.out.println("i = " + i);
+//                    System.out.println("bs.getSerialNo() = " + bs.getSerialNo());
                     //System.out.println("break");
                     numberGiven = true;
                     break;
                 }
             }
-            System.out.println("i = " + i);
-            System.out.println("numberGiven = " + numberGiven);
+//            System.out.println("i = " + i);
+//            System.out.println("numberGiven = " + numberGiven);
             if (numberGiven == false) {
                 return i;
             }

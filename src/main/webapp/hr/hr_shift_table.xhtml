@@ -88,9 +88,9 @@
 
 
             </div>
-            
+
             <p:panel id="print3" styleClass="printOnly"  >
-                
+
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
@@ -101,7 +101,7 @@
                         <f:convertDateTime pattern="dd MMMM yyyy"/>
                     </h:outputLabel>
                 </f:facet>
-                     <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
+                <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly"   >
                     <tr >
                         <ui:repeat value="#{shiftTableController.shiftTables}" var="data" >
 
@@ -139,7 +139,7 @@
                                             </th>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{shiftTableController.shiftTables[0] eq data}" >
-                                           
+
                                             <th style="border: 1px solid black; text-align:center;">
                                                 <p:outputLabel value="#{data.date}" >
                                                     <f:convertDateTime pattern="EEE" ></f:convertDateTime>
@@ -191,13 +191,14 @@
                 </f:facet>
 
 
-           
+
 
 
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
                              var="data" value="#{shiftTableController.shiftTables}" >
-                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine," >
-                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}">                      
+                    <p:dataTable value="#{data.staffShift}" var="sts" styleClass="singleLine" >
+                        <p:column headerText="Staff Name" rendered="#{data.flag eq true}" 
+                                  >                      
                             <h:outputLabel value="#{sts.staff.person.name}" />
                         </p:column>
                         <p:column headerText="Staff Code" rendered="#{data.flag eq true}" >                        

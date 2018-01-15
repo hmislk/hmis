@@ -83,7 +83,9 @@ public class Patient implements Serializable {
     Date toDate;
     @Size(max = 10)
     String phn;
-  
+    
+    @Transient
+    Bill bill;
 
     public String getPhn() {
         
@@ -333,5 +335,12 @@ public class Patient implements Serializable {
         this.comments = comments;
     }
 
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
 
 }
