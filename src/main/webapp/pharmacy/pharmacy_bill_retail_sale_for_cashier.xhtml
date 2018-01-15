@@ -103,7 +103,7 @@
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                           action="#{pharmacySaleController.addBillItemNew()}" 
                                                           process="@this acStock txtQty :#{p:component('cmbPs')}" 
-                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')}" ></p:commandButton>
+                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelErrorMsg')}" ></p:commandButton>
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>

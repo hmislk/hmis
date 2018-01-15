@@ -33,7 +33,8 @@
                             <f:selectItem itemLabel="OPD Only" itemValue="2" />
                             <f:selectItem itemLabel="Inward Only" itemValue="3" />
                         </p:selectOneRadio>
-
+                        <p:outputLabel value="Channel Doctors Only" />
+                        <p:selectBooleanCheckbox value="#{commonReport1.onlyOPD}" />
                     </h:panelGrid>
                     <h:panelGrid columns="4">
                         <p:commandButton value="Process"

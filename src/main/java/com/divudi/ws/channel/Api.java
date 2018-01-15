@@ -308,7 +308,74 @@ public class Api {
 
         String json = jSONObjectOut.toString();
 //        String json = new Gson().toJson(sessions);
-        System.err.println("~~~~~~Channel API~~~~~~ (Get Sessions) = "+json);
+        System.err.println("~~~~~~Channel API~~~~~~ (Get Sessions) = " + json);
+        return json;
+    }
+
+//    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451
+    @GET
+    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
+    @Produces("application/json")
+    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
+            @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
+            @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
+        System.err.println("~~~~~~Channel API~~~~~~ Make Booking(/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no})");
+        JSONArray bill = new JSONArray();
+        String json = new String();
+        List<Object[]> list = new ArrayList<>();
+        JSONObject jSONObjectOut = new JSONObject();
+        Long h_id = Long.parseLong(hospital_id);
+        Long ss_id = Long.parseLong(session_id);
+        Long a_id = Long.parseLong(agent_id);
+//        Long ar_no = Long.parseLong(agent_reference_no);
+        URLDecoder decoder = new URLDecoder();
+        try {
+
+            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
+//            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
+//            System.out.println("s = " + s);
+            if (!"".equals(s)) {
+                jSONObjectOut.put("make_booking", s);
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "No Data.");
+                json = jSONObjectOut.toString();
+                return json;
+            }
+            ServiceSession ss = serviceSessionFacade.find(ss_id);
+            if (ss != null) {
+                //For Settle bill
+                ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
+                ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
+                ss.setItemFees(fetchFee(ss.getOriginatingSession()));
+                //For Settle bill
+                ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
+                ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
+                ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
+            } else {
+                jSONObjectOut.put("make_booking", "Invalid Session Id");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", "No Data.");
+                return jSONObjectOut.toString();
+            }
+//            System.out.println("ss = " + ss);
+            Bill b;
+            b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
+
+//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
+//            System.out.println("b = " + b);
+            bill = billDetails(b.getId());
+            jSONObjectOut.put("make_booking", bill);
+            jSONObjectOut.put("error", "0");
+            jSONObjectOut.put("error_description", "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            jSONObjectOut.put("make_booking", bill);
+            jSONObjectOut.put("error", "1");
+            jSONObjectOut.put("error_description", "Invalid Argument.");
+        }
+
+        json = jSONObjectOut.toString();
+        System.err.println("~~~~~~Channel API~~~~~~ Json(Make Booking) = " + json);
         return json;
     }
 
@@ -380,7 +447,7 @@ public class Api {
         }
 
         json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Make Booking) = "+json);
+        System.err.println("~~~~~~Channel API~~~~~~ Json(Make Booking) = " + json);
         return json;
     }
 
@@ -883,7 +950,6 @@ public class Api {
 //        System.out.println("m = " + m);
 //        System.out.println("sql = " + sql);
 //        System.out.println("sessions.size() = " + sessions.size());
-
         Date beforeDate = null;
         for (ServiceSession s : sessions) {
 //            System.out.println("s = " + s.getSessionAt());
@@ -1185,7 +1251,7 @@ public class Api {
         return savingBill;
     }
 
-        private Bill createBill(ServiceSession ss, String name, String phone, long agent) {
+    private Bill createBill(ServiceSession ss, String name, String phone, long agent) {
         Bill bill = new BilledBill();
         bill.setStaff(ss.getOriginatingSession().getStaff());
         bill.setAppointmentAt(ss.getSessionDate());
@@ -1538,7 +1604,6 @@ public class Api {
 
 //        System.out.println("billClassType = " + billClassType);
 //        System.out.println("insId = " + insId);
-
         return insId;
     }
 
@@ -1580,7 +1645,6 @@ public class Api {
 
 //        System.out.println("billClassType = " + billClassType);
 //        System.out.println("deptId = " + deptId);
-
         return deptId;
     }
 

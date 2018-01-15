@@ -299,7 +299,11 @@ public class QuickBookReportController implements Serializable {
         for (Institution i : fetchCreditCompany(commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), true, BillType.OpdBill)) {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
-            System.out.println("i.getName() = " + i.getName());
+            if (i!=null) {
+                System.out.println("****i.getName() = " + i.getName());
+            }else{
+                System.out.println("****i = " + i);
+            }
             qbfs.addAll(fetchOPdListWithProDayEndTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
             qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, commonFunctions.getStartOfDay(fromDate), commonFunctions.getEndOfDay(toDate), i));
             QuickBookFormat qbf = new QuickBookFormat();
@@ -2212,7 +2216,8 @@ public class QuickBookReportController implements Serializable {
                 + " from Bill b "
                 + " where b.institution=:ins "
                 + " and b.billType= :bTp  "
-                + " and b.retired=false ";
+                + " and b.retired=false"
+                + " and b.creditCompany is not null ";
 
         if (isOpd) {
             jpql += " and b.createdAt between :fd and :td "

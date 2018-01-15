@@ -25,11 +25,13 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.PersonInstitution;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.PersonInstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +60,9 @@ public class CommonReport1 implements Serializable {
     ///////////////////
     @EJB
     private BillFacade billFacade;
+    @EJB
+    PersonInstitutionFacade personInstitutionFacade;
+
     @EJB
     CommonFunctions commonFunctions;
     ////////////////////
@@ -610,6 +615,12 @@ public class CommonReport1 implements Serializable {
                 p.setName("No Name");
                 doc.setPerson(p);
                 d = doc;
+                continue;
+            }
+            if (onlyOPD) {
+                if (checkDoctor(d)) {
+                    continue;
+                }
             }
             System.out.println("d.getName() = " + d.getPerson().getName());
             BillClassType billClassType = (BillClassType) o[1];
@@ -622,7 +633,12 @@ public class CommonReport1 implements Serializable {
                 }
             }
             System.out.println("l = " + l);
-            double tot = (double) o[3];
+            double tot = 0.0;
+            try {
+                tot = (double) o[3];
+            } catch (Exception e) {
+                System.out.println("Errrror d.getName() = " + d.getPerson().getName());
+            }
             System.out.println("tot = " + tot);
             if (lastDoctor == null) {
                 row.setDoctor(d);
@@ -2122,6 +2138,26 @@ public class CommonReport1 implements Serializable {
                 System.out.println("netTotal = " + netTotal);
             } catch (Exception e) {
             }
+        }
+
+    }
+
+    private boolean checkDoctor(Doctor doctor) {
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi from PersonInstitution pi where pi.retired=false "
+                + " and pi.staff=:staff ";
+
+        m.put("staff", doctor);
+
+        PersonInstitution pi = personInstitutionFacade.findFirstBySQL(sql, m);
+        if (pi != null) {
+            System.out.println("pi.getStaff().getPerson().getName() = " + pi.getStaff().getPerson().getName());
+            return false;
+        } else {
+            System.err.println("Not Channel Doc = " + doctor.getPerson().getName());
+            return true;
         }
 
     }

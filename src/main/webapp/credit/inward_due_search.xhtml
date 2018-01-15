@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -48,22 +49,29 @@
                             </h:panelGrid>
                             <p:spacer width="120" height="1"/>
                             <p:commandButton ajax="false" value="Process" action="#{creditCompanyDueController.createInwardCashDue()}"/>
+                            <p:commandButton value="Excel" ajax="false" actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" >
+                                <pe:exporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx" />
+                            </p:commandButton>
                         </f:facet>
-                        <p:dataTable value="#{creditCompanyDueController.patientEncounters}"  var="p" rowIndexVar="i" >
+                        <p:dataTable id="lstDue" value="#{creditCompanyDueController.patientEncounters}"  var="p" rowIndexVar="i" >
                             <p:column>
-                                #{i+1}
+                                <p:outputLabel value="#{i+1}" />
                             </p:column>
                             <p:column headerText="BHT">
-                                #{p.bhtNo}
+                                <p:outputLabel value="#{p.bhtNo}" />
                             </p:column>
                             <p:column headerText="Company">
-                                #{p.creditCompany.name}
+                                <p:outputLabel value="#{p.creditCompany.name}" />
                             </p:column>
                             <p:column headerText="Admissted At">
-                                #{p.dateOfAdmission}
+                                <p:outputLabel value="#{p.dateOfAdmission}" >
+                                    <f:convertDateTime pattern="yy MM dd hh:mmss a" />
+                                </p:outputLabel>
                             </p:column>
                             <p:column headerText="Discharged At">
-                                #{p.dateOfDischarge}
+                                <p:outputLabel value="#{p.dateOfDischarge}" >
+                                    <f:convertDateTime pattern="yy MM dd hh:mmss a" />
+                                </p:outputLabel>
                             </p:column>
                             <p:column headerText="Final Total"  style="text-align: right;">
                                 <h:outputLabel value="#{p.finalBill.netTotal}">
@@ -96,8 +104,8 @@
                                     </h:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
-                            
+
+
                             <p:column headerText="Due"  style="text-align: right;" >
 
                                 <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)):0.00}">
