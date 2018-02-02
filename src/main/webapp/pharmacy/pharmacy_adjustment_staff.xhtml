@@ -21,7 +21,8 @@
                                     <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item">
-                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                            commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Rate">
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
@@ -34,7 +35,8 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Expiry">
-                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                            commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
                                         <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>

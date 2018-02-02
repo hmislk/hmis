@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.memberShip.PaymentSchemeController;
@@ -577,6 +578,7 @@ public class PharmacyIssueController implements Serializable {
         }
 
         if (getToDepartment() == null) {
+            errorMessage = "Please Select To Department";
             UtilityController.addErrorMessage("Please Select To Department");
             return;
         }
@@ -584,6 +586,7 @@ public class PharmacyIssueController implements Serializable {
         IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(sessionController.getDepartment(), getToDepartment());
 
         if (issueRateMargins == null) {
+            errorMessage = "Set Issue Margin";
             UtilityController.addErrorMessage("Set Issue Margin");
             return;
         }
@@ -615,6 +618,12 @@ public class PharmacyIssueController implements Serializable {
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             errorMessage = "Sorry. Another user is already billed that item so that there is no sufficient stocks for you. Please check.";
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
+            return;
+        }
+        
+        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+            errorMessage = "This batch is Expire With in 31 Days.";
+            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
             return;
         }
 
@@ -847,6 +856,22 @@ public class PharmacyIssueController implements Serializable {
         stock = null;
         editingQty = null;
 
+    }
+    
+    public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
+        Calendar calDateOfExpiry = Calendar.getInstance();
+        calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
+        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        System.out.println("1.cal.getTime() = " + cal.getTime());
+        cal.add(Calendar.DATE, 31);
+        System.out.println("2.cal.getTime() = " + cal.getTime());
+        if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public SessionController getSessionController() {

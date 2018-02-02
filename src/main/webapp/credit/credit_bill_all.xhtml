@@ -16,24 +16,32 @@
                         <f:facet name="header" >
                             <h:panelGroup>
                                 <h:panelGrid columns="1">
-                                    <h:outputLabel value="Balance Payment Search"/>
+                                    <h:outputLabel value="Credit Report"/>
                                 </h:panelGrid>
                                 <h:panelGrid columns="2" id="pan">
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{mdInwardReportController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
                                     <p:outputLabel value="Payments For : "/>
                                     <p:selectOneRadio value="#{mdInwardReportController.reportKeyWord.string}" >
+                                        <f:selectItem itemLabel="All" itemValue="3" />
                                         <f:selectItem itemLabel="Inward" itemValue="0" />
                                         <f:selectItem itemLabel="OPD" itemValue="1" />
                                         <f:selectItem itemLabel="Pharmacy" itemValue="2" />
                                         <f:ajax event="change" execute="@this" render="pan" />
                                     </p:selectOneRadio>
+                                    <p:outputLabel value="Credit Company"></p:outputLabel>
+                                    <p:autoComplete id="creditCompany" 
+                                                    forceSelection="true"
+                                                    value="#{mdInwardReportController.reportKeyWord.institution}"  
+                                                    completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                    itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
+                                    </p:autoComplete> 
                                     <p:outputLabel value="Admission Type" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}"/>
                                     <p:selectOneMenu value="#{mdInwardReportController.admissionType}" rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                                         <f:selectItem itemLabel="All Admission Type"/>
@@ -95,7 +103,7 @@
                                     </f:facet>
                                     <h:outputLabel value="#{b.insId}" />                                      
                                 </p:column>
-                                
+
                                 <p:column rendered="#{mdInwardReportController.reportKeyWord.string ne '0'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Ref. Bill No"/>
@@ -109,7 +117,7 @@
                                     <h:outputLabel value="#{b.createdAt}" >
                                         <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
-                               
+
                                     <h:panelGroup rendered="#{b.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " >
                                         </h:outputLabel>
@@ -118,8 +126,8 @@
                                         </h:outputLabel>
                                     </h:panelGroup>                             
                                 </p:column>
-                                
-                                
+
+
                                 <p:column rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill Date"/>
@@ -128,21 +136,30 @@
                                         <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
                                 </p:column>
-
+                                
                                 <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Credit Company"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.creditCompany.name}" rendered="#{b.billType eq 'OpdBill'}"/>                                      
+                                    <h:outputLabel value="#{b.patientEncounter.creditCompany.name}" rendered="#{b.billType eq 'InwardFinalBill'}"/>                                      
+                                    <h:outputLabel value="#{b.toInstitution.name}" rendered="#{b.billType eq 'PharmacyWholeSale' or b.billType eq 'PharmacySale'}"/>                                      
+                                </p:column>
+
+<!--                                <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company"/>
                                     </f:facet>
                                     <h:outputLabel value="#{b.creditCompany.name}" rendered="#{mdInwardReportController.reportKeyWord.string ne '2'}"/>                                      
                                     <h:outputLabel value="#{b.toInstitution.name}" rendered="#{mdInwardReportController.reportKeyWord.string eq '2'}"/>                                      
-                                </p:column>
-
-<!--                                <p:column headerText="Payment Method">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Payment Method"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{b.paymentMethod}" ></h:outputLabel>                                   
                                 </p:column>-->
+
+                                <!--                                <p:column headerText="Payment Method">
+                                                                    <f:facet name="header">
+                                                                        <h:outputLabel value="Payment Method"/>
+                                                                    </f:facet>
+                                                                    <h:outputLabel value="#{b.paymentMethod}" ></h:outputLabel>                                   
+                                                                </p:column>-->
 
                                 <p:column style="text-align: right;">
                                     <f:facet name="header">

@@ -18,16 +18,24 @@
                     <p:panel header="Patient Details" styleClass="alignTop" style="height: 600px;">
                         <h:panelGrid columns="1" >
                             <h:panelGrid columns="2" >
-                                <p:outputLabel value="Only Active Patient" />
+                                <p:outputLabel value="Search Type" />
                                 <p:selectOneRadio value="#{patientController.reportKeyWord.string}" >
                                     <f:selectItem itemLabel="All" itemValue="0" />
                                     <f:selectItem itemLabel="Active" itemValue="1" />
                                     <f:selectItem itemLabel="De-Active" itemValue="2" />
                                 </p:selectOneRadio>
                                 <p:outputLabel value="Only Registed Patient" />
-                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" />
-                                <p:outputLabel value="Only Active Patient" />
+                                <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" >
+                                    <f:ajax event="change" execute="@this" render="selectMem" />
+                                </p:selectBooleanCheckbox>
+                                <p:outputLabel value="Search Record Count" />
                                 <p:inputText value="#{patientController.reportKeyWord.numOfRows}" />
+                                <h:outputLabel value="Membership"/>
+                                <p:selectOneMenu id="selectMem" value="#{patientController.reportKeyWord.membershipScheme}" style="width: 290px;" 
+                                                 disabled="#{!patientController.reportKeyWord.additionalDetails}" >
+                                    <f:selectItem itemLabel="Select Membership" />
+                                    <f:selectItems value="#{membershipSchemeController.items}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
+                                </p:selectOneMenu>
                                 <p:commandButton value="Process" ajax="false" action="#{patientController.createPatientList()}" />
                             </h:panelGrid>
                             <p:panel id="panelSearch" header="Patient Details" styleClass="summeryBorder" >
@@ -59,9 +67,21 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header" >
+                                            <p:outputLabel value="Membership" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.membershipScheme.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
                                             <p:outputLabel value="PHN" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.phn}"/>
+                                    </p:column>
+                                    <p:column sortBy="#{p.person.area.name}" >
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Area" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.area.name}"/>
                                     </p:column>
                                     <p:column >
                                         <f:facet name="header" >
@@ -138,11 +158,13 @@
                                         <p:commandButton value="Re-Active" action="#{patientController.activePatient(p)}" 
                                                          rendered="#{p.retired eq true}" ajax="false"
                                                          disabled="#{!webUserController.hasPrivilege('MemberShipMemberReActive')}" 
-                                                         onclick="if (!confirm('Are you sure you want to Re-Active this Patient?')) return false;" />
+                                                         onclick="if (!confirm('Are you sure you want to Re-Active this Patient?'))
+                                                                     return false;" />
                                         <p:commandButton value="De-Active" action="#{patientController.deActivePatient(p)}" 
                                                          rendered="#{p.retired eq false}" ajax="false"
                                                          disabled="#{!webUserController.hasPrivilege('MemberShipMemberDeActive')}" 
-                                                         onclick="if (!confirm('Are you sure you want to De-Active this Patient?')) return false;" />
+                                                         onclick="if (!confirm('Are you sure you want to De-Active this Patient?'))
+                                                                     return false;" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>

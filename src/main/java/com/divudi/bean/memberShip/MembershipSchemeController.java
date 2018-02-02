@@ -14,6 +14,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -113,6 +114,14 @@ public class MembershipSchemeController implements Serializable {
 
     public void saveSelected() {
         getCurrent().setInstitution(getSessionController().getInstitution());
+        if (getCurrent().getCode()==null || getCurrent().getCode().equals("")) {
+            JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
+            return ;
+        }
+        if (getCurrent().getCode().length()>2) {
+            JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
+            return ;
+        }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -183,7 +192,7 @@ public class MembershipSchemeController implements Serializable {
 
     public List<MembershipScheme> getItems() {
         if (items == null) {
-            items = new ArrayList<>();
+            fillItems();
         }
         return items;
     }

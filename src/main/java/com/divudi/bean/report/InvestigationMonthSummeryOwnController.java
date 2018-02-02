@@ -1470,18 +1470,24 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                     rowInv = new InvestigationCountWithMachine();
                     row.setListOfInvestigationCounts(listRowInv);
                     listRowInv = new ArrayList<>();
-
+//                    System.err.println("***********");
+//                    System.out.println("totalCount = " + totalCount);
+//                    System.out.println("total = " + total);
+//                    System.err.println("***********");
                     totalOpdCount += row.getOpdCount();
                     totalccCount += row.getCcCount();
                     totalInwardCount += row.getInwardCount();
-                    totalCount += (totalOpdCount + totalccCount + totalInwardCount);
+//                    totalCount += (totalOpdCount + totalccCount + totalInwardCount);
 
                     totalOpd += row.getOpdTotal();
                     totalcc += row.getCcTotal();
                     totalInward += row.getInwardTotal();
-                    total += (totalOpd + totalcc + totalInward);
+//                    total += (totalOpd + totalcc + totalInward);
 
                     investigationCountWithMachines.add(row);
+//                    System.out.println("row.getMachine().getName() = " + row.getMachine().getName());
+//                    System.out.println("totalCount = " + totalCount);
+//                    System.out.println("total = " + total);
                     System.err.println("********Add********");
                     row = new InvestigationCountWithMachine();
                     row.setMachine(m);

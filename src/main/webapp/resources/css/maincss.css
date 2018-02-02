@@ -863,6 +863,10 @@ body {
     max-width: 400px;
 }
 
+.mediuminputnew .ui-inputfield{
+    width: 280px;
+}
+
 .noBorderGrid tr , .noBorderGrid table tbody td , .noBorderGrid table tbody tr td , .noBorderGrid table tbody tr  , noBorderGrid td , noBorderGrid tr td, noBorderGrid tbody , noBorderGrid tbody tr, noBorderGrid tbody tr td ,noBorderGrid tbody td , noBorderGrid tbody td,  noBorderGrid tfoot td{
     border: 0px none!important;
     border-width: 0px;

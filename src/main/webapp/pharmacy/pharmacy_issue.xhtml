@@ -52,9 +52,9 @@
                                         <p:ajax process="acDept" update=":#{p:component('pBillDetails')} #{p:component('tblBillItem')} " 
                                                 event="itemSelect"  listener="#{pharmacyIssueController.calculateAllRates}" />
                                     </p:autoComplete>
-                                    
+
                                     <p:inputText value="#{storeIssueController.preBill.invoiceNumber}" id="req"/>
-                                    
+
                                     <p:watermark value="Request Number" for="req"/>
                                     <p:watermark value="Issuing Department" for="acDept"/>
 
@@ -71,7 +71,9 @@
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             style="width: 50px!important;">
                                                 <p:column headerText="Item">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                                    <h:outputLabel value="#{i.itemBatch.item.name}" 
+                                                                   style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                            commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" ></h:outputLabel>
@@ -87,7 +89,8 @@
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Expiry">
-                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
+                                                    <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                            commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
@@ -118,10 +121,10 @@
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{pharmacyIssueController.addBillItem}"
+                                                          action="#{pharmacyIssueController.addBillItem}"
                                                           onclick="onSubmitButton();"
                                                           process="@this acStock txtQty :#{p:component('acDept')}" 
-                                                          update=":#{p:component('pBillDetails')} :#{p:component('panelError')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
+                                                          update=":#{p:component('pBillDetails')} :#{p:component('panelError')} :#{p:component('panelError')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -238,9 +241,9 @@
                                 <f:facet name="header" >
                                     <h:panelGrid columns="20"  >
                                         <p:commandButton  accesskey="s" value="Issue" 
-                                                         action="#{pharmacyIssueController.settleBill()}" 
+                                                          action="#{pharmacyIssueController.settleBill()}" 
                                                           onclick="onSubmitButton();"
-                                                         actionListener="#{pharmacyIssueController.calculateAllRates}">
+                                                          actionListener="#{pharmacyIssueController.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -248,8 +251,8 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
                                                          onclick="onSubmitButton();"
-                                                       ajax="false" action="/pharmacy/pharmacy_issue"
-                                                        actionListener="#{pharmacyIssueController.resetAll()}"  ></p:commandButton>
+                                                         ajax="false" action="/pharmacy/pharmacy_issue"
+                                                         actionListener="#{pharmacyIssueController.resetAll()}"  ></p:commandButton>
 
 
                                     </h:panelGrid>
@@ -306,21 +309,21 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
                                              onclick="onSubmitButton();"
-                                           ajax="false" action="/pharmacy/pharmacy_issue" 
-                                            actionListener="#{pharmacyIssueController.resetAll()}" ></p:commandButton>
+                                             ajax="false" action="/pharmacy/pharmacy_issue" 
+                                             actionListener="#{pharmacyIssueController.resetAll()}" ></p:commandButton>
 
                         </div>
-<!--                        <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
-                                <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>
-                            </h:panelGroup>
-                        </div>-->
+                        <!--                        <div >
+                                                    <h:panelGroup   id="gpBillPreview"   > 
+                                                        <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>
+                                                    </h:panelGroup>
+                                                </div>-->
 
                         <h:panelGroup   id="gpBillPreview" > 
 
                             <h:panelGroup   id="gpBillPreviewSingle" >
 
-                                
+
 
                             </h:panelGroup>
 
@@ -331,7 +334,7 @@
                                         <phi:saleBill_prabodha bill="#{pharmacyIssueController.printBill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
-                                
+
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" > 
                                         <phi:issue bill="#{pharmacyIssueController.printBill}"></phi:issue>

@@ -9,6 +9,7 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.table.String1Value2;
 import com.divudi.data.table.String2Value4;
@@ -22,6 +23,7 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.PatientItem;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -48,6 +50,15 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardReportControllerBht implements Serializable {
 
+    @EJB
+    BillFeeFacade billFeeFacade;
+    @EJB
+    PatientItemFacade patientItemFacade;
+    @EJB
+    PatientRoomFacade patientRoomFacade;
+    @EJB
+    BillFacade billFacade;
+    
     PatientEncounter patientEncounter;
     Bill bill;
     private AdmissionType admissionType;
@@ -60,14 +71,9 @@ public class InwardReportControllerBht implements Serializable {
     List<String2Value4> inwardCharges;
     List<BillItem> creditPayment;
     List<Bill> paidbyPatientBillList;
-    @EJB
-    BillFeeFacade billFeeFacade;
-    @EJB
-    PatientItemFacade patientItemFacade;
-    @EJB
-    PatientRoomFacade patientRoomFacade;
-    @EJB
-    BillFacade billFacade;
+    List<PatientRoom> patientRooms;
+    
+    ReportKeyWord reportKeyWord;
 
     ////
     @Inject
@@ -865,7 +871,7 @@ public class InwardReportControllerBht implements Serializable {
 
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
         calTotal();
-        
+
         commonController.printReportDetails(startTime, startTime, startTime, "BHT income by categories individual BHT( /faces/inward/inward_report_bht_income_by_caregories_bht.xhtml)");
     }
 
@@ -902,6 +908,43 @@ public class InwardReportControllerBht implements Serializable {
         createTimedService();
         createInwardService();
         finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
+
+    }
+
+    public void createAllRooms() {
+        HashMap m = new HashMap();
+        String sql = "SELECT pr FROM PatientRoom pr "
+                + " where pr.retired=false "
+                + " and pr.patientEncounter.paymentFinalized=true "
+                + " and pr.patientEncounter.dateOfDischarge between :fd and :td "
+                + " and pr.patientEncounter.discharged=true ";
+
+        if (getReportKeyWord().getAdmissionType() != null) {
+            sql = sql + " and pr.patientEncounter.admissionType=:at ";
+            m.put("at", getReportKeyWord().getAdmissionType());
+        }
+
+        if (getReportKeyWord().getPaymentMethod() != null) {
+            sql = sql + " and pr.patientEncounter.paymentMethod=:bt ";
+            m.put("bt", getReportKeyWord().getPaymentMethod());
+        }
+
+        if (getReportKeyWord().getInstitution() != null) {
+            sql = sql + " and pr.patientEncounter.creditCompany=:cc ";
+            m.put("cc", getReportKeyWord().getInstitution());
+        }
+        if (getReportKeyWord().getPatientEncounter() != null) {
+            sql = sql + " and pr.patientEncounter=:pe ";
+            m.put("pe", getReportKeyWord().getPatientEncounter());
+        }
+        
+        sql+=" order by pr.patientEncounter.bhtNo ";
+        
+        m.put("fd", getReportKeyWord().getFromDate());
+        m.put("td", getReportKeyWord().getToDate());
+
+        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        System.out.println("patientRooms.size() = " + patientRooms.size());
 
     }
 
@@ -1122,6 +1165,25 @@ public class InwardReportControllerBht implements Serializable {
         this.paidbyPatientTotalValue = paidbyPatientTotalValue;
     }
 
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord==null) {
+            reportKeyWord=new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<PatientRoom> getPatientRooms() {
+        return patientRooms;
+    }
+
+    public void setPatientRooms(List<PatientRoom> patientRooms) {
+        this.patientRooms = patientRooms;
+    }
+
     //DATA STRUCTURE
     public class OpdService {
 
@@ -1319,5 +1381,4 @@ public class InwardReportControllerBht implements Serializable {
         this.commonController = commonController;
     }
 
-    
 }

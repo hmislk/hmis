@@ -176,7 +176,7 @@
                                 <f:facet name="header" >
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
-                                    <p:commandButton  process="panelDetails" update="acPt" value="Save" 
+                                    <p:commandButton  process="panelDetails" update="acPt :#{p:component('patientDetail')}" value="Save" 
                                                       action="#{patientController.saveSelected()}"></p:commandButton>
 
                                 </f:facet>
@@ -188,93 +188,84 @@
 
                                         <h:panelGrid id="patientDetail" columns="2" >
                                             <h:panelGrid columns="2" >
+                                                <h:outputLabel value="Membership"/>
+                                                <p:selectOneMenu value="#{patientController.current.person.membershipScheme}" style="width: 290px;" disabled="#{!webUserController.hasPrivilege('Developers') and patientController.current.id ne null}">
+                                                    <f:selectItem itemLabel="Select Membership" />
+                                                    <f:selectItems value="#{membershipSchemeController.items}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
+                                                    <f:ajax event="change" execute="@this" render="txtCode" listener="#{patientController.membershipChangeListner}" />
+                                                </p:selectOneMenu>
                                                 <h:outputLabel value="Title"/>
-                                                <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}"  >
+                                                <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}" style="width: 290px;" >
                                                     <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
                                                 </p:selectOneMenu>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
                                                 <h:outputLabel value="Name"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" 
+                                                             style="width: 280px;text-transform:uppercase;">
                                                 </p:inputText>
 
                                                 <h:outputLabel value="Code"/>
-                                                <p:inputText value="#{patientController.current.code}"/>
+                                                <p:inputText id="txtCode" value="#{patientController.current.code}" maxlength="8" style="width: 280px;" disabled="#{!webUserController.hasPrivilege('Developers') and patientController.current.person.membershipScheme ne null}"/>
 
                                                 <h:outputLabel  value="PHN"/>
-                                                <p:inputText  id="phn"  autocomplete="off"  value="#{patientController.current.phn}"/>
-                                                <!--<h:outputLabel value="#{patientController.current.phn}" ></h:outputLabel>-->
-
-                                                <!--
-                                                                                                <h:outputLabel value="Membership"/>
-                                                                                                <p:selectOneMenu value="#{patientController.current.person.membershipScheme}"
-                                                                                                                 >
-                                                                                                    <f:selectItem itemLabel="Select Membership Scheme" ></f:selectItem>
-                                                                                                    <f:selectItems value="#{membershipSchemeController.items}"
-                                                                                                                   var="ms"
-                                                                                                                   itemLabel="#{ms.name}"
-                                                                                                                   itemValue="#{ms}" ></f:selectItems>
-                                                                                                </p:selectOneMenu>-->
-
-
-
-
+                                                <p:inputText  id="phn"  autocomplete="off"  value="#{patientController.current.phn}" style="width: 280px;"/>
                                                 <h:outputLabel value="Sex"/>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
-                                                <p:selectOneMenu rendered="#{patientController.current.person ne null}" id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 200px;">
+                                                <p:selectOneMenu rendered="#{patientController.current.person ne null}" id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 290px;">
                                                     <f:selectItem itemLabel="Select Sex"/>
                                                     <f:selectItems value="#{patientController.sexs}"/>
                                                 </p:selectOneMenu>
 
+                                                <h:outputLabel value="Date of Birth"/>
+                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="dd/MM/yyyy" >
+                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
+                                                </p:calendar>
+                                                
                                                 <h:outputLabel value="Age"/>
                                                 <h:panelGrid columns="3">
-                                                    <p:inputText autocomplete="off"  id="year" style="width: 80px;" value="#{patientController.yearMonthDay.year}">
-                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob lblPtAge" listener="#{patientController.dateChangeListen()}"  />
+                                                    <p:inputText autocomplete="off"  id="year" style="width: 95px;" value="#{patientController.yearMonthDay.year}">
+                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob" listener="#{patientController.dateChangeListen()}"  />
                                                     </p:inputText>
 
                                                     <p:inputText autocomplete="off" id="month"   style="width: 80px;" value="#{patientController.yearMonthDay.month}">
-                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob lblPtAge" listener="#{patientController.dateChangeListen()}"  />
+                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob" listener="#{patientController.dateChangeListen()}"  />
                                                     </p:inputText>
 
                                                     <p:inputText autocomplete="off" id="day"  style="width: 80px;"  value="#{patientController.yearMonthDay.day}">
-                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob lblPtAge" listener="#{patientController.dateChangeListen()}" />
+                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob" listener="#{patientController.dateChangeListen()}" />
                                                     </p:inputText>
 
                                                     <p:watermark value="#{patientController.current.ageYears} years" for="year" ></p:watermark>
                                                     <p:watermark value="#{patientController.current.ageMonths} months" for="month" ></p:watermark>
                                                     <p:watermark value="#{patientController.current.ageDays} days" for="day" ></p:watermark>
-
                                                 </h:panelGrid>
 
                                                 <h:outputLabel value="Address"/>
                                                 <p:inputTextarea id="txtNewPtAddress" value="#{patientController.current.person.address}" 
-                                                                 style="width: 400px; height: 75px;">
+                                                                 style="width: 280px; height: 75px;">
                                                 </p:inputTextarea>
 <!--                                                <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
                                                 </p:inputText>-->
                                                 <p:outputLabel value="Area"></p:outputLabel>
-                                                <p:autoComplete styleClass="mediuminput" widgetVar="np" id="acnp" forceSelection="true" 
+                                                <p:autoComplete styleClass="mediuminputnew" widgetVar="np" id="acnp" forceSelection="true" 
                                                                 value="#{patientController.current.person.area}" 
                                                                 completeMethod="#{areaController.completeArea}" 
                                                                 var="npt" itemLabel="#{npt.name}" 
-                                                                itemValue="#{npt}" size="30"  style="width: 40px;">
+                                                                itemValue="#{npt}">
                                                 </p:autoComplete>
                                                 <h:outputLabel value="Phone"/>
-                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
+                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
                                                 </p:inputMask>
-                                                <h:outputLabel value="Date of Birth"/>
-                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
-                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge year month day" listener="#{patientController.dobChangeListen()}"/>
-                                                </p:calendar>
                                                 <h:outputLabel value="NIC" />
-                                                <p:inputText maxlength="12" value="#{patientController.current.person.nic}"/>
+                                                <p:inputText maxlength="12" value="#{patientController.current.person.nic}" style="width: 280px;"/>
                                                 <!--<p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />-->
-                                                <h:outputLabel value=""/>
-
-                                                <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>
-
+                                                <h:outputLabel value="Email"/>
+                                                <p:inputText autocomplete="off" value="#{patientController.current.person.email}" style="width: 280px;"/>
+<!--                                                <h:outputLabel value=""/>
+                                                <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>-->
                                                 <h:outputLabel value="Comments"/>
                                                 <p:inputTextarea id="txtNewPtComments" value="#{patientController.current.comments}" 
-                                                                 style="width: 400px; height: 75px;">
+                                                                 style="width: 280px; height: 75px;">
                                                 </p:inputTextarea>
 
                                             </h:panelGrid>
@@ -283,7 +274,7 @@
 
                                     </p:tab>
 
-                                    <p:tab title="Photo" >
+                                    <p:tab title="Photo"  rendered="false">
 
 
                                         <p:tab title="Visit Details" >
