@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Room Charge Report By BHT Wise" styleClass="alignTop" >
+                        <h:panelGrid columns="2">
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar navigator="true" id="fromDate" value="#{inwardReportControllerBht.reportKeyWord.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar navigator="true" id="toDate" value="#{inwardReportControllerBht.reportKeyWord.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            </p:calendar>
+                            <h:outputText value="Admission Type" ></h:outputText>
+                            <p:selectOneMenu  id="lstSelect"   value="#{inwardReportControllerBht.reportKeyWord.admissionType}" >
+                                <f:selectItem itemLabel="Select Admission Type"/>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT Type  " ></h:outputLabel>
+                            <p:selectOneMenu   id="cmbBhtType" value="#{inwardReportControllerBht.reportKeyWord.paymentMethod}"  >
+                                <f:selectItem itemLabel="All BHT Types" />                           
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="BHT No  " ></h:outputLabel>
+                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                            value="#{inwardReportControllerBht.reportKeyWord.patientEncounter}"
+                                            completeMethod="#{admissionController.completePatientAll}" 
+                                            var="myItem" itemValue="#{myItem}" 
+                                            itemLabel="#{myItem.bhtNo}" 
+                                            size="30"  >
+                                <p:column>
+                                    #{myItem.bhtNo}
+                                </p:column>
+                                <p:column>
+                                    #{myItem.patient.person.nameWithTitle}
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="Finalized"  rendered="#{myItem.paymentFinalized}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
+                                </p:column>
+                            </p:autoComplete>   
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton value="Search" ajax="false" action="#{inwardReportControllerBht.createAllRooms()}" />
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <pe:exporter type="xlsx" target="tbl" fileName="newly_added_report"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                    </p:panel>
+
+                    <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
+                        <p:dataTable value="#{inwardReportControllerBht.patientRooms}" var="pr" id="tbl" rowIndexVar="i">
+                            <f:facet name="header" >
+                                <p:outputLabel value="BHT VAT Report" />
+                                <h:outputLabel value="Admission Type : All Addmissions" rendered="#{inwardReportControllerBht.reportKeyWord.admissionType eq null}" style=" white-space:pre-line;"/>
+                                <h:outputLabel value="Admission Type : #{inwardReportControllerBht.reportKeyWord.admissionType}" rendered="#{inwardReportControllerBht.reportKeyWord.admissionType ne null}" style=" white-space:pre-line;"/>
+                                <h:outputLabel value="BHT No : #{inwardReportControllerBht.reportKeyWord.patientEncounter.patient.person.name}" rendered="#{inwardReportControllerBht.reportKeyWord.patientEncounter ne null}" style=" white-space:pre-line;"/>
+                                <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{inwardReportControllerBht.reportKeyWord.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{inwardReportControllerBht.reportKeyWord.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
+                            </f:facet>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputLabel value="No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{i+1}"/>
+                            </p:column>
+                            <p:column sortBy="#{pr.patientEncounter.bhtNo}">
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{pr.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column >
+                                <f:facet name="header">
+                                    <h:outputLabel value="BHT No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{pr.roomFacilityCharge.room.name}"/>
+                            </p:column>
+                            <p:column style="width: 50%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Admit Date"/> 
+                                </f:facet>
+                                <h:outputLabel value="#{pr.patientEncounter.dateOfAdmission}">
+                                    <f:convertDateTime pattern="yy MM dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="width: 50%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discharge Date"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{pr.patientEncounter.dateOfDischarge}">
+                                    <f:convertDateTime pattern="yy MM dd hh:mm:ss a" />
+                                </h:outputLabel>
+                            </p:column>
+                            <!--                            <p:column style="width: 80%!important;">
+                                                            <f:facet name="header">
+                                                                <h:outputLabel value="Patient Name"/> 
+                                                            </f:facet>
+                                                            <h:outputLabel   value="#{bwv.pe.patient.person.name}"/>
+                                                        </p:column>-->
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Administration Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedAdministrationCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                                <!--                                <f:facet name="footer">
+                                                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.totalDoc}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </f:facet>-->
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Room Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedRoomCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Maintain Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedMaintainCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+<!--                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Mo Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedMoCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>-->
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="MedicalCare Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedMedicalCareCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Nursing Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedNursingCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+<!--                            <p:column styleClass="averageNumericColumn" style="width: 5%!important;">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Linen Charge"/> 
+                                </f:facet>
+                                <h:outputLabel  value="#{pr.calculatedLinenCharge}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>-->
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

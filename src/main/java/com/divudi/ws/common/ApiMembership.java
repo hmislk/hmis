@@ -29,6 +29,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
@@ -36,6 +37,7 @@ import com.divudi.facade.BilledBillFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
+import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import java.net.URLDecoder;
@@ -86,6 +88,8 @@ public class ApiMembership {
     ItemFeeFacade itemFeeFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    MembershipSchemeFacade membershipSchemeFacade;
 
     @EJB
     BillNumberGenerator billNumberGenerator;
@@ -177,6 +181,9 @@ public class ApiMembership {
 
         try {
 //            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
+            MembershipScheme ms = getMembershipSchemeFacade().find(3888l);
+//            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
+            System.out.println("ms.getCode() = " + ms.getCode());
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
             person.setName(decoder.decode(name, "+"));
@@ -187,11 +194,16 @@ public class ApiMembership {
             person.setNic(nic);
             person.setCreatedAt(new Date());
             person.setRetired(true);
+            person.setMembershipScheme(ms);
             getPersonFacade().create(person);
 
             Patient patient = new Patient();
             patient.setPerson(person);
-            patient.setCode(getPatientController().getCountPatientCode());
+            if (ms != null) {
+                patient.setCode(getPatientController().getCountPatientCode(ms.getCode()));
+            } else {
+                patient.setCode(getPatientController().getCountPatientCode("LM"));
+            }
             patient.setCreatedAt(new Date());
             patient.setRetired(true);
             getPatientFacade().create(patient);
@@ -240,7 +252,6 @@ public class ApiMembership {
             if (p != null) {
                 JSONObject object = new JSONObject();
                 object.put("save_patient_id", p.getId());
-                object.put("save_patient_temp_code", p.getCode());
                 object.put("save_patient_title", p.getPerson().getTitle());
                 object.put("save_patient_name", p.getPerson().getName());
                 object.put("save_patient_sex", p.getPerson().getSex());
@@ -249,8 +260,10 @@ public class ApiMembership {
                 object.put("save_patient_phone", p.getPerson().getPhone());
                 object.put("save_patient_nic", p.getPerson().getNic());
                 if (p.isRetired()) {
+                    object.put("save_patient_temp_code", p.getCode());
                     object.put("save_patient_status", "De-Active");
                 } else {
+                    object.put("save_patient_code", p.getCode());
                     object.put("save_patient_status", "Active");
                 }
 
@@ -281,7 +294,8 @@ public class ApiMembership {
         System.err.println("~~~~~~Membership API~~~~~~ Get Service Value(/serviceValue)");
         JSONObject jSONObjectOut = new JSONObject();
         try {
-            Item i = getItemFacade().find(32768435l);
+            Item i = getItemFacade().find(17860304l);
+//            Item i = getItemFacade().find(32768435l);
             if (i != null) {
                 BillItem bi = fechserviceFee(i);
                 JSONObject object = new JSONObject();
@@ -326,7 +340,8 @@ public class ApiMembership {
             fetchErrorsPay(patient_id, bank_id, credit_card_ref, memo);
             long l = Long.valueOf(patient_id);
             Patient p = getPatientFacade().find(l);
-            Item i = getItemFacade().find(32768435l);
+            Item i = getItemFacade().find(17860304l);
+//            Item i = getItemFacade().find(32768435l);
             Institution bank = fetchBank(Long.parseLong(bank_id));
 
             PaymentMethodData pmd = new PaymentMethodData();
@@ -334,25 +349,28 @@ public class ApiMembership {
             pmd.getCreditCard().setInstitution(bank);
 
             Bill b = saveBill(i, pmd, p, memo);
-            
+            String code = getPatientController().getCountPatientCode("LM");
+            System.out.println("p = " + p);
+            p.setCode(code);
             p.setRetired(false);
             getPatientFacade().edit(p);
-            
+
             p.getPerson().setRetired(false);
             getPersonFacade().edit(p.getPerson());
-            
+
             if (b != null) {
                 JSONObject object = new JSONObject();
                 object.put("bill_no_ins", b.getInsId());
                 object.put("bill_no_dept", b.getDeptId());
                 object.put("bill_patient_id", b.getPatient().getId());
                 object.put("bill_patient_name", b.getPatient().getPerson().getName());
+                object.put("bill_patient_code", b.getPatient().getCode());
                 object.put("bill_amount", b.getNetTotal());
                 object.put("bill_amount_vat", b.getVat());
                 object.put("bill_amount_with_vat", b.getVatPlusNetTotal());
                 object.put("bill_bank", b.getBank().getName());
                 object.put("bill_crad_ref_no", b.getCreditCardRefNo());
-                
+
                 jSONObjectOut.put("PayForMembership", object);
                 jSONObjectOut.put("error", "0");
                 jSONObjectOut.put("error_description", "");
@@ -803,6 +821,14 @@ public class ApiMembership {
 
     public void setBillBean(BillBeanController billBean) {
         this.billBean = billBean;
+    }
+
+    public MembershipSchemeFacade getMembershipSchemeFacade() {
+        return membershipSchemeFacade;
+    }
+
+    public void setMembershipSchemeFacade(MembershipSchemeFacade membershipSchemeFacade) {
+        this.membershipSchemeFacade = membershipSchemeFacade;
     }
 
 }

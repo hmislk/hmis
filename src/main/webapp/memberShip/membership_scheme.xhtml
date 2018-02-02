@@ -32,6 +32,10 @@
                                     </h:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                    <p:commandButton  value="Fill" action="#{membershipSchemeController.fillItems()}" styleClass="buttons" >
+                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:component('gpDetail')} detailFocus" execute="@this" >
+                                        </f:ajax>
+                                    </p:commandButton>
                                     <p:commandButton id="btnAdd" value="Add" action="#{membershipSchemeController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:component('gpDetail')} detailFocus" execute="@this" >
                                         </f:ajax>
@@ -47,8 +51,12 @@
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
+                                    <h:outputText value="Id" ></h:outputText>
+                                    <h:outputText value="#{membershipSchemeController.current.id}" ></h:outputText>
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{membershipSchemeController.current.name}"  ></h:inputText>
+                                    <h:outputText id="lblCode" value="Code" ></h:outputText>
+                                    <h:inputText autocomplete="off" id="txtCode" value="#{membershipSchemeController.current.code}"  ></h:inputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" action="#{membershipSchemeController.saveSelected()}" styleClass="buttons" ajax="false">

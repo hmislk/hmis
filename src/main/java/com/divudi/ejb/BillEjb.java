@@ -56,7 +56,7 @@ public class BillEjb implements Serializable {
             Department department,
             Institution institution,
             PaymentMethod[] paymentMethods) {
-        return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, paymentMethods, null, null, false, null);
+        return findBillsAndTotals(fromDate, toDate, billTypes, billClasses, department, null, null, institution, null, null, null, paymentMethods, null, null, false, null);
     }
 
     /**
@@ -241,6 +241,7 @@ public class BillEjb implements Serializable {
             Class[] billClasses,
             Department department, Department toDepartment, Department fromDepartment,
             Institution institution, Institution toInstitution, Institution fromInstitution,
+            Institution creditCompany,
             PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude,
@@ -309,13 +310,23 @@ public class BillEjb implements Serializable {
         }
 
         if (toInstitution != null) {
-            sql += " and (b.toInstitution =:tins or b.toDepartment.institution =:tins) ";
+            sql += " and b.toInstitution=:tins ";
+//            sql += " and (b.toInstitution=:tins or b.toDepartment.institution=:tins) ";
             m.put("tins", toInstitution);
         }
 
         if (fromInstitution != null) {
             sql += " and (b.fromInstitution =:fins or b.fromDepartment.institution =:fins) ";
             m.put("fins", fromInstitution);
+        }
+
+        if (creditCompany != null) {
+            if (isInward) {
+                sql += " and b.patientEncounter.creditCompany=:cc ";
+            } else {
+                sql += " and b.creditCompany=:cc ";
+            }
+            m.put("cc", creditCompany);
         }
 
         m.put("fd", fromDate);

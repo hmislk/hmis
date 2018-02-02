@@ -50,6 +50,13 @@
                                 </h:panelGrid>
 
                             </p:panel>
+                            <p:panel header="(7)Room Reports" collapsed="true" toggleable="true">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton value="Room Charge By BHT Wise" action="inward_report_bht_room_detail"  styleClass="linkButton" ajax="false" />
+                                    <p:commandButton value="Room Time Report" action="inward_report_room" styleClass="linkButton" ajax="false"/>
+                                </h:panelGrid>
+
+                            </p:panel>
                         </h:panelGrid>
                         <h:panelGrid columns="1">
                             <p:panel header="(2) Reports By Bht" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">

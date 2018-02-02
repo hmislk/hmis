@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -253,6 +254,7 @@ public class PatientController implements Serializable {
         yearMonthDay = null;
         //familyMember=null;
         familyMembers = new ArrayList<>();
+        reportKeyWord = new ReportKeyWord();
         getCurrent();
 
         getYearMonthDay();
@@ -361,18 +363,27 @@ public class PatientController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent() == null) {
-            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+        if (errorCheck()) {
             return;
         }
-        if (getCurrent().getPerson() == null) {
-            UtilityController.addErrorMessage("No Person. Not Saved");
-            return;
+        if (getCurrent().getPerson().getMembershipScheme() != null) {
+            if (checkCodeNull()) {
+                System.err.println("****return");
+                return;
+            }
         }
-        if (getCurrent().getPerson().getName().trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter a name");
-            return;
-        }
+//        if (getCurrent() == null) {
+//            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+//            return;
+//        }
+//        if (getCurrent().getPerson() == null) {
+//            UtilityController.addErrorMessage("No Person. Not Saved");
+//            return;
+//        }
+//        if (getCurrent().getPerson().getName().trim().equals("")) {
+//            UtilityController.addErrorMessage("Please enter a name");
+//            return;
+//        }
 //        if (getCurrent().getPhn().equals("")) {
 //            UtilityController.addErrorMessage("Please Enter PHN number");
 //            return;
@@ -391,6 +402,17 @@ public class PatientController implements Serializable {
             System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
         }
         if (getCurrent().getId() == null) {
+            System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
+            if (getCurrent().getPerson().getMembershipScheme() == null) {
+                getCurrent().setCode(null);
+                return;
+            } else {
+                if (getCurrent().getPerson().getMembershipScheme().getCode() == null || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
+                    getCurrent().setCode(null);
+                } else {
+                    getCurrent().setCode(getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
+                }
+            }
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -398,6 +420,11 @@ public class PatientController implements Serializable {
             System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
+            if (getCurrent().getPerson().getMembershipScheme() != null) {
+                if (checkCodeNull()) {
+                    return;
+                }
+            }
             getCurrent().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
@@ -415,10 +442,14 @@ public class PatientController implements Serializable {
         String sql;
         Map m = new HashMap();
         sql = " select p from Patient p ";
-
+        
         if (getReportKeyWord().isAdditionalDetails()) {
             sql += " where ( p.code is not null "
                     + " or p.code=:code ) ";
+            if (getReportKeyWord().getMembershipScheme()!=null) {
+                sql+=" and p.person.membershipScheme=:mem ";
+                m.put("mem", getReportKeyWord().getMembershipScheme());
+            }
             if (getReportKeyWord().getString().equals("0")) {
             }
             if (getReportKeyWord().getString().equals("1")) {
@@ -570,6 +601,151 @@ public class PatientController implements Serializable {
         m.put("dob", dob);
         sql = "select p from Patient p where p.retired = false and p.person.dob=:dob order by p.person.name";
         return getFacade().findBySQL(sql, m);
+    }
+
+    public void membershipChangeListner() {
+        if (getCurrent().getPerson().getMembershipScheme() == null) {
+            getCurrent().setCode(null);
+            return;
+        }
+        System.out.println("getReportKeyWord().getMembershipScheme().getName() = " + getCurrent().getPerson().getMembershipScheme().getName());
+        System.out.println("getReportKeyWord().getMembershipScheme().getCode() = " + getCurrent().getPerson().getMembershipScheme().getCode());
+        if (getCurrent().getPerson().getMembershipScheme().getCode() == null
+                || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
+            getCurrent().setCode(null);
+            JsfUtil.addErrorMessage("Please Select Membership Scheme Code Correctly");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            getCurrent().setCode(getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
+            System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
+        } else {
+            Patient p = getEjbFacade().find(getCurrent().getId());
+            getCurrent().setCode(p.getCode());
+        }
+    }
+
+    public String getCountPatientCode(String s) {
+
+        String sql;
+        Map m = new HashMap();
+        sql = "select p FROM Patient p "
+                + " where p.code is not null"
+                + " and p.retired=false "
+                + " and upper(p.code) like :q "
+                + " order by p.code desc ";
+        m.put("q", "%" + s.toUpperCase() + "%");
+
+        Patient p = getEjbFacade().findFirstBySQL(sql, m);
+        DecimalFormat df = new DecimalFormat("000000");
+        String st = "";
+        if (p != null) {
+            System.out.println("p.getCode() = " + p.getCode());
+            String str = p.getCode();
+//        System.out.println("str.substring(0,1) = " + str.substring(0, 1));
+//        System.out.println("str.substring(0,2) = " + str.substring(0, 2));
+//        System.out.println("str.substring(2) = " + str.substring(2));
+//        System.out.println("str.substring(3) = " + str.substring(3));
+//        System.out.println("str.substring(3,7) = " + str.substring(3, 7));
+            long l = Long.parseLong(str.substring(2));
+            System.out.println("l = " + l);
+            l++;
+            System.out.println("l = " + l);
+            st += s;
+            st += df.format(l);
+            System.out.println("s = " + st);
+            return st;
+        } else {
+            System.err.println("P Null");
+            st += s;
+            st += df.format(1l);
+            System.out.println("s = " + st);
+            return st;
+        }
+
+    }
+
+    private boolean errorCheck() {
+        if (getCurrent() == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return true;
+        }
+        if (getCurrent().getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return true;
+        }
+        if (getCurrent().getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please Enter a Name");
+            return true;
+        }
+        if (getCurrent().getPerson().getSex() == null) {
+            UtilityController.addErrorMessage("Please Select Sex");
+            return true;
+        }
+        if (getCurrent().getPerson().getDob() == null) {
+            UtilityController.addErrorMessage("Please Pic a Birth Day");
+            return true;
+        }
+        if (getCurrent().getPerson().getAddress() == null || getCurrent().getPerson().getAddress().equals("")) {
+            UtilityController.addErrorMessage("Please Enter a Address");
+            return true;
+        }
+        if (getCurrent().getPerson().getArea() == null) {
+            UtilityController.addErrorMessage("Please Enter a Area");
+            return true;
+        }
+        if (getCurrent().getPerson().getPhone() == null || getCurrent().getPerson().getPhone().equals("")) {
+            UtilityController.addErrorMessage("Please Enter a Phone Number");
+            return true;
+        }
+        if (getCurrent().getPerson().getNic() == null || getCurrent().getPerson().getNic().equals("")) {
+            UtilityController.addErrorMessage("Please Enter a Nic No");
+            return true;
+        }
+//        if (getCurrent().getPhn().equals("")) {
+//            UtilityController.addErrorMessage("Please Enter PHN number");
+//            return;
+//        }
+        return false;
+    }
+
+    private boolean checkCodeNull() {
+        Patient p = null;
+        if (getCurrent().getId() != null) {
+            System.out.println("getCurrent().getId() = " + getCurrent().getId());
+            p = getEjbFacade().find(getCurrent().getId());
+        }
+        if (p != null) {
+            System.out.println("******p.getCode() = " + p.getCode());
+            if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+                JsfUtil.addErrorMessage("Please Enter a Code");
+                return true;
+            } else {
+                String sql;
+                Map m = new HashMap();
+                sql = "select p FROM Patient p "
+                        + " where p.code is not null"
+                        + " and p.retired=false "
+                        + " and p!=:p "
+                        + " and upper(p.code)=:q "
+                        + " order by p.code desc ";
+                m.put("q", getCurrent().getCode().toUpperCase());
+                m.put("p", getCurrent());
+
+                p = getEjbFacade().findFirstBySQL(sql, m);
+                if (p != null) {
+                    JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
+                    System.out.println("p.getCode() = " + p.getCode());
+                    System.out.println("p.getPerson().getName() = " + p.getPerson().getName());
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
     }
 
     public PersonFacade getPersonFacade() {

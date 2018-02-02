@@ -36,6 +36,7 @@ import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ServiceFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -390,12 +391,17 @@ public class mdInwardReportController implements Serializable {
 
     public void createCreditInwardOpdPharmacyBills() {
         BillListWithTotals billListWithTotals = new BillListWithTotals();
+        if (reportKeyWord.getString().equals("3") && reportKeyWord.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please Select Credit Company");
+            return;
+        }
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Credit};
         total = 0.0;
         if (reportKeyWord.getString().equals("0")) {
             BillType[] bts = new BillType[]{BillType.InwardFinalBill};
             billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
-                    pms, null, null, true, admissionType);
+                    reportKeyWord.getInstitution(), pms, null, null, true, admissionType);
+            System.out.println("billListWithTotals.getBills().size() = " + billListWithTotals.getBills().size());
             if (!billListWithTotals.getBills().isEmpty()) {
                 bills = new ArrayList<>();
                 bills.addAll(billListWithTotals.getBills());
@@ -405,7 +411,7 @@ public class mdInwardReportController implements Serializable {
         if (reportKeyWord.getString().equals("1")) {
             BillType[] bts = new BillType[]{BillType.OpdBill};
             billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
-                    pms, null, null, false, null);
+                    reportKeyWord.getInstitution(), pms, null, null, false, null);
             if (!billListWithTotals.getBills().isEmpty()) {
                 bills = new ArrayList<>();
                 bills.addAll(billListWithTotals.getBills());
@@ -414,8 +420,8 @@ public class mdInwardReportController implements Serializable {
         }
         if (reportKeyWord.getString().equals("2")) {
             BillType[] bts = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
-            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
-                    pms, null, null, false, null);
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, reportKeyWord.getInstitution(),
+                    null, null, pms, null, null, false, null);
             if (!billListWithTotals.getBills().isEmpty()) {
                 bills = new ArrayList<>();
                 for (Bill b : billListWithTotals.getBills()) {
@@ -427,6 +433,34 @@ public class mdInwardReportController implements Serializable {
                 }
             }
         }
+        if (reportKeyWord.getString().equals("3")) {
+            bills = new ArrayList<>();
+            BillType[] bts = new BillType[]{BillType.InwardFinalBill};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
+                    reportKeyWord.getInstitution(), pms, null, null, true, null);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills.addAll(billListWithTotals.getBills());
+                total = billListWithTotals.getNetTotal();
+            }
+
+            bts = new BillType[]{BillType.OpdBill};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
+                    reportKeyWord.getInstitution(), pms, null, null, false, null);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills.addAll(billListWithTotals.getBills());
+                total += billListWithTotals.getNetTotal();
+            }
+
+            bts = new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale};
+            billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, reportKeyWord.getInstitution(),
+                    null, null, pms, null, null, false, null);
+            if (!billListWithTotals.getBills().isEmpty()) {
+                bills.addAll(billListWithTotals.getBills());
+                total += billListWithTotals.getNetTotal();
+            }
+
+        }
+
     }
 
     public List<Bill> getBillsDischarged() {

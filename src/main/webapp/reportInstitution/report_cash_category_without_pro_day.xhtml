@@ -42,6 +42,9 @@
                         <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
+<!--                        <p:commandButton value="Excelasfcas" ajax="false" styleClass="noPrintButton" style="float: right;">
+                            <pe:exporter type="xlsx" target="Val" fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end" />
+                        </p:commandButton>-->
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
                             <pe:exporter type="xlsx" target="opd_new:opd_new,
                                          colCash,
@@ -76,6 +79,17 @@
 
                 </f:facet>
             </p:panel>
+<!--            <p:dataTable id="Val" value="#{billBeanController.billFees}" var="bf" >
+                <p:column>
+                    <p:outputLabel value="#{bf.billItem.item.category.name}" />
+                </p:column>
+                <p:column>
+                    <p:outputLabel value="#{bf.billItem.item.name}" />
+                </p:column>
+                <p:column>
+                    <p:outputLabel value="#{bf.feeValue}" />
+                </p:column>
+            </p:dataTable>-->
             <!--            <p:spacer height="30" />-->
 
             <in:opd_new id="opd_new" professional="false"/>

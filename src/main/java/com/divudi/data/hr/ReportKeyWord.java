@@ -16,6 +16,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
@@ -27,6 +28,7 @@ import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
+import com.divudi.entity.memberShip.MembershipScheme;
 import java.util.Date;
 import javax.inject.Inject;
 import javax.persistence.Transient;
@@ -65,7 +67,7 @@ public class ReportKeyWord {
     Double to;
     Sex sex;
     EmployeeStatus employeeStatus;
-    boolean additionalDetails;
+    boolean additionalDetails=true;
     WebUser webUser;
     private String string = "0";
     private String string1 = "0";
@@ -85,10 +87,13 @@ public class ReportKeyWord {
     @Transient
     String transAddress4;
     
-    int numOfRows=50;
+    int numOfRows=100;
 
     Date fromDate;
     Date toDate;
+    
+    MembershipScheme membershipScheme;
+    PatientEncounter patientEncounter;
 
     public PaysheetComponent getPaysheetComponent() {
         return paysheetComponent;
@@ -500,6 +505,22 @@ public class ReportKeyWord {
 
     public void setNumOfRows(int numOfRows) {
         this.numOfRows = numOfRows;
+    }
+
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
+    }
+
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
 }

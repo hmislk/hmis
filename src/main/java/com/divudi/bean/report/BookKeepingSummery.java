@@ -2311,7 +2311,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
-                + " and bf.department.institution=:ins "
+//                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
@@ -3957,6 +3957,12 @@ public class BookKeepingSummery implements Serializable {
 
     }
 
+//    public void createCashCategoryWithoutProDayTest() {
+//        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card,PaymentMethod.OnlineSettlement};
+//        FeeType[] feeTypes = {FeeType.OwnInstitution, FeeType.CollectingCentre};
+//        getBillBean().calFeeValue(getFromDate(), getToDate(), Arrays.asList(feeTypes), getInstitution(), creditCompany, Arrays.asList(paymentMethods));
+//        
+//    }
     public void createCashCategoryWithoutProDay() {
         Date startTime = new Date();
 
@@ -4785,7 +4791,7 @@ public class BookKeepingSummery implements Serializable {
         sql = "select sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
-                + " and bf.department.institution=:ins "
+//                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
@@ -4849,7 +4855,7 @@ public class BookKeepingSummery implements Serializable {
         sql = "select distinct(c) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
                 + " where bi.bill.institution=:ins "
-                + " and bf.department.institution=:ins "
+//                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms"
