@@ -404,11 +404,11 @@ public class PatientController implements Serializable {
         if (getCurrent().getId() == null) {
             System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
             if (getCurrent().getPerson().getMembershipScheme() == null) {
-                getCurrent().setCode(null);
-                return;
+//                getCurrent().setCode(null);
+//                return;
             } else {
                 if (getCurrent().getPerson().getMembershipScheme().getCode() == null || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
-                    getCurrent().setCode(null);
+//                    getCurrent().setCode(null);
                 } else {
                     getCurrent().setCode(getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
                 }
@@ -436,6 +436,31 @@ public class PatientController implements Serializable {
         getFacade().flush();
         System.out.println("5.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
         System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
+    }
+    
+    public void saveSelectedPatient() {
+        if (getCurrent().getPerson().getId() == null) {
+            getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(getCurrent().getPerson());
+        } else {
+            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
+            getPersonFacade().edit(getCurrent().getPerson());
+        }
+        if (getCurrent().getId() == null) {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+            getFacade().create(current);
+            UtilityController.addSuccessMessage("Saved as a new patient successfully.");
+        } else {
+            getCurrent().setEditedAt(Calendar.getInstance().getTime());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
+            getFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Updated the patient details successfully.");
+        }
+        getPersonFacade().flush();
+        getFacade().flush();
     }
 
     public void createPatientList() {

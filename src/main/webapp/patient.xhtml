@@ -93,7 +93,7 @@
                             </p:column>
                         </p:autoComplete>
 
-                        <p:commandButton value="Save" action="#{patientController.saveSelected()}" actionListener="#{billController.updateReferingDoctor}" ajax="false" onclick="if (!confirm('Are you sure you want to save this record?'))
+                        <p:commandButton value="Save" action="#{patientController.saveSelectedPatient()}" actionListener="#{billController.updateReferingDoctor}" ajax="false" onclick="if (!confirm('Are you sure you want to save this record?'))
                                     return false;"></p:commandButton>
 
                         <p:watermark value="Please enter the name of the Patient" for="txtNewPtName" />

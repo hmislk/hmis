@@ -9,6 +9,7 @@ import com.divudi.bean.lab.InvestigationController;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.dataStructure.BillListWithTotals;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
 import com.divudi.entity.Bill;
@@ -24,6 +25,7 @@ import com.divudi.entity.Service;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.Amp;
@@ -134,6 +136,7 @@ public class DataAdministrationController {
     private List<Item> items;
     private List<Item> selectedItems;
     private List<Department> departments;
+    private List<PatientInvestigation>patientInvestigations;
 
     double val1;
     double val2;
@@ -153,6 +156,8 @@ public class DataAdministrationController {
     private Category itemCategory;
     private Double vatPrecentage = 0.0;
     private DepartmentType departmentType;
+    private SearchKeyword searchKeyword;
+    CommonController commonController;
 
     Date fromDate;
     Date toDate;
@@ -1101,7 +1106,54 @@ public class DataAdministrationController {
         }
 
     }
+    
+    public void createPatientInvestigationsTable() {
+        Map temMap = new HashMap();
+//        if (getSearchKeyword().getBillNo() == null && getSearchKeyword().getBillNo().trim().equals("")) {
+//            JsfUtil.addErrorMessage("Please Select A bill Number");
+//            return ;
+//        }
 
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p where "
+                + " b.createdAt between :fromDate and :toDate  ";
+
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            sql += " and  (upper(i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by pi.id desc  ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+
+    }
+    
+    public void deActiveSelectedPatientReport(PatientReport pr){
+        pr.setRetired(true);
+        pr.setRetiredAt(new Date());
+        pr.setRetireComments("Admin Report Deactivated");
+        getPatientReportFacade().edit(pr);
+        JsfUtil.addSuccessMessage("Deactivated");
+    }
+    
+    public void activeSelectedPatientReport(PatientReport pr){
+        pr.setRetired(false);
+        pr.setRetiredAt(null);
+        pr.setRetireComments("Admin Report Activated");
+        getPatientReportFacade().edit(pr);
+        JsfUtil.addSuccessMessage("Activated");
+    }
+    
     public void itemChangeListener() {
         itemCategory = null;
     }
@@ -1426,6 +1478,25 @@ public class DataAdministrationController {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword==null) {
+            searchKeyword=new SearchKeyword();
+        }
+        return searchKeyword;
+    }
+
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
+
+    public List<PatientInvestigation> getPatientInvestigations() {
+        return patientInvestigations;
+    }
+
+    public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
+        this.patientInvestigations = patientInvestigations;
     }
 
 }
