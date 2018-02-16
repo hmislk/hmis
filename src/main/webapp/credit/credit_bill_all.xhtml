@@ -90,11 +90,11 @@
                                     <h:outputLabel value="#{b.patientEncounter.finalBill.insId}" ></h:outputLabel>
                                 </p:column>
 
-                                <p:column rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                                <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="Client"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{b.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                    <h:outputLabel value="#{b.patient.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column rendered="#{mdInwardReportController.reportKeyWord.string ne '0'}">

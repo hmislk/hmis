@@ -3,6 +3,7 @@
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -37,9 +38,12 @@
                                     <f:selectItems value="#{membershipSchemeController.items}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
                                 </p:selectOneMenu>
                                 <p:commandButton value="Process" ajax="false" action="#{patientController.createPatientList()}" />
+                                <p:commandButton value="Excel" ajax="false">
+                                    <pe:exporter type="xlsx" target="tblBills" fileName="patent_list"  />
+                                </p:commandButton>
                             </h:panelGrid>
                             <p:panel id="panelSearch" header="Patient Details" styleClass="summeryBorder" >
-                                <p:dataTable value="#{patientController.patientList}" var="p" rowIndexVar="i"
+                                <p:dataTable value="#{patientController.patientList}" var="p" rowIndexVar="i" id="tblBills"
                                              rowStyleClass="#{p.retired ? 'redText':''}" >
                                     <p:column >
                                         <f:facet name="header" >
@@ -70,6 +74,12 @@
                                             <p:outputLabel value="Membership" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.membershipScheme.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Membership" />
+                                        </f:facet>
+                                        <h:outputLabel value="#{p.person.phone}"/>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header" >

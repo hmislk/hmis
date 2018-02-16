@@ -208,8 +208,16 @@
 
                                     <h:outputText value="" ></h:outputText>
                                     <p:selectBooleanCheckbox value="#{investigationController.current.discountAllowed}" itemLabel="Discount Allowed"/>
-
-
+                                    
+                                    <p:outputLabel value="ID" />
+                                    <p:outputLabel value="#{investigationController.current.id}" />
+                                    <p:outputLabel value="Editeder" />
+                                    <p:outputLabel value="#{investigationController.current.editer.webUserPerson.name}" />
+                                    
+                                    <p:outputLabel value="Edited at" />
+                                    <p:outputLabel value="#{investigationController.current.editedAt}" >
+                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                    </p:outputLabel>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
