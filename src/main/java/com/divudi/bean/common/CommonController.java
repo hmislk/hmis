@@ -44,9 +44,9 @@ public class CommonController implements Serializable {
     public Date getDateAfterThreeMonthsCurrentDateTime() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
-        System.out.println("1.cal.getTime() = " + cal.getTime());
+//        System.out.println("1.cal.getTime() = " + cal.getTime());
         cal.add(Calendar.MONTH, 3);
-        System.out.println("2.cal.getTime() = " + cal.getTime());
+//        System.out.println("2.cal.getTime() = " + cal.getTime());
         return cal.getTime();
     }
 

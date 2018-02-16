@@ -637,17 +637,30 @@ public class CollectingCentreBillController implements Serializable {
             getBillBean().calculateBillItems(myBill, tmp);
             createPaymentsForBills(myBill, tmp);
 
+            double feeTotalExceptCcfs = 0.0;
+            for (BillEntry be : tmp) {
+                for (BillFee bf : be.getLstBillFees()) {
+                    if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+                        feeTotalExceptCcfs += bf.getFeeValue();
+                    }
+                }
+            }
+            updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, myBill, referralId);
+            AgentHistory ah = billSearch.fetchCCHistory(myBill);
+            billSearch.createCollectingCenterfees(myBill);
+            myBill.setTransCurrentCCBalance(ah.getBeforeBallance() + ah.getTransactionValue());
+
             bills.add(myBill);
             temBill = myBill;
         }
 
-        double feeTotalExceptCcfs = 0.0;
-        for (BillFee bf : lstBillFees) {
-            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
-                feeTotalExceptCcfs += bf.getFeeValue();
-            }
-        }
-        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
+//        double feeTotalExceptCcfs = 0.0;
+//        for (BillFee bf : lstBillFees) {
+//            if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
+//                feeTotalExceptCcfs += bf.getFeeValue();
+//            }
+//        }
+//        updateBallance(collectingCentre, 0 - Math.abs(feeTotalExceptCcfs), HistoryType.CollectingCentreBalanceUpdateBill, temBill, referralId);
 
         return true;
     }
@@ -949,7 +962,7 @@ public class CollectingCentreBillController implements Serializable {
             UtilityController.addErrorMessage("Please select a collecting centre");
             return true;
         }
-        
+
         if (getPatientTabId().equals("tabSearchPt")) {
             if (getSearchedPatient() == null) {
                 UtilityController.addErrorMessage("Plese Select Patient");
