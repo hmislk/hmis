@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pu="http://primefaces.org/ui/extensions">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header">
+                            <h:panelGrid columns="1" >
+                                <h:panelGrid columns="5" >
+
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{dataAdministrationController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                    </p:calendar>
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{dataAdministrationController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                    </p:calendar>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{dataAdministrationController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
+                                </h:panelGrid>
+                                <h:panelGrid columns="2" >
+                                    <h:outputLabel value="Bill No"/>
+                                    <h:outputLabel value="Investigation Name"/>
+                                    <p:inputText autocomplete="off"  value="#{dataAdministrationController.searchKeyword.billNo}" />
+                                    <p:inputText autocomplete="off" value="#{dataAdministrationController.searchKeyword.itemName}"/>
+
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </f:facet>
+
+
+
+
+                        <p:dataTable  id="tblBills" value="#{dataAdministrationController.patientInvestigations}" var="pi" rowIndexVar="i" >
+                            <p:column  headerText="No" styleClass="alignTop" >
+                                <p:outputLabel value="#{i+1}" />
+                            </p:column>
+                            <p:column  headerText="Bill" styleClass="alignTop" >
+                                <h:outputLabel id="lblBillNo" 
+                                               value="#{pi.billItem.bill.insId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                            </p:column>
+
+                            <p:column  headerText="Dep ID" styleClass="alignTop" >
+                                <h:outputLabel id="lblInvNo" 
+                                               value="#{pi.billItem.bill.deptId}" 
+                                               styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
+                            </p:column>
+
+
+                            <p:column  headerText="Patient" styleClass="alignTop" >
+                                <p:outputLabel value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" />
+                            </p:column>
+
+                            <p:column headerText="Investigation"  styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.billItem.item.name}" >
+                                </h:outputLabel>
+
+                            </p:column>
+
+                            <p:column headerText="Billed for"  styleClass="alignTop">
+                                <h:outputLabel value="#{pi.billItem.bill.toDepartment.name}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
+
+                                <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" styleClass="noBorderGrid summeryBorder noBorder" >
+                                    <p:column >
+                                        <p:outputLabel value="#{dpr.retired}" />
+                                    </p:column>
+                                    <p:column >
+                                        <p:outputLabel value="#{dpr.item.name}" />
+                                    </p:column>
+                                    <p:column>
+                                        <p:commandButton rendered="#{dpr.retired ne true}" ajax="false" value="Deactivate" action="#{dataAdministrationController.deActiveSelectedPatientReport(dpr)}" />
+                                        <p:commandButton rendered="#{dpr.retired eq true}" ajax="false" value="Activate" action="#{dataAdministrationController.activeSelectedPatientReport(dpr)}" />
+                                    </p:column>
+                                </p:dataTable>
+
+
+                            </p:column>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
