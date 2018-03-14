@@ -175,22 +175,27 @@ public class DepartmentController implements Serializable {
     public List<Department> getPharmacies() {
         return getDepartments(DepartmentType.Pharmacy, getSessionController().getLoggedUser().getInstitution());
     }
+
+    public List<Department> getLabs() {
+        return getDepartments(DepartmentType.Lab, null);
+    }
+
     public List<Department> getDepartments(DepartmentType dt, Institution i) {
         String sql;
         Map m = new HashMap();
 
         sql = "select d from Department d "
                 + " where d.retired=false ";
-        if (dt!=null) {
-            sql+=" and d.departmentType=:dt ";
+        if (dt != null) {
+            sql += " and d.departmentType=:dt ";
             m.put("dt", dt);
         }
-        if (i!=null) {
-            sql+=" and d.institution=:ins ";
+        if (i != null) {
+            sql += " and d.institution=:ins ";
             m.put("ins", i);
         }
         sql += " order by d.name";
-        selectedItems = getFacade().findBySQL(sql,m);
+        selectedItems = getFacade().findBySQL(sql, m);
         return selectedItems;
     }
 

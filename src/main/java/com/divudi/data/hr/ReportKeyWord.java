@@ -47,6 +47,7 @@ public class ReportKeyWord {
     Times times;
     Staff replacingStaff;
     Department department;
+    Department departmentFrom;
     StaffCategory staffCategory;
     Designation designation;
     Roster roster;
@@ -521,6 +522,14 @@ public class ReportKeyWord {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public Department getDepartmentFrom() {
+        return departmentFrom;
+    }
+
+    public void setDepartmentFrom(Department departmentFrom) {
+        this.departmentFrom = departmentFrom;
     }
 
 }

@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
@@ -90,6 +91,8 @@ public class ItemController implements Serializable {
     Department department;
     FeeType feeType;
     List<Department> departments;
+
+    ReportKeyWord reportKeyWord;
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -704,7 +707,7 @@ public class ItemController implements Serializable {
         this.category = category;
     }
 
-    private List<Item> fetchInwardItems(String query) {
+    private List<Item> fetchInwardItems(String query, Department department) {
         HashMap m = new HashMap();
         String sql;
         sql = "select c from Item c "
@@ -714,8 +717,12 @@ public class ItemController implements Serializable {
                 + " or type(c)=:inward "
                 + " or type(c)=:inv) "
                 + " and (c.inactive=false or c.inactive is null) "
-                + " and upper(c.name) like :q"
-                + " order by c.name";
+                + " and upper(c.name) like :q";
+        if (department != null) {
+            sql += " and c.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        sql += " order by c.name";
         m.put("pac", Packege.class);
         m.put("ser", Service.class);
         m.put("inward", InwardService.class);
@@ -726,7 +733,7 @@ public class ItemController implements Serializable {
 
     }
 
-    private List<Item> fetchInwardItems(String query, Category cat) {
+    private List<Item> fetchInwardItems(String query, Category cat, Department department) {
         HashMap m = new HashMap();
         String sql;
         sql = "select c from Item c "
@@ -737,8 +744,12 @@ public class ItemController implements Serializable {
                 + " or type(c)=:inward "
                 + " or type(c)=:inv) "
                 + " and (c.inactive=false or c.inactive is null) "
-                + " and upper(c.name) like :q"
-                + " order by c.name";
+                + " and upper(c.name) like :q";
+        if (department != null) {
+            sql += " and c.department=:dep ";
+            m.put("dep", getReportKeyWord().getDepartment());
+        }
+        sql += " order by c.name";
         m.put("ct", cat);
         m.put("pac", Packege.class);
         m.put("ser", Service.class);
@@ -765,15 +776,33 @@ public class ItemController implements Serializable {
         List<Item> suggestions = new ArrayList<>();
 
         if (category == null) {
-            suggestions = fetchInwardItems(query);
+            suggestions = fetchInwardItems(query, null);
         } else if (category instanceof ServiceCategory) {
-            suggestions = fetchInwardItems(query, category);
+            suggestions = fetchInwardItems(query, category, null);
             getServiceSubCategoryController().setParentCategory(category);
             for (ServiceSubCategory ssc : getServiceSubCategoryController().getItems()) {
-                suggestions.addAll(fetchInwardItems(query, ssc));
+                suggestions.addAll(fetchInwardItems(query, ssc, null));
             }
         } else {
-            suggestions = fetchInwardItems(query, category);
+            suggestions = fetchInwardItems(query, category, null);
+        }
+
+        return suggestions;
+    }
+
+    public List<Item> completeInwardItemsCategoryNew(String query) {
+        List<Item> suggestions = new ArrayList<>();
+
+        if (category == null) {
+            suggestions = fetchInwardItems(query, getReportKeyWord().getDepartment());
+        } else if (category instanceof ServiceCategory) {
+            suggestions = fetchInwardItems(query, category, getReportKeyWord().getDepartment());
+            getServiceSubCategoryController().setParentCategory(category);
+            for (ServiceSubCategory ssc : getServiceSubCategoryController().getItems()) {
+                suggestions.addAll(fetchInwardItems(query, ssc, getReportKeyWord().getDepartment()));
+            }
+        } else {
+            suggestions = fetchInwardItems(query, category, getReportKeyWord().getDepartment());
         }
 
         return suggestions;
@@ -807,6 +836,10 @@ public class ItemController implements Serializable {
         if (spcific) {
             sql += " and c.institution=:ins";
             m.put("ins", getSessionController().getInstitution());
+        }
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and c.department=:dep";
+            m.put("dep", getReportKeyWord().getDepartment());
         }
         sql += " order by c.name";
         m.put("pac", Packege.class);
@@ -970,7 +1003,7 @@ public class ItemController implements Serializable {
         }
         System.out.println("itemlist.size() = " + itemlist.size());
     }
-    
+
     public void createInwardList() {
         itemlist = getInwardItems();
         System.out.println("itemlist.size() = " + itemlist.size());
@@ -1076,7 +1109,7 @@ public class ItemController implements Serializable {
         items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
         return items;
     }
-    
+
     public List<Item> getInwardItems() {
         String temSql;
         HashMap h = new HashMap();
@@ -1245,6 +1278,17 @@ public class ItemController implements Serializable {
 
     public void setItemlist(List<Item> itemlist) {
         this.itemlist = itemlist;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord == null) {
+            reportKeyWord = new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
     @FacesConverter(forClass = Item.class)

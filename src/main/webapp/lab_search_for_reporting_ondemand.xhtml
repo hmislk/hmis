@@ -31,13 +31,21 @@
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value="Patient Phone"/>                               
                                     <h:outputLabel value="Investigation Name"/>
+                                    <h:outputLabel value="Report Department"/>
+                                    <h:outputLabel value="Bill Department"/>
                                     <h:outputLabel value="BHT"/>
-                                    <h:outputLabel/><h:outputLabel/><h:outputLabel/>
+                                    <h:outputLabel/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-                                    <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                    <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
+                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                        value="#{searchController.reportKeyWord.department}" converter="departmentConverter"/>
+                                    <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
+                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                        value="#{searchController.reportKeyWord.departmentFrom}" converter="departmentConverter"/>
+                                    <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" styleClass="shortinput2"
                                                     value="#{searchController.patientEncounter}"
                                                     completeMethod="#{admissionController.completePatientAll}" 
                                                     var="myItem" itemValue="#{myItem}" 
