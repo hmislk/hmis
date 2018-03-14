@@ -125,7 +125,7 @@ public class CreditCompanyDueController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Due age(/faces/credit/credit_company_opd_due_age.xhtml)");
     }
-    
+
     public void createAgeTablePharmacy() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -163,7 +163,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createAgeAccessTable() {
         Date startTime = new Date();
-        
+
         makeNull();
         System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
@@ -189,7 +189,7 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/OPD Dues and Access/OPD credit excess/Excess age(/faces/credit/credit_company_opd_access_age.xhtml)");
 
     }
@@ -237,7 +237,6 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardAgeDetailAnalysis() {
         Date startTime = new Date();
-   
 
         dealerDueDetailRows = new ArrayList<>();
         createInwardAgeTable();
@@ -288,9 +287,8 @@ public class CreditCompanyDueController implements Serializable {
         }
 
         creditCompanyAge = new ArrayList<>();
-        
-        
-commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Dues/Due age detail(/faces/credit/inward_due_age_credit_company_detail.xhtml)");
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/Dues/Due age detail(/faces/credit/inward_due_age_credit_company_detail.xhtml)");
     }
 
     public void createInwardCashAgeTable() {
@@ -322,7 +320,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     public void createInwardAgeTableAccess() {
         Date startTime = new Date();
-        
+
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -353,7 +351,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     public void createInwardCashAgeTableAccess() {
         Date startTime = new Date();
-        
+
         makeNull();
         Set<Institution> setIns = new HashSet<>();
 
@@ -378,7 +376,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
                 creditCompanyAge.add(newRow);
             }
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess age (/faces/credit/cash_inward_access_age.xhtml)");
 
     }
@@ -592,7 +590,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     public void createOpdCreditDueBillItem() {
         Date startTime = new Date();
-        
+
         List<Institution> setIns = new ArrayList<>();
         if (creditCompany != null) {
             setIns.add(creditCompany);
@@ -612,14 +610,14 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
             items.add(newIns);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/OPD Dues and Access/OPD Dues and Access/Due Search(Bill item)(/faces/credit/credit_company_opd_due_by_bill_item.xhtml)");
 
     }
 
     public void createOpdCreditAccess() {
         Date startTime = new Date();
-        
+
         List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), false);
         items = new ArrayList<>();
         for (Institution ins : setIns) {
@@ -828,7 +826,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     public void createInwardCreditAccess() {
         Date startTime = new Date();
-        
+
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, false);
 
         institutionEncounters = new ArrayList<>();
@@ -839,10 +837,28 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
             newIns.setPatientEncounters(lst);
 
             for (PatientEncounter b : lst) {
-                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-            }
+//                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
+//                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
+                b.getFinalBill().setNetTotal(com.divudi.java.CommonFunctions.round(b.getFinalBill().getNetTotal()));
+                b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
+                b.setCreditPaidAmount(com.divudi.java.CommonFunctions.round(b.getCreditPaidAmount()));
+                b.getFinalBill().setPaidAmount(com.divudi.java.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
+                b.setTransPaid(b.getFinalBill().getPaidAmount()+b.getCreditPaidAmount());
+                System.out.println("b.getTransPaid() = " + b.getTransPaid());
+                b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
+                System.out.println("b.getTransPaid() = " + b.getTransPaid());
+                
+                System.out.println("b.getFinalBill().getNetTotal() = " + b.getFinalBill().getNetTotal());
+                System.out.println("b.getCreditPaidAmount() = " + b.getCreditPaidAmount());
+                System.out.println("b.getFinalBill().getPaidAmount() = " + b.getFinalBill().getPaidAmount());
+                
+                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
+//                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
+                newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
 
+            }
+            newIns.setTotal(com.divudi.java.CommonFunctions.round(newIns.getTotal()));
+            newIns.setPaidTotal(com.divudi.java.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess Search(/faces/credit/credit_company_inward_access.xhtml)");
@@ -851,7 +867,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
 
     public void createInwardCashAccess() {
         Date startTime = new Date();
-        
+
         List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Cash, false);
 
         institutionEncounters = new ArrayList<>();
@@ -869,7 +885,6 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward
             institutionEncounters.add(newIns);
         }
 
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Inward Dues And Access/excess/excess Search(/faces/credit/cash_inward_access.xhtml)");
     }
 

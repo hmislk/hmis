@@ -88,10 +88,18 @@
 
                                         </p:autoComplete>
                                     </f:facet>
+                                    <h:panelGrid columns="1">
+                                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                            <f:selectItem itemLabel="Select Department"/>
+                                            <f:selectItems value="#{departmentController.labs}" 
+                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                            <p:ajax process="@this" update="acIx" event="change"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
                                     <h:panelGrid columns="4">
                                         <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
                                                          value="#{billBhtController.currentBillItem.item}"
-                                                         completeMethod="#{itemController.completeInwardItemsCategory}"
+                                                         completeMethod="#{itemController.completeInwardItemsCategoryNew}"
                                                          var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
                                                          size="30"  style="width: 400px;">
                                             <p:column>

@@ -4084,6 +4084,16 @@ public class SearchController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and b.toDepartment=:dep ";
+            temMap.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getDepartmentFrom() != null) {
+            sql += " and b.fromDepartment=:depFrom ";
+            temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
+        }
 
         sql += " order by pi.id desc  ";
 //    
@@ -4273,6 +4283,16 @@ public class SearchController implements Serializable {
         if (patientEncounter != null) {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
+        }
+        
+        if (getReportKeyWord().getDepartment() != null) {
+            sql += " and b.toDepartment=:dep ";
+            temMap.put("dep", getReportKeyWord().getDepartment());
+        }
+        
+        if (getReportKeyWord().getDepartmentFrom() != null) {
+            sql += " and b.fromDepartment=:depFrom ";
+            temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
         }
 
         sql += " order by pi.id desc  ";
@@ -7176,6 +7196,10 @@ public class SearchController implements Serializable {
 //    }
     public void listnerBillTypeChange() {
         reportKeyWord.setArea(null);
+    }
+    
+    public void listnerReportSearch(){
+        getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
     }
 
     public SearchController() {
