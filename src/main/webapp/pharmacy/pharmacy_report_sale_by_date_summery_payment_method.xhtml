@@ -33,7 +33,8 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethod()}"/>
+                    <p:commandButton ajax="false" value="Process Accept Date" action="#{pharmacySaleReport.createSalePaymentMethod()}"/>
+                    <p:commandButton ajax="false" value="Process Bill Date" action="#{pharmacySaleReport.createSalePaymentMethodBillDate()}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                     </p:commandButton>

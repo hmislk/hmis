@@ -216,7 +216,7 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
         hm.put("ins", institution);
-        hm.put("val", 0.1);
+        hm.put("val", 0.005);
         List<PatientEncounter> lst = getPatientEncounterFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         return lst;

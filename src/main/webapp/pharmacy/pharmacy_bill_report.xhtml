@@ -35,7 +35,8 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{billController.getPharmacyBills}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Accept" action="#{billController.getPharmacyBills}" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill Bill" action="#{billController.getPharmacyBillsBilled}" ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
@@ -49,11 +50,7 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont"
-                                         value="#{billController.bills}" var="bill" 
-                                         rows="20"
-                                         paginator="true"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20, 50, 100" >
+                                         value="#{billController.bills}" var="bill">
                                 <f:facet name="header">
                                     <h:outputLabel value="Pharmacy Sale Report : "/>
                                     <h:outputLabel value="#{billController.department.name}"/> &#13;&nbsp;

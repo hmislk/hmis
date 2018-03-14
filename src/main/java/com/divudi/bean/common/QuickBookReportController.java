@@ -1233,7 +1233,7 @@ public class QuickBookReportController implements Serializable {
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
 //        Item itemBefore = null;
-        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:Professional",
+        QuickBookFormat qbf = new QuickBookFormat("ACCRUED CHARGES:Consultant Advance:OPD Credit Professional Fee",
                 "CREDIT COMPANY:" + creditCompany.getChequePrintingName(), "ACCRUED CHARGES:Consultant Advance:Professional",
                 0 - d, "OPD");
 

@@ -22,6 +22,24 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Dynamic Lable Report" styleClass="nonPrintBlock" ></h:outputLabel>
                 </f:facet>
+                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                value="#{investigationController.current}" 
+                                completeMethod="#{investigationController.completeInvest}" 
+                                var="apt" itemLabel="#{apt.name}" 
+                                itemValue="#{apt}" size="30"  style="width: 400px;">
+                    <p:column>
+                        #{apt.name}
+                    </p:column>
+                    <p:column>
+                        #{apt.fullName}
+                    </p:column>
+                    <p:column>
+                        #{apt.department.name}
+                    </p:column>
+                    <p:column>
+                        #{apt.total}
+                    </p:column>
+                </p:autoComplete> 
                 <p:commandButton ajax="false" value="Fill" action="#{investigationController.createInvestigationWithDynamicLables}"
                                  styleClass="noPrintButton" onclick="onSubmitButton();"  />
                 <p:commandButton value="Print" ajax="false" action="#" >

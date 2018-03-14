@@ -854,7 +854,7 @@ public class InvestigationController implements Serializable {
         Date toDate = null;
 
         investigationWithInvestigationItemses = new ArrayList<>();
-        for (Investigation in : fetchInvestigations()) {
+        for (Investigation in : fetchInvestigations(current)) {
             InvestigationWithInvestigationItems items = new InvestigationWithInvestigationItems();
             items.setI(in);
             System.out.println("in.getName() = " + in.getName());
@@ -883,9 +883,10 @@ public class InvestigationController implements Serializable {
         return lisFlags;
     }
 
-    public List<Investigation> fetchInvestigations() {
+    public List<Investigation> fetchInvestigations(Investigation i) {
         List<Investigation> investigations;
         String sql;
+        Map m=new HashMap();
 
         sql = "select c from Investigation c "
                 + " where c.retired=false ";
@@ -893,9 +894,13 @@ public class InvestigationController implements Serializable {
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
+        if (i!=null) {
+            sql+=" and c=:i ";
+            m.put("i", i);
+        }
         sql += " order by c.name";
 
-        investigations = getFacade().findBySQL(sql);
+        investigations = getFacade().findBySQL(sql,m);
         System.out.println("investigations.size() = " + investigations.size());
         return investigations;
     }

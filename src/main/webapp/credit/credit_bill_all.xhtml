@@ -96,6 +96,12 @@
                                     </f:facet>
                                     <h:outputLabel value="#{b.patient.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.comments}" ></h:outputLabel>
+                                </p:column>
 
                                 <p:column rendered="#{mdInwardReportController.reportKeyWord.string ne '0'}">
                                     <f:facet name="header">

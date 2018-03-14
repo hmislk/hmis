@@ -331,18 +331,38 @@
 
 
                                 </f:facet>
+                                <p:tabView>
+                                    <p:tab title="Not Accepted Bills">
+                                        <p:dataTable value="#{searchController.bills}" var="bill" styleClass="summeryBorder" >
+                                            <p:column headerText="Pre Bill No">
+                                                <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
+                                            </p:column>     
+                                            <p:column headerText="Date" >                              
+                                                <h:outputLabel value="#{bill.createdAt}" >
+                                                    <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                                </h:outputLabel>                                   
+                                            </p:column>
+<!--                                            <p:column headerText="User" style="overflow: hidden;">
+                                                <h:outputLabel value="#{bill.creater.webUserPerson.name}"  ></h:outputLabel>
+                                            </p:column>     -->
+                                        </p:dataTable>
+                                    </p:tab>
+                                    <p:tab title="Refering Details">
+                                        <p:panelGrid columns="2">
+                                            <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                            <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController.preBill.referredBy}" 
+                                                            completeMethod="#{doctorController.completeDoctor}" 
+                                                            var="ix" itemLabel="#{ix.person.name}" 
+                                                            itemValue="#{ix}" size="30"  
+                                                            >
+                                            </p:autoComplete>
+                                            <p:outputLabel value="Comments" ></p:outputLabel>
+                                            <p:inputTextarea value="#{pharmacySaleController.comment}" id="comment"/>
+                                        </p:panelGrid>
+                                    </p:tab>
+                                </p:tabView>
 
-                                <p:panelGrid columns="2">
-                                    <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController.preBill.referredBy}" 
-                                                    completeMethod="#{doctorController.completeDoctor}" 
-                                                    var="ix" itemLabel="#{ix.person.name}" 
-                                                    itemValue="#{ix}" size="30"  
-                                                    >
-                                    </p:autoComplete>
-                                    <p:outputLabel value="Comments" ></p:outputLabel>
-                                    <p:inputTextarea value="#{pharmacySaleController.comment}" id="comment"/>
-                                </p:panelGrid>
+
 
 
                                 <p:panel header="Bill Details" id="pBillDetails"  >

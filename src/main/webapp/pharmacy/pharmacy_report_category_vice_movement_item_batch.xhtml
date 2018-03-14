@@ -58,7 +58,8 @@
                 
 
 
-                <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i" stickyHeader="true">   
+                <p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i" >   
+                <!--<p:dataTable id="sum1" value="#{pharmacySaleReport.categoryMovementReportRows}" var="i" stickyHeader="true">-->   
                     <f:facet name="header">
                         <p:outputLabel value="CATEGORY-VICE MOVEMENT REPORT" />
                         &#13;&nbsp;
@@ -90,21 +91,21 @@
                         <h:outputLabel value="#{i.itemBatch.item.code}" />
                     </p:column>
 
-                    <p:column >
+                    <p:column styleClass="averageNumericColumn" >
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Rate" />
                         </f:facet>
-                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
+                        <h:outputLabel value="#{i.itemBatch.purcahseRate}" style="color: blue;" >
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                     </p:column>
 
 
-                    <p:column >
+                    <p:column styleClass="averageNumericColumn" >
                         <f:facet name="header">
                             <h:outputLabel value="Retail Rate" />
                         </f:facet>
-                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                        <h:outputLabel value="#{i.itemBatch.retailsaleRate}" style="color: blue;">
                             <f:convertNumber pattern="0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -113,7 +114,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Opd Sale Qty" />
                         </f:facet>
-                        <h:outputLabel value="#{i.opdSaleQty}" />
+                        <h:outputLabel value="#{i.opdSaleQty}" style="color: green;" />
                     </p:column>
 
                     <p:column  styleClass="averageNumericColumn">
@@ -129,12 +130,21 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
+                    
+                    <p:column  styleClass="averageNumericColumn">
+                        <f:facet name="header">
+                            <h:outputLabel value="Opd Discount" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.opdDiscount}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
 
-                    <p:column >
+                    <p:column style="text-align: right;" >
                         <f:facet name="header">
                             <h:outputLabel value="Inward Issue Qty" />
                         </f:facet>
-                        <h:outputLabel value="#{i.inwardIssueQty}" />
+                        <h:outputLabel value="#{i.inwardIssueQty}" style="color: green;"/>
                     </p:column>
 
                     <p:column  style="text-align: right;">
@@ -150,12 +160,21 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
+                    
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Inward Margin" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.inwardMargin}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
 
-                    <p:column >
+                    <p:column style="text-align: right;">
                         <f:facet name="header">
                             <h:outputLabel value="Department Issue Qty" />
                         </f:facet>
-                        <h:outputLabel value="#{i.departmentIssueQty}" />
+                        <h:outputLabel value="#{i.departmentIssueQty}" style="color: green;"/>
                     </p:column>
 
                     <p:column  styleClass="averageNumericColumn">
@@ -176,7 +195,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Movement Qty" />
                         </f:facet>
-                        <h:outputLabel value="#{i.opdSaleQty+i.inwardIssueQty+i.departmentIssueQty}">
+                        <h:outputLabel value="#{i.opdSaleQty+i.inwardIssueQty+i.departmentIssueQty}" style="color: green;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>                      
                     </p:column>
@@ -189,6 +208,24 @@
                         <h:outputLabel value="#{i.opdSale+i.inwardIssue+i.departmentIssue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>                      
+                    </p:column>
+                    
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Margin" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.marginValue}" style="color: red;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column  style="text-align: right;">
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Val" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.purchaseValue}" style="color: red;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
                     </p:column>
                     
                     <p:column  styleClass="averageNumericColumn">

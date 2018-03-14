@@ -42,6 +42,18 @@
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>
+                <br/>
+                <h:panelGroup rendered="#{bill.cancelled}" >
+                    <h:outputLabel style="color: red;" value="Cancelled No " />
+                    <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.deptId}" >                                       
+                    </h:outputLabel>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{bill.refunded}" >
+                    <h:outputLabel style="color: red;" value="Refunded No " />
+                    <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.deptId}" >
+
+                    </h:outputLabel>
+                </h:panelGroup>
             </p:column>      
             <p:column headerText="PO NO">
                 <h:commandLink action="store_reprint_grn" value="#{bill.referenceBill.deptId}">
