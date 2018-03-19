@@ -30,6 +30,7 @@ import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.ItemBatch;
+import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillEntryFacade;
 import com.divudi.facade.BillFacade;
@@ -47,6 +48,7 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -101,6 +103,8 @@ public class DataAdministrationController {
     PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     InstitutionFacade institutionFacade;
+    @EJB
+    PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
 
     @Inject
     SessionController sessionController;
@@ -136,7 +140,9 @@ public class DataAdministrationController {
     private List<Item> items;
     private List<Item> selectedItems;
     private List<Department> departments;
-    private List<PatientInvestigation>patientInvestigations;
+    private List<PatientInvestigation> patientInvestigations;
+    List<PharmaceuticalItemCategory> pharmaceuticalItemCategorys;
+    List<PharmaceuticalItemCategory> selectedPharmaceuticalItemCategorys;
 
     double val1;
     double val2;
@@ -1106,7 +1112,7 @@ public class DataAdministrationController {
         }
 
     }
-    
+
     public void createPatientInvestigationsTable() {
         Map temMap = new HashMap();
 //        if (getSearchKeyword().getBillNo() == null && getSearchKeyword().getBillNo().trim().equals("")) {
@@ -1118,12 +1124,11 @@ public class DataAdministrationController {
                 + " i join pi.billItem.bill b join b.patient.person p where "
                 + " b.createdAt between :fromDate and :toDate  ";
 
-
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  (upper(b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
-        
+
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
             sql += " and  (upper(i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
@@ -1137,23 +1142,23 @@ public class DataAdministrationController {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
-    public void deActiveSelectedPatientReport(PatientReport pr){
+
+    public void deActiveSelectedPatientReport(PatientReport pr) {
         pr.setRetired(true);
         pr.setRetiredAt(new Date());
         pr.setRetireComments("Admin Report Deactivated");
         getPatientReportFacade().edit(pr);
         JsfUtil.addSuccessMessage("Deactivated");
     }
-    
-    public void activeSelectedPatientReport(PatientReport pr){
+
+    public void activeSelectedPatientReport(PatientReport pr) {
         pr.setRetired(false);
         pr.setRetiredAt(null);
         pr.setRetireComments("Admin Report Activated");
         getPatientReportFacade().edit(pr);
         JsfUtil.addSuccessMessage("Activated");
     }
-    
+
     public void itemChangeListener() {
         itemCategory = null;
     }
@@ -1165,6 +1170,57 @@ public class DataAdministrationController {
 
     }
 
+    public void fillPharmacyCategory() {
+        if (getReportKeyWord().getString().equals("0")) {
+            pharmaceuticalItemCategorys = fetchPharmacyCategories(true);
+        } else {
+            pharmaceuticalItemCategorys = fetchPharmacyCategories(false);
+        }
+    }
+
+    public void actveSelectedCategories() {
+        if (selectedPharmaceuticalItemCategorys.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            return;
+        }
+        for (PharmaceuticalItemCategory c : selectedPharmaceuticalItemCategorys) {
+            c.setRetired(false);
+            c.setRetireComments("Category Bulk Activate");
+            c.setRetiredAt(new Date());
+            c.setRetirer(sessionController.getLoggedUser());
+            getPharmaceuticalItemCategoryFacade().edit(c);
+        }
+        fillPharmacyCategory();
+    }
+
+    public void deActveSelectedCategories() {
+        if (selectedPharmaceuticalItemCategorys.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            return;
+        }
+        for (PharmaceuticalItemCategory c : selectedPharmaceuticalItemCategorys) {
+            c.setRetired(true);
+            c.setRetireComments("Category Bulk De-Activate");
+            c.setRetiredAt(new Date());
+            c.setRetirer(sessionController.getLoggedUser());
+            getPharmaceuticalItemCategoryFacade().edit(c);
+        }
+        fillPharmacyCategory();
+    }
+
+    private List<PharmaceuticalItemCategory> fetchPharmacyCategories(boolean active) {
+//        items = getFacade().findAll("name", true);
+        String sql = " select c from PharmaceuticalItemCategory c where ";
+        if (active) {
+            sql += " c.retired=false ";
+        } else {
+            sql += " c.retired!=false ";
+        }
+        sql += " order by c.description, c.name ";
+
+        return getPharmaceuticalItemCategoryFacade().findBySQL(sql);
+    }
+    
 //    Getters & Setters
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
@@ -1481,8 +1537,8 @@ public class DataAdministrationController {
     }
 
     public SearchKeyword getSearchKeyword() {
-        if (searchKeyword==null) {
-            searchKeyword=new SearchKeyword();
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
         }
         return searchKeyword;
     }
@@ -1497,6 +1553,36 @@ public class DataAdministrationController {
 
     public void setPatientInvestigations(List<PatientInvestigation> patientInvestigations) {
         this.patientInvestigations = patientInvestigations;
+    }
+
+    public PharmaceuticalItemCategoryFacade getPharmaceuticalItemCategoryFacade() {
+        return pharmaceuticalItemCategoryFacade;
+    }
+
+    public void setPharmaceuticalItemCategoryFacade(PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade) {
+        this.pharmaceuticalItemCategoryFacade = pharmaceuticalItemCategoryFacade;
+    }
+
+    public List<PharmaceuticalItemCategory> getPharmaceuticalItemCategorys() {
+        if (pharmaceuticalItemCategorys == null) {
+            pharmaceuticalItemCategorys = new ArrayList<>();
+        }
+        return pharmaceuticalItemCategorys;
+    }
+
+    public void setPharmaceuticalItemCategorys(List<PharmaceuticalItemCategory> pharmaceuticalItemCategorys) {
+        this.pharmaceuticalItemCategorys = pharmaceuticalItemCategorys;
+    }
+
+    public List<PharmaceuticalItemCategory> getSelectedPharmaceuticalItemCategorys() {
+        if (selectedPharmaceuticalItemCategorys == null) {
+            selectedPharmaceuticalItemCategorys = new ArrayList<>();
+        }
+        return selectedPharmaceuticalItemCategorys;
+    }
+
+    public void setSelectedPharmaceuticalItemCategorys(List<PharmaceuticalItemCategory> selectedPharmaceuticalItemCategorys) {
+        this.selectedPharmaceuticalItemCategorys = selectedPharmaceuticalItemCategorys;
     }
 
 }

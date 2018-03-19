@@ -26,18 +26,12 @@
                             <p:panel>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Category" ></h:outputLabel>
-                                    <p:autoComplete  value="#{pharmacyController.category}" 
-                                                     forceSelection="true" converter="categoryConverter"
-                                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
-                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                        <p:column headerText="Item">
-                                            <h:outputLabel value="#{vt.name}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Code">
-                                            <h:outputLabel value="#{vt.description}" ></h:outputLabel>
-                                        </p:column>
-                                        <f:ajax event="itemSelect" render="acStock" execute="@this" />
-                                    </p:autoComplete>
+                                    <p:selectOneMenu value="#{pharmacyController.category}" >
+                                        <f:selectItem itemLabel="Select Category" />
+                                        <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="c"
+                                                       itemLabel="#{c.name}" itemValue="#{c}" />
+                                        <f:ajax event="change" render="acStock" execute="@this" />
+                                    </p:selectOneMenu>
                                     <h:outputLabel value="Item" ></h:outputLabel>
                                     <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}" 
                                                     completeMethod="#{pharmacyController.completeAllStockItems}" var="i" 
@@ -113,7 +107,8 @@
                                         <f:facet name="header">
                                             <p:outputLabel value="Date Of Expiry" />
                                         </f:facet>
-                                        <p:outputLabel value="#{s.itemBatch.dateOfExpire}" >
+                                        <p:outputLabel value="#{s.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > s.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                     commonController.dateAfterThreeMonthsCurrentDateTime > s.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
                                             <f:convertDateTime pattern="yyyy MM dd" />
                                         </p:outputLabel>
                                     </p:column>

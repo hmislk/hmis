@@ -169,11 +169,11 @@ public class PharmaceuticalItemCategoryController implements Serializable {
 
     public List<PharmaceuticalItemCategory> getItems() {
 //        items = getFacade().findAll("name", true);
-        String sql= " select c from PharmaceuticalItemCategory c where "
+        String sql = " select c from PharmaceuticalItemCategory c where "
                 + " c.retired=false "
                 + " order by c.description, c.name ";
 
-        items= getFacade().findBySQL(sql);
+        items = getFacade().findBySQL(sql);
         return items;
     }
 
