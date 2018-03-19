@@ -16,6 +16,8 @@
                     <p:outputLabel value="Arrived Doctors" />
                 </f:facet>
                 <p:panel>
+                    <p:poll interval="30"   
+                                listener="#{channelReportController.createDoctorArrival()}" update="@all" />
                     <h:panelGrid columns="2" >
                         
                         <p:commandButton value="Process" action="#{channelReportController.createDoctorArrival()}" ajax="false" />

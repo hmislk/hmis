@@ -558,14 +558,35 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void createTransferReciveBillSummery() {
-        fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+        fetchBillTotalByFromDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
     }
 
     public void fetchBillTotalByToDepartment(Date fd, Date td, Department dep, BillType bt) {
         listz = new ArrayList<>();
         netTotalValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt);
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt,true);
+
+        for (Object[] ob : objects) {
+            Department d = (Department) ob[0];
+            double dbl = (double) ob[1];
+
+            String1Value3 sv = new String1Value3();
+            sv.setString(d.getName());
+            sv.setValue1(dbl);
+            listz.add(sv);
+
+            netTotalValues += dbl;
+
+        }
+
+    }
+    
+    public void fetchBillTotalByFromDepartment(Date fd, Date td, Department dep, BillType bt) {
+        listz = new ArrayList<>();
+        netTotalValues = 0.0;
+
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt,false);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];

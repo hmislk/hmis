@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.memberShip.MembershipSchemeController;
@@ -98,6 +99,8 @@ public class PharmacySaleController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    SearchController searchController;
     
     @Inject
     CommonController commonController;
@@ -494,11 +497,10 @@ public class PharmacySaleController implements Serializable {
     }
 
     public void resetAll() {
-        
-        
         userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
+        searchController.createPreBillsNotPaid();
         billPreview = false;
     }
 

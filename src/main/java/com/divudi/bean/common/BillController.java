@@ -888,6 +888,19 @@ public class BillController implements Serializable {
         vat = r.getVat();
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
     }
+    
+    public void getPharmacyBillsBilled() {
+        Date startTime = new Date();
+
+        BillType[] billTypes = {BillType.PharmacyPre};
+        BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);
+        bills = r.getBills();
+        netTotal = r.getNetTotal();
+        discount = r.getDiscount();
+        grosTotal = r.getGrossTotal();
+        vat = r.getVat();
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
+    }
 
     public void getPharmacyWholeBills() {
         Date startTime = new Date();
