@@ -590,7 +590,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return true;
         }
         if (qty == null || qty == 0.0) {
-            UtilityController.addErrorMessage("Please Select Corect Stock");
+            UtilityController.addErrorMessage("Please Select Correct Stock");
             return true;
         }
 
@@ -608,7 +608,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return true;
         }
         if (qty == null) {
-            UtilityController.addErrorMessage("Please Select Corect Stock");
+            UtilityController.addErrorMessage("Please Select Correct Stock");
+            return true;
+        }
+        if (qty != 0.0) {
+            UtilityController.addErrorMessage("Please Select Correct Stock Qty");
             return true;
         }
 

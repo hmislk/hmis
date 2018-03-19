@@ -286,7 +286,7 @@
                                         <h:outputLabel value="#{bip.bill.deptId} - "/>
                                         <h:outputLabel value="#{bip.bill.id}"/>
                                     </p:column>
-                                    <p:column headerText="Bill Edit" rendered="false">
+<!--                                    <p:column headerText="Bill Edit" rendered="false">
                                         <p:cellEditor>
                                             <f:facet name="output" >
                                                 <h:outputLabel value="#{bip.bill.deptId}" />
@@ -295,7 +295,7 @@
                                                 <p:inputText value="#{bip.bill}" />
                                             </f:facet>
                                         </p:cellEditor>
-                                    </p:column>
+                                    </p:column>-->
                                     <p:column rendered="false">
                                         <f:facet name="header">Bill paid</f:facet>
                                         <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.deptId} - "/>
@@ -310,8 +310,15 @@
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
                                     </p:column>
                                     <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.paidValue}"/>
+                                        <f:facet name="header">Paid Value</f:facet>
+                                        <p:cellEditor>
+                                            <f:facet name="output" >
+                                                <h:outputLabel value="#{bip.paidValue}"/>
+                                            </f:facet>
+                                            <f:facet name="input" >
+                                                <p:inputText value="#{bip.paidValue}"/>
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Gross Fee Value</f:facet>
@@ -403,17 +410,6 @@
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
                                     </p:column>
 
-                                    <p:column>
-                                        <f:facet name="header">Paid Value</f:facet>
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip.paidValue}"/>
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip.paidValue}"/>
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
 
                                     <p:column headerText="Payee" >
                                         <p:cellEditor rendered="#{bip.staff ne null}">  
