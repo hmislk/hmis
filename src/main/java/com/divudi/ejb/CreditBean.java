@@ -98,7 +98,7 @@ public class CreditBean {
 
         return bills;
     }
-    
+
     public List<BillItem> getCreditBillItems(Institution ins, BillType billType, Date fromDate, Date toDate, boolean lessThan) {
         String sql = "Select bi From BillItem bi join  bi.bill b"
                 + " where b.retired=false "
@@ -202,9 +202,9 @@ public class CreditBean {
 //            sql += " and (abs(b.creditUsedAmount)-abs(b.creditPaidAmount)) <:val ";
 //        }
         if (lessThan) {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >=:val ";
         } else {
-            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <=:val ";
         }
         sql += " and b.dateOfDischarge between :frm and :to "
                 + " and b.discharged = true "
@@ -216,12 +216,12 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
         hm.put("ins", institution);
-        hm.put("val", 0.1);
+        hm.put("val", 0.01);
         List<PatientEncounter> lst = getPatientEncounterFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         return lst;
     }
-    
+
     public List<Institution> getCreditCompanyFromBht(boolean lessThan, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm;
@@ -254,10 +254,15 @@ public class CreditBean {
         sql = "Select distinct(b.creditCompany)"
                 + " From PatientEncounter b "
                 + " where b.retired=false ";
+//        if (lessThan) {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount) >:val ";
+//        } else {
+//            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount) <:val ";
+//        }
         if (lessThan) {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount) >:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >=:val ";
         } else {
-            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount) <:val ";
+            sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) <=:val ";
         }
         sql += " and b.dateOfDischarge between :frm and :to "
                 + " and b.discharged = true "
@@ -268,7 +273,7 @@ public class CreditBean {
         hm.put("frm", fromDate);
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
-        hm.put("val", 0.1);
+        hm.put("val", 0.01);
         List<Institution> setIns = getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
         return setIns;
@@ -287,7 +292,7 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public double getRefundAmount(Bill b) {
         String sql = "Select sum(b.netTotal+b.vat) "
                 + " From Bill b "
@@ -300,7 +305,7 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
+
     public Object[] getRefundAmounts(Bill b) {
         String sql = "Select sum(b.netTotal),sum(b.vat) "
                 + " From Bill b "
@@ -341,8 +346,8 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
 
     }
-    
-    public double getPaidAmount(PatientEncounter p, BillType billType,Date date) {
+
+    public double getPaidAmount(PatientEncounter p, BillType billType, Date date) {
         String sql = "Select sum(b.netValue)"
                 + "  From BillItem b "
                 + " where b.retired=false "
@@ -403,7 +408,7 @@ public class CreditBean {
         String sql = "select sum(b.netTotal) from"
                 + " Bill b where "
                 + " b.retired=false "
-//                + " and b.paymentMethod=:pm "
+                //                + " and b.paymentMethod=:pm "
                 + " and b.referenceBill=:refBill "
                 + " and b.billType in :bts";
 
@@ -470,7 +475,7 @@ public class CreditBean {
         hm.put("tp1", BillType.OpdBill);
         return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
-    
+
     public List<Institution> getCreditCompanyFromBillsPharmacy(boolean lessThan) {
         String sql;
         HashMap hm;
@@ -574,7 +579,7 @@ public class CreditBean {
         return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Bill> getCreditBillsPharmacy(Institution institution, boolean lessThan) {
         String sql;
         HashMap hm = new HashMap();
@@ -615,7 +620,6 @@ public class CreditBean {
 //        } else {
 //            sql += " and abs(b.creditUsedAmount)-abs(b.creditPaidAmount)< :val ";
 //        }
-        
         if (lessThan) {
             sql += " and (abs(b.finalBill.netTotal)-(abs(b.creditPaidAmount)+abs(b.finalBill.paidAmount))) >:val ";
         } else {

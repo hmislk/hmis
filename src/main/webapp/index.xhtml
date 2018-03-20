@@ -10,7 +10,16 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
+                <h:form>
+                    <p:panel rendered="#{webUserController.hasPrivilege('Developers') 
+                                            and (sessionController.loggedUser.id eq 3151
+                                            or  sessionController.loggedUser.id eq 1101795)
+                                            and sessionController.logged
+                                            and !sessionController.firstLogin 
+                                            and sessionController.department ne null}">
+                        <p:commandButton value="Channel Booking" action="/channel/channel_booking" ajax="false" />
+                    </p:panel>
+                </h:form>
 
                 <!--monthly channel and scan count-->
                 <!--                <script type="text/javascript">

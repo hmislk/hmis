@@ -629,6 +629,28 @@ public class ReportsStock implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Transfer Report/Staff stock reports(/faces/pharmacy/pharmacy_report_staff_stock_by_batch.xhtml)");
     }
+    
+    public void fillAllStaffStocks() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        Map m = new HashMap();
+        String sql;
+        sql = "select s from Stock s where s.stock!=:d "
+                + " order by s.staff.person.name, "
+                + " s.itemBatch.item.name ";
+        m.put("d", 0.0);
+        stocks = getStockFacade().findBySQL(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Transfer Report/All Staff stock reports(/faces/pharmacy/pharmacy_report_staff_stock_by_batch.xhtml)");
+    }
 
     public String fillDistributorStocks() {
         Date startTime = new Date();

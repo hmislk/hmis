@@ -18,26 +18,14 @@
 
                     <p:panel rendered="#{!pharmacyAdjustmentController.printPreview}">
                         <f:facet name="header" >
-                            <p:outputLabel value="Department Stock Adjustment : Quantity" />
-                            <p:commandButton id="btnzero" value="Go To Zero Adjustment" ajax="false" style="color: red;float: right;"
-                                                     action="pharmacy_adjustment_department_by_item_zero" actionListener="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
+                            <p:outputLabel value="Department Stock Adjustment : Quantity (Zero)" style="color: red;" />
+                            <p:commandButton id="btnzero" value="Go To Adjustment" ajax="false" style="color: green;float: right;"
+                                             action="pharmacy_adjustment_department_by_item" actionListener="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
                         </f:facet>
                         <h:panelGrid columns="1" >
                             <p:panel>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="Category" ></h:outputLabel>
-<!--                                    <p:autoComplete  value="#{pharmacyController.category}" 
-                                                     forceSelection="true" converter="categoryConverter"
-                                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
-                                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                                        <p:column headerText="Item">
-                                            <h:outputLabel value="#{vt.name}" ></h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Code">
-                                            <h:outputLabel value="#{vt.description}" ></h:outputLabel>
-                                        </p:column>
-                                        <f:ajax event="itemSelect" render="acStock" execute="@this" />
-                                    </p:autoComplete>-->
                                     <p:selectOneMenu value="#{pharmacyController.category}" >
                                         <f:selectItem itemLabel="Select Category" />
                                         <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="c"
@@ -68,12 +56,13 @@
                                         <f:ajax event="change" execute="@this" render="det input" />
                                     </p:selectBooleanCheckbox>
                                 </h:panelGrid>
-                                <h:panelGrid columns="2">
-                                    <p:commandButton id="btnAdjust" value="Make Adjustments" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust this record?'))
+                                <h:panelGrid columns="3">
+                                    <p:commandButton id="btnAdjust" value="Zero Adjustments" style="color: red;" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust to Zero this record?'))
                                                 return false;"
-                                                     action="#{pharmacyAdjustmentController.adjustDepartmentStockAll}" ></p:commandButton>
+                                                     action="#{pharmacyAdjustmentController.adjustDepartmentStockAllZero()}" ></p:commandButton>
                                     <p:commandButton id="btnClear" value="Clear" ajax="false" 
                                                      action="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
+
                                 </h:panelGrid>
                             </p:panel>
                             <p:panel>

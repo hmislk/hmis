@@ -17,6 +17,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
@@ -212,7 +213,24 @@ public class PharmacyAdjustmentController implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and "
+        sql = "select i from Stock i where i.stock !=:s and "
+                + "(upper(i.staff.code) like :n or "
+                + "upper(i.staff.person.name) like :n or "
+                + "upper(i.itemBatch.item.name) like :n ) "
+                + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire , i.stock desc";
+        items = getStockFacade().findBySQL(sql, m, 20);
+
+        return items;
+    }
+    
+    public List<Stock> completeStaffZeroStocks(String qry) {
+        List<Stock> items;
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select i from Stock i where i.stock =:s and "
                 + "(upper(i.staff.code) like :n or "
                 + "upper(i.staff.person.name) like :n or "
                 + "upper(i.itemBatch.item.name) like :n ) "
@@ -589,7 +607,29 @@ public class PharmacyAdjustmentController implements Serializable {
             return true;
         }
         if (qty == null || qty == 0.0) {
-            UtilityController.addErrorMessage("Please Select Corect Stock");
+            UtilityController.addErrorMessage("Please Select Correct Stock");
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean errorCheckAllZero() {
+
+        if (getItem() == null) {
+            UtilityController.addErrorMessage("Select Item");
+            return true;
+        }
+        if (getStocks().isEmpty()) {
+            UtilityController.addErrorMessage("No Stocks");
+            return true;
+        }
+        if (qty == null) {
+            UtilityController.addErrorMessage("Please Select Correct Stock");
+            return true;
+        }
+        if (qty != 0.0) {
+            UtilityController.addErrorMessage("Please Select Correct Stock Qty");
             return true;
         }
 
@@ -837,6 +877,31 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
+    public void adjustDepartmentStockAllZero() {
+        if (errorCheckAllZero()) {
+            return;
+        }
+        bills = new ArrayList<>();
+        for (Stock s : stocks) {
+            System.out.println("s.getCalculated() = " + s.getCalculated());
+            System.out.println("s.getStock() = " + s.getStock());
+            if (s.getStock() != s.getCalculated()) {
+                deptAdjustmentPreBill = null;
+                saveDeptAdjustmentBill();
+                PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
+                bills.add(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
+                getPharmacyBean().resetStock(ph, s, s.getCalculated(), getSessionController().getDepartment());
+
+            }
+
+        }
+
+//        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
+//        getBillFacade().edit(getDeptAdjustmentPreBill());
+        printPreview = true;
+
+    }
+
     public void adjustPurchaseRate() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -970,7 +1035,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void onEdit() {
-        qty=0.0;
+        qty = 0.0;
         for (Stock s : stocks) {
             qty += s.getCalculated();
         }

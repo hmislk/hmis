@@ -334,10 +334,10 @@ public class BillSearch implements Serializable {
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
 
-        if (tmp.getPaidValue() != 0.0) {
-            UtilityController.addErrorMessage("Already Staff FeePaid");
-            return;
-        }
+//        if (tmp.getPaidValue() != 0.0) {
+//            UtilityController.addErrorMessage("Already Staff FeePaid");
+//            return;
+//        }
 
         getBillFeeFacade().edit(tmp);
 

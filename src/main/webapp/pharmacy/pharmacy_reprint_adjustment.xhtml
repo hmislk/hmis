@@ -28,7 +28,7 @@
                             <ph:adjustmentBill bill="#{pharmacyBillSearch.bill}" />
                         </h:panelGroup>
                     </h:panelGroup>                 
-                      <h:panelGroup >
+                    <h:panelGroup >
                         <p:commandButton value="Reprint Purchase Adjust" ajax="false" >
                             <p:printer target="gpBillPreview2" ></p:printer>
                         </p:commandButton>
@@ -36,13 +36,23 @@
                             <ph:adjustmentBill_purchase_price bill="#{pharmacyBillSearch.bill}" />
                         </h:panelGroup>
                     </h:panelGroup>
-                    
-                      <h:panelGroup >
+
+                    <h:panelGroup >
                         <p:commandButton value="Reprint Retail Rate" ajax="false" >
                             <p:printer target="gpBillPreview3" ></p:printer>
                         </p:commandButton>
                         <h:panelGroup id="gpBillPreview3" >
                             <ph:adjustmentBill_sale_price bill="#{pharmacyBillSearch.bill}" />
+
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                    <h:panelGroup >
+                        <p:commandButton value="Reprint Retail Rate" ajax="false" >
+                            <p:printer target="gpBillPreview4" ></p:printer>
+                        </p:commandButton>
+                        <h:panelGroup id="gpBillPreview4" >
+                            <ph:adjustmentBill_expiry_date bill="#{pharmacyBillSearch.bill}" />
 
                         </h:panelGroup>
 

@@ -46,7 +46,8 @@
                 </h:panelGrid>
 
                 <h:panelGrid columns="3">
-                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReport()}"/>
+                    <!--<p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReport()}"/>-->
+                    <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createCategoryMovementReportNew()}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                         <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
@@ -80,6 +81,12 @@
                             <h:outputLabel value="Item" />
                         </f:facet>
                         <h:outputLabel value="#{i.item.name}" />
+                    </p:column>
+                    <p:column >
+                        <f:facet name="header">
+                            <h:outputLabel value="Item" />
+                        </f:facet>
+                        <h:outputLabel value="#{i.item.id}" />
                     </p:column>
 
                     <p:column  style="text-align: right;">

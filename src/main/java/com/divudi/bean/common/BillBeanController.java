@@ -1111,7 +1111,7 @@ public class BillBeanController implements Serializable {
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public List<Bill> fetchBills(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
         String sql;
         HashMap temMap = new HashMap();
@@ -1129,7 +1129,6 @@ public class BillBeanController implements Serializable {
             sql += " and b.patientEncounter is not null ";
         }
 
-
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("btp", billType);
@@ -1137,7 +1136,7 @@ public class BillBeanController implements Serializable {
 
         return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public List<BillItem> fetchBillItemsPharmacy(BillType billType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         HashMap temMap = new HashMap();
@@ -1158,7 +1157,7 @@ public class BillBeanController implements Serializable {
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public List<Bill> fetchBillItemsPharmacyOld(BillType billType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         HashMap temMap = new HashMap();
@@ -1422,6 +1421,7 @@ public class BillBeanController implements Serializable {
 
         return netTotal;
     }
+
     public double calInstitutionSaleCredit(Date fromDate, Date toDate, Institution institution, BillType billType) {
         String sql = "Select sum(b.netTotal)"
                 + " from Bill b "
@@ -1529,7 +1529,7 @@ public class BillBeanController implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
-    
+
     public double calBillTotalPharmacyold(BillType billType, Date fromDate, Date toDate, Institution institution) {
         String sql;
         Map temMap = new HashMap();
@@ -1595,7 +1595,7 @@ public class BillBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public double calBillTotalWithVat(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
 
         String sql;
@@ -1777,6 +1777,37 @@ public class BillBeanController implements Serializable {
                 + " and  b.createdAt between :fromDate and :toDate "
                 + " group by b.toDepartment"
                 + " order by b.toDepartment.name  ";
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    public List<Object[]> fetchBilledDepartmentItem(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " b.toDepartment";
+        } else {
+            sql += " b.fromDepartment";
+        }
+        sql += ",sum(b.netTotal) "
+                + " FROM Bill b "
+                + " where b.department=:dept "
+                + " and  b.billType= :bTp  "
+                + " and  b.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by b.toDepartment "
+                    + " order by b.toDepartment.name ";
+        } else {
+            sql += " group by b.fromDepartment"
+                    + " order by b.fromDepartment.name";
+        }
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         temMap.put("dept", department);
@@ -2420,7 +2451,7 @@ public class BillBeanController implements Serializable {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());
         }
-        
+
         if (paymentMethod.equals(PaymentMethod.OnlineSettlement)) {
             b.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
             b.setBank(paymentMethodData.getCreditCard().getInstitution());

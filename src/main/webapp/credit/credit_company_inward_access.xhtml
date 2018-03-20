@@ -33,7 +33,7 @@
                             <p:printer target="lst"  />
                         </p:commandButton>
 
-                        <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                        <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditAccess()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                             <pe:exporter type="xlsx" target="lst" fileName="Due Search(Credit Company)" subTable="true" />
                         </p:commandButton>
 
@@ -59,6 +59,8 @@
                                     </p:column>
                                     <p:column headerText="Paid Amount">                                    
                                     </p:column>
+<!--                                    <p:column headerText="Paid By Patient">                                    
+                                    </p:column>-->
                                     <p:column headerText="Net Amount">                                    
                                     </p:column>
                                 </p:row>
@@ -67,24 +69,28 @@
                                 <f:facet name="header">
                                     <h:outputLabel  value="#{i.institution.name}"/>
                                 </f:facet>
-                                <p:column>                              
-                                    <h:outputLabel value="#{b.bhtNo}" />                                
+                                <p:column>
+                                    <h:commandLink value="#{b.bhtNo}" action="/inward/inward_report_bht_income_by_caregories_bht"
+                                                   actionListener="#{inwardReportControllerBht.process()}" target="_blank" >
+                                        <f:setPropertyActionListener value="#{b}" target="#{inwardReportControllerBht.patientEncounter}" />
+                                    </h:commandLink>
+                                    <!--<h:outputLabel value="#{b.bhtNo}" />-->                                
                                 </p:column>
                                 <p:column>                               
                                     <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                                 </p:column>
                                 <p:column style="text-align: right;">                                
-                                    <h:outputLabel value="#{b.creditUsedAmount}" >
+                                    <h:outputLabel value="#{b.finalBill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>                                 
                                 </p:column>
                                 <p:column style="text-align: right;">                              
-                                    <h:outputLabel value="#{b.creditPaidAmount}" >
+                                    <h:outputLabel value="#{b.transPaid}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;">                              
-                                    <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
+                                    <h:outputLabel value="#{b.transPaid-b.finalBill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -107,7 +113,7 @@
                                         </p:column>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{i.total+i.paidTotal}">
+                                                <h:outputLabel value="#{0-(i.total-i.paidTotal)}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>

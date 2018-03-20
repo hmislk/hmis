@@ -70,20 +70,34 @@
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="1.Check_By .................."/>
+                                    </f:facet>
                                 </p:column>
-                                
+
+<!--                                <p:column headerText="Generic" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Generic"/>    
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.item.vmp.name}" ></h:outputLabel>
+                                </p:column>-->
+
                                 <p:column headerText="Item" rendered="#{reportsStock.reportKeyWord.string eq '3'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
                                     <h:outputLabel value="........................................" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Code" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;" ></h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="2.Check_By "/>    
+                                    </f:facet>
+                                    
                                 </p:column>
 
                                 <p:column headerText="Stock Quentity" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string ne '3' and reportsStock.reportKeyWord.string ne '4'}">
@@ -92,7 +106,8 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}" style="float: right;" >
                                         <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                    </h:outputLabel>                                  
+                                    </h:outputLabel>  
+                                    
                                 </p:column>
 
                                 <p:column headerText="Purchase Rate" styleClass="noPrintButton" rendered="#{reportsStock.reportKeyWord.string eq '0' and reportsStock.reportKeyWord.string ne '4'}">
@@ -132,6 +147,9 @@
                                         <h:outputLabel value="Physical Stock(Total)"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{a+1})__________"  ></h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value=".................."/>
+                                    </f:facet>
                                 </p:column>
 
                                 <p:column headerText="Physical Stock" style="text-align: center;" rendered="#{reportsStock.reportKeyWord.string ne '4'}">
@@ -156,14 +174,14 @@
                                         <f:convertDateTime pattern="YYYY MM dd" />
                                     </h:outputLabel>                                  
                                 </p:column>
-                                
+
                                 <p:column headerText="Note" rendered="#{reportsStock.reportKeyWord.string eq '4'}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Note"/>    
                                     </f:facet>
                                     <h:outputLabel value="..........................................................................................................................................................." />                                
                                 </p:column>
-
+                                    
 
 
                             </p:dataTable>

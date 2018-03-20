@@ -51,7 +51,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from PharmaceuticalItemCategory c where "
-                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+                + " c.retired=false and ((upper(c.name) like :n) or (upper(c.description) like :n)) order by c.name";
 
         pharmaceuticalItemCategoryList = getFacade().findBySQL(sql, m, 20);
         ////System.out.println("a size is " + a.size());
@@ -169,11 +169,11 @@ public class PharmaceuticalItemCategoryController implements Serializable {
 
     public List<PharmaceuticalItemCategory> getItems() {
 //        items = getFacade().findAll("name", true);
-        String sql= " select c from PharmaceuticalItemCategory c where "
+        String sql = " select c from PharmaceuticalItemCategory c where "
                 + " c.retired=false "
                 + " order by c.description, c.name ";
 
-        items= getFacade().findBySQL(sql);
+        items = getFacade().findBySQL(sql);
         return items;
     }
 
