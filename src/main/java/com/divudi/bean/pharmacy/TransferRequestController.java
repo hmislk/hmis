@@ -122,6 +122,11 @@ public class TransferRequestController implements Serializable {
             UtilityController.addErrorMessage("Item is Already Added");
             return true;
         }
+        
+        if (getBillItems().size()>=10) {
+            UtilityController.addErrorMessage("You Can Only Add 10 Items For this Request.");
+            return true;
+        }
 
         return false;
 
