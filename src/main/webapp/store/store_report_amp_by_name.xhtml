@@ -21,7 +21,7 @@
 
                                 <p:panel id="paItems">
                                     <p:dataTable id="tblItem" value="#{storeAmpController.itemsAll}" var="i" >
-                                        <p:column headerText="Category" >
+                                        <p:column headerText="Category" sortBy="#{i.category.name}" >
                                             <p:outputLabel value="#{i.category.name}"></p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Code" >

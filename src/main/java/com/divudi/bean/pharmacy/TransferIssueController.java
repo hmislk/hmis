@@ -254,7 +254,7 @@ public class TransferIssueController implements Serializable {
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
-
+            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
                 //Addinng Staff

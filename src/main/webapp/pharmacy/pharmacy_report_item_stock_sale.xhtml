@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ch="http://java.sun.com/jsf/composite/channel"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <ui:define name="content">
+
+        <h:form>
+
+            <p:panel>
+                <f:facet name="header">
+                    <p:outputLabel value="Consultant Wise Appoinment Totals And Count(Can't Consider Appoinment Time)" />
+                    <p:commandButton id="btnBack" value="Back" 
+                                     action="/channel/channel_reports" style="float: right;"
+                                     ajax="false">
+                    </p:commandButton>
+                </f:facet>
+
+                <p:panel id="pan1">
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar value="#{report3DController.reportKeyWord.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker"  >
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar value="#{report3DController.reportKeyWord.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" styleClass="dateTimePicker" >
+                        </p:calendar>
+                        <h:outputLabel value="Department" ></h:outputLabel>
+                        <p:autoComplete completeMethod="#{departmentController.completeDept}" 
+                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
+                                        forceSelection="true" value="#{report3DController.reportKeyWord.department}" 
+                                        converter="departmentConverter"/>
+
+                        <h:outputLabel value="Category" ></h:outputLabel>
+                        <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
+                                        itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                        value="#{report3DController.reportKeyWord.category}" />
+                    </h:panelGrid>
+                    <h:panelGrid columns="2" id="pg1" >
+                        <h:outputLabel value="By Date"/> 
+                        <p:selectBooleanCheckbox value="#{report3DController.reportKeyWord.bool1}" />
+<!--                        <h:outputLabel value="Count"/> 
+                        <p:selectBooleanCheckbox value="#{report3DController.reportKeyWord.bool2}" />-->
+                    </h:panelGrid> 
+                    <h:panelGrid columns="3">
+                        <p:commandButton action="#{report3DController.createPharmacyItemMovment3D}" value="Fill" ajax="false"/>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <pe:exporter type="xlsx" target="tbl1" fileName="Channel_Count"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+                </p:panel>
+                <p:panel id="reportPrint" >
+                    <p:dataTable id="tbl1" value="#{report3DController.itemCounts}" var="s">
+                        <p:column >
+                            <f:facet name="header">
+                                <h:outputText value="Item Name"/>
+                            </f:facet>
+                            <h:outputText value="#{s.item.name}" rendered="#{s.item ne null}" />
+                            <h:outputText value="Total" rendered="#{s.item eq null}" />
+                        </p:column>
+                        <p:column >
+                            <f:facet name="header">
+                                <h:outputText value="Current Stock"/>
+                            </f:facet>
+                            <h:outputText value="#{s.stock}" />
+                        </p:column>
+                        <p:columns value="#{report3DController.columnModels}" var="column" styleClass="numberCol">
+                            <f:facet name="header">
+                                <h:outputText value="#{column.header}" />
+                            </f:facet>
+                            <h:outputText value="#{s.counts[column.property]}" >
+                                <f:convertNumber pattern="#,##0" />
+                            </h:outputText>
+                        </p:columns>
+                    </p:dataTable>
+                </p:panel>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

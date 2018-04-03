@@ -145,7 +145,7 @@ public class StoreAmpController implements Serializable {
 
     public List<Amp> getItems() {
         if (items == null) {
-            Map m  = new HashMap();
+            Map m = new HashMap();
             m.put("dt", DepartmentType.Store);
             String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
             items = getFacade().findBySQL(sql, m);
@@ -154,7 +154,7 @@ public class StoreAmpController implements Serializable {
     }
 
     public void createStoreItemsWithRetierd() {
-        items=null;
+        items = null;
         getItems();
         itemsAll.addAll(items);
         Map m = new HashMap();
@@ -172,8 +172,8 @@ public class StoreAmpController implements Serializable {
     }
 
     public List<Amp> getItemsAll() {
-        if (itemsAll==null) {
-            itemsAll=new ArrayList<>();
+        if (itemsAll == null) {
+            itemsAll = new ArrayList<>();
         }
         return itemsAll;
     }
@@ -181,7 +181,7 @@ public class StoreAmpController implements Serializable {
     public void setItemsAll(List<Amp> itemsAll) {
         this.itemsAll = itemsAll;
     }
-    
+
     public void listnerCategorySelect() {
         System.out.println("getCurrent().getCategory().getCode() = " + getCurrent().getCategory().getCode());
         if (getCurrent().getCategory().getCode() == null || getCurrent().getCategory().getCode().equals("")) {
@@ -203,15 +203,33 @@ public class StoreAmpController implements Serializable {
         Amp amp = getFacade().findFirstBySQL(sql, m);
 
         System.out.println("amp.getCode() = " + amp.getCode());
+        System.out.println("getCurrent().getCategory().getCode() = " + getCurrent().getCategory().getCode());
 
-        String s = amp.getCode().substring(2);
-        System.out.println("s = " + s);
-
-        int i = Integer.valueOf(s);
-        System.out.println("i = " + i);
-        i++;
         DecimalFormat df = new DecimalFormat("0000");
-        getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
+        if (amp != null && !amp.getCode().equals("")) {
+            System.out.println("amp.getCode() = " + amp.getCode());
+
+            String s = amp.getCode().substring(getCurrent().getCategory().getCode().length());
+            System.out.println("s = " + s);
+
+            int i = Integer.valueOf(s);
+            System.out.println("i = " + i);
+            i++;
+            System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
+            if (getCurrent().getId() != null) {
+                Amp selectedAmp = getFacade().find(getCurrent().getId());
+                if (!getCurrent().getCategory().equals(selectedAmp.getCategory())) {
+                    getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
+                } else {
+                    getCurrent().setCode(selectedAmp.getCode());
+                }
+            } else {
+                getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(i));
+            }
+            System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
+        } else {
+            getCurrent().setCode(getCurrent().getCategory().getCode() + df.format(1));
+        }
 
     }
 

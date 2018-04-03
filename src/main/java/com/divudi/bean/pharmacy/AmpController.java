@@ -472,6 +472,8 @@ public class AmpController implements Serializable {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
                 if (!getCurrent().getCategory().equals(selectedAmp.getCategory())) {
                     getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(i));
+                }else{
+                    getCurrent().setCode(selectedAmp.getCode());
                 }
             } else {
                 getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(i));

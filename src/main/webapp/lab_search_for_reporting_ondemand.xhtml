@@ -26,19 +26,19 @@
                                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
                                     <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 </h:panelGrid>
-                                <h:panelGrid columns="8" >
+                                <h:panelGrid columns="4" >
                                     <h:outputLabel value="Bill No"/>
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value="Patient Phone"/>                               
                                     <h:outputLabel value="Investigation Name"/>
-                                    <h:outputLabel value="Report Department"/>
-                                    <h:outputLabel value="Bill Department"/>
-                                    <h:outputLabel value="BHT"/>
-                                    <h:outputLabel/>
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
+                                    <h:outputLabel value="Report Department"/>
+                                    <h:outputLabel value="Bill Department"/>
+                                    <h:outputLabel value="BHT"/>
+                                    <h:outputLabel/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                                         value="#{searchController.reportKeyWord.department}" converter="departmentConverter"/>

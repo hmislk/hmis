@@ -213,7 +213,24 @@ public class PharmacyAdjustmentController implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and "
+        sql = "select i from Stock i where i.stock !=:s and "
+                + "(upper(i.staff.code) like :n or "
+                + "upper(i.staff.person.name) like :n or "
+                + "upper(i.itemBatch.item.name) like :n ) "
+                + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire , i.stock desc";
+        items = getStockFacade().findBySQL(sql, m, 20);
+
+        return items;
+    }
+    
+    public List<Stock> completeStaffZeroStocks(String qry) {
+        List<Stock> items;
+        String sql;
+        Map m = new HashMap();
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        sql = "select i from Stock i where i.stock =:s and "
                 + "(upper(i.staff.code) like :n or "
                 + "upper(i.staff.person.name) like :n or "
                 + "upper(i.itemBatch.item.name) like :n ) "
