@@ -703,11 +703,11 @@ public class BillNumberGenerator {
             hm.put("bcl", billClassType);
             hm.put("dep", department);
             Bill bill = billFacade.findFirstBySQL(sql, hm);
-            System.out.println("bill.getInsId() = " + bill.getInsId());
-            System.out.println("bill.getDeptId() = " + bill.getDeptId());
-            System.out.println("bill.getCreatedAt() = " + bill.getCreatedAt());
 
             if (bill != null) {
+                System.out.println("bill.getInsId() = " + bill.getInsId());
+                System.out.println("bill.getDeptId() = " + bill.getDeptId());
+                System.out.println("bill.getCreatedAt() = " + bill.getCreatedAt());
                 String[] parts = bill.getDeptId().split("/");
                 System.out.println("parts = " + parts[0]);
                 System.out.println("parts = " + parts[1]);
@@ -843,7 +843,7 @@ public class BillNumberGenerator {
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
 //        System.out.println("billNumber = " + billNumber);
-        
+
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
                     + " Bill b "

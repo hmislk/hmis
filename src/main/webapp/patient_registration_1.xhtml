@@ -69,6 +69,21 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.code}" />
                                     </p:column>
+                                    <p:column style="min-width: 100px">
+                                        <f:facet name="header" >
+                                            <p:outputLabel value="Update Status" />
+                                        </f:facet>
+                                        <p:commandButton value="Re-Active" action="#{patientController.activePatient(p)}" 
+                                                         rendered="#{p.retired eq true}" ajax="false"
+                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberReActive')}" 
+                                                         onclick="if (!confirm('Are you sure you want to Re-Active this Patient?'))
+                                                                     return false;" />
+                                        <p:commandButton value="De-Active" action="#{patientController.deActivePatient(p)}" 
+                                                         rendered="#{p.retired eq false}" ajax="false"
+                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberDeActive')}" 
+                                                         onclick="if (!confirm('Are you sure you want to De-Active this Patient?'))
+                                                                     return false;" />
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header" >
                                             <p:outputLabel value="Membership" />
@@ -161,21 +176,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.retireComments}" />
                                     </p:column>
-                                    <p:column style="min-width: 100px">
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Update Status" />
-                                        </f:facet>
-                                        <p:commandButton value="Re-Active" action="#{patientController.activePatient(p)}" 
-                                                         rendered="#{p.retired eq true}" ajax="false"
-                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberReActive')}" 
-                                                         onclick="if (!confirm('Are you sure you want to Re-Active this Patient?'))
-                                                                     return false;" />
-                                        <p:commandButton value="De-Active" action="#{patientController.deActivePatient(p)}" 
-                                                         rendered="#{p.retired eq false}" ajax="false"
-                                                         disabled="#{!webUserController.hasPrivilege('MemberShipMemberDeActive')}" 
-                                                         onclick="if (!confirm('Are you sure you want to De-Active this Patient?'))
-                                                                     return false;" />
-                                    </p:column>
+                                    
                                 </p:dataTable>
                             </p:panel>
                         </h:panelGrid>
