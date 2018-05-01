@@ -89,6 +89,13 @@
                                         </h:panelGrid>
                                     </p:panel>
                                     <p:panel header="Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+
+                                        <h:panelGrid columns="2">
+                                            <h:outputLabel value="Dialysis No" ></h:outputLabel>
+                                            <h:inputText value="#{inwardSearch.reportKeyWord.string}" ></h:inputText>
+
+                                            <p:commandButton value="Refresh" action="#" ajax="false" />
+                                        </h:panelGrid>
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
                                                 <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
@@ -188,7 +195,7 @@
                         <h:panelGroup id="claimablePatientCopy2" styleClass="noBorder" rendered="false" >                  
                             <bi:finalBill_vat   bill="#{inwardSearch.bill}"   showProfessional="true"/>
                         </h:panelGroup>
-                        
+
                         <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
                             <bi:finalBill  bill="#{inwardSearch.bill}" hosCopy="true"/>
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}" hosCopy="true" />
@@ -199,7 +206,7 @@
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}" duplicate="true" />
                             <bi:finalBill_1 bill="#{inwardSearch.bill}" duplicate="true"/>
                         </h:panelGroup>
-                        
+
                         <h:panelGroup id="letter">
                             <!--<bi:credit_company_letter bill="#{inwardSearch.bill}"/>--> 
                             <bi:credit_company_letter_new bill="#{inwardSearch.bill}"/> 

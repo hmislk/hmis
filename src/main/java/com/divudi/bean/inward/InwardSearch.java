@@ -14,6 +14,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -121,6 +122,8 @@ public class InwardSearch implements Serializable {
     /////////////////////
 
     PaymentMethod paymentMethod;
+    
+    ReportKeyWord reportKeyWord;
 
     private YearMonthDay yearMonthDay;
     Patient patient;
@@ -1475,6 +1478,17 @@ public class InwardSearch implements Serializable {
 
     public void setEncounterComponentFacade(EncounterComponentFacade encounterComponentFacade) {
         this.encounterComponentFacade = encounterComponentFacade;
+    }
+
+    public ReportKeyWord getReportKeyWord() {
+        if (reportKeyWord==null) {
+            reportKeyWord=new ReportKeyWord();
+        }
+        return reportKeyWord;
+    }
+
+    public void setReportKeyWord(ReportKeyWord reportKeyWord) {
+        this.reportKeyWord = reportKeyWord;
     }
 
 }

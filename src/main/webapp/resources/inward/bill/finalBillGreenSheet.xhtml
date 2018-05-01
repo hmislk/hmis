@@ -124,7 +124,7 @@
                          left: 0%!important;
                          top: 15%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Patient Name"/>
+                        <h:outputLabel value="BHT No"/>
                     </div>
                     <div style="position: absolute;
                          left: 26%;
@@ -136,14 +136,35 @@
                          left: 28%;
                          top: 15%;
                          font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
+                    </div>
+
+                    <div style="position: absolute;
+                         left: 71%!important;
+                         top: 15%!important;
+                         font-size: 12px!important;">
+                        <h:outputLabel value="P/F/M No" rendered="#{cc.attrs.bill.patient.person.description ne null and cc.attrs.bill.patient.person.description ne ''}"/>
+                    </div>
+                    <div style="position: absolute;
+                         left: 88%;
+                         top: 15%;
+                         font-size:12px!important;">
+                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.person.description ne null and cc.attrs.bill.patient.person.description ne ''}"/>
+                    </div>
+                    <div style="position: absolute;
+                         left: 90%;
+                         top: 15%;
+                         font-size:12px!important;" >
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.description}" 
+                                       rendered="#{cc.attrs.bill.patient.person.description ne null 
+                                                   and cc.attrs.bill.patient.person.description ne ''}" />
                     </div>
 
                     <div style="position: absolute;
                          left: 0%!important;
                          top: 19%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="BHT No"/>
+                        <h:outputLabel value="Patient Name"/>
                     </div>
                     <div style="position: absolute;
                          left: 26%;
@@ -155,14 +176,14 @@
                          left: 28%;
                          top: 19%;
                          font-size:12px!important;" >
-                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
                     </div>
 
                     <div style="position: absolute;
                          left: 0%!important;
                          top: 23%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Cre. Comp."/>
+                        <h:outputLabel value="Cr. Company"/>
                     </div>
                     <div style="position: absolute;
                          left: 26%;
@@ -177,10 +198,29 @@
                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.name}" />
                     </div>
 
+                    <div style="position: absolute;
+                         left: 0%!important;
+                         top: 27%!important;
+                         font-size: 12px!important;">
+                        <h:outputLabel value="Dialysis No" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}"/>
+                    </div>
+                    <div style="position: absolute;
+                         left: 26%;
+                         top: 27%;
+                         font-size:12px!important;">
+                        <h:outputLabel value=":" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}"/>
+                    </div>
+                    <div style="position: absolute;
+                         left: 28%;
+                         top: 27%;
+                         font-size:12px!important;" >
+                        <h:outputLabel value="#{inwardSearch.reportKeyWord.string}" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}" />
+                    </div>
+
                     <table style="font-size: 11px;
                            position: absolute;
                            left: 0%;
-                           top: 30%;
+                           top: 32%;
                            width: 100%!important;"  >
                         <tr style="width: 100%!important;">
                             <td style="text-align: left; font-weight: bold;">
@@ -265,7 +305,12 @@
 
                                     </td>
                                 </tr>
-                            </h:panelGroup>                      
+                            </h:panelGroup> 
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
+                            </tr>
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
@@ -283,39 +328,10 @@
                             </tr>
                         </h:panelGroup>
 
+                        
+
+
                         <h:panelGroup >
-                            <!--NETTOTAL-->
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel  value="Net Total"/>
-                                </td>
-                                <td>&nbsp;</td>
-                                <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel rendered="#{cc.attrs.showProfessional}" value="#{cc.attrs.bill.netTotal}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>  
-
-                                    <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>  
-
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td style="text-align: right;"><h:outputLabel value="==========="/></td>
-                            </tr>
-                        </h:panelGroup>
-
-
-                        <h:panelGroup rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                             <!--PAID-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
@@ -386,7 +402,7 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                        <h:panelGroup >
                             <!--DUE AMOUNT-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
@@ -408,7 +424,7 @@
                             <!--DUE AMOUNT-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                    <p:spacer height="20px" />
+                                    <p:spacer height=50px" />
                                 </td>
                                 <td>
                                     &nbsp;
@@ -424,11 +440,11 @@
                             <!--DUE AMOUNT-->
                             <tr>
                                 <td colspan="2" style="text-align: left;font-size: 13px!important;text-decoration: overline;">
-                                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" />
+                                    <h:outputLabel value="Patient/Guardian" />
                                 </td>
 
                                 <td style="text-align: right;font-size: 13px!important;text-decoration: overline;">
-                                    <h:outputLabel value="Patient/Guardian" />
+                                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" />
                                 </td>
                             </tr>
 
