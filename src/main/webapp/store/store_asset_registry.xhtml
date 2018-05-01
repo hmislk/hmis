@@ -151,6 +151,15 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.deptId}" />
                                 </p:column>
+                                
+                                <p:column sortBy="#{i.itemBatch.lastPurchaseBillItem.bill.createdAt}" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="GRN Date"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputLabel>
+                                </p:column>
 <!--                                <p:column style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="GRN No"/>                                     

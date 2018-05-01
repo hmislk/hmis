@@ -223,7 +223,10 @@
                                 <p:spacer width="10" ></p:spacer>
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:spacer width="10" ></p:spacer>
-                                <p:outputLabel value="...../...../.........." ></p:outputLabel>
+                                <!--<p:outputLabel value="...../...../.........." ></p:outputLabel>-->
+                                <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.createdAt}" >
+                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                </p:outputLabel>
 
                                 <p:outputLabel value="Date of Acquisition" ></p:outputLabel>
                                 <p:spacer width="10" ></p:spacer>
