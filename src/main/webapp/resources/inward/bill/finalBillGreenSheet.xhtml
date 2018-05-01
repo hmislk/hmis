@@ -143,21 +143,21 @@
                          left: 71%!important;
                          top: 15%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="P/F/M No" rendered="#{cc.attrs.bill.patient.person.description ne null or cc.attrs.bill.patient.person.description ne ''}"/>
+                        <h:outputLabel value="P/F/M No" rendered="#{cc.attrs.bill.patient.person.description ne null and cc.attrs.bill.patient.person.description ne ''}"/>
                     </div>
                     <div style="position: absolute;
-                         left: 80%;
+                         left: 88%;
                          top: 15%;
                          font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.person.description ne null or cc.attrs.bill.patient.person.description ne ''}"/>
+                        <h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.person.description ne null and cc.attrs.bill.patient.person.description ne ''}"/>
                     </div>
                     <div style="position: absolute;
-                         left: 82%;
+                         left: 90%;
                          top: 15%;
                          font-size:12px!important;" >
                         <h:outputLabel value="#{cc.attrs.bill.patient.person.description}" 
                                        rendered="#{cc.attrs.bill.patient.person.description ne null 
-                                                   or cc.attrs.bill.patient.person.description ne ''}" />
+                                                   and cc.attrs.bill.patient.person.description ne ''}" />
                     </div>
 
                     <div style="position: absolute;
@@ -202,19 +202,19 @@
                          left: 0%!important;
                          top: 27%!important;
                          font-size: 12px!important;">
-                        <h:outputLabel value="Dialysis No" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne ''}"/>
+                        <h:outputLabel value="Dialysis No" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}"/>
                     </div>
                     <div style="position: absolute;
                          left: 26%;
                          top: 27%;
                          font-size:12px!important;">
-                        <h:outputLabel value=":" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne ''}"/>
+                        <h:outputLabel value=":" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}"/>
                     </div>
                     <div style="position: absolute;
                          left: 28%;
                          top: 27%;
                          font-size:12px!important;" >
-                        <h:outputLabel value="#{inwardSearch.reportKeyWord.string}" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne ''}" />
+                        <h:outputLabel value="#{inwardSearch.reportKeyWord.string}" rendered="#{inwardSearch.reportKeyWord.string ne null and inwardSearch.reportKeyWord.string ne '0'}" />
                     </div>
 
                     <table style="font-size: 11px;
@@ -424,7 +424,7 @@
                             <!--DUE AMOUNT-->
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                    <p:spacer height="40px" />
+                                    <p:spacer height=50px" />
                                 </td>
                                 <td>
                                     &nbsp;
