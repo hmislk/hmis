@@ -217,7 +217,7 @@
                                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                                         <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                                     </p:commandLink>
-                                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="lab_single_worksheet">
+                                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet">
                                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                         <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                                     </p:commandLink>
@@ -276,7 +276,7 @@
                                                                 <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                             </p:commandLink>
 
-                                                            <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/lab_patient_report_print">
+                                                            <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
                                                                 <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                             </p:commandLink>

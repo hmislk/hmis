@@ -101,7 +101,7 @@
                                     <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="lab_single_worksheet">
+                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="/lab/single_worksheet">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                     <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}" >
@@ -121,7 +121,7 @@
 
                                 <p:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}" >
                                     <p:column headerText="Actions">
-                                        <p:commandLink style="text-decoration:underline;" value="To View / Edit / Approve / Print  " ajax="false" action="lab_patient_report">
+                                        <p:commandLink style="text-decoration:underline;" value="To View / Edit / Approve / Print  " ajax="false" action="/lab/patient_report">
                                             <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                         </p:commandLink>
                                     </p:column>

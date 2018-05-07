@@ -29,15 +29,15 @@ public class SecurityController implements Serializable {
     public SecurityController() {
     }
 
-    public String encrypt(String word) {
-        BasicTextEncryptor en = new BasicTextEncryptor();
-        en.setPassword("health");
-        try {
-            return en.encrypt(word);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
+//    public String encrypt(String word) {
+//        BasicTextEncryptor en = new BasicTextEncryptor();
+//        en.setPassword("health");
+//        try {
+//            return en.encrypt(word);
+//        } catch (Exception ex) {
+//            return null;
+//        }
+//    }
 
     public String hash(String word) {
         try {
@@ -53,13 +53,13 @@ public class SecurityController implements Serializable {
         return en.checkPassword(planePassword, encryptedPassword);
     }
 
-    public String decrypt(String word) {
-        BasicTextEncryptor en = new BasicTextEncryptor();
-        en.setPassword("health");
-        try {
-            return en.decrypt(word);
-        } catch (Exception ex) {
-            return null;
-        }
-    }
+//    public String decrypt(String word) {
+//        BasicTextEncryptor en = new BasicTextEncryptor();
+//        en.setPassword("health");
+//        try {
+//            return en.decrypt(word);
+//        } catch (Exception ex) {
+//            return null;
+//        }
+//    }
 }

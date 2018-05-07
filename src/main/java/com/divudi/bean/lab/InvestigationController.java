@@ -159,7 +159,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return "lab_investigation_format";
+        return "/lab/investigation_format";
     }
 
     public String toEditReportCalculations() {
@@ -175,7 +175,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         ixCalController.setIx((Investigation) current.getReportedAs());
-        return "lab_calculation";
+        return "/lab/calculation";
     }
 
     public String toEditFees() {
@@ -263,7 +263,7 @@ public class InvestigationController implements Serializable {
         allIxs = getFacade().findBySQL(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Lists/Lab investigation list(/faces/lab/lab_investigation_list.xhtml)");
-        return "/lab/lab_investigation_list";
+        return "/lab/investigation_list";
 
     }
 

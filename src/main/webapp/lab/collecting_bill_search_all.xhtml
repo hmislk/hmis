@@ -52,25 +52,25 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column headerText="Bill No" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bill.insId}">
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" value="#{bill.insId}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Billing Centre" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bill.institution.name}">
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" value="#{bill.institution.name}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Billed For" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" value="#{bill.toInstitution.name} - #{bill.toDepartment.name}">
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" value="#{bill.toInstitution.name} - #{bill.toDepartment.name}">
                                     <h:outputLabel  ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Bill Date" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.billDate}" >
                                         <f:convertDateTime pattern="dd MM yyyy"/>
                                     </h:outputLabel>
@@ -78,7 +78,7 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Bill Time" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.billTime}" >
                                         <f:convertDateTime pattern="hh:mm:ss a"/>
                                     </h:outputLabel>
@@ -86,25 +86,25 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Client" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.patient.person.nameWithTitle}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Client Phone No" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.patient.person.phone}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Billed By" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Gross Value" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -112,7 +112,7 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Discount" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -120,7 +120,7 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Net Value" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
@@ -128,13 +128,13 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Cancelled User" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Cancelled Date and Time" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                         <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                                     </h:outputLabel>
@@ -142,13 +142,13 @@
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Refunded By" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
                             </p:column>
                             <p:column headerText="Refunded Date and Time" >
-                                <h:commandLink action="lab_bill_collecting_centre_reprint" >
+                                <h:commandLink action="/lab/bill_collecting_centre_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
                                         <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                                     </h:outputLabel>

@@ -373,7 +373,7 @@ public class CommonReport implements Serializable {
         billTotal = displayOutsideBillFeeBillTotals();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Fees for outside institution(/faces/lab/lab_report_by_outside_institution.xhtml)");
-        return "/lab/lab_report_by_outside_institution";
+        return "/lab/report_by_outside_institution";
 
     }
 

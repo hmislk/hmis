@@ -29,7 +29,7 @@
                             </p:autoComplete>
                             <p:watermark for="acColl" value="Collecting Centre" />
                             <p:commandButton ajax="false" action="#{labBillCollectingController.settleBill()}" value="Settle" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" action="lab_bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill" onclick="onSubmitButton();" />
 
                             
 
@@ -291,7 +291,7 @@
                     <p:commandButton value="Print" ajax="false" action="#">
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    <p:commandButton value="New Bill" ajax="false" action="lab_bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" onclick="onSubmitButton();"  >
+                    <p:commandButton value="New Bill" ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" onclick="onSubmitButton();"  >
                     </p:commandButton>
 
                 </div>

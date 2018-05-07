@@ -10,8 +10,39 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Patient Investigations" >
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigationsSigle}" var="pi"  >
+                    <p:panel header="Search Bills" >
+                        <f:facet name="header">
+                            <h:panelGrid columns="6" >
+                                <h:outputLabel value="From Date"/>
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                </p:calendar>
+                                <h:outputLabel value="To Date"/>
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                </p:calendar>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}"/>
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}"/>
+                                <p:spacer height="30"/><h:outputLabel/>
+                                <h:outputLabel/><h:outputLabel/>
+                                <h:outputLabel/> <h:outputLabel/>
+
+                                <h:outputLabel value="Bill No"/>
+                                <h:outputLabel value="Patient Name"/>
+                                <h:outputLabel value="Patient Phone"/>                               
+                                <h:outputLabel value="Investigation Value"/>
+                                <h:outputLabel/><h:outputLabel/>
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
+                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
+
+                            </h:panelGrid>
+                        </f:facet>
+                        <p:defaultCommand target="btnSearch" />
+
+
+
+                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
+
                             <p:column headerText="Billing" styleClass="alignTop" >
                                 <h:outputLabel value="Bill No : #{pi.billItem.bill.insId}" ></h:outputLabel>
                                 <br/>
@@ -22,7 +53,7 @@
                                     <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
                                 <br/>
-                                <h:outputLabel value="Age : #{pi.billItem.bill.patient.person.dob} #{pi.billItem.bill.patient.age},&nbsp;#{pi.billItem.bill.patient.person.sex}," >
+                                <h:outputLabel value="Age : #{pi.billItem.bill.patient.age},&nbsp;#{pi.billItem.bill.patient.person.sex}," >
                                 </h:outputLabel>
                                 <br/>
                                 <h:outputLabel value="Phone : #{pi.billItem.bill.patient.person.phone}" >
@@ -72,13 +103,13 @@
                                     <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="lab_single_worksheet">
+                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="/lab/single_worksheet">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}">
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry" action="#{patientReportController.lastPatientReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}">
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
                                     <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format" action="/lab_ix_for_ix" >
@@ -92,7 +123,7 @@
 
                                 <p:dataTable value="#{pi.patientReports}" var="dpr" rendered="#{pi.patientReports.size() ne 0}" >
                                     <p:column headerText="Actions">
-                                        <p:commandLink style="text-decoration:underline;" value="To View / Edit / Approve / Print  " ajax="false" action="lab_patient_report">
+                                        <p:commandLink style="text-decoration:underline;" value="To View / Edit / Approve / Print  " ajax="false" action="/lab/patient_report">
                                             <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                         </p:commandLink>
                                     </p:column>

@@ -192,7 +192,7 @@ public class InvestigationItemController implements Serializable {
 
         setCurrentInvestigation(copyingToInvestigation);
 
-        return "/lab_investigation_format";
+        return "/lab/investigation_format";
 
     }
 
