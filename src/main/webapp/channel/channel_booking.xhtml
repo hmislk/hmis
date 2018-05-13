@@ -111,13 +111,13 @@
                                 :#{p:component('tabViewPatientDetails')} 
                                 :#{p:component('panelSelectedBookinDetails')}"
                                 listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
-                        <p:column style="text-wrap: none;width: 30px!important;text-align: right;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                        <p:column style="text-wrap: none;width: 30px!important;text-align: right;"  rendered="false">
                             <h:outputText value="* " rendered="#{ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="E"/>
                             </h:outputText>
                         </p:column>
-                        <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                        <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="false">
 <!--                            <h:outputText value="* " rendered="#{ses.deactivated}" />
                             <h:outputText value="#{ses.sessionDate}" >
                                 <f:convertDateTime pattern="E"/>
@@ -159,33 +159,33 @@
                             <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
                         </p:column>
 
-                        <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Session" style="text-wrap: none;"  >
                             <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                             <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
                             <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                         </p:column>
-                        <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Max" style="width: 20px!important; text-align: center;" >
                             <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Booked" style="width: 20px!important; text-align: center;" >
                             <h:outputText value="#{ses.displayCount}">
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
                             <h:outputText value="#{ses.sessionDate}">
                                 <f:convertDateTime pattern="dd MMM"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                             <h:outputText value="#{ses.startingTime}">
                                 <f:convertDateTime pattern="hh:mm"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                        <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
                             <h:outputText value="#{ses.totalFee}">
                                 <f:convertNumber pattern="#,##0" ></f:convertNumber>
                             </h:outputText>                                                            
@@ -553,7 +553,7 @@
                     <h:panelGrid columns="3" style="min-width: 100%;">
 
 
-                        <p:commandButton   id="btnAdd" disabled="#{webUserController.hasPrivilege('ChannelBookingRestric')}"
+                        <p:commandButton   id="btnAdd" 
                                            value="Add" process=":#{p:component('tabNewPt')} 
                                            :#{p:component('tabSearchPt')} btnAdd 
                                            :#{p:component('pgNewBookingDetail')}" 

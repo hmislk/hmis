@@ -923,42 +923,50 @@
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
             </div>
-<!--            <div class="nonPrintBlock" >
-                <h:form>
-                    <p:dock position="bottom" itemWidth="35"   proximity="50"  
-                            rendered="#{webUserController.hasPrivilege('Developers') 
-                                        and (sessionController.loggedUser.id eq 3151
-                                        or  sessionController.loggedUser.id eq 1101795)
-                                        and sessionController.logged
-                                        and !sessionController.firstLogin 
-                                        and sessionController.department ne null}">
-                        <p:menuitem value="Channel Booking" 
-                                    icon="/resources/image/ico/doc.png" action="/channel/channel_booking"/>
-                        <p:menuitem value="Doctor Arrival" 
-                                    icon="/resources/image/ico/arrival.png" action="/channel/channel_doctor_view_today_1"/>
-                        <p:menuitem value="Opd Summery" 
-                                    icon="/resources/image/ico/analytics_1.png" action="/reportCashier/report_cashier"/>
-                        <p:menuitem value="Lab Summery" 
-                                    icon="/resources/image/ico/syringe.png" action="/reportLab/lab_summeries_index"/>
-                        <p:menuitem value="Channel Reports" 
-                                    icon="/resources/image/ico/stethoscope.png" action="/channel/channel_reports"/>
-                        <p:menuitem value="Institution Reports" 
-                                    icon="/resources/image/ico/analytics_2.png" action="/reportInstitution/report_own"/>
-                        <p:menuitem value="Bill Edit" 
-                                    icon="/resources/image/ico/search.png" action="/search_bill"/>
-                        <p:menuitem value="BHT Edit" 
-                                    icon="/resources/image/ico/edit.png" action="/developers/edit_bht"/>
-                        <p:menuitem value="Pharmacy History" 
-                                    icon="/resources/image/ico/antibiotic.png" action="/pharmacy/pharmacy_error_checking_date"/>
-                        <p:menuitem value="Bulk Sms" 
-                                    icon="/resources/image/ico/sms.png" action="/admin/bill_contact_numbers"/>
-                        <p:menuitem value="Sms Report" 
-                                    icon="/resources/image/ico/send.png" action="/sms_report"/>
-                    </p:dock>
-                </h:form>
-            </div>-->
+            <!--            <div class="nonPrintBlock" >
+                            <h:form>
+                                <p:dock position="bottom" itemWidth="35"   proximity="50"  
+                                        rendered="#{webUserController.hasPrivilege('Developers') 
+                        and (sessionController.loggedUser.id eq 3151
+                        or  sessionController.loggedUser.id eq 1101795)
+                        and sessionController.logged
+                        and !sessionController.firstLogin 
+                        and sessionController.department ne null}">
+        <p:menuitem value="Channel Booking" 
+                    icon="/resources/image/ico/doc.png" action="/channel/channel_booking"/>
+        <p:menuitem value="Doctor Arrival" 
+                    icon="/resources/image/ico/arrival.png" action="/channel/channel_doctor_view_today_1"/>
+        <p:menuitem value="Opd Summery" 
+                    icon="/resources/image/ico/analytics_1.png" action="/reportCashier/report_cashier"/>
+        <p:menuitem value="Lab Summery" 
+                    icon="/resources/image/ico/syringe.png" action="/reportLab/lab_summeries_index"/>
+        <p:menuitem value="Channel Reports" 
+                    icon="/resources/image/ico/stethoscope.png" action="/channel/channel_reports"/>
+        <p:menuitem value="Institution Reports" 
+                    icon="/resources/image/ico/analytics_2.png" action="/reportInstitution/report_own"/>
+        <p:menuitem value="Bill Edit" 
+                    icon="/resources/image/ico/search.png" action="/search_bill"/>
+        <p:menuitem value="BHT Edit" 
+                    icon="/resources/image/ico/edit.png" action="/developers/edit_bht"/>
+        <p:menuitem value="Pharmacy History" 
+                    icon="/resources/image/ico/antibiotic.png" action="/pharmacy/pharmacy_error_checking_date"/>
+        <p:menuitem value="Bulk Sms" 
+                    icon="/resources/image/ico/sms.png" action="/admin/bill_contact_numbers"/>
+        <p:menuitem value="Sms Report" 
+                    icon="/resources/image/ico/send.png" action="/sms_report"/>
+    </p:dock>
+</h:form>
+</div>-->
 
         </div>
+
+        <h:panelGroup rendered="false" >
+            <div>
+                <h:form >
+                    <p:commandButton ajax="false" action="#{sessionController.decryptAllUsers()}" value="Decrypt All" ></p:commandButton>
+                </h:form>
+            </div>
+        </h:panelGroup>
 
     </h:body>
 </html>

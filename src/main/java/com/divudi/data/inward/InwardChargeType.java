@@ -44,7 +44,7 @@ public enum InwardChargeType {
     Scanning("Scanning"),
     TreatmentCharges("Treatment Charges"),
     X_Ray("X-Ray"),
-    WardProcedures("Ward Procedures"),
+    WardProcedures("Surgical Procedures"),
     CardiacMonitoring("Cardiac Monitoring"),
     Nebulisation("Nebulisation"),
     Echo("Echo"),

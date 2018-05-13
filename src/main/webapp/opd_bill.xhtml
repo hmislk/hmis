@@ -753,7 +753,13 @@
                                     <ui:repeat value="#{billController.bills}" var="b">
                                         <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
                                     </ui:repeat>
-                                </div>                                
+                                </div>     
+                                <div style="page-break-after: always;">
+
+                                    <ui:repeat value="#{billController.bills}" var="b">
+                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                    </ui:repeat>
+                                </div>  
                             </h:panelGroup>
                         </h:panelGrid>
 

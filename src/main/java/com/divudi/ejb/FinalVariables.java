@@ -130,7 +130,8 @@ public class FinalVariables {
     public double getVATPercentage() {
         //VAT 15% Only Vat Value
         if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            return 0.152;
+//            return 0.152;
+             return 0.15;
 //            return 0;
         } else if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
@@ -144,7 +145,8 @@ public class FinalVariables {
     public double getVATPercentageWithAmount() {
         //VAT 15% With Total
         if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            return 1.152;
+//            return 1.152;
+             return 1.15;
 //            return 1;
         } else if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {

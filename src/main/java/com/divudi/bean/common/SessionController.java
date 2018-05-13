@@ -640,11 +640,32 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
+    public void decryptAllUsers() {
+        String temSQL;
+        temSQL = "SELECT u FROM WebUser u";
+        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        int i = 1;
+        for (WebUser u : allUsers) {
+            try {
+                u.setName(getSecurityController().decrypt(u.getName()));
+            } catch (Exception e) {
+                if (u.getName().trim().equals("")) {
+                    u.setName("" + i);
+                }
+            }
+            if (u.getName()!= null && !u.getName().trim().equals("")) {
+                getFacede().edit(u);
+            }
+            i++;
+        }
+    }
+
     private boolean checkUsersWithoutDepartment() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
         List<WebUser> allUsers = getFacede().findBySQL(temSQL);
         for (WebUser u : allUsers) {
+
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
                     departments = listLoggableDepts(u);
@@ -743,7 +764,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
-            long i=searchController.createInwardBHTForIssueBillCount();
+            long i = searchController.createInwardBHTForIssueBillCount();
             if (i > 0) {
                 UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
             }
