@@ -1397,12 +1397,12 @@ public class ChannelBillController implements Serializable {
             UtilityController.addErrorMessage("Please Select Specility and Doctor.");
             return true;
         }
-        if (getArea() == null && !getPatientTabId().equals("tabSearchPt")
-                && getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
-            errorText = "Please Select Area.";
-            UtilityController.addErrorMessage("Please Select Area.");
-            return true;
-        }
+//        if (getArea() == null && !getPatientTabId().equals("tabSearchPt")
+//                && getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
+//            errorText = "Please Select Area.";
+//            UtilityController.addErrorMessage("Please Select Area.");
+//            return true;
+//        }
 
         removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
