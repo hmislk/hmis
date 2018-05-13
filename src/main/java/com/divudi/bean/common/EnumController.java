@@ -12,6 +12,7 @@ import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
@@ -122,6 +123,10 @@ public class EnumController implements Serializable {
         return dayTypes;
     }
 
+    public InvestigationItemType[] getInvestigationItemTypes() {
+        return InvestigationItemType.values();
+    }
+    
     public InvestigationItemValueType[] getInvestigationItemValueTypes() {
         return InvestigationItemValueType.values();
     }

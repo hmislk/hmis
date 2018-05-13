@@ -11,13 +11,15 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel rendered="#{webUserController.hasPrivilege('Developers') 
-                                            and (sessionController.loggedUser.id eq 3151
-                                            or  sessionController.loggedUser.id eq 1101795)
-                                            and sessionController.logged
-                                            and !sessionController.firstLogin 
-                                            and sessionController.department ne null}">
-                        <p:commandButton value="Channel Booking" action="/channel/channel_booking" ajax="false" />
+                    <p:panel >
+<!--                          <p:barcode value="0123456789" type="code128" width="800" height="200"/> 
+                          
+                          <p:barcode hrp="none" format="svg" style="height: 50px; width: 300px!important;" height="50" value="23423534546452312324354657567" type="code128" />   
+                          
+                          
+                          <p:barcode hrp="none" format="svg" style="height: 90px; width: 300px!important;" height="90" width="300" value="23423534546452312324354657567" type="code128" />   
+                          -->
+                        <p:commandButton value="Lab Administration" action="/lab/administration" ajax="false" />
                     </p:panel>
                 </h:form>
 

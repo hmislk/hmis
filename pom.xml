@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.divudi</groupId>
-    <artifactId>hmis</artifactId>
+    <artifactId>arogya</artifactId>
     <version>2.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>hmis</name>
+    <name>arogya</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -113,10 +113,10 @@
         <dependency>
             <groupId>org.primefaces</groupId>  
             <artifactId>primefaces</artifactId>  
-            <version>4.0</version>
+            <version>6.2</version>
             <type>jar</type>
         </dependency>  
-<!--        <dependency>
+        <!--        <dependency>
             <groupId>com.lowagie.text</groupId>
             <artifactId>itext</artifactId>
             <version>4.2.1</version>
@@ -227,6 +227,17 @@
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
             <version>9.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.glxn</groupId>
+            <artifactId>qrgen</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.barcode4j</groupId>
+            <artifactId>barcode4j-light</artifactId>
+            <version>2.0</version>
         </dependency>
 
     </dependencies>

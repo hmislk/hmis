@@ -185,15 +185,15 @@
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel header="CSS" >
+                        <p:panel header="CSS" style="width: 200px;" >
                             <p>
                                 #{investigationItemController.current.cssStyle}
                             </p>
                             <p>
-                               css Top is : #{investigationItemController.current.cssTop} <br/>
+                                css Top is : #{investigationItemController.current.cssTop} <br/>
                             </p>
                             <p>
-                               ri top is : #{investigationItemController.current.riTop} <br/>
+                                ri top is : #{investigationItemController.current.riTop} <br/>
                             </p>
                         </p:panel>
 
@@ -225,15 +225,16 @@
 
                 <p:panel id="pPreview"   >
                     <f:facet name="header" >
-                        <p:commandButton ajax="false" value="Print" onclick="onSubmitButton();"  >
-                            <p:printer target="divPrint" />
-                        </p:commandButton>
-                        <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
-                            <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
-                            <f:selectItem itemLabel="Edit Mode" itemValue="Edit_mode" ></f:selectItem>
-                            <f:selectItem id="btnMoveMode" itemLabel="Move Mode" itemValue="Move_Mode" ></f:selectItem>
-                            <p:ajax process="btnModes"  update="@all" ></p:ajax>
-                        </p:selectOneButton>
+                        <p:panelGrid columns="5" >
+                            <p:commandLink ajax="false" value="Print" >
+                                <p:printer target="divPrint" />
+                            </p:commandLink>
+                            <p:spacer height="1" width="30" ></p:spacer>
+                            <p:commandLink ajax="false" action="/lab/administration" value="Back to Ix Administration" ></p:commandLink>
+                            <p:commandLink ajax="false" action="/lab/investigation" value="Back to Ix Details" ></p:commandLink>
+                            <p:commandLink ajax="false" action="/lab/investigation_format_move_all" value="Edit All Items" ></p:commandLink>
+                        </p:panelGrid>
+
 
                         <p:tooltip for="btnModes" >
                             <p>
@@ -263,7 +264,13 @@
                         </p:tooltip>
                     </f:facet>
 
-
+                    <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
+                        <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
+                        <f:selectItem itemLabel="Edit Mode" itemValue="Edit_mode" ></f:selectItem>
+                        <f:selectItem id="btnMoveMode" itemLabel="Move Mode" itemValue="Move_Mode" ></f:selectItem>
+                        <p:ajax process="btnModes"  update="@all" ></p:ajax>
+                    </p:selectOneButton>
+                    
                     <h:panelGroup id="divPrint" >
 
 
@@ -278,8 +285,10 @@
 
                                 <h:panelGroup id="gpIi" >
                                     <div style="#{myIi.outerCssStyle};background-color: wheat;" >
-                                        <h:outputLabel id="lblViewModeIi" rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
-                                                       style="#{myIi.innerCssStyle}; color: black;" escape="false" ></h:outputLabel> 
+                                        <h:outputLabel id="lblViewModeIi" 
+                                                       rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
+                                                       style="#{myIi.innerCssStyle}; color: black;" 
+                                                       escape="true" ></h:outputLabel> 
 
                                         <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
                                             <table>
@@ -311,6 +320,7 @@
                                                     listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
                                                     render="gpIi :#{p:component('pDetails')} moveFocus "/>
                                         </h:inputText>
+
                                         <p:watermark value="#{myIi.htmltext}" for="txtMove" ></p:watermark>
 
 

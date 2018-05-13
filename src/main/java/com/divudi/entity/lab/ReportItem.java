@@ -27,6 +27,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -113,9 +114,25 @@ public class ReportItem implements Serializable {
     double riLeft;
     double riWidth;
     double riFontSize;
-    
+
+    double htPix;
+    double wtPix;
+
     @Lob
     String htmltext;
+
+    @OneToOne
+    private ReportItem investigation;
+    @OneToOne
+    private ReportItem observerValue;
+    @OneToOne
+    private ReportItem observationUnit;
+    @OneToOne
+    private ReportItem referenceValue;
+    @OneToOne
+    private ReportItem referenceComments;
+    @ManyToOne
+    private ReportItem parentReportItem;
 
     public String getHtmltext() {
         return htmltext;
@@ -124,8 +141,22 @@ public class ReportItem implements Serializable {
     public void setHtmltext(String htmltext) {
         this.htmltext = htmltext;
     }
-    
-    
+
+    public double getHtPix() {
+        return htPix;
+    }
+
+    public void setHtPix(double htPix) {
+        this.htPix = htPix;
+    }
+
+    public double getWtPix() {
+        return wtPix;
+    }
+
+    public void setWtPix(double wtPix) {
+        this.wtPix = wtPix;
+    }
 
     public String removeLastPercentage(String inputString) {
         if (inputString == null) {
@@ -648,8 +679,8 @@ public class ReportItem implements Serializable {
             cssStyle += "font-weight:" + getCssFontWeight() + "; ";
         }
 
-        cssStyle+="min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
-        
+        cssStyle += "min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
+
         return cssStyle;
     }
 
@@ -711,9 +742,9 @@ public class ReportItem implements Serializable {
         if (cssVerticalAlign != null) {
             cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
         }
-        
-        cssStyle+=" position:absolute; overflow: hidden!important; ";
-        
+
+        cssStyle += " position:absolute; overflow: hidden!important; ";
+
         return cssStyle;
     }
 
@@ -746,8 +777,8 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiHeight() {
-        if(riHeight==0){
-            riHeight=2;
+        if (riHeight == 0) {
+            riHeight = 2;
         }
         return riHeight;
     }
@@ -765,8 +796,8 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiWidth() {
-        if(riWidth==0){
-            riWidth=30;
+        if (riWidth == 0) {
+            riWidth = 30;
         }
         return riWidth;
     }
@@ -776,14 +807,124 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiFontSize() {
-        if(riFontSize==0){
-            riFontSize=12;
+        if (riFontSize == 0) {
+            riFontSize = 12;
         }
         return riFontSize;
     }
 
     public void setRiFontSize(double riFontSize) {
         this.riFontSize = riFontSize;
+    }
+
+    public ReportItem getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(ReportItem investigation) {
+        this.investigation = investigation;
+    }
+
+    public ReportItem getObserverValue() {
+        return observerValue;
+    }
+
+    public void setObserverValue(ReportItem observerValue) {
+        this.observerValue = observerValue;
+    }
+
+    public ReportItem getObservationUnit() {
+        return observationUnit;
+    }
+
+    public void setObservationUnit(ReportItem observationUnit) {
+        this.observationUnit = observationUnit;
+    }
+
+    public ReportItem getReferenceValue() {
+        return referenceValue;
+    }
+
+    public void setReferenceValue(ReportItem referenceValue) {
+        this.referenceValue = referenceValue;
+    }
+
+    public ReportItem getReferenceComments() {
+        return referenceComments;
+    }
+
+    public void setReferenceComments(ReportItem referenceComments) {
+        this.referenceComments = referenceComments;
+    }
+
+    public ReportItem getParentReportItem() {
+        return parentReportItem;
+    }
+
+    public void setParentReportItem(ReportItem parentReportItem) {
+        this.parentReportItem = parentReportItem;
+    }
+
+    public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
+        toRi.name = fromRi.name;
+        toRi.tName = fromRi.tName;
+        toRi.sName = fromRi.sName;
+        toRi.description = fromRi.description;
+        toRi.orderNo = fromRi.orderNo;
+        toRi.creater = fromRi.creater;
+        toRi.createdAt = fromRi.createdAt;
+        toRi.retired = fromRi.retired;
+        toRi.retirer = fromRi.retirer;
+        toRi.retiredAt = fromRi.retiredAt;
+        toRi.retireComments = fromRi.retireComments;
+        toRi.item = fromRi.item;
+        toRi.ixItemType = fromRi.ixItemType;
+        toRi.ixItemValueType = fromRi.ixItemValueType;
+        toRi.cssPosition = fromRi.cssPosition;
+        toRi.cssOverflow = fromRi.cssOverflow;
+        toRi.cssFontStyle = fromRi.cssFontStyle;
+        toRi.cssVerticalAlign = fromRi.cssVerticalAlign;
+        toRi.cssTextAlign = fromRi.cssTextAlign;
+        toRi.cssLeft = fromRi.cssLeft;
+        toRi.cssTop = fromRi.cssTop;
+        toRi.cssWidth = fromRi.cssWidth;
+        toRi.cssHeight = fromRi.cssHeight;
+        toRi.cssZorder = fromRi.cssZorder;
+        toRi.cssClip = fromRi.cssClip;
+        toRi.cssFontFamily = fromRi.cssFontFamily;
+        toRi.cssFontVariant = fromRi.cssFontVariant;
+        toRi.cssFontWeight = fromRi.cssFontWeight;
+        toRi.cssFontSize = fromRi.cssFontSize;
+        toRi.cssLineHeight = fromRi.cssLineHeight;
+        toRi.cssBackColor = fromRi.cssBackColor;
+        toRi.cssColor = fromRi.cssColor;
+        toRi.cssBorderRadius = fromRi.cssBorderRadius;
+        toRi.cssMargin = fromRi.cssMargin;
+        toRi.cssPadding = fromRi.cssPadding;
+        toRi.cssBorder = fromRi.cssBorder;
+        toRi.formatPrefix = fromRi.formatPrefix;
+        toRi.formatSuffix = fromRi.formatSuffix;
+        toRi.formatString = fromRi.formatString;
+        toRi.reportItemType = fromRi.reportItemType;
+        toRi.category = fromRi.category;
+        toRi.pageNo = fromRi.pageNo;
+        toRi.referringItem = fromRi.referringItem;
+        toRi.referringCategory = fromRi.referringCategory;
+        toRi.riTop = fromRi.riTop;
+        toRi.riHeight = fromRi.riHeight;
+        toRi.riLeft = fromRi.riLeft;
+        toRi.riWidth = fromRi.riWidth;
+        toRi.riFontSize = fromRi.riFontSize;
+        toRi.htPix = fromRi.htPix;
+        toRi.wtPix = fromRi.wtPix;
+        toRi.htmltext = fromRi.htmltext;
+        toRi.investigation = fromRi.investigation;
+        toRi.observerValue = fromRi.observerValue;
+        toRi.observationUnit = fromRi.observationUnit;
+        toRi.referenceValue = fromRi.referenceValue;
+        toRi.referenceComments = fromRi.referenceComments;
+        toRi.parentReportItem = fromRi.parentReportItem;
+
     }
 
 }

@@ -7,12 +7,14 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
 import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public class CommonReportItemController implements Serializable {
     private List<CommonReportItem> items = null;
     String selectText = "";
     Category category;
+    boolean showBorders;
 
     public Category getCategory() {
         return category;
@@ -63,7 +66,21 @@ public class CommonReportItemController implements Serializable {
         current = new CommonReportItem();
         current.setName("New Label");
         current.setCategory(category);
+
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+
         getEjbFacade().create(current);
+    }
+
+    public CommonReportItem getLastCommonReportItem() {
+        String j = "select i from CommonReportItem i order by i.id desc";
+        return getEjbFacade().findFirstBySQL(j);
     }
 
     public void addNewCombo() {
@@ -86,6 +103,23 @@ public class CommonReportItemController implements Serializable {
 
     }
     
+    
+    public void duplicateItem() {
+        CommonReportItem newItem = new CommonReportItem();
+        
+        ReportItem.copyReportItem(current, newItem);
+        
+        newItem.setName(current.getName() + " 1");
+        newItem.setCreatedAt(new Date());
+        newItem.setCreater(getSessionController().getLoggedUser());
+        
+        getEjbFacade().create(newItem);
+        getItems().add(newItem);
+        
+        current = newItem;
+
+    }
+
     public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
 //        System.err.println("commenReportFormat = " + commenReportFormat);
         String temSql;
@@ -97,13 +131,34 @@ public class CommonReportItemController implements Serializable {
         items = getFacade().findBySQL(temSql, m);
         return items;
     }
-    
 
     public void addNewValue() {
         current = new CommonReportItem();
         current.setName("New Value");
         current.setReportItemType(ReportItemType.PatientName);
         current.setCategory(category);
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+        getEjbFacade().create(current);
+    }
+
+    public void addNewCss() {
+        current = new CommonReportItem();
+        current.setName("New Css");
+        current.setReportItemType(ReportItemType.PatientName);
+        current.setCategory(category);
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
         getEjbFacade().create(current);
     }
 
@@ -198,6 +253,18 @@ public class CommonReportItemController implements Serializable {
         }
         return items;
     }
+
+    public boolean isShowBorders() {
+        return showBorders;
+    }
+
+    public void setShowBorders(boolean showBorders) {
+        this.showBorders = showBorders;
+    }
+
+
+    
+
 
     public List<CommonReportItem> getCategoryItems(Category cat) {
         List<CommonReportItem> cis;

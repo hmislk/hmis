@@ -111,6 +111,46 @@ public class InvestigationItemController implements Serializable {
     private int specialCode;
     String fontFamily;
     double fontSize;
+    
+    Double movePercent;
+    Double fixHeight;
+    Double fixWidth;
+
+    public Double getMovePercent() {
+        if(movePercent==null){
+            movePercent =5.0;
+        }
+        return movePercent;
+    }
+
+    public void setMovePercent(Double movePercent) {
+        this.movePercent = movePercent;
+    }
+
+    public Double getFixHeight() {
+        if(fixHeight==null){
+            fixHeight =2.0;
+        }
+        return fixHeight;
+    }
+
+    public void setFixHeight(Double fixHeight) {
+        this.fixHeight = fixHeight;
+    }
+
+    public Double getFixWidth() {
+        if(fixWidth==null){
+            fixWidth=10.0;
+        }
+        return fixWidth;
+    }
+
+    public void setFixWidth(Double fixWidth) {
+        this.fixWidth = fixWidth;
+    }
+    
+    
+    
 
     public void toInvestigationMaster() {
         investigationController.setCurrent(currentInvestigation);
@@ -371,7 +411,7 @@ public class InvestigationItemController implements Serializable {
 
     public List<ReportItem> getAllReportItemList() {
         String sql = "select ri from ReportItem ri ";
-
+    
         return riFacade.findBySQL(sql);
     }
 
@@ -415,6 +455,34 @@ public class InvestigationItemController implements Serializable {
         }
 
         UtilityController.addSuccessMessage("Moved Successfully");
+    }
+    
+    public void fixWidthAllReportItems() {
+        if (getItems().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getItems()) {
+            ri.setRiWidth(fixWidth);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Fixed the width");
+    }
+    
+    public void fixHeightAllReportItems() {
+        if (getItems().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to move");
+            return;
+        }
+
+        for (ReportItem ri : getItems()) {
+            ri.setRiHeight(fixHeight);
+            riFacade.edit(ri);
+        }
+
+        UtilityController.addSuccessMessage("Fixed the width");
     }
     
     public void moveRightAllReportItems() {
