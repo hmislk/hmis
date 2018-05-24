@@ -8,6 +8,7 @@ import com.divudi.data.CssFontStyle;
 import com.divudi.data.CssOverflow;
 import com.divudi.data.CssPosition;
 import com.divudi.data.CssTextAlign;
+import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
@@ -74,6 +75,8 @@ public class ReportItem implements Serializable {
     @Enumerated(EnumType.STRING)
     CssFontStyle cssFontStyle;
     @Enumerated(EnumType.STRING)
+    CssTextDecoration cssTextDecoration;
+    @Enumerated(EnumType.STRING)
     CssVerticalAlign cssVerticalAlign;
     @Enumerated(EnumType.STRING)
     CssTextAlign cssTextAlign;
@@ -122,17 +125,77 @@ public class ReportItem implements Serializable {
     String htmltext;
 
     @OneToOne
-    private ReportItem investigation;
+    private ReportItem testHeader;
     @OneToOne
-    private ReportItem observerValue;
+    private ReportItem valueHeader;
     @OneToOne
-    private ReportItem observationUnit;
+    private ReportItem unitHeader;
     @OneToOne
-    private ReportItem referenceValue;
+    private ReportItem referenceHeader;
     @OneToOne
-    private ReportItem referenceComments;
+    private ReportItem testLabel;
     @ManyToOne
-    private ReportItem parentReportItem;
+    private ReportItem valueValue;
+    @OneToOne
+    private ReportItem unitLabel;
+    @OneToOne
+    private ReportItem referenceLabel;
+    @ManyToOne
+    private ReportItem commentLabel;
+
+    public CssTextDecoration getCssTextDecoration() {
+        return cssTextDecoration;
+    }
+
+    public void setCssTextDecoration(CssTextDecoration cssTextDecoration) {
+        this.cssTextDecoration = cssTextDecoration;
+    }
+
+    
+    
+    
+    public ReportItem getUnitLabel() {    
+        return unitLabel;
+    }
+
+    public void setUnitLabel(ReportItem unitLabel) {
+        this.unitLabel = unitLabel;
+    }
+
+    public ReportItem getReferenceLabel() {
+        return referenceLabel;
+    }
+
+    public void setReferenceLabel(ReportItem referenceLabel) {
+        this.referenceLabel = referenceLabel;
+    }
+
+    public ReportItem getCommentLabel() {
+        return commentLabel;
+    }
+
+    /**
+     *
+     *
+     *
+    InvestigationItem testHeader = new InvestigationItem();
+    InvestigationItem valueHeader = new InvestigationItem();
+    InvestigationItem unitHeader = new InvestigationItem();
+    InvestigationItem referenceHeader = new InvestigationItem();
+    InvestigationItem testLabel = new InvestigationItem();
+    InvestigationItem valueValue = new InvestigationItem();
+    InvestigationItem unitValue = new InvestigationItem();
+    InvestigationItem referenceHeader = new InvestigationItem();
+    InvestigationItem testComments = new InvestigationItem();
+     *
+     *
+     *
+     *
+     *
+     */
+    public void setCommentLabel(ReportItem commentLabel) {
+        this.commentLabel = commentLabel;
+    }
 
     public String getHtmltext() {
         return htmltext;
@@ -817,52 +880,52 @@ public class ReportItem implements Serializable {
         this.riFontSize = riFontSize;
     }
 
-    public ReportItem getInvestigation() {
-        return investigation;
+    public ReportItem getTestHeader() {
+        return testHeader;
     }
 
-    public void setInvestigation(ReportItem investigation) {
-        this.investigation = investigation;
+    public void setTestHeader(ReportItem testHeader) {
+        this.testHeader = testHeader;
     }
 
-    public ReportItem getObserverValue() {
-        return observerValue;
+    public ReportItem getUnitHeader() {
+        return unitHeader;
     }
 
-    public void setObserverValue(ReportItem observerValue) {
-        this.observerValue = observerValue;
+    public void setUnitHeader(ReportItem unitHeader) {
+        this.unitHeader = unitHeader;
     }
 
-    public ReportItem getObservationUnit() {
-        return observationUnit;
+    public ReportItem getValueHeader() {
+        return valueHeader;
     }
 
-    public void setObservationUnit(ReportItem observationUnit) {
-        this.observationUnit = observationUnit;
+    public void setValueHeader(ReportItem valueHeader) {
+        this.valueHeader = valueHeader;
     }
 
-    public ReportItem getReferenceValue() {
-        return referenceValue;
+    public ReportItem getReferenceHeader() {
+        return referenceHeader;
     }
 
-    public void setReferenceValue(ReportItem referenceValue) {
-        this.referenceValue = referenceValue;
+    public void setReferenceHeader(ReportItem referenceHeader) {
+        this.referenceHeader = referenceHeader;
     }
 
-    public ReportItem getReferenceComments() {
-        return referenceComments;
+    public ReportItem getTestLabel() {
+        return testLabel;
     }
 
-    public void setReferenceComments(ReportItem referenceComments) {
-        this.referenceComments = referenceComments;
+    public void setTestLabel(ReportItem testLabel) {
+        this.testLabel = testLabel;
     }
 
-    public ReportItem getParentReportItem() {
-        return parentReportItem;
+    public ReportItem getValueValue() {
+        return valueValue;
     }
 
-    public void setParentReportItem(ReportItem parentReportItem) {
-        this.parentReportItem = parentReportItem;
+    public void setValueValue(ReportItem valueValue) {
+        this.valueValue = valueValue;
     }
 
     public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
@@ -918,12 +981,12 @@ public class ReportItem implements Serializable {
         toRi.htPix = fromRi.htPix;
         toRi.wtPix = fromRi.wtPix;
         toRi.htmltext = fromRi.htmltext;
-        toRi.investigation = fromRi.investigation;
-        toRi.observerValue = fromRi.observerValue;
-        toRi.observationUnit = fromRi.observationUnit;
-        toRi.referenceValue = fromRi.referenceValue;
-        toRi.referenceComments = fromRi.referenceComments;
-        toRi.parentReportItem = fromRi.parentReportItem;
+        toRi.testHeader = fromRi.testHeader;
+        toRi.unitHeader = fromRi.unitHeader;
+        toRi.valueHeader = fromRi.valueHeader;
+        toRi.referenceHeader = fromRi.referenceHeader;
+        toRi.testLabel = fromRi.testLabel;
+        toRi.valueValue = fromRi.valueValue;
 
     }
 

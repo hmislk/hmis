@@ -12,6 +12,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.CssFontStyle;
 import com.divudi.data.CssTextAlign;
+import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
@@ -38,7 +39,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -74,7 +77,7 @@ public class InvestigationItemController implements Serializable {
     @EJB
     InvestigationItemValueFacade iivFacade;
     @EJB
-    ReportItemFacade riFacade;
+    private ReportItemFacade riFacade;
     @EJB
     InvestigationFacade ixFacade;
     /**
@@ -111,14 +114,14 @@ public class InvestigationItemController implements Serializable {
     private int specialCode;
     String fontFamily;
     double fontSize;
-    
+
     Double movePercent;
     Double fixHeight;
     Double fixWidth;
 
     public Double getMovePercent() {
-        if(movePercent==null){
-            movePercent =5.0;
+        if (movePercent == null) {
+            movePercent = 5.0;
         }
         return movePercent;
     }
@@ -128,8 +131,8 @@ public class InvestigationItemController implements Serializable {
     }
 
     public Double getFixHeight() {
-        if(fixHeight==null){
-            fixHeight =2.0;
+        if (fixHeight == null) {
+            fixHeight = 2.0;
         }
         return fixHeight;
     }
@@ -139,8 +142,8 @@ public class InvestigationItemController implements Serializable {
     }
 
     public Double getFixWidth() {
-        if(fixWidth==null){
-            fixWidth=10.0;
+        if (fixWidth == null) {
+            fixWidth = 10.0;
         }
         return fixWidth;
     }
@@ -148,9 +151,6 @@ public class InvestigationItemController implements Serializable {
     public void setFixWidth(Double fixWidth) {
         this.fixWidth = fixWidth;
     }
-    
-    
-    
 
     public void toInvestigationMaster() {
         investigationController.setCurrent(currentInvestigation);
@@ -411,7 +411,7 @@ public class InvestigationItemController implements Serializable {
 
     public List<ReportItem> getAllReportItemList() {
         String sql = "select ri from ReportItem ri ";
-    
+
         return riFacade.findBySQL(sql);
     }
 
@@ -442,7 +442,7 @@ public class InvestigationItemController implements Serializable {
 
         UtilityController.addSuccessMessage("Moved Successfully");
     }
-    
+
     public void moveDownAllReportItems() {
         if (getAllReportItemList().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
@@ -450,13 +450,13 @@ public class InvestigationItemController implements Serializable {
         }
 
         for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiHeight(ri.getRiHeight()+ 1);
+            ri.setRiHeight(ri.getRiHeight() + 1);
             riFacade.edit(ri);
         }
 
         UtilityController.addSuccessMessage("Moved Successfully");
     }
-    
+
     public void fixWidthAllReportItems() {
         if (getItems().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
@@ -470,7 +470,7 @@ public class InvestigationItemController implements Serializable {
 
         UtilityController.addSuccessMessage("Fixed the width");
     }
-    
+
     public void fixHeightAllReportItems() {
         if (getItems().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
@@ -484,7 +484,7 @@ public class InvestigationItemController implements Serializable {
 
         UtilityController.addSuccessMessage("Fixed the width");
     }
-    
+
     public void moveRightAllReportItems() {
         if (getAllReportItemList().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
@@ -492,7 +492,7 @@ public class InvestigationItemController implements Serializable {
         }
 
         for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiWidth(ri.getRiWidth()+ 1);
+            ri.setRiWidth(ri.getRiWidth() + 1);
             riFacade.edit(ri);
         }
 
@@ -507,14 +507,14 @@ public class InvestigationItemController implements Serializable {
                 ri.setCssFontFamily(fontFamily);
                 riFacade.edit(ri);
             }
-            
+
             if (fontSize != 0) {
                 System.out.println("update Font Size");
                 ri.setRiFontSize(fontSize);
                 riFacade.edit(ri);
             }
         }
-        
+
         UtilityController.addSuccessMessage("Update Success");
 
     }
@@ -657,7 +657,9 @@ public class InvestigationItemController implements Serializable {
 
                 try {
                     ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
-                    if(ri.getRiWidth()< 20) ri.setRiWidth(20);
+                    if (ri.getRiWidth() < 20) {
+                        ri.setRiWidth(20);
+                    }
                 } catch (Exception e) {
                     ri.setRiWidth(40);
                     System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
@@ -949,6 +951,302 @@ public class InvestigationItemController implements Serializable {
         return xml;
     }
 
+    public InvestigationItem getLastReportItem() {
+        return getLastReportItem(null);
+    }
+
+    public InvestigationItem getLastReportItem(InvestigationItemType type) {
+        String j = "select i from InvestigationItem i ";
+        Map m = new HashMap();
+        if (type != null) {
+            j += " where i.ixItemType=:t ";
+            m.put("t", type);
+        }
+        j += "order by i.id desc";
+
+        return getEjbFacade().findFirstBySQL(j, m);
+    }
+
+    private String testName;
+    private String testUnit;
+    private String testReferenceRange;
+    private String testComments;
+    private String cssFontFamily;
+    private double riFontSize;
+    private CssFontStyle cssFontStyle;
+    private String cssHeaderFontWeight;
+    private String cssValueFontWeight;
+    private CssTextDecoration cssHeaderDecoration;
+    private CssTextDecoration cssValueDecoration;
+    private boolean addingNewTest = false;
+    private double riBlockTop;
+    private double riBlockLeft;
+    private double riValueLeft;
+    private double riUnitLeft;
+    private double riRefLeft;
+    private double riRowGap;
+    private double riColGap;
+    private double riHeight;
+    private String testHeaderName;
+    private String valueHeaderName;
+    private String unitHeaderName;
+    private String refHeaderName;
+
+    public void toAddNewTest() {
+        System.out.print("toAddNewTest");
+        addingNewTest = true;
+        InvestigationItem lastItem = getLastReportItem(InvestigationItemType.Investigation);
+        if (lastItem != null) {
+            cssFontFamily = lastItem.getCssFontFamily();
+            riFontSize = lastItem.getRiFontSize();
+            cssFontStyle = lastItem.getCssFontStyle();
+
+            if (lastItem.getTestHeader() != null) {
+                riBlockTop = lastItem.getTestHeader().getRiTop();
+                riBlockLeft = lastItem.getTestHeader().getRiLeft();
+                testHeaderName = lastItem.getTestHeader().getName();
+                riHeight = lastItem.getTestHeader().getRiHeight();
+                cssHeaderFontWeight = lastItem.getTestHeader().getCssFontWeight();
+                cssHeaderDecoration = lastItem.getTestHeader().getCssTextDecoration();
+            }
+            if (lastItem.getTestHeader() != null && lastItem.getValueHeader() != null) {
+                riRowGap = lastItem.getValueHeader().getRiTop() - lastItem.getTestHeader().getRiTop();
+                riColGap = lastItem.getValueHeader().getRiLeft() - lastItem.getTestHeader().getRiLeft() - lastItem.getTestHeader().getRiWidth();
+            }
+            if (lastItem.getValueHeader() != null) {
+                riValueLeft = lastItem.getValueHeader().getRiLeft();
+                valueHeaderName = lastItem.getValueHeader().getName();
+
+            }
+            if (lastItem.getUnitHeader() != null) {
+                riUnitLeft = lastItem.getUnitHeader().getRiLeft();
+                unitHeaderName = lastItem.getUnitHeader().getName();
+            }
+            if (lastItem.getReferenceHeader() != null) {
+                riRefLeft = lastItem.getReferenceHeader().getRiLeft();
+                refHeaderName = lastItem.getReferenceHeader().getName();
+            }
+            if (lastItem.getValueValue() != null) {
+                cssValueFontWeight = lastItem.getValueValue().getCssFontWeight();
+                cssValueDecoration = lastItem.getValueValue().getCssTextDecoration();
+
+            }
+
+        }
+
+    }
+
+    public void addNewTest() {
+        addingNewTest = false;
+        if (currentInvestigation == null) {
+            UtilityController.addErrorMessage("Please select an investigation");
+            return;
+        }
+
+        InvestigationItem testHeader = new InvestigationItem();
+        testHeader.setName(testHeaderName);
+        testHeader.setHtmltext(testHeaderName);
+        testHeader.setIxItemType(InvestigationItemType.Label);
+        testHeader.setRiTop(riBlockTop);
+        testHeader.setRiLeft(riBlockLeft);
+        testHeader.setRiWidth(riValueLeft - riBlockLeft - riColGap);
+        testHeader.setRiHeight(riHeight);
+        testHeader.setCssTextAlign(CssTextAlign.Left);
+        testHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+        testHeader.setRiFontSize(riFontSize);
+        testHeader.setCssFontStyle(cssFontStyle);
+        testHeader.setCssFontFamily(cssFontFamily);
+        testHeader.setCssFontWeight(cssHeaderFontWeight);
+        testHeader.setCssTextDecoration(cssHeaderDecoration);
+        testHeader.setItem(currentInvestigation);
+        testHeader.setCreatedAt(new Date());
+        testHeader.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem valueHeader = new InvestigationItem();
+        valueHeader.setName(valueHeaderName);
+        valueHeader.setHtmltext(valueHeaderName);
+        valueHeader.setIxItemType(InvestigationItemType.Label);
+        valueHeader.setRiTop(riBlockTop);
+        valueHeader.setRiLeft(riValueLeft);
+        valueHeader.setRiWidth(riUnitLeft - riValueLeft - riColGap);
+        valueHeader.setRiHeight(riHeight);
+        valueHeader.setCssTextAlign(CssTextAlign.Left);
+        valueHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+        valueHeader.setRiFontSize(riFontSize);
+        valueHeader.setCssFontStyle(cssFontStyle);
+        valueHeader.setCssFontFamily(cssFontFamily);
+        valueHeader.setCssFontWeight(cssHeaderFontWeight);
+        valueHeader.setCssTextDecoration(cssHeaderDecoration);
+        valueHeader.setItem(currentInvestigation);
+        valueHeader.setCreatedAt(new Date());
+        valueHeader.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem unitHeader = new InvestigationItem();
+        unitHeader.setName(unitHeaderName);
+        unitHeader.setHtmltext(unitHeaderName);
+        unitHeader.setIxItemType(InvestigationItemType.Label);
+        unitHeader.setRiTop(riBlockTop);
+        unitHeader.setRiLeft(riUnitLeft);
+        unitHeader.setRiWidth(riRefLeft - riUnitLeft - riColGap);
+        unitHeader.setRiHeight(riHeight);
+        unitHeader.setCssTextAlign(CssTextAlign.Left);
+        unitHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+        unitHeader.setRiFontSize(riFontSize);
+        unitHeader.setCssFontStyle(cssFontStyle);
+        unitHeader.setCssFontFamily(cssFontFamily);
+        unitHeader.setCssFontWeight(cssHeaderFontWeight);
+        unitHeader.setCssTextDecoration(cssHeaderDecoration);
+        unitHeader.setItem(currentInvestigation);
+        unitHeader.setCreatedAt(new Date());
+        unitHeader.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem referenceHeader = new InvestigationItem();
+        referenceHeader.setName(refHeaderName);
+        referenceHeader.setHtmltext(refHeaderName);
+        referenceHeader.setIxItemType(InvestigationItemType.Label);
+        referenceHeader.setRiTop(riBlockTop);
+        referenceHeader.setRiLeft(riRefLeft);
+        referenceHeader.setRiWidth(100 - riRefLeft - riColGap);
+        referenceHeader.setRiHeight(riHeight);
+        referenceHeader.setCssTextAlign(CssTextAlign.Left);
+        referenceHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+        referenceHeader.setRiFontSize(riFontSize);
+        referenceHeader.setCssFontStyle(cssFontStyle);
+        referenceHeader.setCssFontFamily(cssFontFamily);
+        referenceHeader.setCssFontWeight(cssHeaderFontWeight);
+        referenceHeader.setCssTextDecoration(cssHeaderDecoration);
+        referenceHeader.setItem(currentInvestigation);
+        referenceHeader.setCreatedAt(new Date());
+        referenceHeader.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem testLabel = new InvestigationItem();
+        testLabel.setName(testName);
+        testLabel.setHtmltext(testName);
+        testLabel.setIxItemType(InvestigationItemType.Label);
+        testLabel.setRiTop(riBlockTop + riRowGap);
+        testLabel.setRiLeft(testHeader.getRiLeft());
+        testLabel.setRiWidth(testHeader.getRiWidth());
+        testLabel.setRiHeight(riHeight);
+        testLabel.setCssTextAlign(CssTextAlign.Left);
+        testLabel.setCssVerticalAlign(CssVerticalAlign.Top);
+        testLabel.setRiFontSize(riFontSize);
+        testLabel.setCssFontStyle(cssFontStyle);
+        testLabel.setCssFontFamily(cssFontFamily);
+        testLabel.setCssFontWeight(cssValueFontWeight);
+        testLabel.setCssTextDecoration(cssValueDecoration);
+        testLabel.setItem(currentInvestigation);
+        testLabel.setCreatedAt(new Date());
+        testLabel.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem valueValue = new InvestigationItem();
+        valueValue.setName(testName + " value");
+        valueValue.setHtmltext(testName + " value");
+        valueValue.setIxItemType(InvestigationItemType.Value);
+        valueValue.setRiTop(valueHeader.getRiTop() + riRowGap);
+        valueValue.setRiLeft(valueHeader.getRiLeft());
+        valueValue.setRiWidth(valueHeader.getRiWidth());
+        valueValue.setRiHeight(riHeight);
+        valueValue.setCssTextAlign(CssTextAlign.Left);
+        valueValue.setCssVerticalAlign(CssVerticalAlign.Top);
+        valueValue.setRiFontSize(riFontSize);
+        valueValue.setCssFontStyle(cssFontStyle);
+        valueValue.setCssFontFamily(cssFontFamily);
+        valueValue.setCssFontWeight(cssValueFontWeight);
+        valueValue.setCssTextDecoration(cssValueDecoration);
+        valueValue.setItem(currentInvestigation);
+        valueValue.setCreatedAt(new Date());
+        valueValue.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem unitLabel = new InvestigationItem();
+        unitLabel.setName(testUnit);
+        unitLabel.setHtmltext(testUnit);
+        unitLabel.setIxItemType(InvestigationItemType.Label);
+        unitLabel.setRiTop(riBlockTop + riRowGap);
+        unitLabel.setRiLeft(unitHeader.getRiLeft());
+        unitLabel.setRiWidth(unitHeader.getRiWidth());
+        unitLabel.setRiHeight(riHeight);
+        unitLabel.setCssTextAlign(CssTextAlign.Left);
+        unitLabel.setCssVerticalAlign(CssVerticalAlign.Top);
+        unitLabel.setRiFontSize(riFontSize);
+        unitLabel.setCssFontStyle(cssFontStyle);
+        unitLabel.setCssFontFamily(cssFontFamily);
+        unitLabel.setCssFontWeight(cssValueFontWeight);
+        unitLabel.setCssTextDecoration(cssValueDecoration);
+        unitLabel.setItem(currentInvestigation);
+        unitLabel.setCreatedAt(new Date());
+        unitLabel.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem referenceLabel = new InvestigationItem();
+        unitLabel.setName(testReferenceRange);
+        unitLabel.setHtmltext(testReferenceRange);
+        unitLabel.setIxItemType(InvestigationItemType.Label);
+        unitLabel.setRiTop(riBlockTop + riRowGap);
+        unitLabel.setRiLeft(referenceHeader.getRiLeft());
+        unitLabel.setRiWidth(referenceHeader.getRiWidth());
+        unitLabel.setRiHeight(riHeight);
+        unitLabel.setCssTextAlign(CssTextAlign.Left);
+        unitLabel.setCssVerticalAlign(CssVerticalAlign.Top);
+        unitLabel.setRiFontSize(riFontSize);
+        unitLabel.setCssFontStyle(cssFontStyle);
+        unitLabel.setCssFontFamily(cssFontFamily);
+        unitLabel.setCssFontWeight(cssValueFontWeight);
+        unitLabel.setCssTextDecoration(cssValueDecoration);
+        unitLabel.setItem(currentInvestigation);
+        unitLabel.setCreatedAt(new Date());
+        unitLabel.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem commentLabel = new InvestigationItem();
+        commentLabel.setName("Test Comments");
+        commentLabel.setHtmltext(testComments);
+        commentLabel.setIxItemType(InvestigationItemType.Label);
+        commentLabel.setRiTop(riBlockTop + 2 * riRowGap);
+        commentLabel.setRiLeft(testHeader.getRiLeft());
+        commentLabel.setRiWidth(100 - (testHeader.getRiLeft() * 2));
+        commentLabel.setRiHeight(riHeight);
+        commentLabel.setCssTextAlign(CssTextAlign.Left);
+        commentLabel.setCssVerticalAlign(CssVerticalAlign.Top);
+        commentLabel.setRiFontSize(riFontSize);
+        commentLabel.setCssFontStyle(cssFontStyle);
+        commentLabel.setCssFontFamily(cssFontFamily);
+        commentLabel.setCssFontWeight(cssValueFontWeight);
+        commentLabel.setCssTextDecoration(cssValueDecoration);
+        commentLabel.setItem(currentInvestigation);
+        commentLabel.setCreatedAt(new Date());
+        commentLabel.setCreater(getSessionController().getLoggedUser());
+
+        current = new InvestigationItem();
+        current.setName(testName);
+        current.setItem(currentInvestigation);
+        current.setCreatedAt(new Date());
+        current.setCreater(getSessionController().getLoggedUser());
+
+        currentInvestigation.getReportItems().add(testHeader);
+        currentInvestigation.getReportItems().add(valueHeader);
+        currentInvestigation.getReportItems().add(unitHeader);
+        currentInvestigation.getReportItems().add(referenceHeader);
+        currentInvestigation.getReportItems().add(testLabel);
+        currentInvestigation.getReportItems().add(valueValue);
+        currentInvestigation.getReportItems().add(unitLabel);
+        currentInvestigation.getReportItems().add(referenceLabel);
+        currentInvestigation.getReportItems().add(commentLabel);
+        currentInvestigation.getReportItems().add(current);
+
+        current.setTestHeader(testHeader);
+        current.setValueHeader(valueHeader);
+        current.setUnitHeader(unitHeader);
+        current.setReferenceHeader(referenceHeader);
+        current.setTestLabel(testLabel);
+        current.setValueValue(valueValue);
+        current.setUnitLabel(unitLabel);
+        current.setReferenceLabel(referenceLabel);
+        current.setCommentLabel(commentLabel);
+        current.setIxItemType(InvestigationItemType.Investigation);
+
+        getIxFacade().edit(currentInvestigation);
+
+        listInvestigationItem();
+    }
+
     public void addNewLabel() {
         if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
@@ -960,17 +1258,69 @@ public class InvestigationItemController implements Serializable {
         current.setIxItemType(InvestigationItemType.Label);
         current.setCreatedAt(new Date());
         current.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
         listInvestigationItem();
     }
 
+    
+    
+    public void removeSingleItem(InvestigationItem i) {
+        i.setRetired(true);
+        i.setRetirer(getSessionController().getLoggedUser());
+        i.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+        getRiFacade().edit(i);
+        getItems().remove(i);
+    }
+
     public void removeItem() {
-        current.setRetired(true);
-        current.setRetirer(getSessionController().getLoggedUser());
-        current.setRetiredAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
-        getEjbFacade().edit(getCurrent());
-        getItems().remove(getCurrent());
+
+        if (current.getIxItemType() == InvestigationItemType.Investigation) {
+            if (current.getTestHeader() != null) {
+                removeSingleItem((InvestigationItem) current.getTestHeader());
+            }
+            if (current.getValueHeader() != null) {
+                removeSingleItem((InvestigationItem) current.getValueHeader());
+            }
+            
+            if (current.getUnitHeader() != null) {
+                removeSingleItem((InvestigationItem) current.getUnitHeader());
+            }
+           
+            if (current.getReferenceHeader() != null) {
+                removeSingleItem((InvestigationItem) current.getReferenceHeader());
+            }
+            
+            if (current.getTestLabel() != null) {
+                removeSingleItem((InvestigationItem) current.getTestLabel());
+            }
+            
+            if (current.getValueValue() != null) {
+                removeSingleItem((InvestigationItem) current.getValueValue());
+            }
+            
+            if (current.getUnitLabel() != null) {
+                removeSingleItem((InvestigationItem) current.getUnitLabel());
+            }
+            
+            if (current.getReferenceLabel() != null) {
+                removeSingleItem((InvestigationItem) current.getReferenceLabel());
+            }
+            if (current.getCommentLabel() != null) {
+                removeSingleItem((InvestigationItem) current.getCommentLabel());
+            }
+        }
+
+        removeSingleItem(current);
 
     }
 
@@ -1005,6 +1355,15 @@ public class InvestigationItemController implements Serializable {
         current.setName("New Value");
         current.setItem(currentInvestigation);
         current.setIxItemType(InvestigationItemType.Value);
+
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
         listInvestigationItem();
@@ -1019,6 +1378,13 @@ public class InvestigationItemController implements Serializable {
         current.setName("New Calculation");
         current.setItem(currentInvestigation);
         current.setIxItemType(InvestigationItemType.Calculation);
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
 //        getEjbFacade().create(current);
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
@@ -1035,6 +1401,13 @@ public class InvestigationItemController implements Serializable {
         current.setName("New Flag");
         current.setItem(currentInvestigation);
         current.setIxItemType(InvestigationItemType.Flag);
+        InvestigationItem lastItem = getLastReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
 //        getEjbFacade().create(current);
         currentInvestigation.getReportItems().add(current);
         getIxFacade().edit(currentInvestigation);
@@ -1078,7 +1451,6 @@ public class InvestigationItemController implements Serializable {
 //        recreateModel();
 //        getItems();
     }
-    
 
     public InvestigationFacade getIxFacade() {
         return ixFacade;
@@ -1129,14 +1501,14 @@ public class InvestigationItemController implements Serializable {
         return ejbFacade;
     }
 
-   public List<InvestigationItem> getItems() {
+    public List<InvestigationItem> getItems() {
         items = getItems(currentInvestigation);
         return items;
     }
-    
+
     public List<InvestigationItem> getItems(Investigation ix) {
         List<InvestigationItem> iis;
-        if (ix!=null && ix.getId() != null) {
+        if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
             iis = getFacade().findBySQL(temSql);
@@ -1145,19 +1517,18 @@ public class InvestigationItemController implements Serializable {
         }
         return iis;
     }
-    
+
     public Long findItemCount(Investigation ix) {
         Long iis;
-        if (ix!=null && ix.getId() != null) {
+        if (ix != null && ix.getId() != null) {
             String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() ;
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId();
             iis = getFacade().countBySql(temSql);
         } else {
             iis = null;
         }
         return iis;
     }
-
 
     public Investigation getCurrentInvestigation() {
         if (currentInvestigation == null) {
@@ -1174,6 +1545,205 @@ public class InvestigationItemController implements Serializable {
 
     }
 
+    public ReportItemFacade getRiFacade() {
+        return riFacade;
+    }
+
+    public void setRiFacade(ReportItemFacade riFacade) {
+        this.riFacade = riFacade;
+    }
+
+    public String getTestName() {
+        return testName;
+    }
+
+    public void setTestName(String testName) {
+        this.testName = testName;
+    }
+
+    public String getTestUnit() {
+        return testUnit;
+    }
+
+    public void setTestUnit(String testUnit) {
+        this.testUnit = testUnit;
+    }
+
+    public String getTestReferenceRange() {
+        return testReferenceRange;
+    }
+
+    public void setTestReferenceRange(String testReferenceRange) {
+        this.testReferenceRange = testReferenceRange;
+    }
+
+    public String getTestComments() {
+        return testComments;
+    }
+
+    public void setTestComments(String testComments) {
+        this.testComments = testComments;
+    }
+
+    public String getCssFontFamily() {
+        return cssFontFamily;
+    }
+
+    public void setCssFontFamily(String cssFontFamily) {
+        this.cssFontFamily = cssFontFamily;
+    }
+
+    public double getRiFontSize() {
+        return riFontSize;
+    }
+
+    public void setRiFontSize(double riFontSize) {
+        this.riFontSize = riFontSize;
+    }
+
+    public CssFontStyle getCssFontStyle() {
+        return cssFontStyle;
+    }
+
+    public void setCssFontStyle(CssFontStyle cssFontStyle) {
+        this.cssFontStyle = cssFontStyle;
+    }
+
+    public String getCssHeaderFontWeight() {
+        return cssHeaderFontWeight;
+    }
+
+    public void setCssHeaderFontWeight(String cssHeaderFontWeight) {
+        this.cssHeaderFontWeight = cssHeaderFontWeight;
+    }
+
+    public String getCssValueFontWeight() {
+        return cssValueFontWeight;
+    }
+
+    public void setCssValueFontWeight(String cssValueFontWeight) {
+        this.cssValueFontWeight = cssValueFontWeight;
+    }
+
+    public CssTextDecoration getCssHeaderDecoration() {
+        return cssHeaderDecoration;
+    }
+
+    public void setCssHeaderDecoration(CssTextDecoration cssHeaderDecoration) {
+        this.cssHeaderDecoration = cssHeaderDecoration;
+    }
+
+    public CssTextDecoration getCssValueDecoration() {
+        return cssValueDecoration;
+    }
+
+    public void setCssValueDecoration(CssTextDecoration cssValueDecoration) {
+        this.cssValueDecoration = cssValueDecoration;
+    }
+
+    public boolean isAddingNewTest() {
+        return addingNewTest;
+    }
+
+    public void setAddingNewTest(boolean addingNewTest) {
+        this.addingNewTest = addingNewTest;
+    }
+
+    public double getRiBlockTop() {
+        return riBlockTop;
+    }
+
+    public void setRiBlockTop(double riBlockTop) {
+        this.riBlockTop = riBlockTop;
+    }
+
+    public double getRiBlockLeft() {
+        return riBlockLeft;
+    }
+
+    public void setRiBlockLeft(double riBlockLeft) {
+        this.riBlockLeft = riBlockLeft;
+    }
+
+    public double getRiValueLeft() {
+        return riValueLeft;
+    }
+
+    public void setRiValueLeft(double riValueLeft) {
+        this.riValueLeft = riValueLeft;
+    }
+
+    public double getRiUnitLeft() {
+        return riUnitLeft;
+    }
+
+    public void setRiUnitLeft(double riUnitLeft) {
+        this.riUnitLeft = riUnitLeft;
+    }
+
+    public double getRiRefLeft() {
+        return riRefLeft;
+    }
+
+    public void setRiRefLeft(double riRefLeft) {
+        this.riRefLeft = riRefLeft;
+    }
+
+    public double getRiRowGap() {
+        return riRowGap;
+    }
+
+    public void setRiRowGap(double riRowGap) {
+        this.riRowGap = riRowGap;
+    }
+
+    public double getRiColGap() {
+        return riColGap;
+    }
+
+    public void setRiColGap(double riColGap) {
+        this.riColGap = riColGap;
+    }
+
+    public double getRiHeight() {
+        return riHeight;
+    }
+
+    public void setRiHeight(double riHeight) {
+        this.riHeight = riHeight;
+    }
+
+    public String getTestHeaderName() {
+        return testHeaderName;
+    }
+
+    public void setTestHeaderName(String testHeaderName) {
+        this.testHeaderName = testHeaderName;
+    }
+
+    public String getValueHeaderName() {
+        return valueHeaderName;
+    }
+
+    public void setValueHeaderName(String valueHeaderName) {
+        this.valueHeaderName = valueHeaderName;
+    }
+
+    public String getUnitHeaderName() {
+        return unitHeaderName;
+    }
+
+    public void setUnitHeaderName(String unitHeaderName) {
+        this.unitHeaderName = unitHeaderName;
+    }
+
+    public String getRefHeaderName() {
+        return refHeaderName;
+    }
+
+    public void setRefHeaderName(String refHeaderName) {
+        this.refHeaderName = refHeaderName;
+    }
 
     public enum EditMode {
 
@@ -1214,8 +1784,6 @@ public class InvestigationItemController implements Serializable {
         this.ixXml = ixXml;
     }
 
-    
-    
     /**
      *
      */
