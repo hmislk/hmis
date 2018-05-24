@@ -198,6 +198,9 @@ public class ReportItem implements Serializable {
     }
 
     public String getHtmltext() {
+        if(htmltext==null){
+            htmltext= "";
+        }
         return htmltext;
     }
 

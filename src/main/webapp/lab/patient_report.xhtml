@@ -69,7 +69,7 @@
                                                      rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }"
                                                      onclick="window.print();" 
                                                      actionListener="#{patientReportController.printPatientReport()}"/>
-                                   
+
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
@@ -84,10 +84,8 @@
 
 
                                 <h:panelGrid columns="3" styleClass="alignTop" >
-
-
-                                    <p:panel header="Enter Values"  rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'}" >
-
+                                    <p:panel header="Enter Values"  
+                                             rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
                                         <table >
                                             <ui:repeat id="tblVals" value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                        var="pvv"  
@@ -123,7 +121,7 @@
                                         </table>
                                     </p:panel>
                                     <h:panelGroup  
-                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'}"   >
+                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }"   >
                                         <p:panel header="Calculations " id="tblCals">
                                             <table >               
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -177,9 +175,7 @@
                                             </table>
                                         </p:panel>
                                     </h:panelGroup>
-
-
-                                    <p:panel header="Dynamic Labels" >
+                                    <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                         <table >
                                             <ui:repeat id="tblDls" 
                                                        value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
@@ -200,7 +196,6 @@
                                             </ui:repeat>
                                         </table>
                                     </p:panel>
-
                                     <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                         <f:view contentType="text/html">
                                             <table >
@@ -240,6 +235,31 @@
                                         </f:view>
 
                                     </p:panel>
+                                    <p:panel header="Report"    
+                                             rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
+
+
+                                        <h:panelGrid columns="3" >
+                                            <p:outputLabel value="Search a Template" ></p:outputLabel>
+                                            <p:autoComplete id="acTemplate" 
+                                                            value="#{patientReportController.investigationItem}" 
+                                                            completeMethod="#{investigationItemController.completeTemplate}"
+                                                            var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" >
+                                                <p:ajax event="itemSelect" process="@this" update="details" ></p:ajax>
+                                            </p:autoComplete>
+                                            <p:commandButton id="btnAddPathReport" process="@this" update="reportEditor" value="Add Template" action="#{investigationItemController.newTemplate()}" ></p:commandButton>
+
+                                            <p:dialog >
+                                                
+                                            </p:dialog>
+                                            
+                                        </h:panelGrid>
+                                        <p:editor id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
+                                            
+                                        </p:editor>
+
+
+                                    </p:panel>
 
                                 </h:panelGrid>
 
@@ -264,7 +284,7 @@
                         <div class="nonPrintBlock" >
                             <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
                                              rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
-                        
+
                             <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="PDF" actionListener="#{patientReportController.pdfPatientReport()}" 
                                              rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
                         </div>

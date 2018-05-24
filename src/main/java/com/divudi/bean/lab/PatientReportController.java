@@ -107,6 +107,9 @@ public class PatientReportController implements Serializable {
     List<PatientReport> customerReports = new ArrayList<>();
 
     List<PatientInvestigation> customerPis;
+    
+    InvestigationItem investigationItem;
+    
 
     public List<PatientInvestigation> getCustomerPis() {
         return customerPis;
@@ -845,6 +848,17 @@ public class PatientReportController implements Serializable {
         this.transferController = transferController;
     }
 
+    public InvestigationItem getInvestigationItem() {
+        return investigationItem;
+    }
+
+    public void setInvestigationItem(InvestigationItem investigationItem) {
+        this.investigationItem = investigationItem;
+    }
+
+    
+    
+    
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 

@@ -533,6 +533,58 @@ public class InvestigationItemController implements Serializable {
         }
         return iivs;
     }
+    
+    
+    public List<InvestigationItem> completeTemplate(String qry) {
+        List<InvestigationItem> iivs;
+        if (qry.trim().equals("")) {
+            return new ArrayList<>();
+        } else {
+            String sql;
+            Map m = new HashMap();
+            sql = "select i from InvestigationItem i "
+                    + " where i.retired=false "
+                    + " and i.ixItemType = :t and upper(i.name) like :q "
+                    + " order by i.name";
+            m.put("t", InvestigationItemType.Template);
+            m.put("q", "%" + qry.toUpperCase() + "%");
+            iivs = getEjbFacade().findBySQL(sql,m);
+        }
+        if (iivs == null) {
+            iivs = new ArrayList<>();
+        }
+        return iivs;
+    }
+    
+    
+    public void saveTemplate(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Nothing to save");
+            return ;
+        }
+        if(current.getName().trim().equals("")){
+            JsfUtil.addErrorMessage("Please give a name");
+            return ;
+        }
+        if(current.getHtmltext().trim().equals("")){
+            JsfUtil.addErrorMessage("Please enter template");
+            return ;
+        }
+        current.setIxItemType(InvestigationItemType.Template);
+        current.setIxItemValueType(InvestigationItemValueType.Memo);
+        if(current.getId()==null){
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("New Tempalte Added");
+        }else{
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Template Updated");
+        }
+        
+    }
+    
+    public void newTemplate(){
+        current=new InvestigationItem();
+    }
 
     public List<InvestigationItem> getCurrentIxItems() {
         List<InvestigationItem> iivs;

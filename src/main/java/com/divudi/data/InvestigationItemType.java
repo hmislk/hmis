@@ -21,4 +21,5 @@ public enum InvestigationItemType {
     Barcode,
     BarcodeVertical,
     Investigation,
+    Template,
 }

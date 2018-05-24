@@ -35,6 +35,8 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/report_format" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/investigation_format" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="/lab/investigation_item_value" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Pathology Templates" action="/lab/investigation_item_value_path" onclick="onSubmitButton();" />
+                                        
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Flags" action="/lab/flags" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Calculations" action="/lab/calculation" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Dynamic Labels" action="/lab/dynamic_labels" onclick="onSubmitButton();" />
