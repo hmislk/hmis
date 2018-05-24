@@ -138,7 +138,7 @@
 
 
                                         <h:outputText value="Font Style"/>
-                                        <p:selectOneMenu   value="#{investigationItemController.current.cssFontStyle}" >
+                                        <p:selectOneMenu   value="#{investigationItemController.cssFontStyle}" >
                                             <f:selectItem itemLabel="Normal" itemValue="Normal"/>
                                             <f:selectItem itemLabel="Italic" itemValue="Italic"/>
                                             <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
@@ -459,19 +459,19 @@
 
 
 
-                                <h:panelGroup id="gpIi" >
+                                <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
                                     <div style="#{myIi.outerCssStyle};background-color: wheat;" >
                                         <h:outputLabel id="lblViewModeIi" 
-                                                       rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
+                                                       rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
                                                        style="#{myIi.innerCssStyle}; color: black;" 
-                                                       escape="true" ></h:outputLabel> 
+                                                       escape="false" ></h:outputLabel> 
 
                                         <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
                                             <table>
                                                 <ui:repeat value="#{myIi.investigationItemValues}" var="iiv" >
                                                     <tr>
                                                         <td>
-                                                            #{iiv.name}
+                                                            <h:outputLabel value= "#{iiv.name}" escape="false" ></h:outputLabel>
                                                         </td>
                                                     </tr>
                                                 </ui:repeat>
@@ -480,7 +480,7 @@
                                         </p:tooltip>
 
                                         <p:inputText id="txtEditIi" 
-                                                     rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Edit_mode'}"  
+                                                     rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
                                                      value="#{myIi.htmltext}" 
                                                      style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important;"  >
                                             <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:component('dtbItem')} :#{p:component('pDetails')} "  ></f:ajax>
@@ -491,7 +491,7 @@
                                         <h:inputText id="txtMove"
                                                      style="#{myIi.innerCssStyle}; margin: auto; border: 1px solid red;color: yellow;background-color: yellow;"
                                                      onkeydown="document.getElementById('#{keyCode.clientId}').value = event.keyCode" 
-                                                     rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Move_Mode'}" >
+                                                     rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
                                             <f:ajax event="keyup" execute="@this keyCode" 
                                                     listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
                                                     render="gpIi :#{p:component('pDetails')} moveFocus "/>

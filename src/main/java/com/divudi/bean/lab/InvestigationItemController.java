@@ -997,9 +997,6 @@ public class InvestigationItemController implements Serializable {
         addingNewTest = true;
         InvestigationItem lastItem = getLastReportItem(InvestigationItemType.Investigation);
         if (lastItem != null) {
-            cssFontFamily = lastItem.getCssFontFamily();
-            riFontSize = lastItem.getRiFontSize();
-            cssFontStyle = lastItem.getCssFontStyle();
 
             if (lastItem.getTestHeader() != null) {
                 riBlockTop = lastItem.getTestHeader().getRiTop();
@@ -1027,6 +1024,9 @@ public class InvestigationItemController implements Serializable {
                 refHeaderName = lastItem.getReferenceHeader().getName();
             }
             if (lastItem.getValueValue() != null) {
+                cssFontFamily = lastItem.getValueValue().getCssFontFamily();
+                riFontSize = lastItem.getValueValue().getRiFontSize();
+                cssFontStyle = lastItem.getValueValue().getCssFontStyle();
                 cssValueFontWeight = lastItem.getValueValue().getCssFontWeight();
                 cssValueDecoration = lastItem.getValueValue().getCssTextDecoration();
 
@@ -1177,23 +1177,23 @@ public class InvestigationItemController implements Serializable {
         unitLabel.setCreater(getSessionController().getLoggedUser());
 
         InvestigationItem referenceLabel = new InvestigationItem();
-        unitLabel.setName(testReferenceRange);
-        unitLabel.setHtmltext(testReferenceRange);
-        unitLabel.setIxItemType(InvestigationItemType.Label);
-        unitLabel.setRiTop(riBlockTop + riRowGap);
-        unitLabel.setRiLeft(referenceHeader.getRiLeft());
-        unitLabel.setRiWidth(referenceHeader.getRiWidth());
-        unitLabel.setRiHeight(riHeight);
-        unitLabel.setCssTextAlign(CssTextAlign.Left);
-        unitLabel.setCssVerticalAlign(CssVerticalAlign.Top);
-        unitLabel.setRiFontSize(riFontSize);
-        unitLabel.setCssFontStyle(cssFontStyle);
-        unitLabel.setCssFontFamily(cssFontFamily);
-        unitLabel.setCssFontWeight(cssValueFontWeight);
-        unitLabel.setCssTextDecoration(cssValueDecoration);
-        unitLabel.setItem(currentInvestigation);
-        unitLabel.setCreatedAt(new Date());
-        unitLabel.setCreater(getSessionController().getLoggedUser());
+        referenceLabel.setName(testReferenceRange);
+        referenceLabel.setHtmltext(testReferenceRange);
+        referenceLabel.setIxItemType(InvestigationItemType.Label);
+        referenceLabel.setRiTop(riBlockTop + riRowGap);
+        referenceLabel.setRiLeft(referenceHeader.getRiLeft());
+        referenceLabel.setRiWidth(referenceHeader.getRiWidth());
+        referenceLabel.setRiHeight(riHeight);
+        referenceLabel.setCssTextAlign(CssTextAlign.Left);
+        referenceLabel.setCssVerticalAlign(CssVerticalAlign.Top);
+        referenceLabel.setRiFontSize(riFontSize);
+        referenceLabel.setCssFontStyle(cssFontStyle);
+        referenceLabel.setCssFontFamily(cssFontFamily);
+        referenceLabel.setCssFontWeight(cssValueFontWeight);
+        referenceLabel.setCssTextDecoration(cssValueDecoration);
+        referenceLabel.setItem(currentInvestigation);
+        referenceLabel.setCreatedAt(new Date());
+        referenceLabel.setCreater(getSessionController().getLoggedUser());
 
         InvestigationItem commentLabel = new InvestigationItem();
         commentLabel.setName("Test Comments");
@@ -1272,8 +1272,6 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
-    
-    
     public void removeSingleItem(InvestigationItem i) {
         i.setRetired(true);
         i.setRetirer(getSessionController().getLoggedUser());
@@ -1291,27 +1289,27 @@ public class InvestigationItemController implements Serializable {
             if (current.getValueHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getValueHeader());
             }
-            
+
             if (current.getUnitHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getUnitHeader());
             }
-           
+
             if (current.getReferenceHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getReferenceHeader());
             }
-            
+
             if (current.getTestLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getTestLabel());
             }
-            
+
             if (current.getValueValue() != null) {
                 removeSingleItem((InvestigationItem) current.getValueValue());
             }
-            
+
             if (current.getUnitLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getUnitLabel());
             }
-            
+
             if (current.getReferenceLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getReferenceLabel());
             }
