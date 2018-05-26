@@ -10,6 +10,7 @@ import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.Sex;
+import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.PatientReportBean;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -55,6 +56,8 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.faces.context.ExternalContext;
 import javax.servlet.http.HttpSession;
 
@@ -68,12 +71,7 @@ import javax.servlet.http.HttpSession;
 public class PatientReportController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    StaffController staffController;
-    @Inject
-    TransferController transferController;
+    // EJBs
     @EJB
     private PatientReportFacade ejbFacade;
     @Inject
@@ -89,12 +87,22 @@ public class PatientReportController implements Serializable {
     @EJB
     private TestFlagFacade testFlagFacade;
 
-    String selectText = "";
+    //Controllers
+    @Inject
+    SessionController sessionController;
+    @Inject
+    StaffController staffController;
+    @Inject
+    TransferController transferController;
     @Inject
     ItemForItemController itemForItemController;
     @Inject
     CommonController commonController;
+    @Inject
+    InvestigationItemController investigationItemController;
 
+    //Class Variables
+    String selectText = "";
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
     Investigation currentReportInvestigation;
@@ -105,11 +113,106 @@ public class PatientReportController implements Serializable {
     List<PatientReportItemValue> patientReportItemValuesDynamicLabels;
     List<PatientReportItemValue> patientReportItemValuesCalculations;
     List<PatientReport> customerReports = new ArrayList<>();
-
     List<PatientInvestigation> customerPis;
-    
     InvestigationItem investigationItem;
-    
+    private List<Selectable> selectables = new ArrayList<>();
+
+    public void addTemplateToReport() {
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (selectables == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPatientReport.getTemplateItem() == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        String finalText = investigationItem.getHtmltext();
+        for (Selectable s : selectables) {
+
+            String patternStart = "#{";
+            String patternEnd = "}";
+            String toBeReplaced;
+
+            toBeReplaced = patternStart + s.getFullText() + patternEnd;
+
+            System.err.print("regexString = " + toBeReplaced);
+
+            finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
+        }
+
+        currentPatientReport.getTemplateItem().setLobValue(finalText);
+    }
+
+    public String toEditTemplate() {
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Select a template first");
+            return "";
+        }
+        investigationItemController.setCurrent(investigationItem);
+        return "/lab/investigation_item_value_path";
+    }
+
+    public void toAddNewTemplate() {
+        System.err.print("toAddNewTemplate");
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Select a template first");
+            return;
+        }
+
+        selectables = new ArrayList<>();
+
+        String patternStart = "#{";
+        String patternEnd = "}";
+        String regexString = Pattern.quote(patternStart) + "(.*?)" + Pattern.quote(patternEnd);
+
+        String text = investigationItem.getHtmltext();
+        System.err.print("text = " + text);
+
+        Pattern p = Pattern.compile(regexString);
+        Matcher m = p.matcher(text);
+        List<String> strBlocks = new ArrayList<>();
+
+        while (m.find()) {
+            String block = m.group(1);
+            if (!block.trim().equals("")) {
+                Selectable s = new Selectable();
+
+                s.setFullText(block);
+                System.err.print("block = " + block);
+
+                if (block.contains("|")) {
+                    String[] blockParts = block.split("\\|");
+                    boolean hasOptions = false;
+                    for (int i = 0; i < blockParts.length; i++) {
+                        if (i == 0) {
+                            s.setName(blockParts[i]);
+                        } else {
+                            s.getOptions().add(blockParts[i]);
+                            hasOptions = true;
+                        }
+                    }
+
+                    s.setInputText(false);
+                    s.setSelectOneMenu(true);
+
+                } else {
+                    s.setName(block);
+                    s.setInputText(true);
+                    s.setSelectOneMenu(false);
+                }
+                selectables.add(s);
+            }
+        }
+
+    }
 
     public List<PatientInvestigation> getCustomerPis() {
         return customerPis;
@@ -856,9 +959,14 @@ public class PatientReportController implements Serializable {
         this.investigationItem = investigationItem;
     }
 
-    
-    
-    
+    public List<Selectable> getSelectables() {
+        return selectables;
+    }
+
+    public void setSelectables(List<Selectable> selectables) {
+        this.selectables = selectables;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 

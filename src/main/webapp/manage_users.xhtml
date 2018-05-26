@@ -17,7 +17,7 @@
         </h:panelGroup>
 
         <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
-            <p:growl autoUpdate="true" />
+            <p:growl />
             <p:panel header="Mange Users" rendered="#{sessionController.admin}" >
                 <h:form >
                     <h:panelGrid columns="1">

@@ -239,23 +239,65 @@
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
 
 
-                                        <h:panelGrid columns="3" >
+                                        <h:panelGrid columns="4" >
                                             <p:outputLabel value="Search a Template" ></p:outputLabel>
                                             <p:autoComplete id="acTemplate" 
                                                             value="#{patientReportController.investigationItem}" 
                                                             completeMethod="#{investigationItemController.completeTemplate}"
                                                             var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" >
-                                                <p:ajax event="itemSelect" process="@this" update="details" ></p:ajax>
+                                                <p:ajax event="itemSelect" process="@this" ></p:ajax>
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddPathReport" process="@this" update="reportEditor" value="Add Template" action="#{investigationItemController.newTemplate()}" ></p:commandButton>
+                                            <p:commandButton id="btnAddPathReport"
+                                                             oncomplete="PF('dlgPath').show();" 
+                                                             process="acTemplate btnAddPathReport" update="dlgPath" 
+                                                             value="Add Template" actionListener="#{patientReportController.toAddNewTemplate()}" ></p:commandButton>
+                                            <p:commandButton value="Edit Template" ajax="false" action="#{patientReportController.toEditTemplate()}" >
+                                            </p:commandButton>
+                                            <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true">
 
-                                            <p:dialog >
-                                                
-                                            </p:dialog>
+
+                                                <p:commandButton id="btnAddTemplateToReport"
+                                                             oncomplete="PF('dlgPath').hide();" 
+                                                             process="@this dlgPath" update="reportEditor" 
+                                                             value="Add To Report" 
+                                                             actionListener="#{patientReportController.addTemplateToReport()}" ></p:commandButton>
+
                                             
+                                                
+                                                <table >
+                                                    <tr>
+                                                        <th>
+                                                            <p:outputLabel value="Variable" ></p:outputLabel>
+                                                        </th>
+                                                        <th>
+                                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                                        </th>
+                                                    </tr>
+
+                                                    <ui:repeat value="#{patientReportController.selectables}" var="sel" >
+                                                        <tr>
+                                                            <td>
+                                                                <p:outputLabel value="#{sel.name}" ></p:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <h:panelGroup >
+                                                                    <p:inputText value="#{sel.selectedValue}" rendered="#{sel.inputText}" ></p:inputText>
+                                                                    <p:selectOneMenu  value="#{sel.selectedValue}" rendered="#{sel.selectOneMenu}" >
+                                                                        <f:selectItems value="#{sel.options}" ></f:selectItems>
+                                                                    </p:selectOneMenu>
+                                                                </h:panelGroup>
+                                                            </td>
+                                                        </tr>
+                                                    </ui:repeat>
+                                                </table>
+
+
+
+                                            </p:dialog>
+
                                         </h:panelGrid>
                                         <p:editor id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
-                                            
+
                                         </p:editor>
 
 
@@ -303,12 +345,18 @@
                                                           patientReport="#{patientReportController.currentPatientReport}"/>
 
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                                 <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
                                             </div>
                                         </ui:repeat>
 
+                                        <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                            <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
+                                                <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Template' and prv.investigationItem.retired eq false}"  escape="false" />
+                                            </div>
+                                        </ui:repeat>
+                                        
+                                        
                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                             <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                                 <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
