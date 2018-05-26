@@ -32,13 +32,13 @@
                         <h:outputLabel value="Lab Investigation List" style="font-family: serif;" ></h:outputLabel>
                     </div>
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.allIxs}" var="ix"  >
-                        <p:column headerText="No." >
+                        <p:column headerText="No." width="20" >
                             <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
                         </p:column>  
-                        <p:column headerText="Investigation" >
+                        <p:column headerText="Investigation" sortBy="#{ix.name}">
                             <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                         </p:column>
-                        <p:column headerText="Category" >
+                        <p:column headerText="Category" sortBy="#{ix.category.name}">
                             <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
                         </p:column>
                         <p:column headerText="Institution" sortBy="#{ix.institution.name}">
@@ -47,7 +47,14 @@
                         <p:column headerText="Department" sortBy="#{ix.department.name}">
                             <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                         </p:column>
-                        
+                        <p:column headerText="Actions" >
+                            <p:commandButton value="Edit" ajax="false" action="/lab/investigation" >
+                                <f:setPropertyActionListener value="#{ix}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton value="Delete" ajax="false" action="#{investigationController.delete()}" >
+                                <f:setPropertyActionListener value="#{ix}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
                     </p:dataTable>
                 </p:panel>
             </h:form>

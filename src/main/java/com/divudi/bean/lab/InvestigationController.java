@@ -14,7 +14,6 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationReportType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.InvestigationWithCount;
@@ -119,6 +118,60 @@ public class InvestigationController implements Serializable {
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
 
+    public String toAddManyIx() {
+        current = new Investigation();
+        current.setInwardChargeType(InwardChargeType.Laboratory);
+        return "/lab/add_many_ix";
+    }
+
+    public String saveManyIx() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        String names[] = current.getComments().split("\\r?\\n");
+        for (String n : names) {
+            Investigation i = new Investigation();
+            i.setName(n);
+            i.setPrintName(n);
+            i.setFullName(n);
+            i.setCode(n.substring(0, 3));
+            i.setReportType(current.getReportType());
+            i.setInvestigationCategory(current.getInvestigationCategory());
+            i.setInvestigationTube(current.getInvestigationTube());
+            i.setMachine(current.getMachine());
+            i.setSessionNumberType(current.getSessionNumberType());
+            i.setWorksheet(current.getWorksheet());
+            i.setReportFormat(current.getReportFormat());
+            i.setSample(current.getSample());
+            i.setSampleVolume(current.getSampleVolume());
+            i.setInstitution(current.getInstitution());
+            i.setDepartment(current.getDepartment());
+            i.setInwardChargeType(current.getInwardChargeType());
+            i.setChargesVisibleForInward(current.isChargesVisibleForInward());
+            i.setUserChangable(current.isUserChangable());
+            i.setMarginNotAllowed(current.isMarginNotAllowed());
+            i.setRequestForQuentity(current.isRequestForQuentity());
+            i.setDiscountAllowed(current.isDiscountAllowed());
+            i.setVatable(current.isVatable());
+            i.setVatPercentage(current.getVatPercentage());
+            i.setCreatedAt(new Date());
+            i.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(i);
+
+            i.setReportedAs(i);
+            i.setBilledAs(i);
+            i.setCategory(i.getInvestigationCategory());
+            i.setSymanticType(SymanticType.Laboratory_Procedure);
+            i.setInwardChargeType(InwardChargeType.Laboratory);
+
+            getFacade().edit(i);
+
+        }
+        JsfUtil.addSuccessMessage("All Added");
+        return toAddManyIx();
+    }
+
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
         for (Investigation ix : ixs) {
@@ -181,8 +234,7 @@ public class InvestigationController implements Serializable {
 
         return "/lab/investigation_format_move_all";
     }
-    
-    
+
     public String toEditReportCalculations() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -775,8 +827,6 @@ public class InvestigationController implements Serializable {
         current.setInwardChargeType(InwardChargeType.Laboratory);
     }
 
-    
-
     public void bulkUpload() {
         List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
         for (String s : lstLines) {
@@ -958,8 +1008,6 @@ public class InvestigationController implements Serializable {
         System.out.println("dynamicLabels.size() = " + dynamicLabels.size());
         return dynamicLabels;
     }
-
-    
 
     public class InvestigationWithInvestigationItems {
 
