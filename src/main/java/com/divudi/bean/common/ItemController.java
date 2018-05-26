@@ -82,6 +82,7 @@ public class ItemController implements Serializable {
      */
     private Item current;
     private List<Item> items = null;
+    private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
     List<Item> allItems;
     List<ItemFee> allItemFees;
@@ -93,6 +94,53 @@ public class ItemController implements Serializable {
     List<Department> departments;
 
     ReportKeyWord reportKeyWord;
+
+    public void refreshInvestigationsAndServices() {
+        investigationsAndServices = null;
+        getInvestigationsAndServices();
+    }
+
+    public void createItemFessForItemsWithoutFee() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            if (i.getItemFeesAuto() == null || i.getItemFeesAuto().isEmpty()) {
+                ItemFee itf = new ItemFee();
+                itf.setName("Fee");
+                itf.setInstitution(i.getInstitution());
+                itf.setDepartment(i.getDepartment());
+                itf.setFeeType(FeeType.OwnInstitution);
+                itf.setFee(100.0);
+                itf.setFfee(100.0);
+                itemFeeManager.setItemFee(itf);
+                itemFeeManager.setItem(i);
+                itemFeeManager.addNewFee();
+            }
+        }
+    }
+
+    public void updateSelectedItemFees() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            if (!(i.getItemFeesAuto() == null) && !(i.getItemFeesAuto().isEmpty())) {
+                double t = 0.0;
+                for (ItemFee itf : i.getItemFeesAuto()) {
+                    getItemFeeFacade().edit(itf);
+                    t += itf.getFee();
+                    
+                }
+                i.setTotal(t);
+                getFacade().edit(i);
+            }
+        }
+        investigationsAndServices=null;
+        getInvestigationsAndServices();
+    }
 
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
@@ -1289,6 +1337,22 @@ public class ItemController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<Item> getInvestigationsAndServices() {
+        if (investigationsAndServices == null) {
+            String temSql;
+            HashMap h = new HashMap();
+            temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
+            h.put("t1", Investigation.class);
+            h.put("t2", Service.class);
+            investigationsAndServices = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        }
+        return investigationsAndServices;
+    }
+
+    public void setInvestigationsAndServices(List<Item> investigationsAndServices) {
+        this.investigationsAndServices = investigationsAndServices;
     }
 
     @FacesConverter(forClass = Item.class)
