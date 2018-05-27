@@ -98,6 +98,9 @@ public class ItemController implements Serializable {
     public void refreshInvestigationsAndServices() {
         investigationsAndServices = null;
         getInvestigationsAndServices();
+        for(Item i:getInvestigationsAndServices()){
+            i.getItemFeesAuto();
+        }
     }
 
     public void createItemFessForItemsWithoutFee() {
@@ -109,6 +112,7 @@ public class ItemController implements Serializable {
             if (i.getItemFeesAuto() == null || i.getItemFeesAuto().isEmpty()) {
                 ItemFee itf = new ItemFee();
                 itf.setName("Fee");
+                itf.setItem(i);
                 itf.setInstitution(i.getInstitution());
                 itf.setDepartment(i.getDepartment());
                 itf.setFeeType(FeeType.OwnInstitution);
