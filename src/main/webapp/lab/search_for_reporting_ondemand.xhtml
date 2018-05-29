@@ -215,7 +215,10 @@
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received or pi.billItem.bill.cancelled or pi.billItem.transRefund}" action="/lab/patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
+                                    <p:commandLink id="btnNewReport" ajax="false" 
+                                                   disabled="#{!pi.received or pi.billItem.bill.cancelled or pi.billItem.transRefund}" 
+                                                   action="/lab/patient_report"  
+                                                   actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>

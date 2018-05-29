@@ -16,7 +16,7 @@
                         <f:facet name="header" >
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
-
+  
                             <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" onclick="onSubmitButton();">                           
                             </p:commandButton>
                             <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
@@ -155,6 +155,8 @@
 
                             <h:panelGroup rendered="#{sessionController.institutionPreference.fiveFivePaperWithHeadings eq true}">
 
+                              
+                                
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="fiveFivePaperWithHeadings" ></p:printer>

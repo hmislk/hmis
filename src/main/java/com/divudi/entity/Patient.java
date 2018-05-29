@@ -43,6 +43,8 @@ public class Patient implements Serializable {
     Integer hinNo;
     //Created Properties
     @ManyToOne
+    Institution createdInstitution;
+    @ManyToOne
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
@@ -87,6 +89,17 @@ public class Patient implements Serializable {
     @Transient
     Bill bill;
 
+    public Institution getCreatedInstitution() {
+        return createdInstitution;
+    }
+
+    public void setCreatedInstitution(Institution createdInstitution) {
+        this.createdInstitution = createdInstitution;
+    }
+
+    
+    
+    
     public String getPhn() {
         
         return phn;

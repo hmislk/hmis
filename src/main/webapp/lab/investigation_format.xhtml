@@ -248,6 +248,7 @@
                             <h:panelGrid columns="5" >
                                 <h:outputText value="Type"/>
                                 <p:selectOneMenu id="cmbItemType" value="#{investigationItemController.current.ixItemType}" >
+                                    <f:selectItem itemLabel="Please select" />
                                     <f:selectItem itemLabel="Label" itemValue="Label"/>
                                     <f:selectItem itemLabel="Value" itemValue="Value"/>
                                     <f:selectItem itemLabel="Calculation" itemValue="Calculation"/>
@@ -260,6 +261,7 @@
                                 <div style="min-width: 20px;"></div>
                                 <h:outputText value="Value Type"/>
                                 <p:selectOneMenu id="cmbValueType" value="#{investigationItemController.current.ixItemValueType}"  >
+                                    <f:selectItem itemLabel="Please select" />
                                     <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
                                 </p:selectOneMenu>
                             </h:panelGrid>
@@ -363,7 +365,7 @@
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel header="CSS" style="width: 200px;" >
+                        <p:panel header="Developer" style="width: 200px;" >
                             <p>
                                 #{investigationItemController.current.cssStyle}
                             </p>
@@ -372,6 +374,9 @@
                             </p>
                             <p>
                                 ri top is : #{investigationItemController.current.riTop} <br/>
+                            </p>
+                            <p>
+                                ID : #{investigationItemController.current.id} <br/>
                             </p>
                         </p:panel>
 

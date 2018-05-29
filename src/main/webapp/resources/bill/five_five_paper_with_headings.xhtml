@@ -9,12 +9,15 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
-        <cc:attribute name="duplicate" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
+
+
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: avoid!important;">
@@ -36,142 +39,169 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Receipt"   />    
+                <h:outputLabel value="RECEIPT"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <br/>
+                <hr></hr>   
+                <br/>
             </div>
 
             <div class="billDetailsFiveFive" >
-                <table >
+                <table style="width: 99%!important;" >
+
+
+
                     <tr>
                         <td style="text-align: left;" >
-                            <h:outputLabel value="Date" class="billDetailsFiveFive" ></h:outputLabel>
+                            <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td style="width: 10px;"></td>
                         <td >:</td>
                         <td style="width: 5px;"></td>
                         <td>
-                            <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive" >
-                                <f:convertDateTime pattern="dd/MM/yy " ></f:convertDateTime>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
                             </h:outputLabel>
+
+                        </td>
+                        <td style="width: 150px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
+                                <f:convertDateTime pattern="dd/MMM/yyyy" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.age}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 150px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
                                 <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 50px;"></td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="Bht No" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.sex}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 150px;"></td>
+                        <td>
+                            <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter.bhtNo ne null}"></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.insId}" class="billDetailsFiveFive">
+                            </h:outputLabel>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" class="billDetailsFiveFive" >
+                            </h:outputLabel>
+
+                        </td>
+                        <td style="width: 150px;"></td>
+                        <td>
+                            <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
+                        </td>
+
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
+                            </h:outputLabel>
                         </td>
 
                     </tr>
 
                     <tr>
                         <td style="text-align: left;" >
-                            <h:outputLabel class="billDetailsFiveFive" value="Inv.No" ></h:outputLabel>
+                            <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td></td>
-                        <td>:</td>
-                        <td></td>
+                        <td style="width: 10px;"></td>
+                        <td >:</td>
+                        <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.deptId}"  >
+                            <h:outputLabel value="#{cc.attrs.bill.patient.phn}" class="billDetailsFiveFive" >
                             </h:outputLabel>
+
                         </td>
-                        <td></td>
+                        <td style="width: 150px;"></td>
                         <td>
-                            <h:outputLabel value="Room" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
+                            <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
+                            <h:outputLabel value=":" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name ne null}"></h:outputLabel>
-                        </td>
-
-                    </tr>                    
-
-                 
-
-                    <tr>
-                        <td style="text-align: left;" >
-                            <h:outputLabel value="Paymentmethod" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentMethod ne null}"></h:outputLabel>
-                        </td>
-                        <td></td>
-                        <td >
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentMethod ne null}"></h:outputLabel>
-                        </td>
-                        <td></td>
-                        <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.paymentMethod}" rendered="#{cc.attrs.bill.paymentMethod ne null}">
+                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="billDetailsFiveFive">
                             </h:outputLabel>
-                        </td>
-                        <td style="width: 50px;"></td>
-                        <td>
-                            <h:outputLabel value="PayScheme" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
-                        </td>
-                        <td>
-                            <h:outputLabel value=":" class="billDetailsFiveFive" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
-                        </td>
-
-                        <td>
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.paymentScheme.printingName}" rendered="#{cc.attrs.bill.paymentScheme.printingName ne null}"></h:outputLabel>
                         </td>
 
                     </tr>
 
-                    <tr>
-                        <td style="text-align: left;" >
-                            <h:outputLabel class="billDetailsFiveFive" value="Name" rendered="#{cc.attrs.bill.patient.person.nameWithTitle ne null}"></h:outputLabel>
-                        </td>
-                        <td></td>
-                        <td><h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.person.nameWithTitle ne null}"/></td>
-                        <td></td>
-                        <td colspan="5">                            
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patient.person.nameWithTitle}"  rendered="#{cc.attrs.bill.patient.person.nameWithTitle ne null}">
-                            </h:outputLabel>
-                        </td>
-
-
-                    </tr>
-
-                    <tr>
-                        <td style="text-align: left;" >
-                            <h:outputLabel class="billDetailsFiveFive" value="Staff Name" rendered="#{cc.attrs.bill.toStaff.person.nameWithTitle ne null}"></h:outputLabel>
-                        </td>
-                        <td></td>
-                        <td><h:outputLabel value=":" rendered="#{cc.attrs.bill.toStaff.person.nameWithTitle ne null}"/></td>
-                        <td></td>
-                        <td colspan="5">                            
-                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  rendered="#{cc.attrs.bill.toStaff.person.nameWithTitle ne null}">
-                            </h:outputLabel>
-                        </td>
-
-
-                    </tr>
-
-
-
-                
                 </table>
-
-
             </div>
 
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <br></br>
+                <hr></hr>
+                <br></br>
             </div>
 
 
@@ -179,19 +209,21 @@
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
+                        <td colspan="2" style="text-align: center;" class="billline">
+                            <hr/>
+                        </td>
+                    </tr>
+                    <tr>
                         <td style="width:55%!important;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-
                         <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-
                     </tr>
-
                     <tr>
                         <td colspan="2" style="text-align: center;" class="billline">
-                             <h:outputLabel value="---------------------------------------------------------------------------------------"   />                                                     
+                            <hr/>
                         </td>
                     </tr>
 
@@ -309,7 +341,7 @@
                         </td>
                     </tr>
 
-                     <tr>
+                    <tr>
                         <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
                         </td>
@@ -319,7 +351,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
 
                 </table>
 

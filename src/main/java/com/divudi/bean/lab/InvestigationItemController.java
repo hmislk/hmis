@@ -1194,6 +1194,7 @@ public class InvestigationItemController implements Serializable {
         valueValue.setName(testName + " value");
         valueValue.setHtmltext(testName + " value");
         valueValue.setIxItemType(InvestigationItemType.Value);
+        valueValue.setIxItemValueType(InvestigationItemValueType.Varchar);
         valueValue.setRiTop(valueHeader.getRiTop() + riRowGap);
         valueValue.setRiLeft(valueHeader.getRiLeft());
         valueValue.setRiWidth(valueHeader.getRiWidth());
@@ -1247,24 +1248,25 @@ public class InvestigationItemController implements Serializable {
         referenceLabel.setCreatedAt(new Date());
         referenceLabel.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem commentLabel = new InvestigationItem();
-        commentLabel.setName("Test Comments");
-        commentLabel.setHtmltext(testComments);
-        commentLabel.setIxItemType(InvestigationItemType.Label);
-        commentLabel.setRiTop(riBlockTop + 2 * riRowGap);
-        commentLabel.setRiLeft(testHeader.getRiLeft());
-        commentLabel.setRiWidth(100 - (testHeader.getRiLeft() * 2));
-        commentLabel.setRiHeight(riHeight);
-        commentLabel.setCssTextAlign(CssTextAlign.Left);
-        commentLabel.setCssVerticalAlign(CssVerticalAlign.Top);
-        commentLabel.setRiFontSize(riFontSize);
-        commentLabel.setCssFontStyle(cssFontStyle);
-        commentLabel.setCssFontFamily(cssFontFamily);
-        commentLabel.setCssFontWeight(cssValueFontWeight);
-        commentLabel.setCssTextDecoration(cssValueDecoration);
-        commentLabel.setItem(currentInvestigation);
-        commentLabel.setCreatedAt(new Date());
-        commentLabel.setCreater(getSessionController().getLoggedUser());
+        InvestigationItem commentValue = new InvestigationItem();
+        commentValue.setName("Test Comments");
+        commentValue.setHtmltext(testComments);
+        commentValue.setIxItemType(InvestigationItemType.Value);
+        commentValue.setIxItemValueType(InvestigationItemValueType.Memo);
+        commentValue.setRiTop(riBlockTop + 2 * riRowGap);
+        commentValue.setRiLeft(testHeader.getRiLeft());
+        commentValue.setRiWidth(100 - (testHeader.getRiLeft() * 2));
+        commentValue.setRiHeight(riHeight);
+        commentValue.setCssTextAlign(CssTextAlign.Left);
+        commentValue.setCssVerticalAlign(CssVerticalAlign.Top);
+        commentValue.setRiFontSize(riFontSize);
+        commentValue.setCssFontStyle(cssFontStyle);
+        commentValue.setCssFontFamily(cssFontFamily);
+        commentValue.setCssFontWeight(cssValueFontWeight);
+        commentValue.setCssTextDecoration(cssValueDecoration);
+        commentValue.setItem(currentInvestigation);
+        commentValue.setCreatedAt(new Date());
+        commentValue.setCreater(getSessionController().getLoggedUser());
 
         current = new InvestigationItem();
         current.setName(testName);
@@ -1280,7 +1282,7 @@ public class InvestigationItemController implements Serializable {
         currentInvestigation.getReportItems().add(valueValue);
         currentInvestigation.getReportItems().add(unitLabel);
         currentInvestigation.getReportItems().add(referenceLabel);
-        currentInvestigation.getReportItems().add(commentLabel);
+        currentInvestigation.getReportItems().add(commentValue);
         currentInvestigation.getReportItems().add(current);
 
         current.setTestHeader(testHeader);
@@ -1291,7 +1293,7 @@ public class InvestigationItemController implements Serializable {
         current.setValueValue(valueValue);
         current.setUnitLabel(unitLabel);
         current.setReferenceLabel(referenceLabel);
-        current.setCommentLabel(commentLabel);
+        current.setCommentLabel(commentValue);
         current.setIxItemType(InvestigationItemType.Investigation);
 
         getIxFacade().edit(currentInvestigation);

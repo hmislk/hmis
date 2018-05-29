@@ -102,6 +102,7 @@ public class Institution implements Serializable {
     private String transAddress7;
     @Transient
     List<AgentReferenceBook> agentReferenceBooks;
+    String pointOfIssueNo;
     
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Institution> branch = new ArrayList<>();
@@ -113,6 +114,17 @@ public class Institution implements Serializable {
     //Inactive Status
     private boolean inactive;
 
+    public String getPointOfIssueNo() {
+        return pointOfIssueNo;
+    }
+
+    public void setPointOfIssueNo(String pointOfIssueNo) {
+        this.pointOfIssueNo = pointOfIssueNo;
+    }
+
+    
+    
+    
     public Institution() {
         split();
     }   

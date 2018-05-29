@@ -91,7 +91,10 @@
                                         </h:outputText>
                                         <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  >
                                         </p:inputText> 
-
+                                        <h:outputText value="Point of Issue No" >                                        
+                                        </h:outputText>
+                                        <p:inputText autocomplete="off"  value="#{institutionController.current.pointOfIssueNo}"  >
+                                        </p:inputText> 
                                         <h:outputText value="Descreption" >                                        
                                         </h:outputText>
                                         <p:inputTextarea styleClass="longText" value="#{institutionController.current.descreption}"  >
@@ -121,10 +124,10 @@
 
                                         <h:outputText id="lblWeb" value="Web" ></h:outputText>
                                         <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  ></p:inputText>
-                                        
+
                                         <h:outputText id="lblBank" value="Bank" ></h:outputText>
                                         <au:completeBank_Branch value="#{institutionController.current.bankBranch}" />
-                                        
+
                                         <h:outputText id="lblAcc" value="Account No" ></h:outputText>
                                         <p:inputText autocomplete="off" id="txtAcc" value="#{institutionController.current.accountNo}"  ></p:inputText>
 
