@@ -1059,7 +1059,7 @@ public class InvestigationItemController implements Serializable {
                 cssHeaderDecoration = lastItem.getTestHeader().getCssTextDecoration();
             }
             if (lastItem.getTestHeader() != null && lastItem.getValueHeader() != null) {
-                riRowGap = lastItem.getValueHeader().getRiTop() - lastItem.getTestHeader().getRiTop();
+                riRowGap = lastItem.getValueValue().getRiTop() - lastItem.getTestHeader().getRiTop();
                 riColGap = lastItem.getValueHeader().getRiLeft() - lastItem.getTestHeader().getRiLeft() - lastItem.getTestHeader().getRiWidth();
             }
             if (lastItem.getValueHeader() != null) {
@@ -1199,7 +1199,7 @@ public class InvestigationItemController implements Serializable {
         valueValue.setRiLeft(valueHeader.getRiLeft());
         valueValue.setRiWidth(valueHeader.getRiWidth());
         valueValue.setRiHeight(riHeight);
-        valueValue.setCssTextAlign(CssTextAlign.Left);
+        valueValue.setCssTextAlign(CssTextAlign.Center);
         valueValue.setCssVerticalAlign(CssVerticalAlign.Top);
         valueValue.setRiFontSize(riFontSize);
         valueValue.setCssFontStyle(cssFontStyle);
