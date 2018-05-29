@@ -282,7 +282,10 @@
 
 
             <div class="billline">
-                <h:outputLabel value="---------------------------------------------------------------------------------------"   />                           
+                <br/>
+                <hr/>
+                <br/>
+
             </div>
 
 
@@ -358,7 +361,7 @@
             </div>
 
             <div style="text-decoration: overline; margin-top: 20px;">
-                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
+                <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>
 
             <div class="footer" style="text-align: center;">
