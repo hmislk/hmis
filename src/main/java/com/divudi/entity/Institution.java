@@ -111,9 +111,30 @@ public class Institution implements Serializable {
     String accountNo;
     Institution bankBranch;
     
+    String emailSendingUsername;
+    String emailSendingPassword;
+    
     //Inactive Status
     private boolean inactive;
 
+    public String getEmailSendingUsername() {
+        return emailSendingUsername;
+    }
+
+    public void setEmailSendingUsername(String emailSendingUsername) {
+        this.emailSendingUsername = emailSendingUsername;
+    }
+
+    public String getEmailSendingPassword() {
+        return emailSendingPassword;
+    }
+
+    public void setEmailSendingPassword(String emailSendingPassword) {
+        this.emailSendingPassword = emailSendingPassword;
+    }
+
+    
+    
     public String getPointOfIssueNo() {
         return pointOfIssueNo;
     }

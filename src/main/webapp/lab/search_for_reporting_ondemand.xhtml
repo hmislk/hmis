@@ -39,11 +39,11 @@
                                     <h:outputLabel value="BHT"/>
                                     <h:outputLabel/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
-                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{searchController.reportKeyWord.department}" converter="departmentConverter"/>
+                                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                    value="#{searchController.reportKeyWord.department}" converter="departmentConverter"/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
-                                                        var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{searchController.reportKeyWord.departmentFrom}" converter="departmentConverter"/>
+                                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                    value="#{searchController.reportKeyWord.departmentFrom}" converter="departmentConverter"/>
                                     <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" styleClass="shortinput2"
                                                     value="#{searchController.patientEncounter}"
                                                     completeMethod="#{admissionController.completePatientAll}" 
@@ -236,13 +236,7 @@
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                             <p:graphicImage library="image" styleClass="standedicon" name="smssent.png" ></p:graphicImage>
                                         </p:commandLink>
-                                        <p:commandLink process="btnEmail" update="tblBills"  
-                                                       id="btnEmail" 
-                                                       disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund or pi.patientReports.size() eq 0}"
-                                                       action="#{patientInvestigationController.sendEmail()}" >
-                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                            <p:graphicImage library="image" styleClass="standedicon" name="email.jpg" ></p:graphicImage>
-                                        </p:commandLink>
+
                                     </h:panelGroup>
                                 </h:panelGrid>
 
@@ -287,7 +281,7 @@
                                 <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" styleClass="noBorderGrid summeryBorder noBorder" >
                                     <p:column >
 
-                                        <h:panelGrid columns="6" styleClass="noBorderGrid" >
+                                        <h:panelGrid columns="7" styleClass="noBorderGrid" >
                                             <p:outputLabel value="#{dpr.retired}" rendered="#{dpr.retired eq true ? 'noDisplayRow':''}"/>
                                             <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
                                                            value="#{dpr.item.name}" 
@@ -309,6 +303,19 @@
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
                                                             style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
+
+
+
+
+
+                                            <p:commandLink ajax="false"  
+                                                           id="btnEmail" 
+                                                           disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}"
+                                                           action="#{patientReportController.sendEmail()}" >
+                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="email.jpg" ></p:graphicImage>
+                                            </p:commandLink>
+
                                         </h:panelGrid>
 
 

@@ -71,6 +71,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletRequest;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 /**
@@ -83,14 +84,47 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 public class PatientInvestigationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    CommonController commonController;
+    /**
+     * EJBs
+     */
     @EJB
     private PatientInvestigationFacade ejbFacade;
     @EJB
     PatientReportFacade prFacade;
+    
+    
+    
+    
+    /**
+     * Controllers
+     */
+    
+    @EJB
+    InvestigationItemFacade investigationItemFacade;
+    @EJB
+    CommonFunctions commonFunctions;
+    @EJB
+    private InvestigationFacade investFacade;
+    @EJB
+    SmsFacade smsFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+    @Inject
+    private InstitutionLabSumeryController labReportSearchByInstitutionController;
+    @Inject
+    SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    
+    
+    
+    
+    /**
+     * Class Variables
+     */
+    
     List<PatientInvestigation> selectedItems;
     private PatientInvestigation current;
     Investigation currentInvestigation;
@@ -106,19 +140,8 @@ public class PatientInvestigationController implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
-    @EJB
-    InvestigationItemFacade investigationItemFacade;
-    @EJB
-    CommonFunctions commonFunctions;
-    @EJB
-    private InvestigationFacade investFacade;
-    @EJB
-    SmsFacade smsFacade;
-    @EJB
-    BillFacade billFacade;
-    @EJB
-    BillItemFacade billItemFacade;
 
+    boolean showSamplingPagination;
     List<Investigation> investSummery;
     Date sampledOutsideDate;
     boolean sampledOutSide;
@@ -470,8 +493,18 @@ public class PatientInvestigationController implements Serializable {
         return lstToSamle;
     }
 
-    @Inject
-    private InstitutionLabSumeryController labReportSearchByInstitutionController;
+    public boolean isShowSamplingPagination() {
+        if (getLstToSamle().size() > 20) {
+            showSamplingPagination = true;
+        } else {
+            showSamplingPagination = false;
+        }
+        return showSamplingPagination;
+    }
+
+    public void setShowSamplingPagination(boolean showSamplingPagination) {
+        this.showSamplingPagination = showSamplingPagination;
+    }
 
     public void sendSms() {
         if (current == null) {
@@ -610,7 +643,19 @@ public class PatientInvestigationController implements Serializable {
 //    ...............Create PDF.... Jasper.........
 
     public void create() throws DocumentException, com.lowagie.text.DocumentException {
-        String url = "http://localhost:8080/temp/faces/lab/lab_patient_report_print_email_pfd.xhtml";
+
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        String url = "http://localhost:8080/temp/faces/lab/patient_report_print_email_pfd.xhtml";
+
+        url = req.getRequestURL().toString();
+        System.err.println("1" + url);
+        url = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
+        System.err.println("2" + url);
+        url += "faces/lab/patient_report_print_email_pfd.xhtml";
+        System.err.println("3" + url);
+// 
+
         try {
 
             final ITextRenderer iTextRenderer = new ITextRenderer();
@@ -619,7 +664,7 @@ public class PatientInvestigationController implements Serializable {
             iTextRenderer.layout();
 
             final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("D:\\LabReport.pdf"));
+                    = new FileOutputStream(new File("\\tmp\\LabReport.pdf"));
 
             iTextRenderer.createPDF(fileOutputStream);
             fileOutputStream.close();
@@ -636,8 +681,8 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("" + getCurrent());
         System.out.println("" + getCurrent());
 
-        final String username = "ravisarani@archmage.lk";
-        final String password = "archmage121";
+        final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
+        final String password = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
 
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
@@ -647,19 +692,19 @@ public class PatientInvestigationController implements Serializable {
 //        Authenticator auth = new SMTPAuthenticator();
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("ravisarani@archmage.lk"));
+            message.setFrom(new InternetAddress(getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse("ravisarani@archmage.lk"));
-            message.setSubject("Testing E-mail API");
-            message.setText("Dear Ravisarani,"
-                    + "\n\n I am going to check email!");
+                    InternetAddress.parse(getCurrent().getBillItem().getBill().getPatient().getPerson().getEmail()));
+            message.setSubject(getCurrent().getInvestigation().getName() + " Results");
+            message.setText("Dear " + getCurrent().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
+                    + ",\n\n Please find the results of your " + getCurrent().getInvestigation().getName() + ".");
 
             //3) create MimeBodyPart object and set your message text     
             BodyPart msbp1 = new MimeBodyPart();
@@ -669,11 +714,10 @@ public class PatientInvestigationController implements Serializable {
             MimeBodyPart msbp2 = new MimeBodyPart();
 
             create();
-//            ................Pdf......................
-//            String filename = "D:\\ProJects\\LabReport\\LabReport.pdf";
-            DataSource source = new FileDataSource("D:\\LabReport.pdf");
+
+            DataSource source = new FileDataSource("\\tmp\\LabReport.pdf");
             msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName("/Labreport.pdf");
+            msbp2.setFileName("\\tmp\\Labreport.pdf");
 
             //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
             Multipart multipart = new MimeMultipart();
@@ -804,18 +848,23 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareToSample() {
-        Date startTime = new Date();
-
         String temSql;
-        getCurrent().getSampledAt();
         Map temMap = new HashMap();
         temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = false and i.billItem.bill.billDate between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/sampling(/faces/lab_sample.xhtml)");
+    }
+    
+    public void prepareSampled() {
+        String temSql;
+        Map temMap = new HashMap();
+        temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = true and i.billItem.bill.billDate between :fromDate and :toDate";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        checkRefundBillItems(lstToSamle);
     }
 
     public void checkRefundBillItems(List<PatientInvestigation> pis) {

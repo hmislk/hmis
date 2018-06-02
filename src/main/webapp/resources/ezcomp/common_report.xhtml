@@ -18,11 +18,15 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        
         <ui:repeat rendered="#{cc.attrs.patientReport ne null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
             <div style="#{myCli.outerCssStyle}">
+                
 
                 <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientName' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Phn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAge' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.age}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
@@ -56,9 +60,11 @@
 
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
                               >
-                    <p:barcode value="0123456789" 
+                  
+                    <p:barcode value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
                                cache="false"
                                type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
+                   
                 </h:panelGroup>
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
                               >

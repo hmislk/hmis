@@ -42,6 +42,7 @@ public enum ReportItemType {
     PatientName,
     PatientSex,
     Person,
+    Phn,
     Phone,
     ReferringDoctor,
     ReferringInstitution,
@@ -122,6 +123,8 @@ public enum ReportItemType {
                 return "Patient Sex";
             case Person:
                 return "Person";
+            case Phn:
+                return "Patient's Number";
             case Phone:
                 return "Phone";
             case ReferringDoctor:
