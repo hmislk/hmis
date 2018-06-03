@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.hr.StaffController;
+import com.divudi.data.Dashboard;
 import com.divudi.data.Privileges;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -16,11 +17,13 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.WebUserDashboard;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.StaffFacade;
+import com.divudi.facade.WebUserDashboardFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
@@ -29,7 +32,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -62,7 +67,8 @@ public class WebUserController implements Serializable {
     private WebUserPrivilegeFacade webUserPrevilageFacade;
     @EJB
     private StaffFacade staffFacade;
-
+    @EJB
+    private WebUserDashboardFacade webUserDashboardFacade;
     /**
      * Controllers
      */
@@ -105,6 +111,10 @@ public class WebUserController implements Serializable {
     boolean createOnlyUserForExsistingUser = false;
     private String newPassword;
     private String newPasswordConfirm;
+
+    private Dashboard dashboard;
+    private WebUserDashboard webUserDashboard;
+    private List<WebUserDashboard> webUserDashboards;
 
     public void removeSelectedItems() {
         for (WebUser s : itemsToRemove) {
@@ -746,6 +756,68 @@ public class WebUserController implements Serializable {
         return "/admin_user_department";
     }
 
+    public String toManageDashboards() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        listWebUserDashboards();
+        return "/admin_manage_dashboards";
+    }
+
+    public void addWebUserDashboard() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("User ?");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("Dashboard ?");
+            return;
+        }
+        WebUserDashboard d = new WebUserDashboard();
+        d.setWebUser(selected);
+        d.setDashboard(dashboard);
+        d.setCreatedAt(new Date());
+        d.setCreater(sessionController.getLoggedUser());
+        getWebUserDashboardFacade().create(d);
+        JsfUtil.addSuccessMessage("Added");
+        listWebUserDashboards();
+    }
+    
+    public void removeWebUserDashboard() {
+        if (webUserDashboard == null) {
+            JsfUtil.addErrorMessage("Dashboard ?");
+            return;
+        }
+        WebUserDashboard d = webUserDashboard;
+        d.setRetired(true);
+        d.setRetiredAt(new Date());
+        d.setRetirer(sessionController.getLoggedUser());
+        getWebUserDashboardFacade().edit(d);
+        JsfUtil.addSuccessMessage("Removed");
+        listWebUserDashboards();
+    }
+    
+    public List<WebUserDashboard> listWebUserDashboards(WebUser wu) {
+        List<WebUserDashboard> wuds = new ArrayList<>();
+        if (wu == null) {
+            return wuds;
+        }
+        String j = "Select d from WebUserDashboard d "
+                + " where d.retired=false "
+                + " and d.webUser=:u "
+                + " order by d.id";
+        Map m = new HashMap();
+        m.put("u", wu);
+        wuds = getWebUserDashboardFacade().findBySQL(j, m);
+        return wuds;
+    }
+    
+    public void listWebUserDashboards() {
+        webUserDashboards = listWebUserDashboards(current);
+    }
+
     public String backToViewUsers() {
         return "/admin_view_user";
     }
@@ -797,6 +869,35 @@ public class WebUserController implements Serializable {
         return userPrivilageController;
     }
 
+    public Dashboard getDashboard() {
+        return dashboard;
+    }
+
+    public void setDashboard(Dashboard dashboard) {
+        this.dashboard = dashboard;
+    }
+
+    public WebUserDashboard getWebUserDashboard() {
+        return webUserDashboard;
+    }
+
+    public void setWebUserDashboard(WebUserDashboard webUserDashboard) {
+        this.webUserDashboard = webUserDashboard;
+    }
+
+    public List<WebUserDashboard> getWebUserDashboards() {
+        return webUserDashboards;
+    }
+
+    public void setWebUserDashboards(List<WebUserDashboard> webUserDashboards) {
+        this.webUserDashboards = webUserDashboards;
+    }
+
+    public WebUserDashboardFacade getWebUserDashboardFacade() {
+        return webUserDashboardFacade;
+    }
+
+    
     
     
     @FacesConverter("webUs")

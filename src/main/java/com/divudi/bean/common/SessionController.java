@@ -19,6 +19,7 @@ import com.divudi.entity.Logins;
 import com.divudi.entity.Person;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.WebUserDashboard;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.DepartmentFacade;
@@ -48,6 +49,14 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+
+import org.primefaces.event.CloseEvent;
+import org.primefaces.event.DashboardReorderEvent;
+import org.primefaces.event.ToggleEvent;
+import org.primefaces.model.DashboardColumn;
+import org.primefaces.model.DashboardModel;
+import org.primefaces.model.DefaultDashboardColumn;
+import org.primefaces.model.DefaultDashboardModel;
 
 /**
  *
@@ -86,6 +95,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     ApplicationController applicationController;
     @Inject
     SearchController searchController;
+
+    @Inject
+    WebUserController webUserController;
     /**
      * Properties
      */
@@ -101,14 +113,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     Department department;
     List<Department> departments;
     Institution institution;
-
+    private List<WebUserDashboard> dashboards;
     boolean paginator;
     WebUser webUser;
-
     String billNo;
     String phoneNo;
     UserPreference currentPreference;
     Bill bill;
+    private DashboardModel dashboardModel;
 
     public UserPreference getCurrentPreference() {
         return currentPreference;
@@ -656,7 +668,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     u.setName("" + i);
                 }
             }
-            if (u.getName()!= null && !u.getName().trim().equals("")) {
+            if (u.getName() != null && !u.getName().trim().equals("")) {
                 getFacede().edit(u);
             }
             i++;
@@ -698,6 +710,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
+                    dashboards = webUserController.listWebUserDashboards(u);
+                    loadDashboards();
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -736,6 +750,35 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
         }
         return false;
+    }
+
+    public void loadDashboards() {
+        dashboardModel = new DefaultDashboardModel();
+        DashboardColumn column1 = new DefaultDashboardColumn();
+        DashboardColumn column2 = new DefaultDashboardColumn();
+        DashboardColumn column3 = new DefaultDashboardColumn();
+
+        int i = 0;
+
+        for (WebUserDashboard d : dashboards) {
+            int n = i % 3;
+            switch (n) {
+                case 1:
+                    column1.addWidget(d.getDashboard().toString());
+                    break;
+                case 2:
+                    column2.addWidget(d.getDashboard().toString());
+                    break;
+                case 0:
+                    column3.addWidget(d.getDashboard().toString());
+                    break;
+            }
+            i++;
+        }
+
+        dashboardModel.addColumn(column1);
+        dashboardModel.addColumn(column2);
+        dashboardModel.addColumn(column3);
     }
 
     public String selectDepartment() {
@@ -1275,6 +1318,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.bill = bill;
     }
 
+    public DashboardModel getDashboardModel() {
+        return dashboardModel;
+    }
+
+    public void setDashboardModel(DashboardModel dashboardModel) {
+        this.dashboardModel = dashboardModel;
+    }
 
     
     

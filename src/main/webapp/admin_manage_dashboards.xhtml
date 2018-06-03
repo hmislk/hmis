@@ -22,24 +22,38 @@
                             <p:commandButton ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
                             </p:commandButton>
                         </f:facet>
-                        
+
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="Name" ></p:outputLabel>
                             <p:outputLabel value="#{webUserController.current.webUserPerson.name}" ></p:outputLabel>
-                            
+
                             <p:outputLabel value="Dashboard" ></p:outputLabel>
-                            <p:outputLabel value="#{enumController.dashboardTypes}" ></p:outputLabel>
-                            
-                            
-                            
-                            
+                            <p:selectOneMenu value="#{webUserController.dashboard}" >
+                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                <f:selectItems value="#{enumController.dashboardTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:commandButton ajax="false" action="#{webUserController.addWebUserDashboard()}" value="Add" >
+                            </p:commandButton>
+
+
                         </h:panelGrid>
-                        
-                        <p:dataTable value="#{webUserController}" >
+
+                        <p:dataTable value="#{webUserController.webUserDashboards}" var="d">
+                            <p:column >
+                                <p:outputLabel value="#{d.dashboard}" ></p:outputLabel>
+
+                            </p:column>
+                            <p:column>
+                                <p:commandButton ajax="false" action="#{webUserController.removeWebUserDashboard()}" value="Remove" >
+                                    <f:setPropertyActionListener value="#{d}" target="#{webUserController.webUserDashboard}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+
                         </p:dataTable>
-                        
-                        
-                        
+
+
+
                     </p:panel>
 
                 </h:form>

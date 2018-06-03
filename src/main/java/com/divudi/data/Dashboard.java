@@ -12,4 +12,6 @@ package com.divudi.data;
 public enum Dashboard {
     Opd,
     Lab,
+    Pharmacy,
+    Channelling,
 }
