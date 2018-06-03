@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -40,7 +41,18 @@ public class CommonController implements Serializable {
     public Date getCurrentDateTime() {
         return new Date();
     }
-    
+
+    public boolean renderPaginator(List<Object> list, int count) {
+        boolean render = false;
+        if (list == null) {
+            return render;
+        }
+        if (list.size() > count) {
+            render = true;
+        }
+        return render;
+    }
+
     public Date getDateAfterThreeMonthsCurrentDateTime() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));

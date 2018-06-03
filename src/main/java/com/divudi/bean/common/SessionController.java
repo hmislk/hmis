@@ -25,6 +25,7 @@ import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.UserPreferenceFacade;
+import com.divudi.facade.WebUserDashboardFacade;
 import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
@@ -74,6 +75,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     PersonFacade personFacade;
     @EJB
     WebUserFacade webUserFacade;
+    @EJB
+    WebUserDashboardFacade webUserDashboardFacade;
     /**
      * Controllers
      */
@@ -1272,4 +1275,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.bill = bill;
     }
 
+
+    
+    
 }
