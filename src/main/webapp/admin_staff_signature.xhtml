@@ -13,28 +13,52 @@
 
             <ui:define name="content">
 
-                <p:panel header="Add Staff Signature" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel  >
+
+                    <f:facet name="header" >
+                        <h:form >
+                            <p:outputLabel value="Add Staff Signature" ></p:outputLabel>
+                            <p:commandButton ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
+                            </p:commandButton>
+                        </h:form>
+                    </f:facet>
 
                     <h:form enctype="multipart/form-data" >
 
-                        <h:panelGrid columns="3" >
 
-                            <h:outputLabel value="Select the staff" >
-                            </h:outputLabel>
+                        <h:panelGrid columns="2" styleClass="alignTop" >
 
-                            <autocomplete:completeStaff value="#{staffController.current}"/>
-                            <h:commandButton value="Refresh" />
+                            <p:panel header="Add New Signature" >
+                                <h:panelGrid columns="2" >
+                                    <h:outputLabel value="Name" >
+                                    </h:outputLabel>
+                                    <autocomplete:completeStaff value="#{staffController.current}"/>
 
-                            <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
+                                    <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
+                                    <p:commandButton ajax="false" id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
 
-                            <h:commandButton id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
-                            <h:commandButton id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
-                            <p:defaultCommand target="btnSave"/>
+                                    <p:defaultCommand target="btnSave"/>
 
-                            <p:graphicImage  value="#{staffImageController.signatureById}" >
-                                <f:param name="id" value="#{staffController.current.id}" />
-                            </p:graphicImage>
+
+                                </h:panelGrid>
+                            </p:panel>
+
+                            <p:panel >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Current Signature" ></p:outputLabel>
+                                    <p:commandButton ajax="false" id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
+                                </f:facet>
+                                <p:graphicImage  value="#{staffImageController.signatureFromStaffController}" >
+                                </p:graphicImage>
+                            </p:panel>
+
+
+
                         </h:panelGrid>
+
+
+
+
 
 
                     </h:form>

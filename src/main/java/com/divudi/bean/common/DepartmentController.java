@@ -107,6 +107,7 @@ public class DepartmentController implements Serializable {
         return items;
     }
 
+
     public List<Department> listAllDepatrments() {
         List<Department> departments;
         String sql = "Select d From Department d "

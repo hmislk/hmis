@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.bean.hr.StaffController;
 import com.divudi.data.Privileges;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -23,6 +24,7 @@ import com.divudi.facade.StaffFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -47,10 +49,9 @@ import org.primefaces.event.FlowEvent;
 @SessionScoped
 public class WebUserController implements Serializable {
 
-    @Inject
-    SessionController sessionController;
-    @Inject
-    SecurityController securityController;
+    /**
+     * EJBs
+     */
     @EJB
     private WebUserFacade ejbFacade;
     @EJB
@@ -61,9 +62,29 @@ public class WebUserController implements Serializable {
     private WebUserPrivilegeFacade webUserPrevilageFacade;
     @EJB
     private StaffFacade staffFacade;
+
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    SecurityController securityController;
+    @Inject
+    private UserPaymentSchemeController userPaymentSchemeController;
+    @Inject
+    private UserDepartmentController userDepartmentController;
+    @Inject
+    private StaffController staffController;
+    @Inject
+    private UserPrivilageController userPrivilageController;
+    /**
+     * Class Variables
+     */
     List<WebUser> items;
     List<WebUser> searchItems;
     private WebUser current;
+    private WebUser selected;
     String selectText = "";
     List<Department> departments;
     List<Institution> institutions;
@@ -76,13 +97,14 @@ public class WebUserController implements Serializable {
     private Privileges[] currentPrivilegeses;
     Speciality speciality;
     List<WebUserPrivilege> userPrivileges;
-    WebUser removingUser;
     private List<WebUser> webUsers;
     List<WebUser> itemsToRemove;
 
     Staff staff;
     boolean createOnlyUser = false;
     boolean createOnlyUserForExsistingUser = false;
+    private String newPassword;
+    private String newPasswordConfirm;
 
     public void removeSelectedItems() {
         for (WebUser s : itemsToRemove) {
@@ -137,30 +159,23 @@ public class WebUserController implements Serializable {
         }
     }
 
-    public WebUser getRemovingUser() {
-        return removingUser;
-    }
-
-    public void setRemovingUser(WebUser removingUser) {
-        this.removingUser = removingUser;
-    }
-
     public void removeUser() {
-        if (removingUser == null) {
+
+        if (selected == null) {
             UtilityController.addErrorMessage("Select a user to remove");
             return;
         }
-        removingUser.getWebUserPerson().setRetired(true);
-        removingUser.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
-        removingUser.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
-        getPersonFacade().edit(removingUser.getWebUserPerson());
+        selected.getWebUserPerson().setRetired(true);
+        selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
+        selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
+        getPersonFacade().edit(selected.getWebUserPerson());
 
-        removingUser.setName(removingUser.getId().toString());
-        removingUser.setRetired(true);
-        removingUser.setRetirer(getSessionController().getLoggedUser());
-        removingUser.setRetiredAt(Calendar.getInstance().getTime());
+        selected.setName(selected.getId().toString());
+        selected.setRetired(true);
+        selected.setRetirer(getSessionController().getLoggedUser());
+        selected.setRetiredAt(Calendar.getInstance().getTime());
         //getFacade().edit(removingUser);
-        getFacade().edit(removingUser);
+        getFacade().edit(selected);
         UtilityController.addErrorMessage("User Removed");
     }
 
@@ -329,8 +344,8 @@ public class WebUserController implements Serializable {
         createOnlyUser = false;
         createOnlyUserForExsistingUser = false;
         staff = null;
-        department=null;
-        institution=null;
+        department = null;
+        institution = null;
 
     }
 
@@ -660,6 +675,130 @@ public class WebUserController implements Serializable {
         this.staff = staff;
     }
 
+    public WebUser getSelected() {
+        return selected;
+    }
+
+    public void setSelected(WebUser selected) {
+        this.selected = selected;
+    }
+
+    public String toManageUser() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        return "/admin_user";
+    }
+
+    public String toManageStaff() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/hr/hr_staff_admin";
+    }
+
+    public String toManagePassword() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        current = selected;
+        return "/admin_change_password";
+    }
+
+    public String toManagePrivileges() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getUserPrivilageController().setCurrentWebUser(selected);
+        return "/admin_user_privilages";
+    }
+
+    public String toManagePaymentSchemes() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getUserPaymentSchemeController().setSelectedUser(selected);
+        return "/admin_user_paymentScheme";
+    }
+
+    public String toManageSignature() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getStaffController().setCurrent(selected.getStaff());
+        return "/admin_staff_signature";
+    }
+
+    public String toManageDepartments() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        getUserDepartmentController().setSelectedUser(selected);
+        return "/admin_user_department";
+    }
+
+    public String backToViewUsers() {
+        return "/admin_view_user";
+    }
+
+    public void changeCurrentUserPassword() {
+        if (getCurrent() == null) {
+            UtilityController.addErrorMessage("Select a User");
+            return;
+        }
+        if (!newPassword.equals(newPasswordConfirm)) {
+            UtilityController.addErrorMessage("Password and Re-entered password are not maching");
+            return;
+        }
+
+        current.setWebUserPassword(getSecurityController().hash(newPassword));
+        getFacade().edit(current);
+        UtilityController.addSuccessMessage("Password changed");
+    }
+
+    public UserPaymentSchemeController getUserPaymentSchemeController() {
+        return userPaymentSchemeController;
+    }
+
+    public UserDepartmentController getUserDepartmentController() {
+        return userDepartmentController;
+    }
+
+    public StaffController getStaffController() {
+        return staffController;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    public String getNewPasswordConfirm() {
+        return newPasswordConfirm;
+    }
+
+    public void setNewPasswordConfirm(String newPasswordConfirm) {
+        this.newPasswordConfirm = newPasswordConfirm;
+    }
+
+    public UserPrivilageController getUserPrivilageController() {
+        return userPrivilageController;
+    }
+
+    
+    
     @FacesConverter("webUs")
     public static class WebUserControllerConverter implements Converter {
 

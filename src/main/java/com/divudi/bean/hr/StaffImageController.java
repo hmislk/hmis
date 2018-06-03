@@ -41,6 +41,8 @@ public class StaffImageController implements Serializable {
     private UploadedFile file;
     @EJB
     StaffFacade staffFacade;
+    @Inject
+    StaffController staffController;
 
     private static final long serialVersionUID = 1L;
 
@@ -51,9 +53,6 @@ public class StaffImageController implements Serializable {
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
     }
-
-    @Inject
-    StaffController staffController;
 
     public StaffController getStaffController() {
         return staffController;
@@ -148,6 +147,36 @@ public class StaffImageController implements Serializable {
                     imgArr = temImg.getBaImage();
                 } catch (Exception e) {
                     //System.err.println("Try  " + e.getMessage());
+                    return new DefaultStreamedContent();
+                }
+
+                StreamedContent str = new DefaultStreamedContent(new ByteArrayInputStream(imgArr), temImg.getFileType());
+                //System.err.println("Stream " + str);
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+
+    public StreamedContent getSignatureFromStaffController() {
+        System.err.println("Get Sigature By Staff Controller");
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            Staff temImg = getStaffController().getCurrent();
+            System.err.println("getStaffController()  " + getStaffController());
+            System.err.println("getStaffController().getCurrent();()  " + getStaffController().getCurrent());
+            if (temImg != null) {
+                System.err.println("Img 1 " + temImg);
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    System.err.println("Try  " + e.getMessage());
                     return new DefaultStreamedContent();
                 }
 
