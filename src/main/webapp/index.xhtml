@@ -73,8 +73,14 @@
                         </p:panel>
                     </p:dashboard>
 
-
-
+                    <h:panelGrid columns="1" rendered="false" >
+                        <p:editor value="#{sessionController.billNo}"  ></p:editor>
+                        <p:outputLabel value="#{sessionController.billNo}" escape="false" ></p:outputLabel>
+                        <p:outputPanel >
+                            #{sessionController.billNo}
+                        </p:outputPanel>
+                        <p:commandButton ajax="false" action="#" value="Refresh" ></p:commandButton>
+                    </h:panelGrid>
                 </h:form>
 
 

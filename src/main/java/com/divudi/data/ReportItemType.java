@@ -49,6 +49,7 @@ public enum ReportItemType {
     Religion,
     ReportedDate,
     ReportedTime,
+    SampledAt,
     SampledDate,
     SampledTime,
     Speciman,
@@ -137,6 +138,8 @@ public enum ReportItemType {
                 return "Reported Date";
             case ReportedTime:
                 return "Reported Time";
+            case SampledAt:
+                return "Sample Collected at";
             case SampledDate:
                 return "Sampled Date";
             case SampledTime:

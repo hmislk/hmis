@@ -67,10 +67,14 @@
                                         <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
 
                                         <p:outputLabel value="Reference" ></p:outputLabel>
-                                        <p:inputText value="#{investigationItemController.testReferenceRange}" ></p:inputText>
+                                        <p:editor value="#{investigationItemController.testReferenceRange}" ></p:editor>
 
                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                         <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
+
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
+
 
                                     </h:panelGrid>
                                 </p:tab>
@@ -240,9 +244,10 @@
                                 </p:inputText>
 
                                 <h:outputText value="Contents"   />
-                                <p:inputTextarea style="min-width: 400px!important;" id="lblIiText" value="#{investigationItemController.current.htmltext}" >
-                                    <f:ajax event="keyup" execute="lblIiText" render=":#{p:component('pPreview')}"/>
-                                </p:inputTextarea >
+                                <p:editor style="min-width: 400px!important;" id="lblIiText" value="#{investigationItemController.current.htmltext}" >
+<!--                                    <f:ajax event="keyup" execute="lblIiText" render=":#{p:component('pPreview')}"/>
+                                    <f:ajax event="blur" execute="lblIiText" render=":#{p:component('pPreview')}"/>-->
+                                </p:editor >
 
                             </h:panelGrid>
                             <h:panelGrid columns="5" >

@@ -9,6 +9,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
 import java.io.ByteArrayInputStream;
@@ -43,6 +44,8 @@ public class StaffImageController implements Serializable {
     StaffFacade staffFacade;
     @Inject
     StaffController staffController;
+    @Inject
+    private PatientReportController patientReportController;
 
     private static final long serialVersionUID = 1L;
 
@@ -189,6 +192,47 @@ public class StaffImageController implements Serializable {
         }
     }
 
+    public StreamedContent getSignatureFromPatientReport() {
+        System.err.println("Get Sigature By Staff Controller");
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            if(patientReportController==null){
+                System.err.println("Patient Report Controller is null()  ");
+            }
+            if(patientReportController.getCurrentPatientReport()==null){
+                System.err.println("Patient Report is null()  ");
+            }
+            if(patientReportController.getCurrentPatientReport().getApproveUser()==null){
+                System.err.println("Patient Report Approved User is null()  ");
+            }
+            if(patientReportController.getCurrentPatientReport().getApproveUser().getStaff()==null){
+                System.err.println("Patient Report Approved User Staff is null()  ");
+            }
+            Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
+            
+            if (temImg != null) {
+            
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    System.err.println("Try  " + e.getMessage());
+                    return new DefaultStreamedContent();
+                }
+
+                StreamedContent str = new DefaultStreamedContent(new ByteArrayInputStream(imgArr), temImg.getFileType());
+            
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+
     public StreamedContent displaySignature(Long stfId) {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
@@ -212,4 +256,11 @@ public class StaffImageController implements Serializable {
         }
     }
 
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    
+    
+    
 }

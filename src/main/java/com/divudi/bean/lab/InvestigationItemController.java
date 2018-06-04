@@ -533,8 +533,7 @@ public class InvestigationItemController implements Serializable {
         }
         return iivs;
     }
-    
-    
+
     public List<InvestigationItem> completeTemplate(String qry) {
         List<InvestigationItem> iivs;
         if (qry.trim().equals("")) {
@@ -548,42 +547,41 @@ public class InvestigationItemController implements Serializable {
                     + " order by i.name";
             m.put("t", InvestigationItemType.Template);
             m.put("q", "%" + qry.toUpperCase() + "%");
-            iivs = getEjbFacade().findBySQL(sql,m);
+            iivs = getEjbFacade().findBySQL(sql, m);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
         }
         return iivs;
     }
-    
-    
-    public void saveTemplate(){
-        if(current==null){
+
+    public void saveTemplate() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing to save");
-            return ;
+            return;
         }
-        if(current.getName().trim().equals("")){
+        if (current.getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Please give a name");
-            return ;
+            return;
         }
-        if(current.getHtmltext().trim().equals("")){
+        if (current.getHtmltext().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter template");
-            return ;
+            return;
         }
         current.setIxItemType(InvestigationItemType.Template);
         current.setIxItemValueType(InvestigationItemValueType.Memo);
-        if(current.getId()==null){
+        if (current.getId() == null) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("New Tempalte Added");
-        }else{
+        } else {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Template Updated");
         }
-        
+
     }
-    
-    public void newTemplate(){
-        current=new InvestigationItem();
+
+    public void newTemplate() {
+        current = new InvestigationItem();
     }
 
     public List<InvestigationItem> getCurrentIxItems() {
@@ -1031,6 +1029,8 @@ public class InvestigationItemController implements Serializable {
     private CssTextDecoration cssHeaderDecoration;
     private CssTextDecoration cssValueDecoration;
     private boolean addingNewTest = false;
+    private boolean withoutHeadings = false;
+    private boolean withoutComments = false;
     private double riBlockTop;
     private double riBlockLeft;
     private double riValueLeft;
@@ -1083,6 +1083,9 @@ public class InvestigationItemController implements Serializable {
                 cssValueDecoration = lastItem.getValueValue().getCssTextDecoration();
 
             }
+            if (withoutHeadings) {
+                riBlockTop -= riRowGap;
+            }
 
         }
 
@@ -1096,8 +1099,10 @@ public class InvestigationItemController implements Serializable {
         }
 
         InvestigationItem testHeader = new InvestigationItem();
+
         testHeader.setName(testHeaderName);
         testHeader.setHtmltext(testHeaderName);
+        testHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
         testHeader.setIxItemType(InvestigationItemType.Label);
         testHeader.setRiTop(riBlockTop);
         testHeader.setRiLeft(riBlockLeft);
@@ -1118,6 +1123,7 @@ public class InvestigationItemController implements Serializable {
         valueHeader.setName(valueHeaderName);
         valueHeader.setHtmltext(valueHeaderName);
         valueHeader.setIxItemType(InvestigationItemType.Label);
+        valueHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
         valueHeader.setRiTop(riBlockTop);
         valueHeader.setRiLeft(riValueLeft);
         valueHeader.setRiWidth(riUnitLeft - riValueLeft - riColGap);
@@ -1136,6 +1142,7 @@ public class InvestigationItemController implements Serializable {
         InvestigationItem unitHeader = new InvestigationItem();
         unitHeader.setName(unitHeaderName);
         unitHeader.setHtmltext(unitHeaderName);
+        unitHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
         unitHeader.setIxItemType(InvestigationItemType.Label);
         unitHeader.setRiTop(riBlockTop);
         unitHeader.setRiLeft(riUnitLeft);
@@ -1156,6 +1163,7 @@ public class InvestigationItemController implements Serializable {
         referenceHeader.setName(refHeaderName);
         referenceHeader.setHtmltext(refHeaderName);
         referenceHeader.setIxItemType(InvestigationItemType.Label);
+        referenceHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
         referenceHeader.setRiTop(riBlockTop);
         referenceHeader.setRiLeft(riRefLeft);
         referenceHeader.setRiWidth(100 - riRefLeft - riColGap);
@@ -1175,6 +1183,7 @@ public class InvestigationItemController implements Serializable {
         testLabel.setName(testName);
         testLabel.setHtmltext(testName);
         testLabel.setIxItemType(InvestigationItemType.Label);
+        testLabel.setIxItemValueType(InvestigationItemValueType.Varchar);
         testLabel.setRiTop(riBlockTop + riRowGap);
         testLabel.setRiLeft(testHeader.getRiLeft());
         testLabel.setRiWidth(testHeader.getRiWidth());
@@ -1214,6 +1223,7 @@ public class InvestigationItemController implements Serializable {
         unitLabel.setName(testUnit);
         unitLabel.setHtmltext(testUnit);
         unitLabel.setIxItemType(InvestigationItemType.Label);
+        unitLabel.setIxItemValueType(InvestigationItemValueType.Varchar);
         unitLabel.setRiTop(riBlockTop + riRowGap);
         unitLabel.setRiLeft(unitHeader.getRiLeft());
         unitLabel.setRiWidth(unitHeader.getRiWidth());
@@ -1233,6 +1243,7 @@ public class InvestigationItemController implements Serializable {
         referenceLabel.setName(testReferenceRange);
         referenceLabel.setHtmltext(testReferenceRange);
         referenceLabel.setIxItemType(InvestigationItemType.Label);
+        referenceLabel.setIxItemValueType(InvestigationItemValueType.Memo);
         referenceLabel.setRiTop(riBlockTop + riRowGap);
         referenceLabel.setRiLeft(referenceHeader.getRiLeft());
         referenceLabel.setRiWidth(referenceHeader.getRiWidth());
@@ -1274,26 +1285,37 @@ public class InvestigationItemController implements Serializable {
         current.setCreatedAt(new Date());
         current.setCreater(getSessionController().getLoggedUser());
 
-        currentInvestigation.getReportItems().add(testHeader);
-        currentInvestigation.getReportItems().add(valueHeader);
-        currentInvestigation.getReportItems().add(unitHeader);
-        currentInvestigation.getReportItems().add(referenceHeader);
+        if (!withoutHeadings) {
+            currentInvestigation.getReportItems().add(testHeader);
+            currentInvestigation.getReportItems().add(valueHeader);
+            currentInvestigation.getReportItems().add(unitHeader);
+            currentInvestigation.getReportItems().add(referenceHeader);
+        }
+
         currentInvestigation.getReportItems().add(testLabel);
         currentInvestigation.getReportItems().add(valueValue);
         currentInvestigation.getReportItems().add(unitLabel);
         currentInvestigation.getReportItems().add(referenceLabel);
-        currentInvestigation.getReportItems().add(commentValue);
+
+        if (!withoutComments) {
+            currentInvestigation.getReportItems().add(commentValue);
+        }
+
         currentInvestigation.getReportItems().add(current);
 
-        current.setTestHeader(testHeader);
-        current.setValueHeader(valueHeader);
-        current.setUnitHeader(unitHeader);
-        current.setReferenceHeader(referenceHeader);
+        if (withoutHeadings) {
+            current.setTestHeader(testHeader);
+            current.setValueHeader(valueHeader);
+            current.setUnitHeader(unitHeader);
+            current.setReferenceHeader(referenceHeader);
+        }
         current.setTestLabel(testLabel);
         current.setValueValue(valueValue);
         current.setUnitLabel(unitLabel);
         current.setReferenceLabel(referenceLabel);
-        current.setCommentLabel(commentValue);
+        if (!withoutComments) {
+            current.setCommentLabel(commentValue);
+        }
         current.setIxItemType(InvestigationItemType.Investigation);
 
         getIxFacade().edit(currentInvestigation);
@@ -1797,6 +1819,22 @@ public class InvestigationItemController implements Serializable {
         this.refHeaderName = refHeaderName;
     }
 
+    public boolean isWithoutHeadings() {
+        return withoutHeadings;
+    }
+
+    public void setWithoutHeadings(boolean withoutHeadings) {
+        this.withoutHeadings = withoutHeadings;
+    }
+
+    public boolean isWithoutComments() {
+        return withoutComments;
+    }
+
+    public void setWithoutComments(boolean withoutComments) {
+        this.withoutComments = withoutComments;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -1836,6 +1874,10 @@ public class InvestigationItemController implements Serializable {
         this.ixXml = ixXml;
     }
 
+    
+    
+    
+    
     /**
      *
      */
@@ -1865,6 +1907,9 @@ public class InvestigationItemController implements Serializable {
             return sb.toString();
         }
 
+        
+        
+        
         @Override
         public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
             if (object == null) {

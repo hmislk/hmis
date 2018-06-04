@@ -73,13 +73,23 @@
                                     </p:column>
                                     <p:column headerText="Sample Details">
                                         <p:selectBooleanCheckbox disabled="#{smpIx.collected}" id="chkSampledOutside" value="#{smpIx.sampleOutside}"  itemLabel="Outside" >
-                                            <f:ajax render="calSampledDate" event="change" execute="chkSampledOutside"/>
+                                            <f:ajax render="calSampledDate institution" event="change" execute="chkSampledOutside"/>
                                         </p:selectBooleanCheckbox>
 
-                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd/MMM/yyyy - hh:mm:ss a" value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
+                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                                    value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
                                         <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"  />
+                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  />
                                         </h:outputLabel>
+
+                                        <p:autoComplete  forceSelection="true" value="#{smpIx.sampleInstitution}" placeholder="Collected Institution"
+                                                        completeMethod="#{institutionController.completeIns}" id="institution"
+                                                        rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  
+                                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >
+                                        </p:autoComplete>
+
+
+
                                     </p:column>
                                     <p:column headerText="Actions">
                                         <h:panelGrid columns="3" >
