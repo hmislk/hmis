@@ -18,7 +18,7 @@
 
 
 
-                <p:panel styleClass="verticalAndHorizontalCenteringLarge" >
+                <p:panel  >
                     <f:facet name="header" >
                         <p:outputLabel value="Manage Departments" ></p:outputLabel>
                         <p:commandButton id="btnBack" value="Back" 
@@ -27,7 +27,7 @@
                         </p:commandButton>
 
                     </f:facet>
-                    
+
                     <h:panelGrid id ="gpVeda" columns="3" styleClass="alignTop" >
 
                         <h:panelGrid id="gpSelect" columns="1"  >
@@ -63,10 +63,10 @@
 
                                     <p:commandButton id="btnDelete" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" 
-                                       action="#{departmentController.delete()}"  
-                                       value="Delete"
-                                       ajax="false">
+                                                                 return false;" 
+                                                     action="#{departmentController.delete()}"  
+                                                     value="Delete"
+                                                     ajax="false">
                                     </p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
@@ -82,55 +82,70 @@
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>
 
-                            <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText id="lblName" value="Name"  ></h:outputText>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtName" value="#{departmentController.current.name}" 
-                                                 styleClass="longText"></p:inputText>
-                                    <h:outputText id="lblTName" value="Name QB"  ></h:outputText>
-                                    <p:inputText autocomplete="off" 
-                                                 id="txtTName" value="#{departmentController.current.tName}" 
-                                                 styleClass="longText"></p:inputText>
-                                    <h:outputText value="Code" />                                   
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.departmentCode}"  />
+                            <p:tabView id="gpDetail" >
+                                <p:tab title="Basic Details" >
+                                    <h:panelGrid columns="1">
+                                        <h:panelGrid id="gpDetailText" columns="2">
+                                            <h:outputText id="lblName" value="Name"  ></h:outputText>
+                                            <p:inputText autocomplete="off" 
+                                                         id="txtName" value="#{departmentController.current.name}" 
+                                                         styleClass="longText"></p:inputText>
+                                            <h:outputText id="lblTName" value="Name QB"  ></h:outputText>
+                                            <p:inputText autocomplete="off" 
+                                                         id="txtTName" value="#{departmentController.current.tname}" 
+                                                         styleClass="longText"></p:inputText>
+                                            <h:outputText value="Code" />                                   
+                                            <p:inputText autocomplete="off"  value="#{departmentController.current.departmentCode}"  />
 
-                                    <h:outputText  value="Printing Name" ></h:outputText>
-                                    <p:inputText autocomplete="off"  styleClass="longText"
-                                                 value="#{departmentController.current.printingName}"  ></p:inputText>
-                                    <h:outputText  value="Adress" ></h:outputText>
-                                    <p:inputTextarea styleClass="longText" value="#{departmentController.current.address}"  ></p:inputTextarea>
-                                    <h:outputText  value="Tel. No. 1" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.telephone1}"  ></p:inputText>
-                                    <h:outputText  value="Tel. No. 2" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.telephone2}"  ></p:inputText>
-                                    <h:outputText  value="Fax" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.fax}"  ></p:inputText>
-                                    <h:outputText  value="Email" ></h:outputText>
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.email}"  ></p:inputText>
-                                    <h:outputText value="OPD Margin Percenttage " />                                   
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.margin}"  />
-                                    <h:outputText value="Pharmacy Margin Percentage " />                                   
-                                    <p:inputText autocomplete="off"  value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"  />
-                                    <h:outputText id="lblDept" value="Department Type" ></h:outputText>
-                                    <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>
-                                    <p:selectOneMenu id="cmbDept" value="#{departmentController.current.departmentType}" rendered="#{departmentController.current ne null}" >
-                                        <f:selectItem itemLabel="Select the Department Type" />
-                                        <f:selectItems value="#{departmentController.departmentType}"/>                                        
-                                    </p:selectOneMenu>
+                                            <h:outputText  value="Printing Name" ></h:outputText>
+                                            <p:inputText autocomplete="off"  styleClass="longText"
+                                                         value="#{departmentController.current.printingName}"  ></p:inputText>
+                                            <h:outputText  value="Adress" ></h:outputText>
+                                            <p:inputTextarea styleClass="longText" value="#{departmentController.current.address}"  ></p:inputTextarea>
+                                            <h:outputText  value="Tel. No. 1" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{departmentController.current.telephone1}"  ></p:inputText>
+                                            <h:outputText  value="Tel. No. 2" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{departmentController.current.telephone2}"  ></p:inputText>
+                                            <h:outputText  value="Fax" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{departmentController.current.fax}"  ></p:inputText>
+                                            <h:outputText  value="Email" ></h:outputText>
+                                            <p:inputText autocomplete="off"  value="#{departmentController.current.email}"  ></p:inputText>
+                                            <h:outputText id="lblDept" value="Department Type" ></h:outputText>
+                                            <h:outputText id="lblDeptTem" value="Department Type" rendered="#{departmentController.current eq null}" ></h:outputText>
+                                            <p:selectOneMenu id="cmbDept" value="#{departmentController.current.departmentType}" rendered="#{departmentController.current ne null}" >
+                                                <f:selectItem itemLabel="Select the Department Type" />
+                                                <f:selectItems value="#{departmentController.departmentType}"/>                                        
+                                            </p:selectOneMenu>
 
-                                    <h:outputText id="lblIns" value="Institution" ></h:outputText>
-                                    <p:autoComplete  completeMethod="#{institutionController.completeCompany}" 
-                                                     var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
+                                            <h:outputText id="lblIns" value="Institution" ></h:outputText>
+                                            <p:autoComplete  completeMethod="#{institutionController.completeCompany}" 
+                                                             var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{departmentController.current.institution}" ></p:autoComplete>
 
-                                    <h:outputText id="lblcre" value="Creater" ></h:outputText>
-                                    <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
 
-                                </h:panelGrid>
-                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                        </h:panelGrid>
 
-                                </h:panelGrid>
-                            </h:panelGrid>
+
+                                    </h:panelGrid>
+                                </p:tab>
+                                <p:tab title="Pricing Details">
+                                    <h:panelGrid columns="2" >
+                                        <h:outputText value="OPD Margin Percenttage " />                                   
+                                        <p:inputText autocomplete="off"  value="#{departmentController.current.margin}"  />
+                                        <h:outputText value="Pharmacy Margin Percentage " />                                   
+                                        <p:inputText autocomplete="off"  value="#{departmentController.current.pharmacyMarginFromPurchaseRate}"  />
+
+                                    </h:panelGrid>
+                                </p:tab>
+                                <p:tab title="Editing Details" >
+                                    <h:panelGrid columns="2" >
+                                        <h:outputText id="lblcre" value="Creater" ></h:outputText>
+                                        <p:outputLabel value="#{institutionController.current.creater.webUserPerson.name}"/>
+
+                                    </h:panelGrid>
+                                </p:tab>
+                            </p:tabView>
+
+
                         </p:panel>
 
                     </h:panelGrid>

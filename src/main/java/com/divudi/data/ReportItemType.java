@@ -10,6 +10,9 @@ package com.divudi.data;
  */
 public enum ReportItemType {
     Area,
+    AutherizedName,
+    AutherizedCode,
+    AutherizedPosition,
     AutherizedSignature,
     BarcodeBillId,
     BarcodeBillItemId,
@@ -53,13 +56,18 @@ public enum ReportItemType {
     SampledDate,
     SampledTime,
     Speciman,
-    Surname,
-    ;
+    Surname,;
 
     public String getLabel() {
         switch (this) {
             case Area:
                 return "Area";
+            case AutherizedCode:
+                return "Autherized User's Code";
+            case AutherizedName:
+                return "Autherized User's Name";
+            case AutherizedPosition:
+                return "Autherized User's Position";
             case AutherizedSignature:
                 return "Autherized Signature";
             case BarcodeBillId:

@@ -23,12 +23,14 @@
                         </h:form>
                     </f:facet>
 
-                    <h:form enctype="multipart/form-data" >
 
 
-                        <h:panelGrid columns="2" styleClass="alignTop" >
 
-                            <p:panel header="Add New Signature" >
+                    <h:panelGrid columns="2" styleClass="alignTop" >
+
+                        <p:panel header="Add New Signature" >
+
+                            <h:form enctype="multipart/form-data" >
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="Name" >
                                     </h:outputLabel>
@@ -41,27 +43,34 @@
 
 
                                 </h:panelGrid>
-                            </p:panel>
+                            </h:form>
 
+                        </p:panel>
+
+                        <h:form >
                             <p:panel >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Current Signature" ></p:outputLabel>
                                     <p:commandButton ajax="false" id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
                                 </f:facet>
-                                <p:graphicImage  value="#{staffImageController.signatureFromStaffController}" >
+                                <div >
+                                    <p:graphicImage cache="false"  value="#{staffImageController.signatureFromStaffController}" >
+                                    </p:graphicImage>
+                                </div>
+                                <p:graphicImage cache="false"  value="#{staffImageController.signatureFromStaffController}" >
                                 </p:graphicImage>
                             </p:panel>
 
+                        </h:form>
 
-
-                        </h:panelGrid>
-
-
-
+                    </h:panelGrid>
 
 
 
-                    </h:form>
+
+
+
+
 
 
 

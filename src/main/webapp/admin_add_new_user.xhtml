@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -36,7 +37,14 @@
                                     <p:inputText autocomplete="off"
                                                  required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                  value="#{webUserController.current.webUserPerson.name}"
-                                                 requiredMessage="Please enter a username"></p:inputText>
+                                                 requiredMessage="Please enter a Name"></p:inputText>
+                                    <h:outputText value="Title" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputText>
+                                    <p:selectOneMenu required="false" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                 value="#{webUserController.current.webUserPerson.title}"
+                                                 requiredMessage="Please enter a Title">
+                                        <f:selectItem itemLabel="Select Title" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
+                                    </p:selectOneMenu>
                                     <h:outputText value="Address" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputText>
                                     <p:inputText autocomplete="off" 
                                                  required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"

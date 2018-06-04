@@ -52,7 +52,7 @@
 
                                 <p:outputLabel value="Department:" for="department" />
                                 <p:selectOneMenu id="department" value="#{webUserController.current.department}" >
-                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(webUserController.current.institution)}"/>
+                                    <f:selectItems value="#{departmentController.items}"/>
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Email:" for="email" />

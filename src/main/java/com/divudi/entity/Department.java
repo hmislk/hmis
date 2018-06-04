@@ -227,6 +227,14 @@ public class Department implements Serializable {
     public void settName(String tName) {
         this.tName = tName;
     }
+    
+    public String getTname() {
+        return tName;
+    }
+
+    public void setTname(String tName) {
+        this.tName = tName;
+    }
 
     public DepartmentType getDepartmentType() {
         return departmentType;
