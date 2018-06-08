@@ -3,28 +3,27 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:h="http://java.sun.com/jsf/html">
 
     <body>
 
-        <ui:composition template="./../resources/template/template.xhtml">
-
-            <ui:define name="title">
-                Manage Sample Component
-            </ui:define>
+        <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
 
                 <h:form >
 
                     <p:panel header="Manage Sample Component" >
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="6" >
                             <p:outputLabel value="Investigation" ></p:outputLabel>
-                            <p:autoComplete value="#{itemController.current}" var="ix"
+                            <p:autoComplete id="acIx" value="#{itemController.current}" var="ix"
                                             itemLabel="#{ix.name}" itemValue="#{ix}" completeMethod="#{itemController.completeLoggedInstitutionInvestigation}"
                                             ></p:autoComplete>
                             <p:commandButton ajax="false" action="#{itemController.fillInvestigationSampleComponents() }" value="List Sample Components" ></p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             action="#{itemController.addSampleComponentsForAllInvestigationsWithoutSampleComponents}"
+                                             value="Add Sample Components for All Investigations" ></p:commandButton>
+                            
                             <p:spacer height="1" width="300" ></p:spacer>
                             <p:commandButton ajax="false" action="/lab/administration" value="Back" ></p:commandButton>
                         </h:panelGrid>
@@ -33,7 +32,7 @@
                                 <p:commandButton id="btnSave" value="Save" process="@this test" update="tbl" 
                                                  action="#{itemController.createOrUpdateSampleComponent()}" 
                                                  oncomplete="PF('dlg').hide();" />
-                                <h:panelGrid columns="2" >
+                                <h:panelGrid columns="2" rendered="#{itemController.sampleComponent ne null}">
                                     <p:outputLabel value="Ix" ></p:outputLabel>
                                     <p:outputLabel value="#{itemController.sampleComponent.parentItem.name}" ></p:outputLabel>
 
@@ -47,7 +46,8 @@
                             <h:panelGrid columns="1" id="actions" >
                                 <p:commandButton  
                                     styleClass="linkButton" 
-                                    value="Add" action="#{itemController.toCreateSampleComponent() }" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                                    value="Add" action="#{itemController.toCreateSampleComponent()}" process="@this acIx" 
+                                    update="dlg" oncomplete="PF('dlg').show()" />
                                 <p:commandButton disabled="#{itemController.sampleComponent == null}" 
                                                  styleClass="linkButton" 
                                                  value="Edit" process="@this" update="dlg" oncomplete="PF('dlg').show()" />

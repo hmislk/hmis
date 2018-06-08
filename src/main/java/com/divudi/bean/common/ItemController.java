@@ -121,7 +121,7 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Select an investigation");
             return null;
         }
-        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.code";
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.name";
         Map m = new HashMap();
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
@@ -160,7 +160,6 @@ public class ItemController implements Serializable {
             return;
         }
         sampleComponent.setParentItem(current);
-        sampleComponent.setInstitution(machine.getInstitution());
         sampleComponent.setItemType(ItemType.SampleComponent);
 
         if (sampleComponent.getId() == null) {
@@ -183,7 +182,7 @@ public class ItemController implements Serializable {
                 if (scs == null || scs.isEmpty()) {
                     sampleComponent = new Item();
                     sampleComponent.setName(tix.getName());
-                    sampleComponent.setParentItem(current);
+                    sampleComponent.setParentItem(tix);
                     sampleComponent.setItemType(ItemType.SampleComponent);
                     sampleComponent.setCreatedAt(new Date());
                     sampleComponent.setCreater(sessionController.getLoggedUser());
