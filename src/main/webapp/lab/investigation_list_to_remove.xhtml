@@ -30,17 +30,20 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputLabel value="List of Investigations to Delete"></h:outputLabel>
+                            <p:commandButton ajax="false" value="Liats All Ix" styleClass="noPrintButton" 
+                                             action="#{investigationController.listAllIxs()}">
+                            </p:commandButton>
                             <p:commandButton ajax="false" value="Remove Ix" styleClass="noPrintButton" 
                                              action="#{investigationController.removeSelectedItems()}">
                             </p:commandButton>
                         </f:facet>
 
-                        <p:dataTable id="dtF" value="#{investigationController.items}" var="sv" 
+                        <p:dataTable id="dtF" value="#{investigationController.allIxs}" var="sv" 
                                      rowKey="#{sv.id}" selection="#{investigationController.itemsToRemove}" 
                                      rows="10"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15,50,100"
+                                     rowsPerPageTemplate="5,10,15,50,100,500,1000"
                                      >
                             <p:column id="colSelect"  selectionMode="multiple" >
                             </p:column>
@@ -52,11 +55,11 @@
                             <p:column headerText="Sub Category" style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.category.parentCategory.name}" rendered="#{sv.category ne null}" />
                             </p:column>
-                            <p:column headerText="Instiution" filterBy="#{sv.institution.name}" filterMatchMode="contains"
+                            <p:column headerText="Instiution" filterBy="#{sv.institution.name}" filterMatchMode="contains" sortBy="#{sv.institution.name}"
                                        style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.institution.name}" rendered="#{sv.category ne null}" />
                             </p:column>
-                            <p:column headerText="Department" filterMatchMode="contains" filterBy="#{sv.department.name}" style="font-weight:normal ;color: black;text-align: left;">
+                            <p:column headerText="Department" filterMatchMode="contains" filterBy="#{sv.department.name}" sortBy="#{sv.department.name}" style="font-weight:normal ;color: black;text-align: left;">
                                 <h:outputLabel value="#{sv.department.name}" rendered="#{sv.category ne null}" />
                             </p:column>
                             <p:column headerText="Item" filterMatchMode="contains" sortBy="#{sv.name}"

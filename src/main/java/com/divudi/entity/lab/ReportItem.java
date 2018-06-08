@@ -149,6 +149,14 @@ public class ReportItem implements Serializable {
     private InvestigationComponent investigationComponent;
     @Enumerated(EnumType.STRING)
     private DataEntryMethod dataEntryMethod;
+    
+    private boolean automated;
+    @ManyToOne
+    private Machine machine;
+    @ManyToOne
+    private Item test;
+    
+    
 
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
@@ -1019,6 +1027,30 @@ public class ReportItem implements Serializable {
 
     public void setFlagValue(ReportItem flagValue) {
         this.flagValue = flagValue;
+    }
+
+    public boolean isAutomated() {
+        return automated;
+    }
+
+    public void setAutomated(boolean automated) {
+        this.automated = automated;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Item getTest() {
+        return test;
+    }
+
+    public void setTest(Item test) {
+        this.test = test;
     }
 
     

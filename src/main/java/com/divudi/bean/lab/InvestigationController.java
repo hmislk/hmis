@@ -111,6 +111,7 @@ public class InvestigationController implements Serializable {
     List<Investigation> allIxs;
     List<Investigation> itemsToRemove;
     Institution institution;
+    Department department;
     List<Investigation> deletedIxs;
     List<Investigation> selectedIxs;
     List<PatientReport> selectedPatientReports;
@@ -325,19 +326,40 @@ public class InvestigationController implements Serializable {
         itemsToRemove = null;
         items = null;
     }
-
+    
     public String listAllIxs() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         String sql;
-        sql = "Select i from Investigation i where i.retired=false order by i.name";
+        sql = "Select i from Investigation i where i.retired=false ";
+        sql += " order by i.name";
         allIxs = getFacade().findBySQL(sql);
+        return "";
+    }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/Administrator/Lists/Lab investigation list(/faces/lab/lab_investigation_list.xhtml)");
+    public String listFilteredIxs() {
+        String sql;
+        Map m = new HashMap();
+        sql = "Select i from Investigation i where i.retired=false ";
+        if (institution != null) {
+            sql += " and i.institution=:ins";
+            m.put("ins", institution);
+        }
+        if (department != null) {
+            sql += " and i.department=:dep";
+            m.put("dep", department);
+        }
+        if (category != null) {
+            sql += " and i.category=:cat";
+            m.put("cat", category);
+        }
+        sql += " order by i.name";
+        allIxs = getFacade().findBySQL(sql,m);
         return "/lab/investigation_list";
-
+    }
+    
+    public void clearFields(){
+        institution=null;
+        department=null;
+        category=null;
     }
 
     public void prepareSelectedReportSamples() {
@@ -388,14 +410,28 @@ public class InvestigationController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        ////System.out.println("gettin ins dep ");
         if (getCurrent().getInstitution() == null) {
-            return new ArrayList<Department>();
+            return new ArrayList<>();
         } else {
-            String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
+            Map m = new HashMap();
+            m.put("ins", getCurrent().getInstitution());
+            d = getDepartmentFacade().findBySQL(sql,m);
         }
 
+        return d;
+    }
+    
+    public List<Department> getDepatrmentsOfSelectedInstitution() {
+        List<Department> d;
+        if (getInstitution() == null) {
+            return new ArrayList<>();
+        } else {
+            String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
+            Map m = new HashMap();
+            m.put("ins", institution);
+            d = getDepartmentFacade().findBySQL(sql,m);
+        }
         return d;
     }
 
@@ -641,6 +677,23 @@ public class InvestigationController implements Serializable {
         this.bulkText = bulkText;
     }
 
+    
+    public void deleteIxWithoutIxAndFixReportedAs(){
+        String j = "select i from Investigation i";
+        List<Investigation> ixs = getFacade().findBySQL(j);
+        for (Investigation ix:ixs){
+            if(ix.getInstitution()==null){
+                ix.setRetired(true);
+                ix.setRetiredAt(new Date());
+                ix.setRetirer(sessionController.getLoggedUser());
+            }else{
+                ix.setReportedAs(ix);
+                ix.setBilledAs(ix);
+            }
+            getFacade().edit(ix);
+        }
+    }
+    
     public List<Investigation> getInstitutionSelectedItems() {
         Map m = new HashMap();
         String sql;
@@ -1319,6 +1372,14 @@ public class InvestigationController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
 }

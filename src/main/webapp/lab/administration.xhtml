@@ -22,8 +22,8 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab/investigation" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzers" action="/lab/machine" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzer Tests" action="/lab/analyzer_test" onclick="onSubmitButton();" />
-                                        
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/investigation_fee" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
+                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Sample Components" action="/lab/analyzer_test" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/sample_component" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Replaceable Investigations" action="/lab/replaceable_ix" onclick="onSubmitButton();" />
                                     
                                     </h:panelGrid>
@@ -53,7 +53,7 @@
                             <h:panelGrid columns="1">
                                 <p:panel header="Lists" rendered="#{webUserController.hasPrivilege('LabLists')}" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List" action="#{investigationController.listAllIxs}" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List" action="/lab/investigation_list" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List by Category" action="/lab/investigation_list_by_category" onclick="onSubmitButton();" />
                                     </h:panelGrid>                                        
                                 </p:panel>

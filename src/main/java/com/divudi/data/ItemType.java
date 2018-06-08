@@ -14,6 +14,7 @@ public enum ItemType {
     Investigation,
     Service,
     AnalyzerTest,
+    SampleComponent,
     Appointment,
     Other,
 }

@@ -47,6 +47,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  *
@@ -85,6 +86,7 @@ public class ItemController implements Serializable {
      * Properties
      */
     private Item current;
+    private Item sampleComponent;
     private List<Item> items = null;
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
@@ -98,11 +100,102 @@ public class ItemController implements Serializable {
     List<Department> departments;
     private Machine machine;
     private List<Item> machineTests;
+    private List<Item> investigationSampleComponents;
 
     ReportKeyWord reportKeyWord;
 
+    public void fillInvestigationSampleComponents() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return;
+        }
+        if (current instanceof Investigation) {
+            investigationSampleComponents = findInvestigationSampleComponents((Investigation) current);
+        } else {
+            investigationSampleComponents = null;
+        }
+    }
+
+    public List<Item> findInvestigationSampleComponents(Investigation ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.code";
+        Map m = new HashMap();
+        m.put("t", ItemType.SampleComponent);
+        m.put("r", false);
+        m.put("m", ix);
+        return getFacade().findBySQL(j, m);
+    }
+
+    public void removeSampleComponent() {
+        if (sampleComponent == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        sampleComponent.setRetired(true);
+        sampleComponent.setRetirer(sessionController.getLoggedUser());
+        sampleComponent.setRetiredAt(new Date());
+        getFacade().edit(sampleComponent);
+        fillInvestigationSampleComponents();
+        JsfUtil.addSuccessMessage("Removed");
+    }
+
+    public void toCreateSampleComponent() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return;
+        }
+        sampleComponent = new Item();
+        sampleComponent.setParentItem(current);
+        sampleComponent.setItemType(ItemType.SampleComponent);
+        sampleComponent.setCreatedAt(new Date());
+        sampleComponent.setCreater(sessionController.getLoggedUser());
+    }
+
+    public void createOrUpdateSampleComponent() {
+        if (sampleComponent == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        sampleComponent.setParentItem(current);
+        sampleComponent.setInstitution(machine.getInstitution());
+        sampleComponent.setItemType(ItemType.SampleComponent);
+
+        if (sampleComponent.getId() == null) {
+            getFacade().create(sampleComponent);
+            JsfUtil.addSuccessMessage("Added");
+        } else {
+            getFacade().edit(sampleComponent);
+            JsfUtil.addSuccessMessage("Updated");
+        }
+        fillInvestigationSampleComponents();
+    }
+
+    public void addSampleComponentsForAllInvestigationsWithoutSampleComponents() {
+        String j = "select ix from Investigation ix ";
+        List<Item> ixs = getFacade().findBySQL(j);
+        for (Item ix : ixs) {
+            if (ix instanceof Investigation) {
+                Investigation tix = (Investigation) ix;
+                List<Item> scs = findInvestigationSampleComponents(tix);
+                if (scs == null || scs.isEmpty()) {
+                    sampleComponent = new Item();
+                    sampleComponent.setName(tix.getName());
+                    sampleComponent.setParentItem(current);
+                    sampleComponent.setItemType(ItemType.SampleComponent);
+                    sampleComponent.setCreatedAt(new Date());
+                    sampleComponent.setCreater(sessionController.getLoggedUser());
+                    getFacade().create(sampleComponent);
+                }
+            }
+        }
+        JsfUtil.addSuccessMessage("Added");
+    }
+
     public void fillMachineTests() {
-        if(machine==null){
+        if (machine == null) {
             JsfUtil.addErrorMessage("Select a machine");
             return;
         }
@@ -113,11 +206,11 @@ public class ItemController implements Serializable {
         m.put("r", false);
         machineTests = getFacade().findBySQL(j, m);
     }
-    
-    public void removeTest(){
-        if(current==null){
+
+    public void removeTest() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Select one to delete");
-            return ;
+            return;
         }
         current.setRetired(true);
         current.setRetirer(sessionController.getLoggedUser());
@@ -126,9 +219,9 @@ public class ItemController implements Serializable {
         fillMachineTests();
         JsfUtil.addSuccessMessage("Removed");
     }
-    
-    public void toCreateNewTest(){
-        if(machine==null){
+
+    public void toCreateNewTest() {
+        if (machine == null) {
             JsfUtil.addErrorMessage("Select a machine");
             return;
         }
@@ -137,20 +230,20 @@ public class ItemController implements Serializable {
         current.setCreatedAt(new Date());
         current.setCreater(sessionController.getLoggedUser());
     }
-    
-    public void createOrUpdateTest(){
-        if(current==null){
+
+    public void createOrUpdateTest() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Select one to delete");
-            return ;
+            return;
         }
         current.setMachine(machine);
         current.setInstitution(machine.getInstitution());
         current.setItemType(ItemType.AnalyzerTest);
-        
-        if(current.getId()==null){
+
+        if (current.getId() == null) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Added");
-        }else{
+        } else {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated");
         }
@@ -720,8 +813,25 @@ public class ItemController implements Serializable {
 
     }
 
+    public List<Item> completeLoggedInstitutionInvestigation(String query) {
+        List<Item> lst;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Item c "
+                + " where c.retired=false "
+                + " and type(c)=:cls "
+                + " and upper(c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("cls", Investigation.class);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("ins", sessionController.getLoggedUser().getInstitution());
+        lst = getFacade().findBySQL(sql, hm, 20);
+        return lst;
+    }
+
     public List<Item> completeServiceWithoutProfessional(String query) {
-        List<Item> suggestions;
+        List<Item> lst;
         String sql;
         HashMap hm = new HashMap();
 
@@ -733,10 +843,8 @@ public class ItemController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
-
-        return suggestions;
-
+        lst = getFacade().findBySQL(sql, hm, 20);
+        return lst;
     }
 
     public List<Item> completeMedicalPackage(String query) {
@@ -1437,10 +1545,22 @@ public class ItemController implements Serializable {
         this.machineTests = machineTests;
     }
 
-    
-    
-    
-    
+    public List<Item> getInvestigationSampleComponents() {
+        return investigationSampleComponents;
+    }
+
+    public void setInvestigationSampleComponents(List<Item> investigationSampleComponents) {
+        this.investigationSampleComponents = investigationSampleComponents;
+    }
+
+    public Item getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponent(Item sampleComponent) {
+        this.sampleComponent = sampleComponent;
+    }
+
     @FacesConverter(forClass = Item.class)
     public static class ItemControllerConverter implements Converter {
 

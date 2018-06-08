@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../resources/template/template.xhtml">
+
+            <ui:define name="title">
+                Manage Sample Component
+            </ui:define>
+
+            <ui:define name="content">
+
+                <h:form >
+
+                    <p:panel header="Manage Sample Component" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="Investigation" ></p:outputLabel>
+                            <p:autoComplete value="#{itemController.current}" var="ix"
+                                            itemLabel="#{ix.name}" itemValue="#{ix}" completeMethod="#{itemController.completeLoggedInstitutionInvestigation}"
+                                            ></p:autoComplete>
+                            <p:commandButton ajax="false" action="#{itemController.fillInvestigationSampleComponents() }" value="List Sample Components" ></p:commandButton>
+                            <p:spacer height="1" width="300" ></p:spacer>
+                            <p:commandButton ajax="false" action="/lab/administration" value="Back" ></p:commandButton>
+                        </h:panelGrid>
+                        <p:dialog id="dlg" modal="true" widgetVar="dlg" >
+                            <p:panel id="test" header="Test" >
+                                <p:commandButton id="btnSave" value="Save" process="@this test" update="tbl" 
+                                                 action="#{itemController.createOrUpdateSampleComponent()}" 
+                                                 oncomplete="PF('dlg').hide();" />
+                                <h:panelGrid columns="2" >
+                                    <p:outputLabel value="Ix" ></p:outputLabel>
+                                    <p:outputLabel value="#{itemController.sampleComponent.parentItem.name}" ></p:outputLabel>
+
+                                    <p:outputLabel value="Name" ></p:outputLabel>
+                                    <p:inputText value="#{itemController.sampleComponent.name}" ></p:inputText>
+                                   
+                                </h:panelGrid>
+                            </p:panel>
+                        </p:dialog>
+                        <h:panelGrid columns="2" class="alignTop">
+                            <h:panelGrid columns="1" id="actions" >
+                                <p:commandButton  
+                                    styleClass="linkButton" 
+                                    value="Add" action="#{itemController.toCreateSampleComponent() }" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                                <p:commandButton disabled="#{itemController.sampleComponent == null}" 
+                                                 styleClass="linkButton" 
+                                                 value="Edit" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+
+                                <p:commandButton disabled="#{itemController.sampleComponent == null}" 
+                                                 styleClass="linkButton" action="#{itemController.removeTest}" 
+                                                 value="Remove" process="@this" update="dlg" oncomplete="PF('dlg').show()" />
+                            </h:panelGrid>
+                            <p:dataTable id="tbl" value="#{itemController.investigationSampleComponents}" var="t" selection="#{itemController.sampleComponent}" 
+                                         selectionMode="single" rowKey="#{t.id}">
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
+                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
+                                <p:column headerText="Name" filterBy="#{t.name}" sortBy="#{t.name}" >
+                                    <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </body>
+</html>

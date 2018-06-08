@@ -21,6 +21,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
+import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
@@ -1036,6 +1037,7 @@ public class InvestigationItemController implements Serializable {
     private double riBlockLeft;
     private double riValueLeft;
     private double riUnitLeft;
+    private double riFlagLeft;
     private double riRefLeft;
     private double riRowGap;
     private double riColGap;
@@ -1044,6 +1046,8 @@ public class InvestigationItemController implements Serializable {
     private String valueHeaderName;
     private String unitHeaderName;
     private String refHeaderName;
+    Machine machine;
+    Item test;
 
     public void toAddNewTest() {
         System.out.print("toAddNewTest");
@@ -1066,7 +1070,6 @@ public class InvestigationItemController implements Serializable {
             if (lastItem.getValueHeader() != null) {
                 riValueLeft = lastItem.getValueHeader().getRiLeft();
                 valueHeaderName = lastItem.getValueHeader().getName();
-
             }
             if (lastItem.getUnitHeader() != null) {
                 riUnitLeft = lastItem.getUnitHeader().getRiLeft();
@@ -1318,6 +1321,7 @@ public class InvestigationItemController implements Serializable {
             current.setCommentLabel(commentValue);
         }
         current.setIxItemType(InvestigationItemType.Investigation);
+        current.setAutomated(true);
 
         getIxFacade().edit(currentInvestigation);
 
@@ -1834,6 +1838,14 @@ public class InvestigationItemController implements Serializable {
 
     public void setWithoutComments(boolean withoutComments) {
         this.withoutComments = withoutComments;
+    }
+
+    public double getRiFlagLeft() {
+        return riFlagLeft;
+    }
+
+    public void setRiFlagLeft(double riFlagLeft) {
+        this.riFlagLeft = riFlagLeft;
     }
 
     public enum EditMode {
