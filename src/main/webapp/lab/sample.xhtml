@@ -111,12 +111,12 @@
                                         </h:panelGrid>
                                         <div class="printBlock">
                                             <h:panelGroup id="stickerPrint" >
-                                                <div>
-                                                    <div>
-                                                        <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}" ></h:outputLabel>
+                                                <div class="stickerLabel" style="height:98%; width: 98%;border: 1px solid red;">
+                                                    <div style="width: 100%;">
+                                                        <p:barcode cache="false" value="#{smpIx.patient.phn}" type="code128" style="width: 100%; height: 80%;" ></p:barcode>
                                                     </div>
                                                     <div>
-                                                        <p:barcode cache="false" value="#{smpIx.patient.phn}" type="code128" width="200"></p:barcode>
+                                                        <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}" style="font-size: 8pt;" ></h:outputLabel>
                                                     </div>
                                                 </div>
                                             </h:panelGroup>

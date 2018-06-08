@@ -732,6 +732,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void upload() {
+        System.err.println("upload");
         if (getCurrentInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation");
             return;
@@ -791,11 +792,11 @@ public class InvestigationItemController implements Serializable {
                     if (nii.getAttributeValue("report_item_type") != null && ReportItemType.valueOf(nii.getAttributeValue("report_item_type")) != null) {
                         ii.setReportItemType(ReportItemType.valueOf(nii.getAttributeValue("report_item_type")));
                     }
-                    ii.setRiFontSize(nii.getAttribute("font_size").getIntValue());
-                    ii.setRiHeight(nii.getAttribute("height").getIntValue());
-                    ii.setRiLeft(nii.getAttribute("left").getIntValue());
-                    ii.setRiTop(nii.getAttribute("top").getIntValue());
-                    ii.setRiWidth(nii.getAttribute("width").getIntValue());
+                    ii.setRiFontSize(nii.getAttribute("font_size").getDoubleValue());
+                    ii.setRiHeight(nii.getAttribute("height").getDoubleValue());
+                    ii.setRiLeft(nii.getAttribute("left").getDoubleValue());
+                    ii.setRiTop(nii.getAttribute("top").getDoubleValue());
+                    ii.setRiWidth(nii.getAttribute("width").getDoubleValue());
 
                     List listiivs = nii.getChildren("investigation_item_value");
                     for (Object listiiv : listiivs) {
@@ -812,11 +813,11 @@ public class InvestigationItemController implements Serializable {
                 }
                 getIxFacade().edit(currentInvestigation);
             } catch (IOException io) {
-                System.out.println("IOException");
-                System.out.println(io.getMessage());
+                System.err.println("IOException");
+                System.err.println(io.getMessage());
             } catch (Exception jdomex) {
-                System.out.println("JDOM Excepton");
-                System.out.println(jdomex.getMessage());
+                System.err.println("JDOM Excepton");
+                System.err.println(jdomex.getMessage());
             }
 
         }

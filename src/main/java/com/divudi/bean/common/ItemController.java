@@ -2,6 +2,8 @@ package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.ItemType;
+import com.divudi.data.SymanticType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
@@ -17,6 +19,7 @@ import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.ItemForItem;
+import com.divudi.entity.lab.Machine;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
@@ -31,6 +34,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -92,13 +96,71 @@ public class ItemController implements Serializable {
     Department department;
     FeeType feeType;
     List<Department> departments;
+    private Machine machine;
+    private List<Item> machineTests;
 
     ReportKeyWord reportKeyWord;
+
+    public void fillMachineTests() {
+        if(machine==null){
+            JsfUtil.addErrorMessage("Select a machine");
+            return;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.machine=:m and i.retired=:r order by i.code";
+        Map m = new HashMap();
+        m.put("t", ItemType.AnalyzerTest);
+        m.put("m", machine);
+        m.put("r", false);
+        machineTests = getFacade().findBySQL(j, m);
+    }
+    
+    public void removeTest(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select one to delete");
+            return ;
+        }
+        current.setRetired(true);
+        current.setRetirer(sessionController.getLoggedUser());
+        current.setRetiredAt(new Date());
+        getFacade().edit(current);
+        fillMachineTests();
+        JsfUtil.addSuccessMessage("Removed");
+    }
+    
+    public void toCreateNewTest(){
+        if(machine==null){
+            JsfUtil.addErrorMessage("Select a machine");
+            return;
+        }
+        current = new Item();
+        current.setItemType(ItemType.AnalyzerTest);
+        current.setCreatedAt(new Date());
+        current.setCreater(sessionController.getLoggedUser());
+    }
+    
+    public void createOrUpdateTest(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Select one to delete");
+            return ;
+        }
+        current.setMachine(machine);
+        current.setInstitution(machine.getInstitution());
+        current.setItemType(ItemType.AnalyzerTest);
+        
+        if(current.getId()==null){
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Added");
+        }else{
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Updated");
+        }
+        fillMachineTests();
+    }
 
     public void refreshInvestigationsAndServices() {
         investigationsAndServices = null;
         getInvestigationsAndServices();
-        for(Item i:getInvestigationsAndServices()){
+        for (Item i : getInvestigationsAndServices()) {
             i.getItemFeesAuto();
         }
     }
@@ -136,13 +198,13 @@ public class ItemController implements Serializable {
                 for (ItemFee itf : i.getItemFeesAuto()) {
                     getItemFeeFacade().edit(itf);
                     t += itf.getFee();
-                    
+
                 }
                 i.setTotal(t);
                 getFacade().edit(i);
             }
         }
-        investigationsAndServices=null;
+        investigationsAndServices = null;
         getInvestigationsAndServices();
     }
 
@@ -1359,6 +1421,26 @@ public class ItemController implements Serializable {
         this.investigationsAndServices = investigationsAndServices;
     }
 
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public List<Item> getMachineTests() {
+        return machineTests;
+    }
+
+    public void setMachineTests(List<Item> machineTests) {
+        this.machineTests = machineTests;
+    }
+
+    
+    
+    
+    
     @FacesConverter(forClass = Item.class)
     public static class ItemControllerConverter implements Converter {
 

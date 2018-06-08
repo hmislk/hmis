@@ -13,6 +13,7 @@ import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
+import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
@@ -136,12 +137,18 @@ public class ReportItem implements Serializable {
     private ReportItem testLabel;
     @ManyToOne
     private ReportItem valueValue;
+    @ManyToOne
+    private ReportItem flagValue;
     @OneToOne
     private ReportItem unitLabel;
     @OneToOne
     private ReportItem referenceLabel;
     @ManyToOne
     private ReportItem commentLabel;
+    @ManyToOne
+    private InvestigationComponent investigationComponent;
+    @Enumerated(EnumType.STRING)
+    private DataEntryMethod dataEntryMethod;
 
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
@@ -151,10 +158,7 @@ public class ReportItem implements Serializable {
         this.cssTextDecoration = cssTextDecoration;
     }
 
-    
-    
-    
-    public ReportItem getUnitLabel() {    
+    public ReportItem getUnitLabel() {
         return unitLabel;
     }
 
@@ -178,15 +182,15 @@ public class ReportItem implements Serializable {
      *
      *
      *
-    InvestigationItem testHeader = new InvestigationItem();
-    InvestigationItem valueHeader = new InvestigationItem();
-    InvestigationItem unitHeader = new InvestigationItem();
-    InvestigationItem referenceHeader = new InvestigationItem();
-    InvestigationItem testLabel = new InvestigationItem();
-    InvestigationItem valueValue = new InvestigationItem();
-    InvestigationItem unitValue = new InvestigationItem();
-    InvestigationItem referenceHeader = new InvestigationItem();
-    InvestigationItem testComments = new InvestigationItem();
+     * InvestigationItem testHeader = new InvestigationItem(); InvestigationItem
+     * valueHeader = new InvestigationItem(); InvestigationItem unitHeader = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testLabel = new
+     * InvestigationItem(); InvestigationItem valueValue = new
+     * InvestigationItem(); InvestigationItem unitValue = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testComments = new
+     * InvestigationItem();
      *
      *
      *
@@ -198,8 +202,8 @@ public class ReportItem implements Serializable {
     }
 
     public String getHtmltext() {
-        if(htmltext==null){
-            htmltext= "";
+        if (htmltext == null) {
+            htmltext = "";
         }
         return htmltext;
     }
@@ -993,4 +997,30 @@ public class ReportItem implements Serializable {
 
     }
 
+    public InvestigationComponent getInvestigationComponent() {
+        return investigationComponent;
+    }
+
+    public void setInvestigationComponent(InvestigationComponent investigationComponent) {
+        this.investigationComponent = investigationComponent;
+    }
+
+    public DataEntryMethod getDataEntryMethod() {
+        return dataEntryMethod;
+    }
+
+    public void setDataEntryMethod(DataEntryMethod dataEntryMethod) {
+        this.dataEntryMethod = dataEntryMethod;
+    }
+
+    public ReportItem getFlagValue() {
+        return flagValue;
+    }
+
+    public void setFlagValue(ReportItem flagValue) {
+        this.flagValue = flagValue;
+    }
+
+    
+    
 }

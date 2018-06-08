@@ -8,11 +8,14 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Institution;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.MachineFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -35,9 +38,15 @@ public class MachineController implements Serializable {
     SessionController sessionController;
     Machine current;
     List<Machine>items;
+    private Institution institution;
+    private List<Machine> institutionMachines;
     
     public MachineController() {
     }
+    
+    
+    
+    
     
     public List<Machine> getItems() {
         items = getEjbFacade().findAll("name", true);
@@ -109,6 +118,32 @@ public class MachineController implements Serializable {
 
     public void setCurrent(Machine current) {
         this.current = current;
+    }
+
+    public List<Machine> getInstitutionMachines() {
+        if(sessionController.getLoggedUser().getInstitution()!= institution){
+            institutionMachines=null;
+            institution = sessionController.getLoggedUser().getInstitution();
+        }
+        if(institutionMachines==null){
+            String j = "select m from Machine m where m.institution=:ins order by m.name";
+            Map m = new HashMap();
+            m.put("ins", institution);
+            institutionMachines = getEjbFacade().findBySQL(j, m);
+        }
+        return institutionMachines;
+    }
+
+    public void setInstitutionMachines(List<Machine> institutionMachines) {
+        this.institutionMachines = institutionMachines;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
     
     @FacesConverter(forClass = Machine.class)

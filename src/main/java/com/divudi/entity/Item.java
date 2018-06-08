@@ -7,15 +7,22 @@ package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.entity.pharmacy.Vtm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -170,6 +177,8 @@ public class Item implements Serializable, Comparable<Item> {
     String reserveName;
     String reserveNumbers;
     int maxTableRows;
+    @Enumerated(EnumType.STRING)
+    private ItemType itemType;
     
     @Transient
     double channelStaffFee;
@@ -294,6 +303,9 @@ public class Item implements Serializable, Comparable<Item> {
         return reportItems;
     }
 
+    
+    
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -316,7 +328,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.Item[ id=" + id + " ]";
+        return name;
     }
 
     @Transient
@@ -1014,6 +1026,43 @@ public class Item implements Serializable, Comparable<Item> {
         }
         
         return this.name.compareTo(o.name);
+    }
+
+    public ItemType getItemType() {
+        if(itemType==null){
+            if(this instanceof Amp){
+                itemType= ItemType.Medicine;
+            }
+            if(this instanceof Ampp){
+                itemType= ItemType.Medicine;
+            }
+            if(this instanceof Atm){
+                itemType= ItemType.Medicine;
+            }
+             if(this instanceof Vmp){
+                itemType= ItemType.Medicine;
+            }
+            if(this instanceof Vmpp){
+                itemType= ItemType.Medicine;
+            }
+            if(this instanceof Vtm){
+                itemType= ItemType.Medicine;
+            }
+             if(this instanceof Service){
+                itemType= ItemType.Service;
+            }
+            if(this instanceof Investigation){
+                itemType= ItemType.Investigation;
+            }
+            if(this instanceof Atm){
+                itemType= ItemType.Medicine;
+            }
+        }
+        return itemType;
+    }
+
+    public void setItemType(ItemType itemType) {
+        this.itemType = itemType;
     }
 
    
