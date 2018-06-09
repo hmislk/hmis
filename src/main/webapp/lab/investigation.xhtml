@@ -22,7 +22,7 @@
                         <p:selectOneMenu id="somInstitution" value="#{investigationController.institution}" rendered="#{sessionController.institutionPreference.institutionSpecificItems}" >
                             <f:selectItem itemLabel="Master Items"  ></f:selectItem>
                             <f:selectItems value="#{institutionController.companies}" var="c" itemValue="#{c}" itemLabel="#{c.name}" ></f:selectItems>
-                            <p:ajax event="change"   update="@all" process="@this" >
+                            <p:ajax event="change"   update="gpVeda" process="@this" >
                             </p:ajax>
                         </p:selectOneMenu>
                         <p:commandButton ajax="false" value="Back" action="/lab/administration" style="float: right;"></p:commandButton>
@@ -36,9 +36,9 @@
                                 <p:panel>
                                     <f:facet name="header" >
                                         <h:outputText value="Search" ></h:outputText>
-                                        <p:commandButton id="btnAdd" ajax="false" value="Add New" action="#{investigationController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" style="float: right;" >
-                                            <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
-                                            </f:ajax>
+                                        <p:commandButton id="btnAdd"  value="Add New" action="#{investigationController.prepareAdd()}" 
+                                                         styleClass="buttons" onclick="onSubmitButton();" style="float: right;"
+                                                         process="@this" update="gpDetail">
                                         </p:commandButton>
                                     </f:facet>
 
@@ -85,7 +85,7 @@
                                 <h:outputLabel value="Inactive" rendered="#{investigationController.current.inactive}" style="color: red;"></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save" 
                                                  action="#{investigationController.saveSelected()}" styleClass="buttons" 
-                                                 ajax="false" onclick="onSubmitButton();"  >
+                                                 ajax="false"  >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
                             </f:facet>

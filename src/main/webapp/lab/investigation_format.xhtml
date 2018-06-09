@@ -72,8 +72,37 @@
                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                         <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
 
+                                        <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                        <p:selectOneMenu value="#{investigationItemController.machine}" >
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
+                                        <p:outputLabel value="Test" ></p:outputLabel>
+                                        <p:autoComplete value="#{investigationItemController.test}"
+                                                        completeMethod="#{itemController.completeMachineTests}"
+                                                        var="t"
+                                                        itemValue="#{t}"
+                                                        itemLabel="#{t.code}"
+                                                        >
+                                            <p:column >
+                                                <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                            </p:column>
+                                            <p:column >
+                                                <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                            </p:column>
+                                        </p:autoComplete>
+
+                                        <p:spacer ></p:spacer>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                        <p:spacer ></p:spacer>
                                         <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
+                                        <p:spacer ></p:spacer>
                                         <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
+                                        <p:spacer ></p:spacer>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
+                                        <p:spacer ></p:spacer>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
 
 
                                     </h:panelGrid>
@@ -355,7 +384,33 @@
                             </h:panelGrid>
                         </p:panel>
 
+                        <p:panel header="Automation" >
+                            <h:panelGrid  columns="2">
+                                <h:outputText value="Automated"/>
+                                <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
 
+                                <h:outputText value="Machine"/>
+                                <p:selectOneMenu value="#{investigationItemController.current.machine}" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                </p:selectOneMenu>
+
+                                <h:outputText value="Test"/>
+                                <p:autoComplete value="#{investigationItemController.current.test}"
+                                                completeMethod="#{itemController.completeMachineTests}"
+                                                var="t"
+                                                itemValue="#{t}"
+                                                itemLabel="#{t.code}"
+                                                >
+                                    <p:column >
+                                        <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column >
+                                        <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
+                            </h:panelGrid>
+                        </p:panel>
 
                         <p:panel header="Format" >
                             <h:panelGrid  columns="2">
@@ -419,7 +474,7 @@
                             </p:commandLink>
                             <p:spacer height="1" width="30" ></p:spacer>
                             <p:commandLink ajax="false" action="/lab/administration" value="Back to Ix Administration" ></p:commandLink>
-                            <p:commandLink ajax="false" action="/lab/investigation" value="Back to Ix Details" ></p:commandLink>
+                            <p:commandLink ajax="false" action="#{investigationController.toManageInvestigationDetails()}" value="Back to Ix Details" ></p:commandLink>
                             <p:commandLink ajax="false" action="/lab/investigation_format_move_all" value="Edit All Items" ></p:commandLink>
                         </p:panelGrid>
 

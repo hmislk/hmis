@@ -1033,6 +1033,8 @@ public class InvestigationItemController implements Serializable {
     private boolean addingNewTest = false;
     private boolean withoutHeadings = false;
     private boolean withoutComments = false;
+    private boolean withoutReportHeader;
+    private boolean withoutReportEnd;
     private double riBlockTop;
     private double riBlockLeft;
     private double riValueLeft;
@@ -1046,8 +1048,9 @@ public class InvestigationItemController implements Serializable {
     private String valueHeaderName;
     private String unitHeaderName;
     private String refHeaderName;
-    Machine machine;
-    Item test;
+    private Machine machine;
+    private Item test;
+    private boolean automated;
 
     public void toAddNewTest() {
         System.out.print("toAddNewTest");
@@ -1090,6 +1093,8 @@ public class InvestigationItemController implements Serializable {
             if (withoutHeadings) {
                 riBlockTop -= riRowGap;
             }
+
+            testName = currentInvestigation.getName();
 
         }
 
@@ -1220,8 +1225,34 @@ public class InvestigationItemController implements Serializable {
         valueValue.setCssFontWeight(cssValueFontWeight);
         valueValue.setCssTextDecoration(cssValueDecoration);
         valueValue.setItem(currentInvestigation);
+        valueValue.setAutomated(automated);
+        valueValue.setMachine(machine);
+        valueValue.setTest(test);
         valueValue.setCreatedAt(new Date());
         valueValue.setCreater(getSessionController().getLoggedUser());
+
+        InvestigationItem flagValue = new InvestigationItem();
+        flagValue.setName(testName + " Flag");
+        flagValue.setHtmltext(testName + " Flag");
+        flagValue.setIxItemType(InvestigationItemType.Flag);
+        flagValue.setIxItemValueType(InvestigationItemValueType.Varchar);
+        flagValue.setRiTop(valueHeader.getRiTop() + (riRowGap / 2));
+        flagValue.setRiLeft(valueHeader.getRiLeft() + (valueHeader.getRiWidth() / 2));
+        flagValue.setRiWidth(valueHeader.getRiWidth() / 2);
+        flagValue.setRiHeight(riHeight);
+        flagValue.setCssTextAlign(CssTextAlign.Center);
+        flagValue.setCssVerticalAlign(CssVerticalAlign.Top);
+        flagValue.setRiFontSize(riFontSize);
+        flagValue.setCssFontStyle(cssFontStyle);
+        flagValue.setCssFontFamily(cssFontFamily);
+        flagValue.setCssFontWeight(cssValueFontWeight);
+        flagValue.setCssTextDecoration(cssValueDecoration);
+        flagValue.setItem(currentInvestigation);
+        flagValue.setAutomated(automated);
+        flagValue.setMachine(machine);
+        flagValue.setTest(test);
+        flagValue.setCreatedAt(new Date());
+        flagValue.setCreater(getSessionController().getLoggedUser());
 
         InvestigationItem unitLabel = new InvestigationItem();
         unitLabel.setName(testUnit);
@@ -1240,6 +1271,9 @@ public class InvestigationItemController implements Serializable {
         unitLabel.setCssFontWeight(cssValueFontWeight);
         unitLabel.setCssTextDecoration(cssValueDecoration);
         unitLabel.setItem(currentInvestigation);
+        unitLabel.setAutomated(automated);
+        unitLabel.setMachine(machine);
+        unitLabel.setTest(test);
         unitLabel.setCreatedAt(new Date());
         unitLabel.setCreater(getSessionController().getLoggedUser());
 
@@ -1298,6 +1332,7 @@ public class InvestigationItemController implements Serializable {
 
         currentInvestigation.getReportItems().add(testLabel);
         currentInvestigation.getReportItems().add(valueValue);
+        currentInvestigation.getReportItems().add(flagValue);
         currentInvestigation.getReportItems().add(unitLabel);
         currentInvestigation.getReportItems().add(referenceLabel);
 
@@ -1307,7 +1342,7 @@ public class InvestigationItemController implements Serializable {
 
         currentInvestigation.getReportItems().add(current);
 
-        if (withoutHeadings) {
+        if (!withoutHeadings) {
             current.setTestHeader(testHeader);
             current.setValueHeader(valueHeader);
             current.setUnitHeader(unitHeader);
@@ -1321,7 +1356,57 @@ public class InvestigationItemController implements Serializable {
             current.setCommentLabel(commentValue);
         }
         current.setIxItemType(InvestigationItemType.Investigation);
-        current.setAutomated(true);
+        current.setAutomated(automated);
+        current.setFlagValue(flagValue);
+        current.setMachine(machine);
+        current.setTest(test);
+        getIxFacade().edit(currentInvestigation);
+
+        if (!withoutReportHeader) {
+            InvestigationItem reportHeader = new InvestigationItem();
+            reportHeader.setName(currentInvestigation.getFullName());
+            reportHeader.setHtmltext(currentInvestigation.getFullName());
+            reportHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
+            reportHeader.setIxItemType(InvestigationItemType.Label);
+            reportHeader.setRiTop(riBlockTop - 2 * riRowGap);
+            reportHeader.setRiLeft(10);
+            reportHeader.setRiWidth(80);
+            reportHeader.setRiHeight(riHeight);
+            reportHeader.setCssTextAlign(CssTextAlign.Center);
+            reportHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+            reportHeader.setRiFontSize(riFontSize);
+            reportHeader.setCssFontStyle(cssFontStyle);
+            reportHeader.setCssFontFamily(cssFontFamily);
+            reportHeader.setCssFontWeight(cssHeaderFontWeight);
+            reportHeader.setCssTextDecoration(cssHeaderDecoration);
+            reportHeader.setItem(currentInvestigation);
+            reportHeader.setCreatedAt(new Date());
+            reportHeader.setCreater(getSessionController().getLoggedUser());
+            currentInvestigation.getReportItems().add(reportHeader);
+        }
+        
+        if (!withoutReportEnd) {
+            InvestigationItem reportHeader = new InvestigationItem();
+            reportHeader.setName("End of Report");
+            reportHeader.setHtmltext("-------------- End of Report -------------");
+            reportHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
+            reportHeader.setIxItemType(InvestigationItemType.Label);
+            reportHeader.setRiTop(riBlockTop + 3 * riRowGap );
+            reportHeader.setRiLeft(10);
+            reportHeader.setRiWidth(80);
+            reportHeader.setRiHeight(riHeight);
+            reportHeader.setCssTextAlign(CssTextAlign.Center);
+            reportHeader.setCssVerticalAlign(CssVerticalAlign.Top);
+            reportHeader.setRiFontSize(riFontSize);
+            reportHeader.setCssFontStyle(cssFontStyle);
+            reportHeader.setCssFontFamily(cssFontFamily);
+            reportHeader.setCssFontWeight(cssHeaderFontWeight);
+            reportHeader.setCssTextDecoration(cssHeaderDecoration);
+            reportHeader.setItem(currentInvestigation);
+            reportHeader.setCreatedAt(new Date());
+            reportHeader.setCreater(getSessionController().getLoggedUser());
+            currentInvestigation.getReportItems().add(reportHeader);
+        }
 
         getIxFacade().edit(currentInvestigation);
 
@@ -1370,27 +1455,24 @@ public class InvestigationItemController implements Serializable {
             if (current.getValueHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getValueHeader());
             }
-
             if (current.getUnitHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getUnitHeader());
             }
-
             if (current.getReferenceHeader() != null) {
                 removeSingleItem((InvestigationItem) current.getReferenceHeader());
             }
-
             if (current.getTestLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getTestLabel());
             }
-
             if (current.getValueValue() != null) {
                 removeSingleItem((InvestigationItem) current.getValueValue());
             }
-
+            if (current.getFlagValue() != null) {
+                removeSingleItem((InvestigationItem) current.getFlagValue());
+            }
             if (current.getUnitLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getUnitLabel());
             }
-
             if (current.getReferenceLabel() != null) {
                 removeSingleItem((InvestigationItem) current.getReferenceLabel());
             }
@@ -1494,6 +1576,8 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    
+  
     public void prepareAdd() {
         current = new InvestigationItem();
     }
@@ -1848,6 +1932,46 @@ public class InvestigationItemController implements Serializable {
         this.riFlagLeft = riFlagLeft;
     }
 
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Item getTest() {
+        return test;
+    }
+
+    public void setTest(Item test) {
+        this.test = test;
+    }
+
+    public boolean isAutomated() {
+        return automated;
+    }
+
+    public void setAutomated(boolean automated) {
+        this.automated = automated;
+    }
+
+    public boolean isWithoutReportHeader() {
+        return withoutReportHeader;
+    }
+
+    public void setWithoutReportHeader(boolean withoutReportHeader) {
+        this.withoutReportHeader = withoutReportHeader;
+    }
+
+    public boolean isWithoutReportEnd() {
+        return withoutReportEnd;
+    }
+
+    public void setWithoutReportEnd(boolean withoutReportEnd) {
+        this.withoutReportEnd = withoutReportEnd;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -1886,11 +2010,9 @@ public class InvestigationItemController implements Serializable {
     public void setIxXml(String ixXml) {
         this.ixXml = ixXml;
     }
+    
+    
 
-    
-    
-    
-    
     /**
      *
      */
@@ -1920,9 +2042,6 @@ public class InvestigationItemController implements Serializable {
             return sb.toString();
         }
 
-        
-        
-        
         @Override
         public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
             if (object == null) {

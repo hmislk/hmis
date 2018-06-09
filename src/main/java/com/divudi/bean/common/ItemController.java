@@ -206,6 +206,18 @@ public class ItemController implements Serializable {
         machineTests = getFacade().findBySQL(j, m);
     }
 
+    public List<Item>  completeMachineTests(String qry) {
+        List<Item> ts;
+        String j = "select i from Item i where i.itemType=:t and (lower(i.name) like :m or lower(i.name) like :m ) and i.retired=:r order by i.code";
+        Map m = new HashMap();
+        m.put("t", ItemType.AnalyzerTest);
+        m.put("m", "%" + qry.toLowerCase() + "%");
+        m.put("r", false);
+        ts = getFacade().findBySQL(j, m);
+        return ts;
+    }
+    
+    
     public void removeTest() {
         if (current == null) {
             JsfUtil.addErrorMessage("Select one to delete");

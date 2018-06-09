@@ -194,8 +194,6 @@ public class BillController implements Serializable {
         this.cashRemain = cashRemain;
     }
 
-    @EJB
-    private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
     @EJB
@@ -2425,13 +2423,6 @@ public class BillController implements Serializable {
         this.tmpPatient = tmpPatient;
     }
 
-    public PatientInvestigationFacade getPatientInvestigationFacade() {
-        return patientInvestigationFacade;
-    }
-
-    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
-        this.patientInvestigationFacade = patientInvestigationFacade;
-    }
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;

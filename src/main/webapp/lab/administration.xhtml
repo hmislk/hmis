@@ -10,7 +10,6 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-
                     <p:panel header="Lab Administration" styleClass="verticalAndHorizontalCenteringLarge" >
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <h:panelGrid columns="1">
@@ -19,7 +18,7 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="/lab/investigation_category" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Tubes" action="/lab/investigation_tube" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Speciman" action="/lab/investigation_speciman" onclick="onSubmitButton();" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab/investigation" onclick="onSubmitButton();" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="#{investigationController.toManageInvestigationDetails()}" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzers" action="/lab/machine" onclick="onSubmitButton();" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzer Tests" action="/lab/analyzer_test" onclick="onSubmitButton();" />
                                          <p:commandButton  styleClass="linkButton" ajax="false" value="Sample Components" action="/lab/sample_component" onclick="onSubmitButton();" />

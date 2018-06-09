@@ -29,18 +29,19 @@
                                                     inputStyle="width:200px;"     itemLabel="#{i.name}" value="#{investigationController.institution}" >
                                         <p:ajax event="itemSelect" process="@this" update="cmbDep" ></p:ajax>
                                     </p:autoComplete>
-                                    <hr/>
+                                    <p:spacer height="5" ></p:spacer>
                                     <p:outputLabel value="Department" ></p:outputLabel>
                                     <p:selectOneMenu id="cmbDep" value="#{investigationController.department}" style="width: 180px;" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
                                         <f:selectItems value="#{investigationController.depatrmentsOfSelectedInstitution}" ></f:selectItems>
                                     </p:selectOneMenu>
-                                    <hr/>
+                                    <p:spacer height="5" ></p:spacer>
                                     <p:outputLabel value="Category" ></p:outputLabel>
                                     <p:selectOneMenu value="#{investigationController.category}" style="width: 180px;" >
                                         <f:selectItem itemLabel="All Categories" ></f:selectItem>
                                         <f:selectItems value="#{investigationCategoryController.items}" ></f:selectItems>
                                     </p:selectOneMenu>
+                                    <p:spacer height="5" ></p:spacer>
                                     <h:panelGrid columns="1" >
                                         <p:commandButton ajax="false" value="Fill" action="#{investigationController.listFilteredIxs}" style="width: 180px;"/>
                                         <p:commandButton ajax="false" value="Clear" action="#{investigationController.clearFields()}"   style="width: 180px;"/>
@@ -56,12 +57,12 @@
                                     <p:commandButton id="excel" ajax="false" value="Expost to Excel"    style="width: 180px;">
                                         <p:dataExporter target="tbl" type="xls" fileName="List of All Investigations"  />
                                     </p:commandButton>
-                                    <p:commandButton value="Manage Details"  ajax="false" action="/lab/investigation" 
-                                                     rendered="#{investigationController.current ne null}"  style="width: 180px;">
+                                    <p:commandButton value="Manage Details"  ajax="false" action="#{investigationController.toManageInvestigationDetails()}" 
+                                                     disabled="#{investigationController.current eq null}"  style="width: 180px;">
                                     </p:commandButton>
-                                    <p:commandButton  style="width: 180px;" rendered="#{investigationController.current ne null}" ajax="false" 
+                                    <p:commandButton  style="width: 180px;" disabled="#{investigationController.current eq null}" ajax="false" 
                                                       action="#{investigationController.toEditReportFormat()}" value="Manage Report Format"></p:commandButton>
-                                    <p:commandButton  style="width: 180px;" disabled="#{(!webUserController.hasPrivilege('AdminPrices')) or investigationController.current ne null}"
+                                    <p:commandButton  style="width: 180px;" disabled="#{(!webUserController.hasPrivilege('AdminPrices')) or investigationController.current eq null}"
                                                       ajax="false" action="#{investigationController.toEditFees()}" value="Manage Prices"></p:commandButton>
                                 </h:panelGrid>
                             </p:panel>
@@ -69,7 +70,11 @@
 
                         <h:panelGrid id="list" columns="1" >
                             <p:dataTable id="tbl" rowIndexVar="rowIndex" rowKey="#{ix.id}" selectionMode="single" selection="#{investigationController.current}"
-                                         value="#{investigationController.allIxs}" var="ix"  >
+                                         value="#{investigationController.allIxs}" var="ix"  
+                                         paginator="true" rows="20"
+                                         paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                                         rowsPerPageTemplate="10,20,50,100,1000"
+                                         >
                                 <p:ajax event="rowSelect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
                                 <p:ajax event="rowUnselect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
 
@@ -79,16 +84,16 @@
                                 <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}">
                                     <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Category" sortBy="#{ix.category.name}" width="200">
+                                <p:column headerText="Category" sortBy="#{ix.category.name}" width="120">
                                     <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Institution" sortBy="#{ix.institution.name}" width="200">
+                                <p:column headerText="Institution" sortBy="#{ix.institution.name}" width="120">
                                     <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Department" sortBy="#{ix.department.name}" width="200">
+                                <p:column headerText="Department" sortBy="#{ix.department.name}" width="120">
                                     <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Price" sortBy="#{ix.total}" style="text-align: right; width: 100px;">
+                                <p:column headerText="Price" sortBy="#{ix.total}" style="text-align: right; width: 80px;">
                                     <h:outputLabel value="#{ix.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
