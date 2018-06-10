@@ -81,7 +81,7 @@
                                 <p:column headerText="No." width="25" >
                                     <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
                                 </p:column>  
-                                <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}">
+                                <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{ix.name}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Category" sortBy="#{ix.category.name}" width="120">

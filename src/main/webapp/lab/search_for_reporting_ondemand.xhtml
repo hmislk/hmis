@@ -280,15 +280,12 @@
 
                                 <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" styleClass="noBorderGrid summeryBorder noBorder" >
                                     <p:column >
-
-                                        <h:panelGrid columns="7" styleClass="noBorderGrid" >
-                                            <p:outputLabel value="#{dpr.retired}" rendered="#{dpr.retired eq true ? 'noDisplayRow':''}"/>
-                                            <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
-                                                           value="#{dpr.item.name}" 
-                                                           ajax="false" action="/lab/patient_report">
-                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
-                                            </p:commandLink>
-
+                                        <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
+                                                       value="#{dpr.item.name}" 
+                                                       ajax="false" action="/lab/patient_report">
+                                            <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                        </p:commandLink>
+                                        <h:panelGrid columns="5" styleClass="noBorderGrid" >
                                             <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
@@ -303,8 +300,6 @@
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
                                                             style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
-
-
 
 
 

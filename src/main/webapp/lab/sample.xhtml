@@ -54,6 +54,21 @@
                                 </h:panelGrid>
                             </h:panelGroup>
                             <h:panelGroup >
+                                
+                                
+                                <table >
+                                    <tr>
+                                        <th>
+                                            <p:outputLabel value="Patient" ></p:outputLabel>
+                                        </th>
+                                        <th>
+                                            
+                                        </th>
+                                    </tr>
+                                    <ui:repeat value="#{patientInvestigationController.lstToSamle}" var="s" >
+                                    </ui:repeat>
+                                </table>
+                                
                                 <p:dataTable  
                                     id="sample" 
                                     value="#{patientInvestigationController.lstToSamle}" 

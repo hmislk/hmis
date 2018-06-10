@@ -197,9 +197,10 @@ public class PatientReportController implements Serializable {
                         val = v.getDoubleValue() + "";
                         break;
                 }
-
-                html += val;
-
+                if (val != null) {
+                    val = val.trim().replaceAll(" +", " ");
+                    html += StringEscapeUtils.escapeHtml4(val);
+                }
                 html += "</div>";
             }
 
@@ -215,28 +216,32 @@ public class PatientReportController implements Serializable {
             List<CommonReportItem> cris = commonReportItemController.listCommonRportItems(getCurrentPatientReport().getTransInvestigation().getReportFormat());
 
             for (CommonReportItem v : cris) {
-                if (v.isRetired() == false ) {
+                if (v.isRetired() == false) {
                     html += "<div style=\" " + v.getOuterCssStyle() + "; position:absolute; \">";
-                    String ev="";
+                    String ev = "";
                     if (v.getIxItemType() == InvestigationItemType.Label) {
                         ev = v.getName();
                     } else {
-                        switch (v.getReportItemType()) {
-                            case PatientName:
-                            case NameInFull:
-                                ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle();
-                                break;
-                            case PatientAge:
-                                ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
-                                break;
-                            case PatientSex:
-                                ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
-                                break;
-                            case Phone:
-                                ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getPhone();
-                                break;
+
+                        if (v.getReportItemType() != null) {
+                            switch (v.getReportItemType()) {
+                                case PatientName:
+                                case NameInFull:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle();
+                                    break;
+                                case PatientAge:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
+                                    break;
+                                case PatientSex:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
+                                    break;
+                                case Phone:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getPhone();
+                                    break;
+                            }
                         }
                     }
+                    ev = ev.trim().replaceAll(" +", " ");
                     ev = StringEscapeUtils.escapeHtml4(ev);
                     html += ev;
                     html += "</div>";
@@ -894,6 +899,39 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setApproveDepartment(getSessionController().getLoggedUser().getDepartment());
         currentPatientReport.setApproveInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setApproveUser(getSessionController().getLoggedUser());
+        getFacade().edit(currentPatientReport);
+        getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
+        getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+        UtilityController.addSuccessMessage("Approved");
+        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+    }
+
+    public void reverseApprovalOfPatientReport() {
+        Date startTime = new Date();
+        if (currentPatientReport == null) {
+            UtilityController.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getDataEntered() == false) {
+            UtilityController.addErrorMessage("First Save report");
+            return;
+        }
+        if (currentPatientReport.getApproved() == false) {
+            UtilityController.addErrorMessage("First Approve report");
+            return;
+        }
+        getCurrentPtIx().setApproved(false);
+        currentPtIx.setCancelled(Boolean.FALSE);
+        currentPtIx.setCancelledAt(Calendar.getInstance().getTime());
+        currentPtIx.setCancelledUser(getSessionController().getLoggedUser());
+        currentPtIx.setCancellDepartment(getSessionController().getDepartment());
+        getPiFacade().edit(currentPtIx);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setCancelledAt(Calendar.getInstance().getTime());
+        currentPatientReport.setCancellDepartment(getSessionController().getLoggedUser().getDepartment());
+        currentPatientReport.setCancellInstitution(getSessionController().getLoggedUser().getInstitution());
+        currentPatientReport.setCancelledUser(getSessionController().getLoggedUser());
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());

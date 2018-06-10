@@ -16,13 +16,16 @@ import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.ItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValue;
+import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
+import com.divudi.entity.lab.Sample;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
@@ -125,6 +128,23 @@ public class InvestigationItemController implements Serializable {
             movePercent = 5.0;
         }
         return movePercent;
+    }
+
+    public List<Item> getCurrentReportComponants() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.name";
+        Map m = new HashMap();
+        m.put("t", ItemType.SampleComponent);
+        m.put("r", false);
+        m.put("m", currentInvestigation);
+        return getFacade().findBySQL(j, m);
+    }
+
+    public void setCurrentReportComponants(List<Item> crc) {
+
     }
 
     public void setMovePercent(Double movePercent) {
@@ -1019,6 +1039,28 @@ public class InvestigationItemController implements Serializable {
         return getEjbFacade().findFirstBySQL(j, m);
     }
 
+    public InvestigationItem getLastReportItemComplete(InvestigationItemType type) {
+        List<InvestigationItem> its = getLastReportItems(type);
+        for (InvestigationItem ii : its) {
+            if (ii.getTestHeader() != null) {
+                return ii;
+            }
+        }
+        return null;
+    }
+
+    public List<InvestigationItem> getLastReportItems(InvestigationItemType type) {
+        String j = "select i from InvestigationItem i ";
+        Map m = new HashMap();
+        if (type != null) {
+            j += " where i.ixItemType=:t ";
+            m.put("t", type);
+        }
+        j += "order by i.id desc";
+
+        return getEjbFacade().findBySQL(j, m, 50);
+    }
+
     private String testName;
     private String testUnit;
     private String testReferenceRange;
@@ -1051,11 +1093,26 @@ public class InvestigationItemController implements Serializable {
     private Machine machine;
     private Item test;
     private boolean automated;
+    private Sample sample;
+    private Item investigationComponent;
+    private InvestigationTube tube;
 
-    public void toAddNewTest() {
-        System.out.print("toAddNewTest");
-        addingNewTest = true;
+    
+    
+    public void toAddNewTestFirst(){
+        InvestigationItem lastItem = getLastReportItemComplete(InvestigationItemType.Investigation);
+        toAddNewTest(lastItem);
+    }
+    
+    public void toAddNewTestOthers(){
         InvestigationItem lastItem = getLastReportItem(InvestigationItemType.Investigation);
+        toAddNewTest(lastItem);
+    }
+    
+    public void toAddNewTest(InvestigationItem lastItem) {
+       
+        addingNewTest = true;
+        
         if (lastItem != null) {
 
             if (lastItem.getTestHeader() != null) {
@@ -1095,6 +1152,8 @@ public class InvestigationItemController implements Serializable {
             }
 
             testName = currentInvestigation.getName();
+            tube = currentInvestigation.getInvestigationTube();
+            sample = currentInvestigation.getSample();
 
         }
 
@@ -1108,6 +1167,16 @@ public class InvestigationItemController implements Serializable {
         }
 
         InvestigationItem testHeader = new InvestigationItem();
+        InvestigationItem valueHeader = new InvestigationItem();
+        InvestigationItem unitHeader = new InvestigationItem();
+        InvestigationItem referenceHeader = new InvestigationItem();
+        InvestigationItem testLabel = new InvestigationItem();
+        InvestigationItem valueValue = new InvestigationItem();
+        InvestigationItem flagValue = new InvestigationItem();
+        InvestigationItem unitLabel = new InvestigationItem();
+        InvestigationItem referenceLabel = new InvestigationItem();
+        InvestigationItem commentValue = new InvestigationItem();
+        current = new InvestigationItem();
 
         testHeader.setName(testHeaderName);
         testHeader.setHtmltext(testHeaderName);
@@ -1128,7 +1197,6 @@ public class InvestigationItemController implements Serializable {
         testHeader.setCreatedAt(new Date());
         testHeader.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem valueHeader = new InvestigationItem();
         valueHeader.setName(valueHeaderName);
         valueHeader.setHtmltext(valueHeaderName);
         valueHeader.setIxItemType(InvestigationItemType.Label);
@@ -1148,7 +1216,6 @@ public class InvestigationItemController implements Serializable {
         valueHeader.setCreatedAt(new Date());
         valueHeader.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem unitHeader = new InvestigationItem();
         unitHeader.setName(unitHeaderName);
         unitHeader.setHtmltext(unitHeaderName);
         unitHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
@@ -1168,7 +1235,6 @@ public class InvestigationItemController implements Serializable {
         unitHeader.setCreatedAt(new Date());
         unitHeader.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem referenceHeader = new InvestigationItem();
         referenceHeader.setName(refHeaderName);
         referenceHeader.setHtmltext(refHeaderName);
         referenceHeader.setIxItemType(InvestigationItemType.Label);
@@ -1188,7 +1254,6 @@ public class InvestigationItemController implements Serializable {
         referenceHeader.setCreatedAt(new Date());
         referenceHeader.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem testLabel = new InvestigationItem();
         testLabel.setName(testName);
         testLabel.setHtmltext(testName);
         testLabel.setIxItemType(InvestigationItemType.Label);
@@ -1208,16 +1273,15 @@ public class InvestigationItemController implements Serializable {
         testLabel.setCreatedAt(new Date());
         testLabel.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem valueValue = new InvestigationItem();
         valueValue.setName(testName + " value");
         valueValue.setHtmltext(testName + " value");
         valueValue.setIxItemType(InvestigationItemType.Value);
         valueValue.setIxItemValueType(InvestigationItemValueType.Varchar);
         valueValue.setRiTop(valueHeader.getRiTop() + riRowGap);
         valueValue.setRiLeft(valueHeader.getRiLeft());
-        valueValue.setRiWidth(valueHeader.getRiWidth());
+        valueValue.setRiWidth(valueHeader.getRiWidth() - 5);
         valueValue.setRiHeight(riHeight);
-        valueValue.setCssTextAlign(CssTextAlign.Center);
+        valueValue.setCssTextAlign(CssTextAlign.Left);
         valueValue.setCssVerticalAlign(CssVerticalAlign.Top);
         valueValue.setRiFontSize(riFontSize);
         valueValue.setCssFontStyle(cssFontStyle);
@@ -1228,19 +1292,20 @@ public class InvestigationItemController implements Serializable {
         valueValue.setAutomated(automated);
         valueValue.setMachine(machine);
         valueValue.setTest(test);
+        valueValue.setSample(sample);
         valueValue.setCreatedAt(new Date());
         valueValue.setCreater(getSessionController().getLoggedUser());
+        valueValue.setSampleComponent(investigationComponent);
 
-        InvestigationItem flagValue = new InvestigationItem();
         flagValue.setName(testName + " Flag");
         flagValue.setHtmltext(testName + " Flag");
         flagValue.setIxItemType(InvestigationItemType.Flag);
         flagValue.setIxItemValueType(InvestigationItemValueType.Varchar);
-        flagValue.setRiTop(valueHeader.getRiTop() + (riRowGap / 2));
-        flagValue.setRiLeft(valueHeader.getRiLeft() + (valueHeader.getRiWidth() / 2));
-        flagValue.setRiWidth(valueHeader.getRiWidth() / 2);
+        flagValue.setRiTop(valueHeader.getRiTop() + riRowGap);
+        flagValue.setRiLeft(valueValue.getRiLeft() + valueValue.getRiWidth() + 1);
+        flagValue.setRiWidth(4);
         flagValue.setRiHeight(riHeight);
-        flagValue.setCssTextAlign(CssTextAlign.Center);
+        flagValue.setCssTextAlign(CssTextAlign.Left);
         flagValue.setCssVerticalAlign(CssVerticalAlign.Top);
         flagValue.setRiFontSize(riFontSize);
         flagValue.setCssFontStyle(cssFontStyle);
@@ -1251,10 +1316,11 @@ public class InvestigationItemController implements Serializable {
         flagValue.setAutomated(automated);
         flagValue.setMachine(machine);
         flagValue.setTest(test);
+        flagValue.setSample(sample);
         flagValue.setCreatedAt(new Date());
+        flagValue.setSampleComponent(investigationComponent);
         flagValue.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem unitLabel = new InvestigationItem();
         unitLabel.setName(testUnit);
         unitLabel.setHtmltext(testUnit);
         unitLabel.setIxItemType(InvestigationItemType.Label);
@@ -1277,7 +1343,6 @@ public class InvestigationItemController implements Serializable {
         unitLabel.setCreatedAt(new Date());
         unitLabel.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem referenceLabel = new InvestigationItem();
         referenceLabel.setName(testReferenceRange);
         referenceLabel.setHtmltext(testReferenceRange);
         referenceLabel.setIxItemType(InvestigationItemType.Label);
@@ -1297,7 +1362,6 @@ public class InvestigationItemController implements Serializable {
         referenceLabel.setCreatedAt(new Date());
         referenceLabel.setCreater(getSessionController().getLoggedUser());
 
-        InvestigationItem commentValue = new InvestigationItem();
         commentValue.setName("Test Comments");
         commentValue.setHtmltext(testComments);
         commentValue.setIxItemType(InvestigationItemType.Value);
@@ -1317,7 +1381,6 @@ public class InvestigationItemController implements Serializable {
         commentValue.setCreatedAt(new Date());
         commentValue.setCreater(getSessionController().getLoggedUser());
 
-        current = new InvestigationItem();
         current.setName(testName);
         current.setItem(currentInvestigation);
         current.setCreatedAt(new Date());
@@ -1360,7 +1423,8 @@ public class InvestigationItemController implements Serializable {
         current.setFlagValue(flagValue);
         current.setMachine(machine);
         current.setTest(test);
-        getIxFacade().edit(currentInvestigation);
+        current.setSample(sample);
+        current.setSampleComponent(investigationComponent);
 
         if (!withoutReportHeader) {
             InvestigationItem reportHeader = new InvestigationItem();
@@ -1384,14 +1448,14 @@ public class InvestigationItemController implements Serializable {
             reportHeader.setCreater(getSessionController().getLoggedUser());
             currentInvestigation.getReportItems().add(reportHeader);
         }
-        
+
         if (!withoutReportEnd) {
             InvestigationItem reportHeader = new InvestigationItem();
             reportHeader.setName("End of Report");
             reportHeader.setHtmltext("-------------- End of Report -------------");
             reportHeader.setIxItemValueType(InvestigationItemValueType.Varchar);
             reportHeader.setIxItemType(InvestigationItemType.Label);
-            reportHeader.setRiTop(riBlockTop + 3 * riRowGap );
+            reportHeader.setRiTop(riBlockTop + 3 * riRowGap);
             reportHeader.setRiLeft(10);
             reportHeader.setRiWidth(80);
             reportHeader.setRiHeight(riHeight);
@@ -1576,8 +1640,6 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
-    
-  
     public void prepareAdd() {
         current = new InvestigationItem();
     }
@@ -1673,7 +1735,7 @@ public class InvestigationItemController implements Serializable {
         List<InvestigationItem> iis;
         if (ix != null && ix.getId() != null) {
             String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.ixItemType, i.cssTop , i.cssLeft";
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.riTop, i.riLeft";
             iis = getFacade().findBySQL(temSql);
         } else {
             iis = new ArrayList<>();
@@ -1972,6 +2034,30 @@ public class InvestigationItemController implements Serializable {
         this.withoutReportEnd = withoutReportEnd;
     }
 
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Item getInvestigationComponent() {
+        return investigationComponent;
+    }
+
+    public void setInvestigationComponent(Item investigationComponent) {
+        this.investigationComponent = investigationComponent;
+    }
+
+    public InvestigationTube getTube() {
+        return tube;
+    }
+
+    public void setTube(InvestigationTube tube) {
+        this.tube = tube;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -2010,8 +2096,6 @@ public class InvestigationItemController implements Serializable {
     public void setIxXml(String ixXml) {
         this.ixXml = ixXml;
     }
-    
-    
 
     /**
      *

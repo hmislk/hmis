@@ -13,25 +13,34 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.ItemType;
 import com.divudi.data.SmsType;
+import com.divudi.data.lab.SampleCollection;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
+import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.ReportItem;
+import com.divudi.entity.lab.Sample;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
+import com.divudi.facade.util.JsfUtil;
 import com.itextpdf.text.DocumentException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -44,9 +53,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
@@ -91,14 +102,6 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigationFacade ejbFacade;
     @EJB
     PatientReportFacade prFacade;
-    
-    
-    
-    
-    /**
-     * Controllers
-     */
-    
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -111,20 +114,21 @@ public class PatientInvestigationController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
+
+    /**
+     * Controllers
+     */
     @Inject
     private InstitutionLabSumeryController labReportSearchByInstitutionController;
     @Inject
     SessionController sessionController;
     @Inject
     CommonController commonController;
-    
-    
-    
-    
+    @Inject
+    private InvestigationItemController investigationItemController;
     /**
      * Class Variables
      */
-    
     List<PatientInvestigation> selectedItems;
     private PatientInvestigation current;
     Investigation currentInvestigation;
@@ -856,7 +860,115 @@ public class PatientInvestigationController implements Serializable {
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
-    
+
+    List<SampleCollection> sampleCollections;
+
+    public void prepareSampleCollection(List<PatientInvestigation> pis) {
+        sampleCollections = new ArrayList<>();
+        Set<Patient> patients = new HashSet<>();
+        Set<Bill> bills = new HashSet<>();
+        Set<BillItem> billItems = new HashSet<>();
+        Set<BillComponent> billComponents = new HashSet<>();
+        Set<Sample> samples = new HashSet<>();
+        Set<Item> ixComponents = new HashSet<>();
+        Set<Item> tests = new HashSet<>();
+
+        for (PatientInvestigation pi : pis) {
+            patients.add(pi.getBillComponent().getBillItem().getBill().getPatient());
+            bills.add(pi.getBillComponent().getBillItem().getBill());
+            billItems.add(pi.getBillComponent().getBillItem());
+            billComponents.add(pi.getBillComponent());
+        }
+
+        /**
+         * Patient
+         * Bill
+         * Test Component
+         * Sample
+         * Test
+         */
+        
+        for (Patient p : patients) {
+            List<Bill> ptBills = patientBills(p, bills);
+            for (Bill b : ptBills) {
+                for (BillItem bi : b.getBillItems()) {
+                    List<BillComponent> biBillComponents = billItemComponents(bi, billComponents);
+                    for (BillComponent bc : biBillComponents) {
+                        PatientInvestigation pi = patientInvestigationOfBillComponant(pis, bc);
+                        Investigation ix = pi.getInvestigation();
+                        List<InvestigationItem> ixis = investigationItemController.getItems(ix);
+                        for (InvestigationItem ixi : ixis) {
+                            samples.add(ixi.getSample());
+                            tests.add(ixi.getTest());
+                            ixComponents.add(ixi.getSampleComponent());
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+        
+        
+        for (Patient p : patients) {
+            List<Bill> ptBills = patientBills(p, bills);
+            for (Bill b : ptBills) {
+                
+            }
+          
+        }
+        
+        
+        
+        
+        
+
+    }
+
+
+    public List<Item> getCurrentReportComponants(Investigation ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.name";
+        Map m = new HashMap();
+        m.put("t", ItemType.SampleComponent);
+        m.put("r", false);
+        m.put("m", ix);
+        return getFacade().findBySQL(j, m);
+    }
+
+    private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
+        for (PatientInvestigation pi : bcs) {
+            if (pi.getBillComponent() == bc) {
+                return pi;
+            }
+        }
+        return null;
+    }
+
+    private List<BillComponent> billItemComponents(BillItem bi, Set<BillComponent> bcs) {
+        List<BillComponent> bs = new ArrayList<>();
+        for (BillComponent b : bcs) {
+            if (b.getBillItem() == bi) {
+                bs.add(b);
+            }
+        }
+        return bs;
+    }
+
+    private List<Bill> patientBills(Patient pt, Set<Bill> bills) {
+        List<Bill> bs = new ArrayList<>();
+        for (Bill b : bills) {
+            if (b.getPatient() == pt) {
+                bs.add(b);
+            }
+        }
+        return bs;
+    }
+
     public void prepareSampled() {
         String temSql;
         Map temMap = new HashMap();
@@ -1117,6 +1229,10 @@ public class PatientInvestigationController implements Serializable {
         this.sms = sms;
     }
 
+    public InvestigationItemController getInvestigationItemController() {
+        return investigationItemController;
+    }
+
     /**
      *
      */
@@ -1166,6 +1282,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public BillItemFacade getBillItemFacade() {
+        return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+    }
+
+    public List<SampleCollection> getSampleCollections() {
+        return sampleCollections;
+    }
+
+    public void setSampleCollections(List<SampleCollection> sampleCollections) {
+        this.sampleCollections = sampleCollections;
     }
 
 }

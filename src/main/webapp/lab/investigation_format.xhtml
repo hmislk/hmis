@@ -37,9 +37,11 @@
                                     update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
                         </p:autoComplete> 
                         <p:panel header="Add New ..." >
-                            <h:panelGrid columns="5" >
-                                <p:commandButton id="btnToNewTest" value="Test" oncomplete="PF('dlgTest').show();" 
-                                                 process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTest()}"/>
+                            <h:panelGrid columns="6" >
+                                <p:commandButton id="btnToNewTestFirst" value="Test (First One)" oncomplete="PF('dlgTest').show();" 
+                                                 process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
+                                <p:commandButton id="btnToNewTestOther" value="Test (Others)" oncomplete="PF('dlgTest').show();" 
+                                                 process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestOthers()}"/>
                                 <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
                                 <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
                                 <p:commandButton ajax="false"  value="Cal" action="#{investigationItemController.addNewCalculation()}"/>
@@ -49,7 +51,8 @@
 
 
                         <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
-                            <p:commandButton ajax="false" value="Save" action="#{investigationItemController.addNewTest()}" 
+                            <p:commandButton ajax="false" value="Save" 
+                                             action="#{investigationItemController.addNewTest()}" 
                                              ></p:commandButton>
 
 
@@ -61,22 +64,32 @@
                                     <h:panelGrid columns="2" >
 
                                         <p:outputLabel value="Test Name" ></p:outputLabel>
-                                        <p:inputText value="#{investigationItemController.testName}" ></p:inputText>
+                                        <p:inputText value="#{investigationItemController.testName}" style="width: 300px;" ></p:inputText>
 
                                         <p:outputLabel value="Test Unit" ></p:outputLabel>
                                         <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
 
                                         <p:outputLabel value="Reference" ></p:outputLabel>
-                                        <p:editor value="#{investigationItemController.testReferenceRange}" ></p:editor>
+                                        <p:editor value="#{investigationItemController.testReferenceRange}" height="100" ></p:editor>
 
                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                         <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
+
+
+
+                                        <p:outputLabel value="Test Component" ></p:outputLabel>
+                                        <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
+                                            <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        </p:selectOneMenu>
 
                                         <p:outputLabel value="Analyzer" ></p:outputLabel>
                                         <p:selectOneMenu value="#{investigationItemController.machine}" >
                                             <f:selectItem itemLabel="Select" ></f:selectItem>
                                             <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
                                         </p:selectOneMenu>
+
+
+
 
                                         <p:outputLabel value="Test" ></p:outputLabel>
                                         <p:autoComplete value="#{investigationItemController.test}"
@@ -93,19 +106,29 @@
                                             </p:column>
                                         </p:autoComplete>
 
-                                        <p:spacer ></p:spacer>
-                                        <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
-                                        <p:spacer ></p:spacer>
-                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
-                                        <p:spacer ></p:spacer>
-                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
-                                        <p:spacer ></p:spacer>
-                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
-                                        <p:spacer ></p:spacer>
-                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
+                                        <p:outputLabel value="Sample" ></p:outputLabel>
+                                        <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.sample}" >
+                                            <f:selectItem itemLabel="Please select a sample"/>
+                                            <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        </p:selectOneMenu>
 
+                                        <h:outputText value="Container / Tube" ></h:outputText>
+                                        <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.tube}" >
+                                            <f:selectItem itemLabel="Please select a Tube"/>
+                                            <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        </p:selectOneMenu>
 
                                     </h:panelGrid>
+                                    <h:panelGrid columns="10" >
+
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
+                                        <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
+
+                                    </h:panelGrid>
+
                                 </p:tab>
 
                                 <p:tab title="Report Details" >
@@ -389,6 +412,13 @@
                                 <h:outputText value="Automated"/>
                                 <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
 
+
+
+                                <p:outputLabel value="Test Component" ></p:outputLabel>
+                                <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.current.sampleComponent}" >
+                                    <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                </p:selectOneMenu>
+
                                 <h:outputText value="Machine"/>
                                 <p:selectOneMenu value="#{investigationItemController.current.machine}" >
                                     <f:selectItem itemLabel="Select" ></f:selectItem>
@@ -409,6 +439,19 @@
                                         <p:outputLabel value="#{t.name}" ></p:outputLabel>
                                     </p:column>
                                 </p:autoComplete>
+
+                                <p:outputLabel value="Sample" ></p:outputLabel>
+                                <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
+                                    <f:selectItem itemLabel="Please select a sample"/>
+                                    <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                </p:selectOneMenu>
+
+                                <h:outputText value="Container / Tube" ></h:outputText>
+                                <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.current.tube}" >
+                                    <f:selectItem itemLabel="Please select a Tube"/>
+                                    <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                </p:selectOneMenu>
+
                             </h:panelGrid>
                         </p:panel>
 

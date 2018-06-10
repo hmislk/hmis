@@ -155,6 +155,13 @@ public class ReportItem implements Serializable {
     private Machine machine;
     @ManyToOne
     private Item test;
+    @ManyToOne
+    private Sample sample;
+    @ManyToOne
+    private Item sampleComponent;
+    @ManyToOne
+    private InvestigationTube tube;
+    
     
     
 
@@ -1051,6 +1058,30 @@ public class ReportItem implements Serializable {
 
     public void setTest(Item test) {
         this.test = test;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Item getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponent(Item sampleComponent) {
+        this.sampleComponent = sampleComponent;
+    }
+
+    public InvestigationTube getTube() {
+        return tube;
+    }
+
+    public void setTube(InvestigationTube tube) {
+        this.tube = tube;
     }
 
     

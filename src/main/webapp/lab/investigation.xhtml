@@ -175,13 +175,6 @@
                                                 <h:outputText value="***" style="color: red; font-weight: bold;" rendered="#{investigationController.current.reportedAs.institution ne null}" ></h:outputText>
                                             </h:panelGroup>
 
-                                            <h:outputText value="Sample" ></h:outputText>
-                                            <p:selectOneMenu id="cmbSample"  value="#{investigationController.current.sample}" >
-                                                <f:selectItem itemLabel="Please select a sample"/>
-                                                <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                            </p:selectOneMenu>
-                                            <h:outputText value="Sample Volume" ></h:outputText>
-                                            <p:inputText autocomplete="off"  styleClass="pdInputText" value="#{investigationController.current.sampleVolume}"  ></p:inputText>
                                             <h:outputText value="Institution" ></h:outputText>
                                             <p:selectOneMenu id="cmbIns"    value="#{investigationController.current.institution}" >
                                                 <f:selectItem itemLabel="Please select a Institution"/>
