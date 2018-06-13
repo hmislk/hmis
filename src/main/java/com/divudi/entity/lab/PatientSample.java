@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -34,6 +35,13 @@ public class PatientSample implements Serializable {
     private Patient patient;
     @ManyToOne
     private PatientInvestigation patientInvestigation;
+    @ManyToOne
+    private Bill bill;
+    //Created Properties
+    @ManyToOne
+    private WebUser creater;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date createdAt;
     //Sample Collection
     private Boolean collected;
     @ManyToOne
@@ -266,5 +274,32 @@ public class PatientSample implements Serializable {
     public void setCancellInstitution(Institution cancellInstitution) {
         this.cancellInstitution = cancellInstitution;
     }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public WebUser getCreater() {
+        return creater;
+    }
+
+    public void setCreater(WebUser creater) {
+        this.creater = creater;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+
+    
     
 }

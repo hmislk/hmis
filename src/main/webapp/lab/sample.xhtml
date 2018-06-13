@@ -54,21 +54,21 @@
                                 </h:panelGrid>
                             </h:panelGroup>
                             <h:panelGroup >
-                                
-                                
+
+
                                 <table >
                                     <tr>
                                         <th>
                                             <p:outputLabel value="Patient" ></p:outputLabel>
                                         </th>
                                         <th>
-                                            
+
                                         </th>
                                     </tr>
                                     <ui:repeat value="#{patientInvestigationController.lstToSamle}" var="s" >
                                     </ui:repeat>
                                 </table>
-                                
+
                                 <p:dataTable  
                                     id="sample" 
                                     value="#{patientInvestigationController.lstToSamle}" 
@@ -98,15 +98,17 @@
                                         </h:outputLabel>
 
                                         <p:autoComplete  forceSelection="true" value="#{smpIx.sampleInstitution}" placeholder="Collected Institution"
-                                                        completeMethod="#{institutionController.completeIns}" id="institution"
-                                                        rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  
-                                                        var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >
+                                                         completeMethod="#{institutionController.completeIns}" id="institution"
+                                                         rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  
+                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >
                                         </p:autoComplete>
 
 
 
                                     </p:column>
                                     <p:column headerText="Actions">
+
+
                                         <h:panelGrid columns="3" >
                                             <p:commandButton  disabled="#{smpIx.collected or smpIx.billItem.bill.cancelled eq true or smpIx.billItem.transRefund eq true}"   
                                                               id="btnSample" value="Collect" action="#{patientInvestigationController.markAsSampled()}" 
@@ -132,6 +134,13 @@
                                                     </div>
                                                     <div>
                                                         <h:outputLabel value="#{smpIx.patient.person.nameWithTitle}" style="font-size: 8pt;" ></h:outputLabel>
+                                                    </div>
+                                                    <div>
+                                                        <ui:repeat value="#{smpIx.billItem.bill.billItems}" var="billc" >
+                                                            |
+                                                            <h:outputLabel value="#{billc.item.name}" style="font-size: 8pt;" ></h:outputLabel>
+                                                            |
+                                                        </ui:repeat>
                                                     </div>
                                                 </div>
                                             </h:panelGroup>

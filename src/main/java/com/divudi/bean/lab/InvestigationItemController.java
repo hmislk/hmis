@@ -431,19 +431,20 @@ public class InvestigationItemController implements Serializable {
     }
 
     public List<ReportItem> getAllReportItemList() {
-        String sql = "select ri from ReportItem ri ";
-
-        return riFacade.findBySQL(sql);
+        String sql = "select ri from ReportItem ri where ri.item = :item ";
+        Map m = new HashMap();
+        m.put("item", currentInvestigation);
+        return riFacade.findBySQL(sql,m);
     }
 
     public void moveUpAllReportItems() {
-        if (getAllReportItemList().isEmpty()) {
+        if (getItems().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
 
-        for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiTop(ri.getRiTop() + 1);
+        for (ReportItem ri : getItems()) {
+            ri.setRiTop(ri.getRiTop() - movePercent);
             riFacade.edit(ri);
         }
 
@@ -451,13 +452,13 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveLeftAllReportItems() {
-        if (getAllReportItemList().isEmpty()) {
+        if (getItems().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
 
-        for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiLeft(ri.getRiLeft() + 1);
+        for (ReportItem ri : getItems()) {
+            ri.setRiLeft(ri.getRiLeft() - movePercent);
             riFacade.edit(ri);
         }
 
@@ -465,13 +466,13 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveDownAllReportItems() {
-        if (getAllReportItemList().isEmpty()) {
+        if (getItems().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
 
-        for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiHeight(ri.getRiHeight() + 1);
+        for (ReportItem ri : getItems()) {
+            ri.setRiTop(ri.getRiTop() + movePercent);
             riFacade.edit(ri);
         }
 
@@ -513,7 +514,7 @@ public class InvestigationItemController implements Serializable {
         }
 
         for (ReportItem ri : getAllReportItemList()) {
-            ri.setRiWidth(ri.getRiWidth() + 1);
+            ri.setRiLeft(ri.getRiLeft() + movePercent);
             riFacade.edit(ri);
         }
 
@@ -1097,22 +1098,20 @@ public class InvestigationItemController implements Serializable {
     private Item investigationComponent;
     private InvestigationTube tube;
 
-    
-    
-    public void toAddNewTestFirst(){
+    public void toAddNewTestFirst() {
         InvestigationItem lastItem = getLastReportItemComplete(InvestigationItemType.Investigation);
         toAddNewTest(lastItem);
     }
-    
-    public void toAddNewTestOthers(){
+
+    public void toAddNewTestOthers() {
         InvestigationItem lastItem = getLastReportItem(InvestigationItemType.Investigation);
         toAddNewTest(lastItem);
     }
-    
+
     public void toAddNewTest(InvestigationItem lastItem) {
-       
+
         addingNewTest = true;
-        
+
         if (lastItem != null) {
 
             if (lastItem.getTestHeader() != null) {

@@ -37,10 +37,10 @@
                                     update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
                         </p:autoComplete> 
                         <p:panel header="Add New ..." >
-                            <h:panelGrid columns="6" >
-                                <p:commandButton id="btnToNewTestFirst" value="Test (First One)" oncomplete="PF('dlgTest').show();" 
+                            <h:panelGrid columns="3" >
+                                <p:commandButton id="btnToNewTestFirst" value="First Test" oncomplete="PF('dlgTest').show();" 
                                                  process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
-                                <p:commandButton id="btnToNewTestOther" value="Test (Others)" oncomplete="PF('dlgTest').show();" 
+                                <p:commandButton id="btnToNewTestOther" value="Other Tests" oncomplete="PF('dlgTest').show();" 
                                                  process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestOthers()}"/>
                                 <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
                                 <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
@@ -94,7 +94,7 @@
                                         <p:outputLabel value="Test" ></p:outputLabel>
                                         <p:autoComplete value="#{investigationItemController.test}"
                                                         completeMethod="#{itemController.completeMachineTests}"
-                                                        var="t"
+                                                        var="t" inputStyle="width:200px;"
                                                         itemValue="#{t}"
                                                         itemLabel="#{t.code}"
                                                         >
@@ -296,7 +296,7 @@
                                 </p:inputText>
 
                                 <h:outputText value="Contents"   />
-                                <p:editor style="min-width: 400px!important;" id="lblIiText" value="#{investigationItemController.current.htmltext}" >
+                                <p:editor  width="350" height="200" id="lblIiText" value="#{investigationItemController.current.htmltext}" >
 <!--                                    <f:ajax event="keyup" execute="lblIiText" render=":#{p:component('pPreview')}"/>
                                     <f:ajax event="blur" execute="lblIiText" render=":#{p:component('pPreview')}"/>-->
                                 </p:editor >
@@ -428,7 +428,7 @@
                                 <h:outputText value="Test"/>
                                 <p:autoComplete value="#{investigationItemController.current.test}"
                                                 completeMethod="#{itemController.completeMachineTests}"
-                                                var="t"
+                                                var="t" inputStyle="width:200px;"
                                                 itemValue="#{t}"
                                                 itemLabel="#{t.code}"
                                                 >
