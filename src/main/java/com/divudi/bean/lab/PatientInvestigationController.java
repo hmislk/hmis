@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -128,6 +129,8 @@ public class PatientInvestigationController implements Serializable {
     CommonController commonController;
     @Inject
     private InvestigationItemController investigationItemController;
+    @Inject
+    private BillController billController;
     /**
      * Class Variables
      */
@@ -158,6 +161,8 @@ public class PatientInvestigationController implements Serializable {
     List<PatientInvestigation> selectedToReceive;
 
     Sms sms;
+    private List<PatientSample> patientSamples;
+    private String samplingRequestResponse;
 
     public void resetLists() {
         items = null;
@@ -864,57 +869,139 @@ public class PatientInvestigationController implements Serializable {
     }
 
     List<SampleCollection> sampleCollections;
-    
-    public void prepareSampleCollectionByBillId(Long bill) {
-        
+    private String inputBillId;
+
+    public void prepareSampleCollectionByRequest() {
+        samplingRequestResponse = "#{";
+        if (inputBillId == null || inputBillId.trim().equals("")) {
+            samplingRequestResponse += "Login=0|Message=Bill Number not entered.}";
+            return;
+        }
+        if (!sessionController.isLogged()) {
+            samplingRequestResponse += "Login=0|Message=User Logged out.}";
+            return;
+        }
+        Long billId = stringToLong(inputBillId);
+        if (billId != null) {
+            prepareSampleCollectionByBillId(billId);
+        } else {
+            prepareSampleCollectionByBillNumber(inputBillId);
+        }
+        samplingRequestResponse = "{Login=1|";
+        for (PatientSample ps : patientSamples) {
+            samplingRequestResponse += patientSamples + "}";
+        }
+        samplingRequestResponse += "Last=1}";
+        samplingRequestResponse += patientSamples + "}";
     }
 
-    public void prepareSampleCollectionByBill(Bill bill) {
-        String j = "";
-        Map m = new HashMap();
-        m.put("can", false);
-        m.put("bill", bill);
-        j = "Select pi from PatientInvestigation pi "
-                + " where pi.cancelled=:can "
-                + " and pi.billItem.bill=:bill";
-        List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
-        List<PatientSample> ptSamples = new ArrayList<>();
-        for (PatientInvestigation pi : pis) {
+    public void prepareSampleCollection() {
+        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollection()");
+        System.out.println("inputBillId = " + inputBillId);
+        Long billId = stringToLong(inputBillId);
+        System.out.print("bill id" + billId);
+        List<Bill> temBills;
+        if (billId != null) {
+            temBills = prepareSampleCollectionByBillId(billId);
+        } else {
+            temBills = prepareSampleCollectionByBillNumber(inputBillId);
+        }
+        System.err.println("System.err.println(\"b = \" + b); = " + temBills);
+        prepareSampleCollectionByBills(temBills);
+    }
 
-            Investigation ix = pi.getInvestigation();
-            List<InvestigationItem> ixis = investigationItemController.getItems(ix);
-            for (InvestigationItem ixi : ixis) {
-                j = "select ps from PatientSample ps "
-                        + " where ps.tube=:tube "
-                        + " and ps.sample=:sample "
-                        + " and ps.test=:test "
-                        + " and ps.sampleComponent=:sc "
-                        + " and ps.machine=:machine";
-                m.put("tube", ixi.getTube());
-                m.put("sample", ixi.getSample());
-                m.put("sc", ixi.getSampleComponent());
-                m.put("test", ixi.getTest());
-                m.put("machine", ixi.getMachine());
-                List<PatientSample> ptss = getPatientSampleFacade().findBySQL(j, m);
-                if (ptss == null || ptss.isEmpty()) {
-                    ptss = new ArrayList<>();
-                    PatientSample pts = new PatientSample();
-                    pts.setTube(ixi.getTube());
-                    pts.setSample(ixi.getSample());
-                    pts.setTest(ixi.getTest());
-                    pts.setMachine(ixi.getMachine());
-                    pts.setInvestigationComponant(ixi.getSampleComponent());
-                    pts.setBill(bill);
-                    pts.setPatient(bill.getPatient());
-                    pts.setCreatedAt(new Date());
-                    pts.setCreater(sessionController.getLoggedUser());
-                    getPatientSampleFacade().create(pts);
-                    ptss.add(pts);
+    public Long stringToLong(String input) {
+        try {
+            return Long.parseLong(input);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public List<Bill> prepareSampleCollectionByBillId(Long bill) {
+        Bill b = getBillFacade().find(bill);
+        List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
+        if (bs == null || bs.isEmpty()) {
+            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+            return null;
+        }
+        return bs;
+    }
+
+    public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
+        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollectionByBillNumber()");
+        String j = "Select b from Bill b where b.insId=:id";
+        Map m = new HashMap();
+        m.put("id", insId);
+        Bill b = getBillFacade().findFirstBySQL(j, m);
+        System.err.println("b = " + b);
+        List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
+        System.err.println("b = " + b);
+        if (bs == null || bs.isEmpty()) {
+            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+            return null;
+        }
+        return bs;
+    }
+
+    public void prepareSampleCollectionByBills(List<Bill> bills) {
+        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollectionByBills()");
+        String j = "";
+        Map m;
+        List<PatientSample> ptSamples = new ArrayList<>();
+
+        for (Bill b : bills) {
+            System.err.println(b);
+            m = new HashMap();
+            m.put("can", false);
+            m.put("bill", b);
+            j = "Select pi from PatientInvestigation pi "
+                    + " where pi.cancelled=:can "
+                    + " and pi.billItem.bill=:bill";
+            List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
+            System.out.println("pis = " + pis);
+            for (PatientInvestigation ptix : pis) {
+                System.out.println("ptix = " + ptix);
+                Investigation ix = ptix.getInvestigation();
+                List<InvestigationItem> ixis = investigationItemController.getItems(ix);
+                for (InvestigationItem ixi : ixis) {
+                    j = "select ps from PatientSample ps "
+                            + " where ps.tube=:tube "
+                            + " and ps.sample=:sample "
+                            + " and ps.test=:test "
+                            + " and ps.sampleComponent=:sc "
+                            + " and ps.machine=:machine "
+                            + " and ps.patientInvestigation=:ptix ";
+                    m.put("tube", ixi.getTube());
+                    m.put("sample", ixi.getSample());
+                    m.put("sc", ixi.getSampleComponent());
+                    m.put("test", ixi.getTest());
+                    m.put("machine", ixi.getMachine());
+                    List<PatientSample> ptss = getPatientSampleFacade().findBySQL(j, m);
+                    System.err.println("ptss = " + ptss);
+                    if (ptss == null || ptss.isEmpty()) {
+                        ptss = new ArrayList<>();
+                        PatientSample pts = new PatientSample();
+                        pts.setTube(ixi.getTube());
+                        pts.setSample(ixi.getSample());
+                        pts.setTest(ixi.getTest());
+                        pts.setMachine(ixi.getMachine());
+                        pts.setInvestigationComponant(ixi.getSampleComponent());
+                        pts.setBill(b);
+                        pts.setPatient(b.getPatient());
+                        pts.setPatientInvestigation(ptix);
+                        pts.setCreatedAt(new Date());
+                        pts.setCreater(sessionController.getLoggedUser());
+                        getPatientSampleFacade().create(pts);
+                        ptss.add(pts);
+                    }
+                    System.err.println("ptss = " + ptss);
+                    ptSamples.addAll(ptss);
+                    System.err.println("ptSamples" + ptSamples);
                 }
-                ptSamples.addAll(ptss);
             }
         }
-
+        patientSamples = ptSamples;
     }
 
     public List<Item> getCurrentReportComponants(Investigation ix) {
@@ -1225,6 +1312,38 @@ public class PatientInvestigationController implements Serializable {
 
     public PatientSampleFacade getPatientSampleFacade() {
         return patientSampleFacade;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public String getInputBillId() {
+        return inputBillId;
+    }
+
+    public void setInputBillId(String inputBillId) {
+        this.inputBillId = inputBillId;
+    }
+
+    public List<PatientSample> getPatientSamples() {
+        return patientSamples;
+    }
+
+    public void setPatientSamples(List<PatientSample> patientSamples) {
+        this.patientSamples = patientSamples;
+    }
+
+    public String getSamplingRequestResponse() {
+        return samplingRequestResponse;
+    }
+
+    public void setSamplingRequestResponse(String samplingRequestResponse) {
+        this.samplingRequestResponse = samplingRequestResponse;
     }
 
     /**

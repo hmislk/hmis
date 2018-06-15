@@ -21,6 +21,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.BatchBill;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -223,6 +224,14 @@ public class BillController implements Serializable {
     @Inject
     SearchController searchController;
 
+    
+    public List<Bill> validBillsOfBatchBill(Bill batchBill){
+        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        return getFacade().findBySQL(j, m);
+    }
+    
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
