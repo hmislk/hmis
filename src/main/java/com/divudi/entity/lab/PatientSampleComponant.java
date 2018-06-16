@@ -25,7 +25,7 @@ import javax.persistence.Temporal;
  * @author buddhika_ari
  */
 @Entity
-public class PatientSample implements Serializable {
+public class PatientSampleComponant implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -33,6 +33,8 @@ public class PatientSample implements Serializable {
     private Long id;
     @ManyToOne
     private Patient patient;
+    @ManyToOne
+    private PatientSample patientSample;
     @ManyToOne
     private PatientInvestigation patientInvestigation;
     @ManyToOne
@@ -88,9 +90,10 @@ public class PatientSample implements Serializable {
     }
 
     public String getIdStr() {
-        String formatted = String.format("%04d", id);
+        String formatted = String.format("%09d", id);
         return formatted;
     }
+    
     
     
     @Override
@@ -103,10 +106,10 @@ public class PatientSample implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof PatientSample)) {
+        if (!(object instanceof PatientSampleComponant)) {
             return false;
         }
-        PatientSample other = (PatientSample) object;
+        PatientSampleComponant other = (PatientSampleComponant) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -300,6 +303,14 @@ public class PatientSample implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public PatientSample getPatientSample() {
+        return patientSample;
+    }
+
+    public void setPatientSample(PatientSample patientSample) {
+        this.patientSample = patientSample;
     }
 
 

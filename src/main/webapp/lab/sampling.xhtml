@@ -10,11 +10,6 @@
         <h:outputStylesheet library="css" name="stickerprints.css" />
 
         <ui:composition template="/resources/template/template.xhtml">
-
-            <ui:define name="title">
-                Sample Collection
-            </ui:define>
-
             <ui:define name="content">
 
 
@@ -28,42 +23,68 @@
                         <p:inputText value="#{patientInvestigationController.inputBillId}" ></p:inputText>
                         <p:commandButton value="Search" ajax="false" action="#{patientInvestigationController.prepareSampleCollection()}" ></p:commandButton>
                     </h:panelGrid>
-                    <table >
-                        <tr>
-                            <th>
-                                Name
-                            </th>
-                            <th>
-                                Dept
-                            </th>
-                            <th>
-                                Sample
-                            </th>
-                            <th>
-                                Tests
-                            </th>
+                    
+                    <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" >
+                        
+                        <p:column headerText="Sample" >
+                            <p:outputLabel value="#{ps.sample.name}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Tube" >
+                            <p:outputLabel value="#{ps.tube.name}" ></p:outputLabel>
+                        </p:column>
+                         <p:column headerText="Machine" >
+                            <p:outputLabel value="#{ps.machine.name}" ></p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Tests" >
+                            #{patientInvestigationController.testComponantsForPatientSample(ps)}
+                            <ui:repeat value="#{patientInvestigationController.testComponantsForPatientSample(ps)}" var="test" >
+                                <p:outputLabel value="#{test}" ></p:outputLabel>
+                            </ui:repeat>
+                        </p:column>
+                    </p:dataTable>
+                    
+                 
 
-                        </tr>
-
+                    <p:commandButton value="Print" ajax="false"  >
+                        <p:printer target="print" ></p:printer>
+                    </p:commandButton>
+                    <h:panelGroup id="print" >
                         <ui:repeat value="#{patientInvestigationController.patientSamples}" var="ps" >
-                            <tr>
-                                <th>
-                                    #{ps.bill.patient}
-                                </th>
-                                <th>
-                                    #{ps.patientInvestigation.investigation.department}
-                                </th>
-                                <th>
-                                    #{ps.test.name}
-                                </th>
-                                <th>
-                                    Tests
-                                </th>
+                            <div style="page-break-after: always; width: 97vw;height: 97vh;border: none; margin: 0px;overflow: hidden; text-align: center; vertical-align: central" >
+                                <table style="width:100%;height: " >
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="#{ps.bill.patient.person.nameWithTitle}"
+                                                           style="font-size: 8px" ></h:outputLabel>
 
-                            </tr>
+                                        </td>
+                                        <td rowspan="3">
+
+                                            <p:barcode cache="false" value="#{ps.idStr}" type="code128" width="130px" ></p:barcode>
+
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="ESR"
+                                                           style="font-size: 8px" ></h:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Serum"
+                                                           style="font-size: 8px" ></h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+
+
+                            </div>
                         </ui:repeat>
-                    </table>
-
+                    </h:panelGroup>
 
                 </h:form>
 

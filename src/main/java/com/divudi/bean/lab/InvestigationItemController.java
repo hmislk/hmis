@@ -98,6 +98,7 @@ public class InvestigationItemController implements Serializable {
     private InvestigationItem current;
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
+    private List<InvestigationItem> importantItems = null;
 
     String selectText = "";
     InvestigationItemValue removingItem;
@@ -128,6 +129,47 @@ public class InvestigationItemController implements Serializable {
             movePercent = 5.0;
         }
         return movePercent;
+    }
+    
+    public void nextInvestigation(){
+        Investigation thisOne = getCurrentInvestigation();
+        for(int i=0;i< investigationController.getItems().size();i++){
+            Investigation ix = investigationController.getItems().get(i);
+            if(thisOne.equals(ix)){
+                if((i+1)<investigationController.getItems().size()){
+                    setCurrentInvestigation(investigationController.getItems().get(i+1));
+                }
+            }
+        }
+    }
+    
+    public void previousInvestigation(){
+        Investigation thisOne = getCurrentInvestigation();
+        for(int i=0;i< investigationController.getItems().size();i++){
+            Investigation ix = investigationController.getItems().get(i);
+            if(thisOne.equals(ix)){
+                if(i>0){
+                    setCurrentInvestigation(investigationController.getItems().get(i-1));
+                }
+            }
+        }
+    }
+
+    public List<InvestigationItem> listInvestigationItemsFilteredByItemTypes(Investigation ix, List<InvestigationItemType> types) {
+        List<InvestigationItem> tis = new ArrayList<>();
+        if (ix != null) {
+            String temSql;
+            temSql = "SELECT i FROM InvestigationItem i "
+                    + " where i.retired=false "
+                    + " and i.item=:item "
+                    + " and i.ixItemType in :types "
+                    + " order by i.riTop, i.riLeft";
+            Map m = new HashMap();
+            m.put("item", ix);
+            m.put("types", types);
+            tis = getFacade().findBySQL(temSql, m);
+        }
+        return tis;
     }
 
     public List<Item> getCurrentReportComponants() {
@@ -434,7 +476,7 @@ public class InvestigationItemController implements Serializable {
         String sql = "select ri from ReportItem ri where ri.item = :item ";
         Map m = new HashMap();
         m.put("item", currentInvestigation);
-        return riFacade.findBySQL(sql,m);
+        return riFacade.findBySQL(sql, m);
     }
 
     public void moveUpAllReportItems() {
@@ -1342,7 +1384,7 @@ public class InvestigationItemController implements Serializable {
         unitLabel.setCreatedAt(new Date());
         unitLabel.setCreater(getSessionController().getLoggedUser());
 
-        referenceLabel.setName(testReferenceRange);
+        referenceLabel.setName(testName + " Ref");
         referenceLabel.setHtmltext(testReferenceRange);
         referenceLabel.setIxItemType(InvestigationItemType.Label);
         referenceLabel.setIxItemValueType(InvestigationItemValueType.Memo);
@@ -1659,7 +1701,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -1671,9 +1712,6 @@ public class InvestigationItemController implements Serializable {
             getCurrentInvestigation().getReportItems().add(current);
             getIxFacade().edit(currentInvestigation);
         }
-
-//        recreateModel();
-//        getItems();
     }
 
     public InvestigationFacade getIxFacade() {
@@ -1734,8 +1772,10 @@ public class InvestigationItemController implements Serializable {
         List<InvestigationItem> iis;
         if (ix != null && ix.getId() != null) {
             String temSql;
-            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " order by i.riTop, i.riLeft";
-            iis = getFacade().findBySQL(temSql);
+            temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
+            Map m = new HashMap();
+            m.put("item", ix);
+            iis = getFacade().findBySQL(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -2094,6 +2134,29 @@ public class InvestigationItemController implements Serializable {
 
     public void setIxXml(String ixXml) {
         this.ixXml = ixXml;
+    }
+
+    public List<InvestigationItem> getImportantItems() {
+        if (importantItems == null || importantItems.isEmpty()) {
+
+        } else {
+            InvestigationItem tii = importantItems.get(0);
+            Investigation tix = (Investigation) tii.getItem();
+            if (tix.equals(currentInvestigation)) {
+                return importantItems;
+            }
+        }
+        List<InvestigationItemType> l = new ArrayList<>();
+        l.add(InvestigationItemType.Value);
+        l.add(InvestigationItemType.Flag);
+        l.add(InvestigationItemType.Calculation);
+        l.add(InvestigationItemType.DynamicLabel);
+        importantItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        return importantItems;
+    }
+
+    public void setImportantItems(List<InvestigationItem> importantItems) {
+        this.importantItems = importantItems;
     }
 
     /**

@@ -179,6 +179,8 @@ public class Item implements Serializable, Comparable<Item> {
     int maxTableRows;
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
+    
+    private boolean hasMoreThanOneComponant;
 
     @Transient
     double channelStaffFee;
@@ -191,6 +193,8 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     String transName;
+    
+    
 
     public double getVatPercentage() {
         if (vatable && vatPercentage == 0.0) {
@@ -1056,6 +1060,16 @@ public class Item implements Serializable, Comparable<Item> {
     public void setItemType(ItemType itemType) {
         this.itemType = itemType;
     }
+
+    public boolean isHasMoreThanOneComponant() {
+        return hasMoreThanOneComponant;
+    }
+
+    public void setHasMoreThanOneComponant(boolean hasMoreThanOneComponant) {
+        this.hasMoreThanOneComponant = hasMoreThanOneComponant;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

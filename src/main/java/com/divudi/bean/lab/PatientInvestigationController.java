@@ -1,11 +1,3 @@
-/*
- * MSc(Biomedical Informatics) Project
- *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillController;
@@ -14,6 +6,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SmsType;
 import com.divudi.data.lab.SampleCollection;
@@ -30,6 +23,7 @@ import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.BillFacade;
@@ -39,6 +33,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
+import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
@@ -118,6 +113,10 @@ public class PatientInvestigationController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     private PatientSampleFacade patientSampleFacade;
+    @EJB
+    private PatientSampleComponantFacade patientSampleComponantFacade;
+    @EJB
+    private ItemFacade itemFacade;
     /*
      * Controllers
      */
@@ -161,7 +160,9 @@ public class PatientInvestigationController implements Serializable {
     List<PatientInvestigation> selectedToReceive;
 
     Sms sms;
+    private Set<PatientSample> patientSamplesSet;
     private List<PatientSample> patientSamples;
+
     private String samplingRequestResponse;
 
     public void resetLists() {
@@ -888,25 +889,21 @@ public class PatientInvestigationController implements Serializable {
             prepareSampleCollectionByBillNumber(inputBillId);
         }
         samplingRequestResponse = "{Login=1|";
-        for (PatientSample ps : patientSamples) {
-            samplingRequestResponse += patientSamples + "}";
+        for (PatientSample ps : patientSamplesSet) {
+            samplingRequestResponse += patientSamplesSet + "}";
         }
         samplingRequestResponse += "Last=1}";
-        samplingRequestResponse += patientSamples + "}";
+        samplingRequestResponse += patientSamplesSet + "}";
     }
 
     public void prepareSampleCollection() {
-        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollection()");
-        System.out.println("inputBillId = " + inputBillId);
         Long billId = stringToLong(inputBillId);
-        System.out.print("bill id" + billId);
         List<Bill> temBills;
         if (billId != null) {
             temBills = prepareSampleCollectionByBillId(billId);
         } else {
             temBills = prepareSampleCollectionByBillNumber(inputBillId);
         }
-        System.err.println("System.err.println(\"b = \" + b); = " + temBills);
         prepareSampleCollectionByBills(temBills);
     }
 
@@ -945,13 +942,11 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareSampleCollectionByBills(List<Bill> bills) {
-        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollectionByBills()");
         String j = "";
         Map m;
-        List<PatientSample> ptSamples = new ArrayList<>();
+        patientSamplesSet = new HashSet<>();
 
         for (Bill b : bills) {
-            System.err.println(b);
             m = new HashMap();
             m.put("can", false);
             m.put("bill", b);
@@ -959,49 +954,93 @@ public class PatientInvestigationController implements Serializable {
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
-            System.out.println("pis = " + pis);
             for (PatientInvestigation ptix : pis) {
-                System.out.println("ptix = " + ptix);
+
                 Investigation ix = ptix.getInvestigation();
                 List<InvestigationItem> ixis = investigationItemController.getItems(ix);
+
                 for (InvestigationItem ixi : ixis) {
-                    j = "select ps from PatientSample ps "
-                            + " where ps.tube=:tube "
-                            + " and ps.sample=:sample "
-                            + " and ps.test=:test "
-                            + " and ps.sampleComponent=:sc "
-                            + " and ps.machine=:machine "
-                            + " and ps.patientInvestigation=:ptix ";
-                    m.put("tube", ixi.getTube());
-                    m.put("sample", ixi.getSample());
-                    m.put("sc", ixi.getSampleComponent());
-                    m.put("test", ixi.getTest());
-                    m.put("machine", ixi.getMachine());
-                    List<PatientSample> ptss = getPatientSampleFacade().findBySQL(j, m);
-                    System.err.println("ptss = " + ptss);
-                    if (ptss == null || ptss.isEmpty()) {
-                        ptss = new ArrayList<>();
-                        PatientSample pts = new PatientSample();
-                        pts.setTube(ixi.getTube());
-                        pts.setSample(ixi.getSample());
-                        pts.setTest(ixi.getTest());
-                        pts.setMachine(ixi.getMachine());
-                        pts.setInvestigationComponant(ixi.getSampleComponent());
-                        pts.setBill(b);
-                        pts.setPatient(b.getPatient());
-                        pts.setPatientInvestigation(ptix);
-                        pts.setCreatedAt(new Date());
-                        pts.setCreater(sessionController.getLoggedUser());
-                        getPatientSampleFacade().create(pts);
-                        ptss.add(pts);
+
+                    if (ixi.getIxItemType() == InvestigationItemType.Value) {
+                        j = "select ps from PatientSample ps "
+                                + " where ps.tube=:tube "
+                                + " and ps.sample=:sample "
+                                + " and ps.machine=:machine "
+                                + " and ps.patient=:pt "
+                                + " and ps.collected=:ca";
+                        m = new HashMap();
+                        m.put("tube", ixi.getTube());
+                        m.put("sample", ixi.getSample());
+                        m.put("machine", ixi.getMachine());
+                        m.put("pt", b.getPatient());
+                        m.put("ca", false);
+                        if (ix.isHasMoreThanOneComponant()) {
+                            j += " and ps.investigationComponant=:sc ";
+                            m.put("sc", ixi.getSampleComponent());
+                        }
+
+                        PatientSample pts = getPatientSampleFacade().findFirstBySQL(j, m);
+                        if (pts == null) {
+                            pts = new PatientSample();
+                            pts.setTube(ixi.getTube());
+                            pts.setSample(ixi.getSample());
+                            if (ix.isHasMoreThanOneComponant()) {
+                                pts.setInvestigationComponant(ixi.getSampleComponent());
+                            }
+                            pts.setMachine(ixi.getMachine());
+                            pts.setPatient(b.getPatient());
+                            pts.setCreatedAt(new Date());
+                            pts.setCreater(sessionController.getLoggedUser());
+                            pts.setCollected(false);
+                            getPatientSampleFacade().create(pts);
+                        }
+                        patientSamplesSet.add(pts);
+
+                        PatientSampleComponant ptsc;
+                        j = "select ps from PatientSampleComponant ps "
+                                + " where ps.patientSample=:pts "
+                                + " and ps.bill=:bill "
+                                + " and ps.patient=:pt "
+                                + " and ps.patientInvestigation=:ptix "
+                                + " and ps.investigationComponant=:ixc";
+                        m = new HashMap();
+                        m.put("pts", pts);
+                        m.put("bill", b);
+                        m.put("pt", b.getPatient());
+                        m.put("ptix", ptix);
+                        m.put("ixc", ixi.getSampleComponent());
+                        ptsc = getPatientSampleComponantFacade().findFirstBySQL(j, m);
+                        if (ptsc == null) {
+                            ptsc = new PatientSampleComponant();
+                            ptsc.setPatientSample(pts);
+                            ptsc.setBill(b);
+                            ptsc.setPatient(b.getPatient());
+                            ptsc.setPatientInvestigation(ptix);
+                            ptsc.setInvestigationComponant(ixi.getSampleComponent());
+                            ptsc.setCreatedAt(new Date());
+                            ptsc.setCreater(sessionController.getLoggedUser());
+                            getPatientSampleComponantFacade().create(ptsc);
+                        }
                     }
-                    System.err.println("ptss = " + ptss);
-                    ptSamples.addAll(ptss);
-                    System.err.println("ptSamples" + ptSamples);
                 }
             }
         }
-        patientSamples = ptSamples;
+    }
+
+    public List<Item> testComponantsForPatientSample(PatientSample ps) {
+        if (ps == null) {
+            return new ArrayList<>();
+        }
+        List<Item> ts = new ArrayList<>();
+        Map m = new HashMap();
+        String j = "select ps.investigationComponant from PatientSampleComponant ps "
+                + " where ps.patientSample=:pts "
+                + " group by ps.investigationComponant";
+        m = new HashMap();
+        m.put("pts", ps);
+        
+        ts = getItemFacade().findBySQL(j, m);
+        return ts;
     }
 
     public List<Item> getCurrentReportComponants(Investigation ix) {
@@ -1330,7 +1369,19 @@ public class PatientInvestigationController implements Serializable {
         this.inputBillId = inputBillId;
     }
 
+    public Set<PatientSample> getPatientSamplesSet() {
+        return patientSamplesSet;
+    }
+
+    public void setPatientSamplesSet(Set<PatientSample> patientSamplesSet) {
+        this.patientSamplesSet = patientSamplesSet;
+    }
+
     public List<PatientSample> getPatientSamples() {
+        patientSamples = new ArrayList<>();
+        if (patientSamplesSet != null && !patientSamplesSet.isEmpty()) {
+            patientSamples.addAll(patientSamplesSet);
+        }
         return patientSamples;
     }
 
@@ -1344,6 +1395,26 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSamplingRequestResponse(String samplingRequestResponse) {
         this.samplingRequestResponse = samplingRequestResponse;
+    }
+
+    public void setPatientSampleComponantFacade(PatientSampleComponantFacade patientSampleComponantFacade) {
+        this.patientSampleComponantFacade = patientSampleComponantFacade;
+    }
+
+    public void setPatientSampleFacade(PatientSampleFacade patientSampleFacade) {
+        this.patientSampleFacade = patientSampleFacade;
+    }
+
+    public void setInvestigationItemController(InvestigationItemController investigationItemController) {
+        this.investigationItemController = investigationItemController;
+    }
+
+    public PatientSampleComponantFacade getPatientSampleComponantFacade() {
+        return patientSampleComponantFacade;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
     }
 
     /**
@@ -1405,12 +1476,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
-    public List<SampleCollection> getSampleCollections() {
-        return sampleCollections;
-    }
-
-    public void setSampleCollections(List<SampleCollection> sampleCollections) {
-        this.sampleCollections = sampleCollections;
-    }
-
+    
 }
