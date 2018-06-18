@@ -174,9 +174,7 @@
                                         <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     </p:submenu>
-                                    <p:menuitem ajax="false" action="/lab/sampling"  value="Sampling (New)" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
-                                    
                                     <p:menuitem ajax="false" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>

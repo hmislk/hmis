@@ -343,8 +343,8 @@
                                             </p:row>
                                             <p:row >
                                                 <p:column colspan="5" >
-                                                    <p:inputTextarea id="txtContents" style="width: 95%;" scrollHeight="60px"
-                                                                     value="#{investigationItemController.current.htmltext}" >
+                                                    <p:inputTextarea id="txtContents" style="width: 95%; height: 60px;" scrollHeight="60"
+                                                                     autoResize="false"       value="#{investigationItemController.current.htmltext}" >
                                                         <p:ajax event="blur" process="txtContents" update="dlgContents" ></p:ajax>
                                                     </p:inputTextarea>
                                                 </p:column>

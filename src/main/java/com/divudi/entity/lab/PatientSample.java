@@ -88,7 +88,7 @@ public class PatientSample implements Serializable {
     }
 
     public String getIdStr() {
-        String formatted = String.format("%04d", id);
+        String formatted = String.format("%05d", id);
         return formatted;
     }
     

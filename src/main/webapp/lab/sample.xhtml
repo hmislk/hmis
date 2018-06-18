@@ -50,6 +50,8 @@
                                                      actionListener="#{patientInvestigationController.prepareSampled()}" 
                                                      value="List Collected" onclick="onSubmitButton();"  >
                                     </p:commandButton>
+                                    <p:spacer ></p:spacer>
+                                    <p:commandButton value="Barcode Printing" ajax="false" action="sampling" ></p:commandButton>
 
                                 </h:panelGrid>
                             </h:panelGroup>
@@ -125,6 +127,7 @@
                                                               ajax="false">
                                                 <p:printer target="stickerPrint" ></p:printer>
                                             </p:commandButton>
+
                                         </h:panelGrid>
                                         <div class="printBlock">
                                             <h:panelGroup id="stickerPrint" >

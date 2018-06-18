@@ -4,7 +4,8 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 
 
     <!-- INTERFACE -->
@@ -371,6 +372,9 @@
             </div>
 
 
+            <div>
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" ></p:barcode>
+            </div>
 
 
         </div>

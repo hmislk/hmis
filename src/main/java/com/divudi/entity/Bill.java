@@ -868,6 +868,11 @@ public class Bill implements Serializable {
         this.id = id;
     }
 
+    public String getIdStr() {
+        String formatted = String.format("%07d", id);
+        return formatted;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;
