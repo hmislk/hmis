@@ -17,5 +17,6 @@ public enum InvestigationItemType {
     User,
     Patient,
     ItemsCatetgory,
-    
+    Css,
+    Barcode,
 }

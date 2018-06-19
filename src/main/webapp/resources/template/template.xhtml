@@ -6,9 +6,6 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:poue="http://primefaces.org/ui/extensions">
     <h:head>
-        <!--<script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>-->
-
-        <!--<script src="resources/js/snowstorm.js" type="text/javascript"></script>-->
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <ui:insert name="title"   >
             <title>
@@ -178,10 +175,10 @@
                                         <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                     </p:submenu>
-                                    <p:menuitem ajax="false" action="/lab_sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/lab_search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/administration" value="Administration" rendered="#{webUserController.hasPrivilege('LabAdiministrator')}"  ></p:menuitem>
@@ -783,7 +780,7 @@
                                                              return false;
                                                          }"/>
                                     <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />
-                                    <poue:tooltip for="btnLogout" value="df" adjustX="-20" >
+                                    <p:tooltip for="btnLogout" value="df"  >
                                         <h:panelGrid columns="3" >
                                             <h:outputText value="Institution" ></h:outputText>
                                             <p:spacer width="10" height="1" ></p:spacer>
@@ -795,7 +792,7 @@
                                             <p:spacer width="10" height="1" ></p:spacer>
                                             <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
                                         </h:panelGrid>
-                                    </poue:tooltip>
+                                    </p:tooltip>
                                 </f:facet>
 
                             </p:menubar>
@@ -923,40 +920,7 @@
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
             </div>
-<!--            <div class="nonPrintBlock" >
-                <h:form>
-                    <p:dock position="bottom" itemWidth="35"   proximity="50"  
-                            rendered="#{webUserController.hasPrivilege('Developers') 
-                                        and (sessionController.loggedUser.id eq 3151
-                                        or  sessionController.loggedUser.id eq 1101795)
-                                        and sessionController.logged
-                                        and !sessionController.firstLogin 
-                                        and sessionController.department ne null}">
-                        <p:menuitem value="Channel Booking" 
-                                    icon="/resources/image/ico/doc.png" action="/channel/channel_booking"/>
-                        <p:menuitem value="Doctor Arrival" 
-                                    icon="/resources/image/ico/arrival.png" action="/channel/channel_doctor_view_today_1"/>
-                        <p:menuitem value="Opd Summery" 
-                                    icon="/resources/image/ico/analytics_1.png" action="/reportCashier/report_cashier"/>
-                        <p:menuitem value="Lab Summery" 
-                                    icon="/resources/image/ico/syringe.png" action="/reportLab/lab_summeries_index"/>
-                        <p:menuitem value="Channel Reports" 
-                                    icon="/resources/image/ico/stethoscope.png" action="/channel/channel_reports"/>
-                        <p:menuitem value="Institution Reports" 
-                                    icon="/resources/image/ico/analytics_2.png" action="/reportInstitution/report_own"/>
-                        <p:menuitem value="Bill Edit" 
-                                    icon="/resources/image/ico/search.png" action="/search_bill"/>
-                        <p:menuitem value="BHT Edit" 
-                                    icon="/resources/image/ico/edit.png" action="/developers/edit_bht"/>
-                        <p:menuitem value="Pharmacy History" 
-                                    icon="/resources/image/ico/antibiotic.png" action="/pharmacy/pharmacy_error_checking_date"/>
-                        <p:menuitem value="Bulk Sms" 
-                                    icon="/resources/image/ico/sms.png" action="/admin/bill_contact_numbers"/>
-                        <p:menuitem value="Sms Report" 
-                                    icon="/resources/image/ico/send.png" action="/sms_report"/>
-                    </p:dock>
-                </h:form>
-            </div>-->
+
 
         </div>
 

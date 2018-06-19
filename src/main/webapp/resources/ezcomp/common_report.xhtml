@@ -57,9 +57,22 @@
 
 
         <ui:repeat rendered="#{cc.attrs.patientReport eq null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
-            <div style="#{myCli.cssStyle}; position:absolute;">
-                <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType eq 'Value' and myCli.retired ne true }"  value="#{myCli.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+            <div style="#{myCli.cssStyle}; position:absolute; border: 1px solid yellowgreen;">
+                <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}"  escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType eq 'Value' and myCli.retired ne true }"  value="#{myCli.name}"  escape="false" ></h:outputText>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
+                              layout="block" style=" #{myCli.description}"        >
+
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
+                                >
+                   
+                    <p:barcode value="0123456789" type="int2of5" orientation="90" height="100" width="20" />
+                </h:panelGroup>
+
+
             </div>
         </ui:repeat>
 

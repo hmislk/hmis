@@ -45,7 +45,7 @@
                                  listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" ></poue:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" ></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
@@ -70,9 +70,9 @@
                                  selectionMode="single" >
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
-                            <poue:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" 
+                            <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" 
                                           showDelay="0" hideDelay="0" 
-                                          atPosition="left bottom" ></poue:tooltip>
+                                           ></p:tooltip>
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 

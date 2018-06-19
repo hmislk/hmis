@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
@@ -63,7 +64,21 @@ public class CommonReportItemController implements Serializable {
         current = new CommonReportItem();
         current.setName("New Label");
         current.setCategory(category);
+
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+
         getEjbFacade().create(current);
+    }
+
+    public CommonReportItem getLastCommonReportItem() {
+        String j = "select i from CommonReportItem i order by i.id desc";
+        return getEjbFacade().findFirstBySQL(j);
     }
 
     public void addNewCombo() {
@@ -85,7 +100,7 @@ public class CommonReportItemController implements Serializable {
         getItems().remove(getCurrent());
 
     }
-    
+
     public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
 //        System.err.println("commenReportFormat = " + commenReportFormat);
         String temSql;
@@ -97,13 +112,34 @@ public class CommonReportItemController implements Serializable {
         items = getFacade().findBySQL(temSql, m);
         return items;
     }
-    
 
     public void addNewValue() {
         current = new CommonReportItem();
         current.setName("New Value");
         current.setReportItemType(ReportItemType.PatientName);
         current.setCategory(category);
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
+        getEjbFacade().create(current);
+    }
+    
+    public void addNewCss() {
+        current = new CommonReportItem();
+        current.setName("New Css");
+        current.setReportItemType(ReportItemType.PatientName);
+        current.setCategory(category);
+        CommonReportItem lastItem = getLastCommonReportItem();
+        if (lastItem != null) {
+            current.setCssFontFamily(lastItem.getCssFontFamily());
+            current.setCssFontSize(lastItem.getCssFontSize());
+            current.setCssFontStyle(lastItem.getCssFontStyle());
+            current.setCssFontWeight(lastItem.getCssFontWeight());
+        }
         getEjbFacade().create(current);
     }
 

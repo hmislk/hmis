@@ -14,9 +14,11 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationReportType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.InvestigationWithCount;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -25,6 +27,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
+import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
@@ -751,7 +754,10 @@ public class InvestigationController implements Serializable {
 
     public void prepareAdd() {
         current = new Investigation();
+        current.setInwardChargeType(InwardChargeType.Laboratory);
     }
+
+    
 
     public void bulkUpload() {
         List<String> lstLines = Arrays.asList(getBulkText().split("\\r?\\n"));
@@ -811,7 +817,7 @@ public class InvestigationController implements Serializable {
         getCurrent().setCategory(getCurrent().getInvestigationCategory());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         System.out.println("getCurrent().getInwardChargeType() = " + getCurrent().getInwardChargeType());
-        if (getCurrent().getInwardChargeType()==null) {
+        if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
         }
 //        getCurrent().setInstitution(institution);
@@ -886,7 +892,7 @@ public class InvestigationController implements Serializable {
     public List<Investigation> fetchInvestigations(Investigation i) {
         List<Investigation> investigations;
         String sql;
-        Map m=new HashMap();
+        Map m = new HashMap();
 
         sql = "select c from Investigation c "
                 + " where c.retired=false ";
@@ -894,13 +900,13 @@ public class InvestigationController implements Serializable {
         if (listMasterItemsOnly == true) {
             sql += " and c.institution is null ";
         }
-        if (i!=null) {
-            sql+=" and c=:i ";
+        if (i != null) {
+            sql += " and c=:i ";
             m.put("i", i);
         }
         sql += " order by c.name";
 
-        investigations = getFacade().findBySQL(sql,m);
+        investigations = getFacade().findBySQL(sql, m);
         System.out.println("investigations.size() = " + investigations.size());
         return investigations;
     }
@@ -934,6 +940,8 @@ public class InvestigationController implements Serializable {
         System.out.println("dynamicLabels.size() = " + dynamicLabels.size());
         return dynamicLabels;
     }
+
+    
 
     public class InvestigationWithInvestigationItems {
 
@@ -1095,7 +1103,7 @@ public class InvestigationController implements Serializable {
             System.out.println("iwf.getItemFees().size() = " + iwf.getItemFees().size());
             itemWithFees.add(iwf);
         }
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation with fee (/faces/dataAdmin/report_entered_data.xhtml)");
     }
 

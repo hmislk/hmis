@@ -18,7 +18,12 @@
 
 
 
-                <p:panel header="Manage Investigation Speciman" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel styleClass="verticalAndHorizontalCenteringLarge">
+                    <f:facet name="header" >
+                        <p:outputLabel value="Manage Investigation Specimans" ></p:outputLabel>
+                        <p:spacer height="1" width="200" ></p:spacer>
+                        <p:commandButton ajax="false" value="Back" action="/lab/administration" ></p:commandButton>
+                    </f:facet>
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
                         <h:panelGrid id="gpSelect" columns="1"  >
@@ -44,7 +49,7 @@
 
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
+                                <h:panelGrid id="gpDetailText" columns="2" rendered="#{sampleController.current ne null}">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{sampleController.current.name}"  ></h:inputText>
                                 </h:panelGrid>

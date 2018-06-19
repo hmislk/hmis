@@ -38,7 +38,7 @@
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingPastController.generateSessions}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <poue:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"  atPosition="left bottom" ></poue:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   ></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
@@ -63,9 +63,9 @@
                                  selectionMode="single" >
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.name}" />
-                            <poue:tooltip for="lblConName" value="#{mys.person.name}" 
+                            <p:tooltip for="lblConName" value="#{mys.person.name}" 
                                           showDelay="0" hideDelay="0" 
-                                          atPosition="left bottom" ></poue:tooltip>
+                                           ></p:tooltip>
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
