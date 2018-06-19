@@ -8,15 +8,19 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.Sex;
+import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.IxCal;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.TestFlag;
 import com.divudi.facade.IxCalFacade;
 import com.divudi.facade.PatientInvestigationFacade;
@@ -26,6 +30,10 @@ import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,8 +63,27 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
 import java.util.Date;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.faces.context.ExternalContext;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  *
@@ -68,12 +95,7 @@ import javax.servlet.http.HttpSession;
 public class PatientReportController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    StaffController staffController;
-    @Inject
-    TransferController transferController;
+    // EJBs
     @EJB
     private PatientReportFacade ejbFacade;
     @Inject
@@ -89,12 +111,26 @@ public class PatientReportController implements Serializable {
     @EJB
     private TestFlagFacade testFlagFacade;
 
-    String selectText = "";
+    //Controllers
+    @Inject
+    SessionController sessionController;
+    @Inject
+    StaffController staffController;
+    @Inject
+    TransferController transferController;
     @Inject
     ItemForItemController itemForItemController;
     @Inject
     CommonController commonController;
+    @Inject
+    InvestigationItemController investigationItemController;
+    @Inject
+    CommonReportItemController commonReportItemController;
+    @Inject
+    ReportFormatController reportFormatController;
 
+    //Class Variables
+    String selectText = "";
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
     Investigation currentReportInvestigation;
@@ -105,8 +141,303 @@ public class PatientReportController implements Serializable {
     List<PatientReportItemValue> patientReportItemValuesDynamicLabels;
     List<PatientReportItemValue> patientReportItemValuesCalculations;
     List<PatientReport> customerReports = new ArrayList<>();
-
     List<PatientInvestigation> customerPis;
+    InvestigationItem investigationItem;
+    private List<Selectable> selectables = new ArrayList<>();
+
+    public void createHtmlFile() {
+        try {
+            File file = new File("/tmp/report" + getCurrentPatientReport().getId() + ".html");
+            if (file.createNewFile()) {
+                System.out.println("File is created!");
+            } else {
+                System.out.println("File already exists.");
+            }
+
+            String html = "<html>";
+            html += "<body>";
+            html += "<div id=\"divReport\"  style=\"width:21cm;height: 28cm; position: relative;\">";
+
+            for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
+                html += "<div style=\"" + v.getInvestigationItem().getCssStyle() + "; position:absolute;\">";
+
+                String val = "";
+
+                if (v.getInvestigationItem().isRetired()) {
+                    continue;
+                }
+
+                OUTER:
+                switch (v.getInvestigationItem().getIxItemType()) {
+                    case Value:
+                        if (null == v.getInvestigationItem().getIxItemValueType()) {
+                            val = v.getStrValue();
+                            break OUTER;
+                        } else {
+                            switch (v.getInvestigationItem().getIxItemValueType()) {
+                                case Memo:
+                                    val = v.getLobValue();
+                                    break;
+                                case Double:
+                                    val = v.getDoubleValue() + "";
+                                    break;
+                                default:
+                                    val = v.getStrValue();
+                                    break;
+                            }
+                        }
+                        break;
+                    case Template:
+                        val = v.getLobValue();
+                    case DynamicLabel:
+                    case Flag:
+                        val = v.getStrValue();
+                        break;
+                    case Calculation:
+                        val = v.getDoubleValue() + "";
+                        break;
+                }
+                if (val != null) {
+                    val = val.trim().replaceAll(" +", " ");
+                    html += StringEscapeUtils.escapeHtml4(val);
+                }
+                html += "</div>";
+            }
+
+            for (ReportItem v : getCurrentPatientReport().getItem().getReportItems()) {
+                if (v.isRetired() == false && v.getIxItemType() == InvestigationItemType.Label) {
+                    html += "<div style=\" " + v.getCssStyle() + "; position:absolute; \">";
+                    String ev = StringEscapeUtils.escapeHtml4(v.getHtmltext());
+                    html += ev;
+                    html += "</div>";
+                }
+            }
+
+            List<CommonReportItem> cris = commonReportItemController.listCommonRportItems(getCurrentPatientReport().getTransInvestigation().getReportFormat());
+
+            for (CommonReportItem v : cris) {
+                if (v.isRetired() == false) {
+                    html += "<div style=\" " + v.getOuterCssStyle() + "; position:absolute; \">";
+                    String ev = "";
+                    if (v.getIxItemType() == InvestigationItemType.Label) {
+                        ev = v.getName();
+                    } else {
+
+                        if (v.getReportItemType() != null) {
+                            switch (v.getReportItemType()) {
+                                case PatientName:
+                                case NameInFull:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle();
+                                    break;
+                                case PatientAge:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
+                                    break;
+                                case PatientSex:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
+                                    break;
+                                case Phone:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getPhone();
+                                    break;
+                            }
+                        }
+                    }
+                    ev = ev.trim().replaceAll(" +", " ");
+                    ev = StringEscapeUtils.escapeHtml4(ev);
+                    html += ev;
+                    html += "</div>";
+                }
+            }
+
+            html += "</div>";
+            html += "</body>";
+            html += "</html>";
+
+            FileWriter writer = new FileWriter(file);
+
+            writer.write(html);
+            writer.close();
+
+            final ITextRenderer iTextRenderer = new ITextRenderer();
+
+            iTextRenderer.setDocument("/tmp/report" + getCurrentPatientReport().getId() + ".html");
+            iTextRenderer.layout();
+
+            final FileOutputStream fileOutputStream
+                    = new FileOutputStream(new File("/tmp/report" + getCurrentPatientReport().getId() + ".pdf"));
+
+            iTextRenderer.createPDF(fileOutputStream);
+            fileOutputStream.close();
+
+        } catch (IOException ex) {
+            Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DocumentException ex) {
+            Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void sendEmail() throws IOException, com.itextpdf.text.DocumentException, com.lowagie.text.DocumentException, Exception {
+
+        System.out.println("" + getCurrentPatientReport().getPatientInvestigation());
+        System.out.println("" + getCurrentPatientReport().getPatientInvestigation());
+
+        final String username = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
+        final String password = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
+
+        Properties props = new Properties();
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+//        Authenticator auth = new SMTPAuthenticator();
+        Session session = Session.getInstance(props,
+                new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
+            message.setRecipients(Message.RecipientType.TO,
+                    InternetAddress.parse(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail()));
+            message.setSubject(getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results");
+            message.setText("Dear " + getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
+                    + ",\n\n Please find the results of your " + getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + ".");
+
+            //3) create MimeBodyPart object and set your message text     
+            BodyPart msbp1 = new MimeBodyPart();
+            msbp1.setText("Final Lab report of patient");
+
+            //4) create new MimeBodyPart object and set DataHandler object to this object      
+            MimeBodyPart msbp2 = new MimeBodyPart();
+
+            createHtmlFile();
+
+            DataSource source = new FileDataSource("/tmp/report" + getCurrentPatientReport().getId() + ".pdf");
+            msbp2.setDataHandler(new DataHandler(source));
+            msbp2.setFileName("/tmp/report" + getCurrentPatientReport().getId() + ".pdf");
+
+            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(msbp1);
+            multipart.addBodyPart(msbp2);
+
+            //6) set the multiplart object to the message object  
+            message.setContent(multipart);
+
+            Transport.send(message);
+
+            System.out.println("" + getCurrentPatientReport().getPatientInvestigation());
+            System.out.println("" + getCurrentPatientReport().getPatientInvestigation());
+
+            JsfUtil.addSuccessMessage("Email Sent SUccessfully");
+            System.out.println("Send Successfully");
+
+        } catch (MessagingException e) {
+            JsfUtil.addErrorMessage("Error. " + e.getMessage());
+            throw new RuntimeException(e);
+
+        }
+
+    }
+
+    public void addTemplateToReport() {
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (selectables == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        if (currentPatientReport.getTemplateItem() == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+        String finalText = investigationItem.getHtmltext();
+        for (Selectable s : selectables) {
+
+            String patternStart = "#{";
+            String patternEnd = "}";
+            String toBeReplaced;
+
+            toBeReplaced = patternStart + s.getFullText() + patternEnd;
+
+            System.err.print("regexString = " + toBeReplaced);
+
+            finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
+        }
+
+        currentPatientReport.getTemplateItem().setLobValue(finalText);
+    }
+
+    public String toEditTemplate() {
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Select a template first");
+            return "";
+        }
+        investigationItemController.setCurrent(investigationItem);
+        return "/lab/investigation_item_value_path";
+    }
+
+    public void toAddNewTemplate() {
+        System.err.print("toAddNewTemplate");
+        if (investigationItem == null) {
+            JsfUtil.addErrorMessage("Select a template first");
+            return;
+        }
+
+        selectables = new ArrayList<>();
+
+        String patternStart = "#{";
+        String patternEnd = "}";
+        String regexString = Pattern.quote(patternStart) + "(.*?)" + Pattern.quote(patternEnd);
+
+        String text = investigationItem.getHtmltext();
+        System.err.print("text = " + text);
+
+        Pattern p = Pattern.compile(regexString);
+        Matcher m = p.matcher(text);
+        List<String> strBlocks = new ArrayList<>();
+
+        while (m.find()) {
+            String block = m.group(1);
+            if (!block.trim().equals("")) {
+                Selectable s = new Selectable();
+
+                s.setFullText(block);
+                System.err.print("block = " + block);
+
+                if (block.contains("|")) {
+                    String[] blockParts = block.split("\\|");
+                    boolean hasOptions = false;
+                    for (int i = 0; i < blockParts.length; i++) {
+                        if (i == 0) {
+                            s.setName(blockParts[i]);
+                        } else {
+                            s.getOptions().add(blockParts[i]);
+                            hasOptions = true;
+                        }
+                    }
+
+                    s.setInputText(false);
+                    s.setSelectOneMenu(true);
+
+                } else {
+                    s.setName(block);
+                    s.setInputText(true);
+                    s.setSelectOneMenu(false);
+                }
+                selectables.add(s);
+            }
+        }
+
+    }
 
     public List<PatientInvestigation> getCustomerPis() {
         return customerPis;
@@ -575,6 +906,39 @@ public class PatientReportController implements Serializable {
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
+    public void reverseApprovalOfPatientReport() {
+        Date startTime = new Date();
+        if (currentPatientReport == null) {
+            UtilityController.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getDataEntered() == false) {
+            UtilityController.addErrorMessage("First Save report");
+            return;
+        }
+        if (currentPatientReport.getApproved() == false) {
+            UtilityController.addErrorMessage("First Approve report");
+            return;
+        }
+        getCurrentPtIx().setApproved(false);
+        currentPtIx.setCancelled(Boolean.FALSE);
+        currentPtIx.setCancelledAt(Calendar.getInstance().getTime());
+        currentPtIx.setCancelledUser(getSessionController().getLoggedUser());
+        currentPtIx.setCancellDepartment(getSessionController().getDepartment());
+        getPiFacade().edit(currentPtIx);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setApproved(Boolean.FALSE);
+        currentPatientReport.setCancelledAt(Calendar.getInstance().getTime());
+        currentPatientReport.setCancellDepartment(getSessionController().getLoggedUser().getDepartment());
+        currentPatientReport.setCancellInstitution(getSessionController().getLoggedUser().getInstitution());
+        currentPatientReport.setCancelledUser(getSessionController().getLoggedUser());
+        getFacade().edit(currentPatientReport);
+        getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
+        getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+        UtilityController.addSuccessMessage("Approved");
+        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+    }
+
     public void printPatientReport() {
         ////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
@@ -735,10 +1099,6 @@ public class PatientReportController implements Serializable {
     public void setPrBean(PatientReportBean prBean) {
         this.prBean = prBean;
     }
-    @Inject
-    ReportFormatController reportFormatController;
-    @Inject
-    CommonReportItemController commonReportItemController;
 
     public ReportFormatController getReportFormatController() {
         return reportFormatController;
@@ -843,6 +1203,22 @@ public class PatientReportController implements Serializable {
 
     public void setTransferController(TransferController transferController) {
         this.transferController = transferController;
+    }
+
+    public InvestigationItem getInvestigationItem() {
+        return investigationItem;
+    }
+
+    public void setInvestigationItem(InvestigationItem investigationItem) {
+        this.investigationItem = investigationItem;
+    }
+
+    public List<Selectable> getSelectables() {
+        return selectables;
+    }
+
+    public void setSelectables(List<Selectable> selectables) {
+        this.selectables = selectables;
     }
 
     @FacesConverter(forClass = PatientReport.class)

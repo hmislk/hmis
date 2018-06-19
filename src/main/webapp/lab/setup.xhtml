@@ -20,6 +20,7 @@
                         <p:panel header="Please do NOT click. Only for Developers."  >
 
                             <h:panelGrid columns="1"  >
+                                <p:commandButton  ajax="false" value="Add Many Investigations" action="#{investigationController.toAddManyIx()}"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Update to New Report Format" action="#{investigationItemController.convertCssValuesToRiValues()}" onclick="onSubmitButton();" />
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Change Ix Institution According To Dept" action="#{investigationController.changeIxInstitutionAccordingToDept}" onclick="onSubmitButton();" />
                                 

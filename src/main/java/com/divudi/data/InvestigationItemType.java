@@ -19,4 +19,7 @@ public enum InvestigationItemType {
     ItemsCatetgory,
     Css,
     Barcode,
+    BarcodeVertical,
+    Investigation,
+    Template,
 }

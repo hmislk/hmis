@@ -11,296 +11,81 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel >
-                              
-                        <p:commandButton value="Lab Administration" action="/lab/administration" ajax="false" />
-                    </p:panel>
+
+
+                    <p:dashboard id="board" model="#{sessionController.dashboardModel}">
+                        <p:panel id="Opd" header="OPD" >
+                            <p:commandButton ajax="false"  action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:commandButton>
+                            <p:commandButton ajax="false"  action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:commandButton>
+                        </p:panel>
+                        <p:panel id="Lab" header="Lab" >
+                            <p:commandButton ajax="false"  action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:commandButton>
+                            <p:commandButton ajax="false"  action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:commandButton>
+                        </p:panel>
+                        <p:panel id="Pharmacy" header="Pharmacy" >
+                            <p:outputLabel value="This Phrmacy Has #{searchController.createInwardBHTForIssueBillCount()} BHT Request Today." style="color: red;text-align: center;"
+                                           />
+                        </p:panel>
+                        <p:panel id="channelling" header="Channelling"  >
+                            <h:panelGroup >
+                                <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
+                                    <tr>
+                                        <th>
+                                            <p:outputLabel value="Bookings" ></p:outputLabel>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
+                                                         value="#{searchController.billSessions}" var='bs'
+                                                         selectionMode="single" rowKey="#{bs.id}"
+                                                         rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
+                                                         selection="#{searchController.selectedBillSession}" scrollable="true" scrollHeight="275">
+                                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                                                        listener="#{bookingController.createBillfees}" />  
+
+                                                <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
+                                                <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                                <p:column headerText="Paid">
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
+                                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
+                                                </p:column>
+                                                <p:column headerText="C/R">
+                                                    <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                                    <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                                </p:column>   
+                                                <p:column headerText="Agent">
+                                                    <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
+                                                </p:column> 
+                                                <p:column headerText="P/A">                           
+                                                    <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                                </p:column> 
+                                            </p:dataTable>    
+                                        </td>
+                                    </tr>
+                                </table>
+                            </h:panelGroup>
+                        </p:panel>
+                    </p:dashboard>
+
+                    <h:panelGrid columns="1" rendered="false" >
+                        <p:editor value="#{sessionController.billNo}"  ></p:editor>
+                        <p:outputLabel value="#{sessionController.billNo}" escape="false" ></p:outputLabel>
+                        <p:outputPanel >
+                            #{sessionController.billNo}
+                        </p:outputPanel>
+                        <p:commandButton ajax="false" action="#" value="Refresh" ></p:commandButton>
+                    </h:panelGrid>
                 </h:form>
 
-                <!--monthly channel and scan count-->
-                <!--                <script type="text/javascript">
-                                    google.charts.load('current', {packages: ['corechart', 'line']});
-                                    google.charts.setOnLoadCallback(drawCurveTypes);
-                
-                                    function drawCurveTypes() {
-                                        var rowdata =#{googleChartController.drawChannelAndScanCountChart()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                                            hAxis: {
-                                                title: 'Date'
-                                            },
-                                            vAxis: {
-                                                title: 'Count'
-                                            }
-                                        };
-                
-                                        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                daily income by doctor fee doctor vat
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawPiechartDailyIncome()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Daily Channel Income ',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                channel method chart
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawChannelingMethodsChart()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Count Channeling Methods',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart1'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                daily pharmacy income
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawPharmacyIncomeChart()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Pharmacy Income',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                daily opd income by category
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawOpdIncomeChart()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'OPD Income By Category',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart3'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                collection center investigations count
-                                <script type="text/javascript">
-                                    google.charts.load('current', {packages: ['corechart', 'bar']});
-                                    google.charts.setOnLoadCallback(drawBasic);
-                                    function drawBasic() {
-                
-                                        var rowdata =#{googleChartController.drawCollectionCenterInvestigationCountChart()}
-                
-                                        if (rowdata === "[]") {
-                                            document.getElementById("p").value = "New text!";
-                                        }
-                
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                                           
-                                            hAxis: {
-                                                title: 'Collecting Center'
-                                               
-                                            },
-                                            vAxis: {
-                                                title: 'Count'
-                                            }
-                                        };
-                                        var chart = new google.visualization.ColumnChart(
-                                                document.getElementById('barChart'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                daily inward cash 
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawInwardCash()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Inward Cash Income By Category',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart5'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                daily inward credit
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawInwardCredit()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Inward Credit Income By Category',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart6'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                
-                                total daily income by section
-                                <script type="text/javascript">
-                                    google.charts.load('current', {'packages': ['corechart']});
-                                    google.charts.setOnLoadCallback(drawChart);
-                                    function drawChart() {
-                                        var rowdata =#{googleChartController.drawTotalIncomeBySectionChart()}
-                                        var data = google.visualization.arrayToDataTable(rowdata);
-                                        var options = {
-                //                                title: 'Income By Section',
-                                            is3D: true,
-                                        };
-                                        var chart = new google.visualization.PieChart(document.getElementById('piechart7'));
-                                        chart.draw(data, options);
-                                    }
-                                </script>
-                                <p:panel>
-                                    <h1 style="color: #107710">RUHUNU HOSPITAL DASHBOARD</h1>
-                                    <h3>Welcome <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}"/></h3>
-                                    <h:form> 
-                                        <h:panelGrid columns="5">
-                                            <h:outputLabel value="From:"/>
-                                            <p:calendar styleClass="noPrintButton" value="#{googleChartController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                
-                                            </p:calendar>
-                                            <h:outputLabel value="To:"/>
-                                            <p:calendar styleClass="noPrintButton" value="#{googleChartController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
-                
-                                            </p:calendar>
-                                            <p:commandButton action="#{googleChartController.drawAllChat()}" value="Draw" ajax="false" />
-                                        </h:panelGrid>
-                                    </h:form>
-                                </p:panel>
-                
-                                <center>
-                                    <p:panel>
-                                        <h:panelGrid>
-                                            <p:panel header="Channel Counts Of Previous 30 Days" >
-                                                <div id="chart_div" style="width: 1050px; height: 400px;"></div>
-                                            </p:panel>
-                
-                                        </h:panelGrid>
-                
-                                        <h:panelGrid columns="2">
-                                            <p:panel header="Daily Channel Income By Income Ctegory" >
-                                                <div id="piechart" style="width:525px; height: 400px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Channel Counts Of Channeling Methods" >
-                                                <div id="piechart1" style="width: 525px; height: 400px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Pharmcy Income" >
-                                                <div id="piechart2" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="OPD Income By Category" >
-                                                <div id="piechart3" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Invstigation Counts Of Collecting Centers" >
-                                                <div id="barChart" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Inward Cash Income By Category" >
-                                                <div id="piechart5" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Inward Credit Income By Category" >
-                                                <div id="piechart6" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                                            <p:panel header="Total Income Of Hospital By Section" >
-                
-                                                <div id="piechart7" style="width: 525px; height: 300px;">
-                
-                                                </div>
-                                            </p:panel>
-                
-                                        </h:panelGrid>
-                                    </p:panel>
-                                </center> -->
-
-                <p:panel rendered="#{sessionController.department.departmentType eq 'Pharmacy'}">
-                    <p:outputLabel value="This Phrmacy Has #{searchController.createInwardBHTForIssueBillCount()} BHT Request Today." style="color: red;text-align: center;"
-                                    />
-                </p:panel>
 
 
-                <p:panelGrid columns="4"  >
 
-                    <p:panel header="Channelling" rendered="#{searchController.channelingPanelVisible}" >
-                        <h:panelGroup >
-                            <table style="min-height: 300px;  padding: 2px; margin: auto;position:relative ;">
-                                <tr>
-                                    <th>
-                                        <p:outputLabel value="Bookings" ></p:outputLabel>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <p:dataTable id="tblBookingsOfSelectedSession" style="height: 300px;"
-                                                     value="#{searchController.billSessions}" var='bs'
-                                                     selectionMode="single" rowKey="#{bs.id}"
-                                                     rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
-                                                     selection="#{searchController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
-                                                    listener="#{bookingController.createBillfees}" />  
-
-                                            <p:column headerText="No" style="width: 20px!important;">#{bs.serialNo}</p:column>
-                                            <p:column headerText="Name" style="width: 80px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                                            <p:column headerText="Paid">
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
-                                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
-                                            </p:column>
-                                            <p:column headerText="C/R">
-                                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                                            </p:column>   
-                                            <p:column headerText="Agent">
-                                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>                          
-                                            </p:column> 
-                                            <p:column headerText="P/A">                           
-                                                <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                            </p:column> 
-                                        </p:dataTable>    
-                                    </td>
-                                </tr>
-                            </table>
-                        </h:panelGroup>
-                    </p:panel>
-
-                </p:panelGrid>
 
 
 

@@ -19,12 +19,14 @@ import com.divudi.entity.Logins;
 import com.divudi.entity.Person;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.WebUserDashboard;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.UserPreferenceFacade;
+import com.divudi.facade.WebUserDashboardFacade;
 import com.divudi.facade.WebUserDepartmentFacade;
 import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
@@ -47,6 +49,14 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
+
+import org.primefaces.event.CloseEvent;
+import org.primefaces.event.DashboardReorderEvent;
+import org.primefaces.event.ToggleEvent;
+import org.primefaces.model.DashboardColumn;
+import org.primefaces.model.DashboardModel;
+import org.primefaces.model.DefaultDashboardColumn;
+import org.primefaces.model.DefaultDashboardModel;
 
 /**
  *
@@ -74,6 +84,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     PersonFacade personFacade;
     @EJB
     WebUserFacade webUserFacade;
+    @EJB
+    WebUserDashboardFacade webUserDashboardFacade;
     /**
      * Controllers
      */
@@ -83,6 +95,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     ApplicationController applicationController;
     @Inject
     SearchController searchController;
+
+    @Inject
+    WebUserController webUserController;
     /**
      * Properties
      */
@@ -98,14 +113,15 @@ public class SessionController implements Serializable, HttpSessionListener {
     Department department;
     List<Department> departments;
     Institution institution;
-
+    private List<WebUserDashboard> dashboards;
     boolean paginator;
     WebUser webUser;
-
     String billNo;
     String phoneNo;
     UserPreference currentPreference;
     Bill bill;
+    private DashboardModel dashboardModel;
+    String loginRequestResponse;
 
     public UserPreference getCurrentPreference() {
         return currentPreference;
@@ -640,11 +656,102 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
+    public void decryptAllUsers() {
+        String temSQL;
+        temSQL = "SELECT u FROM WebUser u";
+        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        int i = 1;
+        for (WebUser u : allUsers) {
+            try {
+                u.setName(getSecurityController().decrypt(u.getName()));
+            } catch (Exception e) {
+                if (u.getName().trim().equals("")) {
+                    u.setName("" + i);
+                }
+            }
+            if (u.getName() != null && !u.getName().trim().equals("")) {
+                getFacede().edit(u);
+            }
+            i++;
+        }
+    }
+
+    public boolean loginForRequests() {
+        return loginForRequests(userName, passord);
+    }
+
+    public boolean loginForRequests(String temUserName, String temPassword) {
+        System.err.println("loginForRequests");
+
+        if (temUserName == null) {
+            System.err.println("Username is null");
+            return false;
+        }
+        if (temPassword == null) {
+            System.err.println("Password is null");
+            return false;
+        }
+        String temSQL;
+        loginRequestResponse = "#{";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        Map m = new HashMap();
+
+        m.put("n", temUserName.trim().toLowerCase());
+        WebUser u = getFacede().findFirstBySQL(temSQL, m);
+
+//        System.err.println("username = " + userName);
+//        System.err.println("password = " + passord);
+
+        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+            departments = listLoggableDepts(u);
+            if (departments.isEmpty()) {
+                loginRequestResponse += "Login=0|}";
+                return false;
+            }
+
+            setLoggedUser(u);
+            dashboards = webUserController.listWebUserDashboards(u);
+            setLogged(Boolean.TRUE);
+            setActivated(u.isActivated());
+            setRole(u.getRole());
+
+            String sql;
+
+            UserPreference uf;
+            sql = "select p from UserPreference p where p.webUser=:u ";
+            m = new HashMap();
+            m.put("u", u);
+            uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+            if (uf == null) {
+                uf = new UserPreference();
+                uf.setWebUser(u);
+                getUserPreferenceFacade().create(uf);
+            }
+            setUserPreference(uf);
+
+            department = u.getDepartment();
+            selectDepartment();
+            loginRequestResponse += "Login=1|";
+            loginRequestResponse += "Department=" + department.getName() + "|";
+            loginRequestResponse += "DepartmentId=" + department.getId() + "|";
+            loginRequestResponse += "Institution=" + department.getInstitution().getName() + "|";
+            loginRequestResponse += "InstitutionId=" + department.getInstitution().getId() + "|";
+            loginRequestResponse += "User=" + u.getName() + "|";
+            loginRequestResponse += "UserId=" + u.getId() + "|";
+            loginRequestResponse += "}";
+            System.err.println("loginRequestResponse = " + loginRequestResponse);
+            return true;
+        }
+        loginRequestResponse += "Login=0|}";
+        return false;
+    }
+
     private boolean checkUsersWithoutDepartment() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
         List<WebUser> allUsers = getFacede().findBySQL(temSQL);
         for (WebUser u : allUsers) {
+
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
                     departments = listLoggableDepts(u);
@@ -674,6 +781,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
+                    dashboards = webUserController.listWebUserDashboards(u);
+                    loadDashboards();
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -714,6 +823,35 @@ public class SessionController implements Serializable, HttpSessionListener {
         return false;
     }
 
+    public void loadDashboards() {
+        dashboardModel = new DefaultDashboardModel();
+        DashboardColumn column1 = new DefaultDashboardColumn();
+        DashboardColumn column2 = new DefaultDashboardColumn();
+        DashboardColumn column3 = new DefaultDashboardColumn();
+
+        int i = 0;
+
+        for (WebUserDashboard d : dashboards) {
+            int n = i % 3;
+            switch (n) {
+                case 1:
+                    column1.addWidget(d.getDashboard().toString());
+                    break;
+                case 2:
+                    column2.addWidget(d.getDashboard().toString());
+                    break;
+                case 0:
+                    column3.addWidget(d.getDashboard().toString());
+                    break;
+            }
+            i++;
+        }
+
+        dashboardModel.addColumn(column1);
+        dashboardModel.addColumn(column2);
+        dashboardModel.addColumn(column3);
+    }
+
     public String selectDepartment() {
         if (loggedUser == null) {
             return "/index";
@@ -743,7 +881,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
-            long i=searchController.createInwardBHTForIssueBillCount();
+            long i = searchController.createInwardBHTForIssueBillCount();
             if (i > 0) {
                 UtilityController.addSuccessMessage("This Phrmacy Has " + i + " BHT Request Today.");
             }
@@ -1249,6 +1387,78 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public DashboardModel getDashboardModel() {
+        return dashboardModel;
+    }
+
+    public void setDashboardModel(DashboardModel dashboardModel) {
+        this.dashboardModel = dashboardModel;
+    }
+
+    public DepartmentFacade getDepartmentFacade() {
+        return departmentFacade;
+    }
+
+    public void setDepartmentFacade(DepartmentFacade departmentFacade) {
+        this.departmentFacade = departmentFacade;
+    }
+
+    public PersonFacade getPersonFacade() {
+        return personFacade;
+    }
+
+    public void setPersonFacade(PersonFacade personFacade) {
+        this.personFacade = personFacade;
+    }
+
+    public WebUserFacade getWebUserFacade() {
+        return webUserFacade;
+    }
+
+    public void setWebUserFacade(WebUserFacade webUserFacade) {
+        this.webUserFacade = webUserFacade;
+    }
+
+    public WebUserDashboardFacade getWebUserDashboardFacade() {
+        return webUserDashboardFacade;
+    }
+
+    public void setWebUserDashboardFacade(WebUserDashboardFacade webUserDashboardFacade) {
+        this.webUserDashboardFacade = webUserDashboardFacade;
+    }
+
+    public SearchController getSearchController() {
+        return searchController;
+    }
+
+    public void setSearchController(SearchController searchController) {
+        this.searchController = searchController;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
+    }
+
+    public List<WebUserDashboard> getDashboards() {
+        return dashboards;
+    }
+
+    public void setDashboards(List<WebUserDashboard> dashboards) {
+        this.dashboards = dashboards;
+    }
+
+    public String getLoginRequestResponse() {
+        return loginRequestResponse;
+    }
+
+    public void setLoginRequestResponse(String loginRequestResponse) {
+        this.loginRequestResponse = loginRequestResponse;
     }
 
 }

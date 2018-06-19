@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -9,6 +9,11 @@
                 >
 
 
+    
+    <h:body>
+    
+        <ui:composition template="/resources/template/template.xhtml">
+        
     <ui:define name="content">
 
         <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
@@ -42,4 +47,7 @@
 
     </ui:define>
 
-</ui:composition>
+        </ui:composition>
+    </h:body>
+
+</html>

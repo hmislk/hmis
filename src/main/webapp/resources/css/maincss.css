@@ -613,6 +613,12 @@ body {
     width : 400px;
 }
 
+
+.mediumAutocomplete.ui-autocomplete-input.ui-inputfield { 
+    width : 200px;
+}
+
+
 .labPanel .ui-panel-titlebar {
     color: #FF1493;
     border-color: #FF1493;
@@ -894,6 +900,23 @@ body {
 .shortinput .ui-autocomplete-input.ui-inputfield { 
     width : 100px!important;
 }
+
+
+
+.shortinputOpd .ui-autocomplete-input {
+    width: 320px!important;
+}
+
+.shortinputOpd .ui-inputfield, .shortinputOpd  .ui-widget-content .ui-inputfield {
+    width: 320px!important;
+}
+
+.shortinputOpd .ui-autocomplete-input.ui-inputfield { 
+    width : 320px!important;
+}
+
+
+
 
 .shortinput2 .ui-autocomplete-input.ui-inputfield { 
     width : 200px!important;

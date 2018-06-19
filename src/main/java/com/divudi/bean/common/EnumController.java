@@ -9,6 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CssVerticalAlign;
+import com.divudi.data.Dashboard;
 import com.divudi.data.DepartmentListMethod;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -48,6 +49,11 @@ public class EnumController implements Serializable {
 
     SessionNumberType[] sessionNumberTypes;
 
+    
+    public Dashboard[] getDashboardTypes(){
+        return Dashboard.values();
+    }
+    
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;

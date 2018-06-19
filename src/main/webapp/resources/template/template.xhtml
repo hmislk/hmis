@@ -3,8 +3,7 @@
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:poue="http://primefaces.org/ui/extensions">
+      xmlns:f="http://java.sun.com/jsf/core">
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <ui:insert name="title"   >
@@ -31,7 +30,7 @@
 
     <h:body>
         <div id="panelFullSpread" class="fullSpread ui-widget-content " >
-            <p:growl id="publicGrowl" autoUpdate="true"   />
+            <p:growl id="publicGrowl"    />
             <h:panelGroup >
                 <h:form>
                     <h:panelGroup >
@@ -710,7 +709,7 @@
 
                                 <p:submenu styleClass="rightBordrOnly" label="User"  >
                                     <p:menuitem  ajax="false"  action="/user_change_password" value="Change Password"   ></p:menuitem>
-                                    <p:menuitem  ajax="false"  action="/user_preferances" value="Change Preferances" rendered="#{webUserController.hasPrivilege('ChangePreferece')}" ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/user_preferances" value="Change Preferances"  ></p:menuitem>
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Admin"  rendered="#{webUserController.hasPrivilege('Admin')}">

@@ -5,6 +5,7 @@
 package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
+import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -126,14 +127,133 @@ public class PatientReport implements Serializable {
     Boolean transHasAbst;
     @Transient
     Investigation transInvestigation;
+    @Transient
+    Boolean containValues;
+    @Transient
+    Boolean containCalculations;
+    @Transient
+    Boolean containFlags;
+    @Transient
+    Boolean containTemplates;
+    @Transient
+    Boolean containDynamicLabels;
+    @Transient
+    PatientReportItemValue templateItem;
 
+    public PatientReportItemValue getTemplateItem() {
+        if(templateItem==null){
+            for(PatientReportItemValue v:this.getPatientReportItemValues()){
+                if(v.getInvestigationItem().getIxItemType()==InvestigationItemType.Template){
+                    templateItem = v;
+                    if(templateItem.getLobValue()==null){
+                        templateItem.setLobValue("");
+                    }
+                }
+            }
+        }
+        return templateItem;
+    }
+
+    public void setTemplateItem(PatientReportItemValue templateItem) {
+        this.templateItem = templateItem;
+    }
+    
+
+    
+    
+    
     public Investigation getTransInvestigation() {
         if (item instanceof Investigation) {
-            transInvestigation=(Investigation) item;
-        }else{
+            transInvestigation = (Investigation) item;
+        } else {
             transInvestigation = null;
         }
         return transInvestigation;
+    }
+
+    private void checkContains() {
+        containValues = false;
+        containCalculations = false;
+        containFlags = false;
+        containTemplates = false;
+        containDynamicLabels=false;
+        if (getTransInvestigation() == null) {
+            return;
+        }
+        for (InvestigationItem ii : getTransInvestigation().getReportItems()) {
+            switch (ii.getIxItemType()) {
+                case Value:containValues=true;break;
+                case Calculation:containCalculations=true;break;
+                case Flag:containFlags=true;break;
+                case Template:containTemplates=true;break;
+                case DynamicLabel:containDynamicLabels=true;break;
+            }
+        }
+    }
+
+    public Boolean getContainDynamicLabels() {
+        if(containDynamicLabels==null){
+            checkContains();
+        }
+        return containDynamicLabels;
+    }
+
+    public void setContainDynamicLabels(Boolean containDynamicLabels) {
+        this.containDynamicLabels = containDynamicLabels;
+    }
+    
+    
+
+    public Boolean getContainValues() {
+        if(containValues==null){
+            checkContains();
+        }
+        return containValues;
+    }
+
+    public void setContainValues(Boolean containValues) {
+        this.containValues = containValues;
+    }
+
+    public Boolean getContainCalculations() {
+        if(containCalculations==null){
+            checkContains();
+        }
+        return containCalculations;
+    }
+
+    public void setContainCalculations(Boolean containCalculations) {
+        this.containCalculations = containCalculations;
+    }
+
+    public Boolean getContainFlags() {
+        if(containFlags==null){
+            checkContains();
+        }
+        return containFlags;
+    }
+
+    public void setContainFlags(Boolean containFlags) {
+        this.containFlags = containFlags;
+    }
+
+    public Boolean getContainTemplates() {
+        if(containTemplates==null){
+            checkContains();
+        }
+        return containTemplates;
+    }
+
+    public void setContainTemplates(Boolean containTemplates) {
+        this.containTemplates = containTemplates;
+    }
+
+    public boolean isFilteredAndSorted() {
+        return filteredAndSorted;
+    }
+
+    public void setFilteredAndSorted(boolean filteredAndSorted) {
+        this.filteredAndSorted = filteredAndSorted;
     }
 
 //    public List<PatientReportItemValue> getPatientReportItemOfValueType() {
@@ -529,7 +649,7 @@ public class PatientReport implements Serializable {
     public void setItem(Item item) {
         this.item = item;
     }
-    
+
     //AntiBiotic List
     public boolean getTransHasAbst() {
 

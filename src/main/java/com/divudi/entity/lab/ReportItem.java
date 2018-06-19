@@ -8,10 +8,12 @@ import com.divudi.data.CssFontStyle;
 import com.divudi.data.CssOverflow;
 import com.divudi.data.CssPosition;
 import com.divudi.data.CssTextAlign;
+import com.divudi.data.CssTextDecoration;
 import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
+import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
@@ -27,6 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -73,6 +76,8 @@ public class ReportItem implements Serializable {
     @Enumerated(EnumType.STRING)
     CssFontStyle cssFontStyle;
     @Enumerated(EnumType.STRING)
+    CssTextDecoration cssTextDecoration;
+    @Enumerated(EnumType.STRING)
     CssVerticalAlign cssVerticalAlign;
     @Enumerated(EnumType.STRING)
     CssTextAlign cssTextAlign;
@@ -113,19 +118,130 @@ public class ReportItem implements Serializable {
     double riLeft;
     double riWidth;
     double riFontSize;
-    
+
+    double htPix;
+    double wtPix;
+
     @Lob
     String htmltext;
 
+    @OneToOne
+    private ReportItem testHeader;
+    @OneToOne
+    private ReportItem valueHeader;
+    @OneToOne
+    private ReportItem unitHeader;
+    @OneToOne
+    private ReportItem referenceHeader;
+    @OneToOne
+    private ReportItem testLabel;
+    @ManyToOne
+    private ReportItem valueValue;
+    @ManyToOne
+    private ReportItem flagValue;
+    @OneToOne
+    private ReportItem unitLabel;
+    @OneToOne
+    private ReportItem referenceLabel;
+    @ManyToOne
+    private ReportItem commentLabel;
+    @ManyToOne
+    private InvestigationComponent investigationComponent;
+    @Enumerated(EnumType.STRING)
+    private DataEntryMethod dataEntryMethod;
+    
+    private boolean automated;
+    @ManyToOne
+    private Machine machine;
+    @ManyToOne
+    private Item test;
+    @ManyToOne
+    private Sample sample;
+    @ManyToOne
+    private Item sampleComponent;
+    @ManyToOne
+    private InvestigationTube tube;
+    
+    
+    
+
+    public CssTextDecoration getCssTextDecoration() {
+        return cssTextDecoration;
+    }
+
+    public void setCssTextDecoration(CssTextDecoration cssTextDecoration) {
+        this.cssTextDecoration = cssTextDecoration;
+    }
+
+    public ReportItem getUnitLabel() {
+        return unitLabel;
+    }
+
+    public void setUnitLabel(ReportItem unitLabel) {
+        this.unitLabel = unitLabel;
+    }
+
+    public ReportItem getReferenceLabel() {
+        return referenceLabel;
+    }
+
+    public void setReferenceLabel(ReportItem referenceLabel) {
+        this.referenceLabel = referenceLabel;
+    }
+
+    public ReportItem getCommentLabel() {
+        return commentLabel;
+    }
+
+    /**
+     *
+     *
+     *
+     * InvestigationItem testHeader = new InvestigationItem(); InvestigationItem
+     * valueHeader = new InvestigationItem(); InvestigationItem unitHeader = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testLabel = new
+     * InvestigationItem(); InvestigationItem valueValue = new
+     * InvestigationItem(); InvestigationItem unitValue = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testComments = new
+     * InvestigationItem();
+     *
+     *
+     *
+     *
+     *
+     */
+    public void setCommentLabel(ReportItem commentLabel) {
+        this.commentLabel = commentLabel;
+    }
+
     public String getHtmltext() {
+        if (htmltext == null) {
+            htmltext = "";
+        }
         return htmltext;
     }
 
     public void setHtmltext(String htmltext) {
         this.htmltext = htmltext;
     }
-    
-    
+
+    public double getHtPix() {
+        return htPix;
+    }
+
+    public void setHtPix(double htPix) {
+        this.htPix = htPix;
+    }
+
+    public double getWtPix() {
+        return wtPix;
+    }
+
+    public void setWtPix(double wtPix) {
+        this.wtPix = wtPix;
+    }
 
     public String removeLastPercentage(String inputString) {
         if (inputString == null) {
@@ -648,8 +764,8 @@ public class ReportItem implements Serializable {
             cssStyle += "font-weight:" + getCssFontWeight() + "; ";
         }
 
-        cssStyle+="min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
-        
+        cssStyle += "min-width:100%;max-width:100%;width:100%;min-height:100%;max-height:100%;height:100%;padding:0px;margin:0px;border:0px;";
+
         return cssStyle;
     }
 
@@ -711,9 +827,9 @@ public class ReportItem implements Serializable {
         if (cssVerticalAlign != null) {
             cssStyle += "vertical-align: " + cssVerticalAlign + "; ";
         }
-        
-        cssStyle+=" position:absolute; overflow: hidden!important; ";
-        
+
+        cssStyle += " position:absolute; overflow: hidden!important; ";
+
         return cssStyle;
     }
 
@@ -746,8 +862,8 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiHeight() {
-        if(riHeight==0){
-            riHeight=2;
+        if (riHeight == 0) {
+            riHeight = 2;
         }
         return riHeight;
     }
@@ -765,8 +881,8 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiWidth() {
-        if(riWidth==0){
-            riWidth=30;
+        if (riWidth == 0) {
+            riWidth = 30;
         }
         return riWidth;
     }
@@ -776,8 +892,8 @@ public class ReportItem implements Serializable {
     }
 
     public double getRiFontSize() {
-        if(riFontSize==0){
-            riFontSize=12;
+        if (riFontSize == 0) {
+            riFontSize = 12;
         }
         return riFontSize;
     }
@@ -786,4 +902,188 @@ public class ReportItem implements Serializable {
         this.riFontSize = riFontSize;
     }
 
+    public ReportItem getTestHeader() {
+        return testHeader;
+    }
+
+    public void setTestHeader(ReportItem testHeader) {
+        this.testHeader = testHeader;
+    }
+
+    public ReportItem getUnitHeader() {
+        return unitHeader;
+    }
+
+    public void setUnitHeader(ReportItem unitHeader) {
+        this.unitHeader = unitHeader;
+    }
+
+    public ReportItem getValueHeader() {
+        return valueHeader;
+    }
+
+    public void setValueHeader(ReportItem valueHeader) {
+        this.valueHeader = valueHeader;
+    }
+
+    public ReportItem getReferenceHeader() {
+        return referenceHeader;
+    }
+
+    public void setReferenceHeader(ReportItem referenceHeader) {
+        this.referenceHeader = referenceHeader;
+    }
+
+    public ReportItem getTestLabel() {
+        return testLabel;
+    }
+
+    public void setTestLabel(ReportItem testLabel) {
+        this.testLabel = testLabel;
+    }
+
+    public ReportItem getValueValue() {
+        return valueValue;
+    }
+
+    public void setValueValue(ReportItem valueValue) {
+        this.valueValue = valueValue;
+    }
+
+    public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
+        toRi.name = fromRi.name;
+        toRi.tName = fromRi.tName;
+        toRi.sName = fromRi.sName;
+        toRi.description = fromRi.description;
+        toRi.orderNo = fromRi.orderNo;
+        toRi.creater = fromRi.creater;
+        toRi.createdAt = fromRi.createdAt;
+        toRi.retired = fromRi.retired;
+        toRi.retirer = fromRi.retirer;
+        toRi.retiredAt = fromRi.retiredAt;
+        toRi.retireComments = fromRi.retireComments;
+        toRi.item = fromRi.item;
+        toRi.ixItemType = fromRi.ixItemType;
+        toRi.ixItemValueType = fromRi.ixItemValueType;
+        toRi.cssPosition = fromRi.cssPosition;
+        toRi.cssOverflow = fromRi.cssOverflow;
+        toRi.cssFontStyle = fromRi.cssFontStyle;
+        toRi.cssVerticalAlign = fromRi.cssVerticalAlign;
+        toRi.cssTextAlign = fromRi.cssTextAlign;
+        toRi.cssLeft = fromRi.cssLeft;
+        toRi.cssTop = fromRi.cssTop;
+        toRi.cssWidth = fromRi.cssWidth;
+        toRi.cssHeight = fromRi.cssHeight;
+        toRi.cssZorder = fromRi.cssZorder;
+        toRi.cssClip = fromRi.cssClip;
+        toRi.cssFontFamily = fromRi.cssFontFamily;
+        toRi.cssFontVariant = fromRi.cssFontVariant;
+        toRi.cssFontWeight = fromRi.cssFontWeight;
+        toRi.cssFontSize = fromRi.cssFontSize;
+        toRi.cssLineHeight = fromRi.cssLineHeight;
+        toRi.cssBackColor = fromRi.cssBackColor;
+        toRi.cssColor = fromRi.cssColor;
+        toRi.cssBorderRadius = fromRi.cssBorderRadius;
+        toRi.cssMargin = fromRi.cssMargin;
+        toRi.cssPadding = fromRi.cssPadding;
+        toRi.cssBorder = fromRi.cssBorder;
+        toRi.formatPrefix = fromRi.formatPrefix;
+        toRi.formatSuffix = fromRi.formatSuffix;
+        toRi.formatString = fromRi.formatString;
+        toRi.reportItemType = fromRi.reportItemType;
+        toRi.category = fromRi.category;
+        toRi.pageNo = fromRi.pageNo;
+        toRi.referringItem = fromRi.referringItem;
+        toRi.referringCategory = fromRi.referringCategory;
+        toRi.riTop = fromRi.riTop;
+        toRi.riHeight = fromRi.riHeight;
+        toRi.riLeft = fromRi.riLeft;
+        toRi.riWidth = fromRi.riWidth;
+        toRi.riFontSize = fromRi.riFontSize;
+        toRi.htPix = fromRi.htPix;
+        toRi.wtPix = fromRi.wtPix;
+        toRi.htmltext = fromRi.htmltext;
+        toRi.testHeader = fromRi.testHeader;
+        toRi.unitHeader = fromRi.unitHeader;
+        toRi.valueHeader = fromRi.valueHeader;
+        toRi.referenceHeader = fromRi.referenceHeader;
+        toRi.testLabel = fromRi.testLabel;
+        toRi.valueValue = fromRi.valueValue;
+
+    }
+
+    public InvestigationComponent getInvestigationComponent() {
+        return investigationComponent;
+    }
+
+    public void setInvestigationComponent(InvestigationComponent investigationComponent) {
+        this.investigationComponent = investigationComponent;
+    }
+
+    public DataEntryMethod getDataEntryMethod() {
+        return dataEntryMethod;
+    }
+
+    public void setDataEntryMethod(DataEntryMethod dataEntryMethod) {
+        this.dataEntryMethod = dataEntryMethod;
+    }
+
+    public ReportItem getFlagValue() {
+        return flagValue;
+    }
+
+    public void setFlagValue(ReportItem flagValue) {
+        this.flagValue = flagValue;
+    }
+
+    public boolean isAutomated() {
+        return automated;
+    }
+
+    public void setAutomated(boolean automated) {
+        this.automated = automated;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Item getTest() {
+        return test;
+    }
+
+    public void setTest(Item test) {
+        this.test = test;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Item getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponent(Item sampleComponent) {
+        this.sampleComponent = sampleComponent;
+    }
+
+    public InvestigationTube getTube() {
+        return tube;
+    }
+
+    public void setTube(InvestigationTube tube) {
+        this.tube = tube;
+    }
+
+    
+    
 }

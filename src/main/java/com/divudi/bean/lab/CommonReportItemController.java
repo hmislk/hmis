@@ -14,6 +14,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
 import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.CommonReportItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class CommonReportItemController implements Serializable {
     private List<CommonReportItem> items = null;
     String selectText = "";
     Category category;
+    boolean showBorders;
 
     public Category getCategory() {
         return category;
@@ -100,6 +102,23 @@ public class CommonReportItemController implements Serializable {
         getItems().remove(getCurrent());
 
     }
+    
+    
+    public void duplicateItem() {
+        CommonReportItem newItem = new CommonReportItem();
+        
+        ReportItem.copyReportItem(current, newItem);
+        
+        newItem.setName(current.getName() + " 1");
+        newItem.setCreatedAt(new Date());
+        newItem.setCreater(getSessionController().getLoggedUser());
+        
+        getEjbFacade().create(newItem);
+        getItems().add(newItem);
+        
+        current = newItem;
+
+    }
 
     public List<CommonReportItem> listCommonRportItems(Category commenReportFormat) {
 //        System.err.println("commenReportFormat = " + commenReportFormat);
@@ -127,7 +146,7 @@ public class CommonReportItemController implements Serializable {
         }
         getEjbFacade().create(current);
     }
-    
+
     public void addNewCss() {
         current = new CommonReportItem();
         current.setName("New Css");
@@ -234,6 +253,18 @@ public class CommonReportItemController implements Serializable {
         }
         return items;
     }
+
+    public boolean isShowBorders() {
+        return showBorders;
+    }
+
+    public void setShowBorders(boolean showBorders) {
+        this.showBorders = showBorders;
+    }
+
+
+    
+
 
     public List<CommonReportItem> getCategoryItems(Category cat) {
         List<CommonReportItem> cis;

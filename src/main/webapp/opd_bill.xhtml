@@ -22,11 +22,15 @@
 
         <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
             <h:form id="form">
+                <p:growl autoUpdate="true" id="growl" ></p:growl>
                 <p:focus id="focusIx" for="acIx" />
                 <f:facet name="header">
                     <h:outputLabel value="OPD"/>
                 </f:facet>
                 <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop" >
+
+
+
                     <p:panel style="min-height: 600px; position:relative;"  >
                         <h:panelGrid columns="20"  >
                             <h:panelGrid columns="1">                                
@@ -89,100 +93,115 @@
                                                 listener="#{billController.onTabChange}" />
 
                                         <p:tab id="tabNewPt" title="New Patient"   >
+                                            <p:panel header="Enter New Patient Details" style="width: 550px;">
 
+                                                <p:panelGrid columns="2" >
+                                                    <p:selectOneMenu  id="cmbTitle"  style="width: 100px;"
+                                                                      value="#{billController.newPatient.person.title}"  >
+                                                        <f:selectItem itemLabel="Select Title" />
+                                                        <f:selectItems value="#{billController.title}" var="i" 
+                                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    </p:selectOneMenu>
 
-                                            <table >
-                                                <tr >
-                                                    <td >
-                                                        <p:outputLabel value="Title &amp; Name" ></p:outputLabel>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td >
-                                                        <p:selectOneMenu  id="cmbTitle"  
-                                                                          value="#{billController.newPatient.person.title}"  >
-                                                            <f:selectItem itemLabel="Select Title" />
-                                                            <f:selectItems value="#{billController.title}" var="i" 
-                                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                        </p:selectOneMenu>
+                                                    <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Enter the Name of the patient"
+                                                                 value="#{billController.newPatient.person.name}" 
+                                                                 style="min-width: 350px;text-transform:uppercase;">
+                                                    </p:inputText>
 
-                                                    </td>
-                                                    <td  >
-                                                        <p:inputText autocomplete="off"  id="txtNewPtName" 
-                                                                     value="#{billController.newPatient.person.name}" 
-                                                                     style="width: 350px;text-transform:uppercase;">
+                                                    <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;">
+                                                        <f:selectItem itemLabel="Select Gender"/>
+                                                        <f:selectItems value="#{billController.sex}"/>
+                                                    </p:selectOneMenu>
+
+                                                    <h:panelGrid columns="4">
+                                                        <p:inputText autocomplete="off"  id="year"  
+                                                                     value="#{billController.yearMonthDay.year}" 
+                                                                     style="width: 80px; ">
+                                                            <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+
+                                                                    listener="#{billController.dateChangeListen()}"  />
                                                         </p:inputText>
-                                                    </td>
-                                                </tr>
+                                                        <p:inputText autocomplete="off" id="month"
+                                                                     style="width: 80px; " value="#{billController.yearMonthDay.month}">
+                                                            <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
+                                                        </p:inputText>
+                                                        <p:inputText autocomplete="off" id="day" 
+                                                                     style="width: 80px;" value="#{billController.yearMonthDay.day}">
+                                                            <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
+                                                        </p:inputText>
+                                                        <p:calendar  value="#{billController.newPatient.person.dob}" 
+                                                                     id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                     style="width: 115px!important;"
+                                                                     styleClass="shortinput">
+                                                            <f:ajax event="dateSelect" />
+                                                        </p:calendar>
+                                                    </h:panelGrid>
 
-                                                <tr>
-                                                    <td>
-                                                        <p:outputLabel value="Sex &amp; Age" ></p:outputLabel>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td>
-                                                        <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" >
-                                                            <f:selectItem itemLabel="Select Sex"/>
-                                                            <f:selectItems value="#{billController.sex}"/>
-                                                        </p:selectOneMenu>
-                                                    </td>
-                                                    <td>
-                                                        <h:panelGrid columns="4">
-                                                            <p:inputText autocomplete="off"  id="year"  
-                                                                         value="#{billController.yearMonthDay.year}" 
-                                                                         style="width: 50px; ">
-                                                                <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+                                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                                 autocomplete="off" maxlength="11" placeholder="Phone Number"
+                                                                 value="#{billController.newPatient.person.phone}"
+                                                                 style="width: 135;">
+                                                    </p:inputMask>
 
-                                                                        listener="#{billController.dateChangeListen()}"  />
-                                                            </p:inputText>
-                                                            <p:inputText autocomplete="off" id="month"
-                                                                         style="width: 50px; " value="#{billController.yearMonthDay.month}">
-                                                                <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
-                                                            </p:inputText>
-                                                            <p:inputText autocomplete="off" id="day" 
-                                                                         style="width: 50px;" value="#{billController.yearMonthDay.day}">
-                                                                <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
-                                                            </p:inputText>
-                                                            <p:calendar  value="#{billController.newPatient.person.dob}" 
-                                                                         id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
-                                                                         style="width: 100px!important;"
-                                                                         styleClass="shortinput">
-                                                                <f:ajax event="dateSelect" />
-                                                            </p:calendar>
-                                                        </h:panelGrid>
-                                                    </td>
-                                                </tr>
+                                                    <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                 style="width: 350px;" value="#{billController.newPatient.person.email}">
+                                                        <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
+                                                    </p:inputText>
 
-                                                <tr>
-                                                    <td >
-                                                        <h:outputLabel value="Phone,Area &amp; Nic"/>
-                                                    </td>
-                                                    <td> : </td>
-                                                    <td >
-                                                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
-                                                                     autocomplete="off" maxlength="11" 
-                                                                     value="#{billController.newPatient.person.phone}"
-                                                                     style="width: 100px;">
-                                                        </p:inputMask>
 
-                                                    </td>
-                                                    <td  >
-                                                        <p:autoComplete id="acNewPtArea" converter="areaCon" 
-                                                                        completeMethod="#{areaController.completeArea}" 
-                                                                        var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
-                                                                        itemValue="#{pta}" forceSelection="true" 
-                                                                        value="#{billController.newPatient.person.area}" ></p:autoComplete>
-                                                        <!--<p:inputMask mask="999999999V" value="#{billController.newPatient.person.nic}" />-->
-                                                        <p:inputText maxlength="12" value="#{billController.newPatient.person.nic}"/>
+                                                    <p:inputText style="width:135px;" placeholder="National ID No." value="#{billController.newPatient.person.nic}"/>
+                                                    <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Search &amp; Select Area"
+                                                                    completeMethod="#{areaController.completeArea}" 
+                                                                    var="pta" itemLabel="#{pta.name}" styleClass="shortinputOpd"
+                                                                    itemValue="#{pta}" forceSelection="true" 
+                                                                    value="#{billController.newPatient.person.area}" ></p:autoComplete>
 
-                                                    </td>
+                                                </p:panelGrid>
+                                                <p:panelGrid columns="1" >
+                                                    <p:inputText style="width:506px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
+                                                </p:panelGrid>
+                                                <p:watermark value="YEAR" for="year" />
+                                                <p:watermark value="MONTH" for="month" />
+                                                <p:watermark value="DAYS" for="day" />
+                                                <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
+                                                <p:tooltip for="year" >
+                                                    You can enter the age in years here. The system will calculate the approximate date of birth.
+                                                </p:tooltip>
+                                                <p:tooltip for="month" >
+                                                    In children below five years, you may enter the age in months here. The system will use this data to calculate the approximate date of birth.
+                                                </p:tooltip>
+                                                <p:tooltip for="day" >
+                                                    In children below one month, you may enter the age in days here. The system will use this to calculate the approximate date of birth.
+                                                </p:tooltip>
+                                                <p:tooltip for="calNewPtDob" >
+                                                    Select Gender
+                                                </p:tooltip>
+                                                <p:tooltip for="cmbTitle" >
+                                                    Select Title
+                                                </p:tooltip>
+                                                <p:tooltip for="txtNewPtName" >
+                                                    Enter Patient Name
+                                                </p:tooltip>
+                                                <p:tooltip for="txtNewSex" >
+                                                    Select Gender
+                                                </p:tooltip>
+                                                <p:tooltip for="acNewPtArea" >
+                                                    Search Area
+                                                </p:tooltip>
+                                                <p:tooltip for="calNewPtDob" >
+                                                    You can also enter the Date of Birth
+                                                </p:tooltip>
+                                                <p:tooltip for="txtEmail" >
+                                                    Enter the email
+                                                </p:tooltip>
+                                                <p:tooltip for="txtNewSex" >
+                                                    Select Gender
+                                                </p:tooltip>
+                                                <p:tooltip for="txtNewSex" >
+                                                    Select Gender
+                                                </p:tooltip>
+                                            </p:panel>
 
-                                                </tr>
-                                            </table>
-
-                                            <p:watermark value="YEAR" for="year" />
-                                            <p:watermark value="MONTH" for="month" />
-                                            <p:watermark value="DAYS" for="day" />
-                                            <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
 
                                         </p:tab>
 
@@ -249,14 +268,13 @@
                                 <h:panelGroup id="panelIx" >
 
 
-                                    <p:panel id='pIxAdd' header="Items / Services" style="min-height: 350px;"  >
+                                    <p:panel id='pIxAdd' header="Items / Services"
+                                             style="min-height: 350px;"  >
+
+
+
                                         <p:focus  context="acIx"/>
-                                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                            <f:selectItem itemLabel="Select Department"/>
-                                            <f:selectItems value="#{departmentController.labs}" 
-                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                            <p:ajax process="@this" update="acIx" event="change"/>
-                                        </p:selectOneMenu><br></br>
+
                                         <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
                                                         value="#{billController.currentBillItem.item}" 
                                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
@@ -283,19 +301,31 @@
                                         <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
                                             <f:ajax execute="txtQty acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
                                         </h:commandButton>
+
                                         <h:panelGrid id="txtQty">
                                             <h:inputText autocomplete="off" 
                                                          rendered="#{billController.currentBillItem.item.requestForQuentity}"
                                                          value="#{billController.currentBillItem.qty}" >
                                             </h:inputText>
                                         </h:panelGrid>
+                                        <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                            <f:selectItem itemLabel="Filter by Department"/>
+                                            <f:selectItems value="#{departmentController.labs}" 
+                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                            <p:ajax process="@this" update="acIx" event="change"/>
+                                        </p:selectOneMenu><br></br>
                                         <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
                                         <p:defaultCommand target="btnAddIx" />
                                         <p:panel header="Session"  >
                                             <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
                                                 <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
                                             </p:calendar>
-
+                                            <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                                <f:selectItem itemLabel="Select Department"/>
+                                                <f:selectItems value="#{departmentController.labs}" 
+                                                               var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                <p:ajax process="@this" update="acIx" event="change"/>
+                                            </p:selectOneMenu><br></br>
                                             <p:dataTable id="tblSs" value="#{billController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
                                                 <f:facet name="header">
                                                     <h:outputLabel value="#{billController.lastBillItem.item.name}" />
@@ -326,36 +356,7 @@
 
                             <h:panelGrid columns="1" >
 
-                                <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
-                                    <h:panelGrid columns="2" style="margin-bottom:10px">  
-                                        <h:outputText id="lblNameD" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
-                                        <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
-                                        <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
-                                        <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
-                                        <h:outputText id="lblAddressD" value="Address" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                        <h:outputText value="Code"></h:outputText>   
-                                        <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
-                                        <h:outputText value="Speciality" ></h:outputText>
-                                        <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
-                                            <f:selectItem itemLabel="Please select a speciality"/>
-                                            <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                        </h:selectOneListbox>
-                                        <h:outputText id="lblRegD" value="Registration" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
-                                        <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                                        </p:commandButton>
-
-                                    </h:panelGrid>  
-
-                                </p:dialog>  
 
 
                                 <h:panelGroup id="panelBillReferrals" >
@@ -371,7 +372,41 @@
                                                     <h:outputLabel value="#{ix.code}" ></h:outputLabel>
                                                 </p:column>
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            <p:commandButton id="btnAddNewDoc" type="button"  value="Add New Doctor" onclick="PF('dlg').show();" 
+                                                             actionListener="#{doctorController.prepareAdd}"  
+                                                             process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                             
+                                             
+                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
+                                                <h:panelGrid columns="2" style="margin-bottom:10px">  
+                                                    <h:outputText id="lblNameD" value="Name" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
+                                                    <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
+                                                    <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
+                                                    <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
+                                                    <h:outputText id="lblAddressD" value="Address" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
+                                                    <h:outputText value="Code"></h:outputText>   
+                                                    <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
+                                                    <h:outputText value="Speciality" ></h:outputText>
+                                                    <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
+                                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </h:selectOneListbox>
+                                                    <h:outputText id="lblRegD" value="Registration" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
+                                                    <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
+
+                                                    <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                    </p:commandButton>
+
+                                                </h:panelGrid>  
+
+                                            </p:dialog> 
 
                                         </p:tab>
                                         <p:tab title="Credit" >
@@ -598,168 +633,120 @@
                     </p:panel>
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{billController.printPreview}" >
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false 
-                                                  and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
-                                                  and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" 
-                                                 process="@this" 
-                                                 update="@all" 
-                                                 type="button"  
-                                                 ajax="false">
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
-                            <h:panelGroup id="gpBillPreview">
-                                <ui:repeat value="#{billController.bills}" var="bill">
-                                    <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-                        </h:panelGroup>
+                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
+                    <div class="nonPrintBlock">
+                        <p:commandButton value="Print" 
+                                         process="@this" 
+                                         update="@all" 
+                                         type="button"  
+                                         ajax="false">
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
-
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreviewCoop" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <h:panelGroup id="gpBillPreviewCoop">
-
-                                <ui:repeat value="#{billController.bills}" var="b">
-                                    <bi:opdBillPrintCoop bill="#{b}" dup="false"/>                        
-
-                                </ui:repeat>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.fiveFivePaperWithHeadings eq true}">
-
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <h:panelGroup id="fiveFivePaperWithHeadings">
-
-                                <ui:repeat value="#{billController.bills}" var="b">
-                                    <bi:five_five_paper_with_headings bill="#{b}"/>                        
-                                </ui:repeat>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">
-
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreviewRmh" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <h:panelGroup id="gpBillPreviewRmh">
-
-                                <ui:repeat value="#{billController.bills}" var="b">
-                                    <bi:opdBillPrintRmh bill="#{b}" dup="false"/>                        
-                                </ui:repeat>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
+                        <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                    </div>
+                    <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
+                    <h:panelGroup id="gpBillPreview">
+                        <ui:repeat value="#{billController.bills}" var="bill">
+                            <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                        </ui:repeat>
                     </h:panelGroup>
+                </h:panelGroup>
 
+                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                    <div class="nonPrintBlock">
+                        <p:commandButton value="Print" ajax="false" action="#"  >
+                            <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
+                        </p:commandButton>
 
+                        <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                        </p:commandButton>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpPosBill" ></p:printer>
-                                </p:commandButton>
-
-
-
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <h:panelGroup id="gpPosBill">
-                                <div style="page-break-after: always;">
-
-                                    <ui:repeat value="#{billController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                                <div></div>
-                                <div style="page-break-after: always;">
-
-                                    <ui:repeat value="#{billController.bills}" var="b">
-                                        <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>
-                            </h:panelGroup>
-                        </h:panelGrid>
-
-
-
-
-                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
-                            <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
-                                    <p:printer target="gpPosBillWithoutLogo" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
-                                                 onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
-                            </div>
-                            <h:panelGroup id="gpPosBillWithoutLogo">
-                                <div style="page-break-after: always;">
-
-                                    <ui:repeat value="#{billController.bills}" var="b">
-                                        <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
-                                    </ui:repeat>
-                                </div>                                
-                            </h:panelGroup>
-                        </h:panelGrid>
-
+                        <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                     return false;"/>
+                    </div>
+                    <h:panelGroup id="fiveFivePaperWithHeadings">
+                        <ui:repeat value="#{billController.bills}" var="b">
+                            <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                        </ui:repeat>
                     </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                    <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpPosBill" ></p:printer>
+                            </p:commandButton>
+
+
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <h:panelGroup id="gpPosBill">
+                            <div style="page-break-after: always;">
+
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>
+                            <div></div>
+                            <div style="page-break-after: always;">
+
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:posOpdBill bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGrid>
+
+
+
+
+                    <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
+                        <div class="nonPrintBlock">
+                            <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Batch Cancel" action="#{billController.cancellAll}" style="float: right;"
+                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                         return false;"/>
+                        </div>
+                        <h:panelGroup id="gpPosBillWithoutLogo">
+                            <div style="page-break-after: always;">
+
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>     
+                            <div style="page-break-after: always;">
+
+                                <ui:repeat value="#{billController.bills}" var="b">
+                                    <bi:posOpdBillWithoutLogo bill="#{b}" duplicate="false"/>                        
+                                </ui:repeat>
+                            </div>  
+                        </h:panelGroup>
+                    </h:panelGrid>
 
                 </h:panelGroup>
+
+
 
             </h:form>
 

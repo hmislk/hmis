@@ -23,6 +23,7 @@ public enum InvestigationItemValueType {
     Category,
     Person,
     Institution,
-    
+    Bundle,
+    Other,
     
 }

@@ -137,7 +137,7 @@ public class Department implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.Department[ id=" + id + " ]";
+        return name;
     }
 
     public Institution getInstitution() {
@@ -225,6 +225,14 @@ public class Department implements Serializable {
     }
 
     public void settName(String tName) {
+        this.tName = tName;
+    }
+    
+    public String getTname() {
+        return tName;
+    }
+
+    public void setTname(String tName) {
         this.tName = tName;
     }
 

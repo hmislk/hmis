@@ -13,4 +13,5 @@ package com.divudi.data;
 public enum InvestigationReportType {
     General,
     Microbiology,
+    PathologyOrHaematology,
 }

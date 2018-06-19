@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl autoUpdate="true" />
+                <p:growl />
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
@@ -25,11 +25,11 @@
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
 
-                                    <h:selectOneListbox size="1" value="#{consultantController.speciality}" >
+                                    <p:selectOneMenu value="#{consultantController.speciality}" >
                                         <f:selectItem itemLabel="Please select a speciality"/>
-                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                        <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         <f:ajax execute="@this" render="lstSelect" event="change" />
-                                    </h:selectOneListbox>
+                                    </p:selectOneMenu>
                                     <p:inputText autocomplete="off" value="#{consultantController.selectText}" >
                                         <f:ajax execute="@this" render="lstSelect" event="keyup" />
                                     </p:inputText>
@@ -55,50 +55,67 @@
 
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
-                                <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText  value="ID" />
-                                    <h:outputText  value="#{consultantController.current.id}" />
-                                    <h:outputText  value="Title" />
-                                    <p:selectOneMenu  id="cmbTitle"  
-                                                      value="#{consultantController.current.person.title}"  >
-                                        <f:selectItem itemLabel="Select Title" />
-                                        <f:selectItems value="#{enumController.titleDoctor}" var="i" 
-                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
-                                    </p:selectOneMenu>
-                                    <h:outputText  value="Name" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.person.name}"  />
-                                    <h:outputText  value="Code" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.code}"  />
-                                    <h:outputText  value="*Consultant Serial No" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.codeInterger}"  />
-                                    <h:outputText  value="Phone" />
-                                    <p:inputMask mask="999-9999999" value="#{consultantController.current.person.phone}"  />
-                                    <h:outputText  value="Fax" />
-                                    <p:inputText autocomplete="off"  value="#{consultantController.current.person.fax}"  />
-                                    <h:outputText  value="Mobile" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.person.mobile}"  />
-                                    <h:outputText  value="Address" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.person.address}"  />
-                                    <h:outputText value="Speciality" />
-                                    <h:selectOneListbox size="1" value="#{consultantController.current.speciality}" >
-                                        <f:selectItem itemLabel="Please select a speciality"/>
-                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                    </h:selectOneListbox>
-                                    <h:outputText value="Registration" />
-                                    <p:inputText autocomplete="off" value="#{consultantController.current.registration}" />
-                                    <h:outputText value="Qualification" />
-                                    <p:inputText autocomplete="off"  value="#{consultantController.current.qualification}" />
-                                    <h:outputText  value="Refering Charge" />
-                                    <p:inputText autocomplete="off"  value="#{consultantController.current.charge}"  />
-                                    <h:outputText  value="Creater" />
-                                    <h:outputText  value="#{consultantController.current.creater.webUserPerson.nameWithTitle}" />
-                                    <h:outputText  value="Created At" />
-                                    <h:outputText  value="#{consultantController.current.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
-                                    </h:outputText>
 
 
-                                </h:panelGrid>
+                                <p:tabView id="gpDetailText" >
+                                    <p:tab title="Basic Details" >
+                                        <h:panelGrid columns="2">
+                                            <h:outputText  value="Title" />
+                                            <p:selectOneMenu  id="cmbTitle"  
+                                                              value="#{consultantController.current.person.title}"  >
+                                                <f:selectItem itemLabel="Select Title" />
+                                                <f:selectItems value="#{enumController.titleDoctor}" var="i" 
+                                                               itemLabel="#{i.label}" itemValue="#{i}"/>
+                                            </p:selectOneMenu>
+                                            <h:outputText  value="Name" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.person.name}"  />
+                                            <h:outputText  value="Code" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.code}"  />
+                                            <h:outputText  value="*Consultant Serial No" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.codeInterger}"  />
+                                            <h:outputText  value="Phone" />
+                                            <p:inputMask mask="999-9999999" value="#{consultantController.current.person.phone}"  />
+                                            <h:outputText  value="Fax" />
+                                            <p:inputText autocomplete="off"  value="#{consultantController.current.person.fax}"  />
+                                            <h:outputText  value="Mobile" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.person.mobile}"  />
+                                            <h:outputText  value="Address" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.person.address}"  />
+                                            <h:outputText value="Speciality" />
+                                            <p:selectOneMenu value="#{consultantController.current.speciality}" >
+                                                <f:selectItem itemLabel="Please select a speciality"/>
+                                                <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+                                            <h:outputText value="Registration" />
+                                            <p:inputText autocomplete="off" value="#{consultantController.current.registration}" />
+                                            <h:outputText value="Qualification" />
+                                            <p:inputText autocomplete="off"  value="#{consultantController.current.qualification}" />
+                                            <h:outputText  value="Refering Charge" />
+                                            <p:inputText autocomplete="off"  value="#{consultantController.current.charge}"  />
+
+
+
+                                        </h:panelGrid>
+                                    </p:tab>
+                                    <p:tab title="Edit" >
+                                        <h:panelGrid columns="2" >
+
+                                            <h:outputText  value="ID" />
+                                            <h:outputText  value="#{consultantController.current.id}" />
+
+                                            <h:outputText  value="Creater" />
+                                            <h:outputText  value="#{consultantController.current.creater.webUserPerson.nameWithTitle}" />
+                                            <h:outputText  value="Created At" />
+                                            <h:outputText  value="#{consultantController.current.createdAt}" >
+                                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                            </h:outputText>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+                                </p:tabView>
+
+
+
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <p:commandButton id="btnSave" value="Save" ajax="false"
                                                      action="#{consultantController.saveSelected()}" styleClass="buttons"/>

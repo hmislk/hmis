@@ -1,11 +1,3 @@
-/*
- * MSc(Biomedical Informatics) Project
- *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
@@ -29,6 +21,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.BatchBill;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -100,12 +93,10 @@ import org.primefaces.event.TabChangeEvent;
 public class BillController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    CommonController commonController;
-    @Inject
-    PaymentSchemeController paymentSchemeController;
+
+    /**
+     * EJBs
+     */
     @EJB
     BillNumberGenerator billNumberGenerator;
     @EJB
@@ -116,16 +107,30 @@ public class BillController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
-    @Inject
-    private EnumController enumController;
-    @Inject
-    CollectingCentreBillController collectingCentreBillController;
     @EJB
     BillEjb billEjb;
     @EJB
     PaymentFacade PaymentFacade;
     @EJB
     BillFeePaymentFacade billFeePaymentFacade;
+    /**
+     * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    @Inject
+    CommonController commonController;
+    @Inject
+    PaymentSchemeController paymentSchemeController;
+    @Inject
+    ApplicationController applicationController;
+    @Inject
+    private EnumController enumController;
+    @Inject
+    CollectingCentreBillController collectingCentreBillController;
+    /**
+     * Class Vairables
+     */
     private boolean printPreview;
     private String patientTabId = "tabNewPt";
     //Interface Data
@@ -165,7 +170,6 @@ public class BillController implements Serializable {
     Department department;
     Institution institution;
     Category category;
-
     //Print Last Bill
     Bill billPrint;
     List<Bill> billsPrint;
@@ -191,8 +195,6 @@ public class BillController implements Serializable {
         this.cashRemain = cashRemain;
     }
 
-    @EJB
-    private PatientInvestigationFacade patientInvestigationFacade;
     @Inject
     private BillBeanController billBean;
     @EJB
@@ -222,6 +224,14 @@ public class BillController implements Serializable {
     @Inject
     SearchController searchController;
 
+    
+    public List<Bill> validBillsOfBatchBill(Bill batchBill){
+        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+        Map m = new HashMap();
+        m.put("bb", batchBill);
+        return getFacade().findBySQL(j, m);
+    }
+    
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -771,11 +781,11 @@ public class BillController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "List of bills raised(/opd_bill_report.xhtml)");
     }
-    
+
     public void onLineSettleBills() {
         Date startTime = new Date();
 
-        BillType[] billTypes = {BillType.OpdBill,billType.InwardPaymentBill};
+        BillType[] billTypes = {BillType.OpdBill, billType.InwardPaymentBill};
         PaymentMethod[] paymentMethods = {PaymentMethod.OnlineSettlement};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, paymentMethods);
         if (r == null) {
@@ -888,7 +898,7 @@ public class BillController implements Serializable {
         vat = r.getVat();
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Pharmacy all sale report/Pharmacy sale report(/faces/pharmacy/pharmacy_bill_report.xhtml)");
     }
-    
+
     public void getPharmacyBillsBilled() {
         Date startTime = new Date();
 
@@ -1026,6 +1036,8 @@ public class BillController implements Serializable {
     private void savePatient() {
         switch (getPatientTabId()) {
             case "tabNewPt":
+                getNewPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+                getNewPatient().setCreatedInstitution(getSessionController().getInstitution());
                 getNewPatient().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -2420,13 +2432,6 @@ public class BillController implements Serializable {
         this.tmpPatient = tmpPatient;
     }
 
-    public PatientInvestigationFacade getPatientInvestigationFacade() {
-        return patientInvestigationFacade;
-    }
-
-    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
-        this.patientInvestigationFacade = patientInvestigationFacade;
-    }
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
