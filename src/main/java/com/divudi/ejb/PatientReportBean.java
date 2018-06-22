@@ -142,11 +142,11 @@ public class PatientReportBean {
 
     public void addPatientReportItemValuesForReport(PatientReport ptReport) {
         String sql = "";
-        //System.out.println("going to add patient report item values for report");
+        System.out.println("going to add patient report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
-        //System.out.println("Items getting for ix is - " + temIx.getName());
+        System.out.println("Items getting for ix is - " + temIx.getName());
         for (ReportItem ii : temIx.getReportItems()) {
-            //System.out.println("report items is " + ii.getName());
+            System.out.println("report items is " + ii.getName());
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
@@ -166,8 +166,8 @@ public class PatientReportBean {
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
-                    // ptReport.getPatientReportItemValues().add(val);
-                    //System.out.println("New value added to pr teport" + ptReport);
+                     ptReport.getPatientReportItemValues().add(val);
+                    System.out.println("1 New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -176,7 +176,7 @@ public class PatientReportBean {
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstBySQL(sql, hm);
-                    //System.out.println("val is " + val);
+                    System.out.println("2 val is " + val);
                     if (val == null) {
                         //System.out.println("val is null");
                         val = new PatientReportItemValue();
@@ -194,8 +194,8 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                        //ptReport.getPatientReportItemValues().add(val);
-                        //System.out.println("value added to pr teport" + ptReport);
+                        ptReport.getPatientReportItemValues().add(val);
+                        System.out.println("3 value added to pr teport" + ptReport);
 
                     }
 
@@ -209,23 +209,23 @@ public class PatientReportBean {
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
-                    // ptReport.getPatientReportItemValues().add(val);
-                    //System.out.println("New value added to pr teport" + ptReport);
+                     ptReport.getPatientReportItemValues().add(val);
+                    System.out.println("4 New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
                     val = getPtRivFacade().findFirstBySQL(sql);
-                    //System.out.println("val is " + val);
+                    System.out.println("5 val is " + val);
                     if (val == null) {
-                        //System.out.println("val is null");
+                        System.out.println("6 val is null");
                         val = new PatientReportItemValue();
                         val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         val.setInvestigationItem((InvestigationItem) ii);
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                        // ptReport.getPatientReportItemValues().add(val);
-                        //System.out.println("value added to pr teport" + ptReport);
+                         ptReport.getPatientReportItemValues().add(val);
+                        System.out.println("7 value added to pr teport" + ptReport);
 
                     }
 

@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -40,6 +41,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -181,6 +183,11 @@ public class Item implements Serializable, Comparable<Item> {
     private ItemType itemType;
     
     private boolean hasMoreThanOneComponant;
+    
+    
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    private ReportItem reportItem;
 
     @Transient
     double channelStaffFee;
@@ -1003,6 +1010,9 @@ public class Item implements Serializable, Comparable<Item> {
         this.channelOnCallFee = channelOnCallFee;
     }
 
+    
+    
+    
     @Override
     public int compareTo(Item o) {
         if (o == null) {
@@ -1067,6 +1077,17 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setHasMoreThanOneComponant(boolean hasMoreThanOneComponant) {
         this.hasMoreThanOneComponant = hasMoreThanOneComponant;
+    }
+
+    public ReportItem getReportItem() {
+        if(reportItem==null){
+            reportItem = new ReportItem();
+        }
+        return reportItem;
+    }
+
+    public void setReportItem(ReportItem reportItem) {
+        this.reportItem = reportItem;
     }
     
     
