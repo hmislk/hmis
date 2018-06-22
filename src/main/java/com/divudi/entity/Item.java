@@ -181,11 +181,9 @@ public class Item implements Serializable, Comparable<Item> {
     int maxTableRows;
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
-    
+
     private boolean hasMoreThanOneComponant;
-    
-    
-    
+
     @OneToOne(cascade = CascadeType.ALL)
     private ReportItem reportItem;
 
@@ -200,8 +198,6 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     String transName;
-    
-    
 
     public double getVatPercentage() {
         if (vatable && vatPercentage == 0.0) {
@@ -288,7 +284,11 @@ public class Item implements Serializable, Comparable<Item> {
 
     public List<WorksheetItem> getWorksheetItems() {
         if (worksheetItems != null) {
-            Collections.sort(worksheetItems, new ReportItemComparator());
+            try {
+                Collections.sort(worksheetItems, new ReportItemComparator());
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
         } else {
             worksheetItems = new ArrayList<>();
         }
@@ -305,7 +305,12 @@ public class Item implements Serializable, Comparable<Item> {
 
     public List<InvestigationItem> getReportItems() {
         if (reportItems != null) {
-            Collections.sort(reportItems, new ReportItemComparator());
+            try {
+                Collections.sort(reportItems, new ReportItemComparator());
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+
         } else {
             reportItems = new ArrayList<>();
         }
@@ -1010,9 +1015,6 @@ public class Item implements Serializable, Comparable<Item> {
         this.channelOnCallFee = channelOnCallFee;
     }
 
-    
-    
-    
     @Override
     public int compareTo(Item o) {
         if (o == null) {
@@ -1080,7 +1082,7 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public ReportItem getReportItem() {
-        if(reportItem==null){
+        if (reportItem == null) {
             reportItem = new ReportItem();
         }
         return reportItem;
@@ -1089,8 +1091,6 @@ public class Item implements Serializable, Comparable<Item> {
     public void setReportItem(ReportItem reportItem) {
         this.reportItem = reportItem;
     }
-    
-    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
@@ -1099,10 +1099,22 @@ public class Item implements Serializable, Comparable<Item> {
             if (o1 == null) {
                 return 1;
             }
+            if (o1.getRiTop() == 0) {
+                return 1;
+            }
             if (o2 == null) {
                 return -1;
             }
-            if (o1.getRiTop() > o2.getRiTop()) {
+            if (o2.getRiTop() == 0) {
+                return 1;
+            }
+            if (o1.getRiTop() == o2.getRiTop()) {
+                if (o1.getId() > o2.getId()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            } else if (o1.getRiTop() > o2.getRiTop()) {
                 return 1;
             } else {
                 return -1;
