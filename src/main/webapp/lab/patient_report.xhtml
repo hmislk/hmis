@@ -253,8 +253,8 @@
                                             <p:commandButton id="btnAddPathReport"
                                                              oncomplete="PF('dlgPath').show();" 
                                                              process="acTemplate btnAddPathReport" update="dlgPath" 
-                                                             value="Add Template" actionListener="#{patientReportController.toAddNewTemplate()}" ></p:commandButton>
-                                            <p:commandButton value="Edit Template" ajax="false" action="#{patientReportController.toEditTemplate()}" >
+                                                             value="Add Template to Report" actionListener="#{patientReportController.toAddNewTemplate()}" ></p:commandButton>
+                                            <p:commandButton value="Edit Selected Template" ajax="false" action="#{patientReportController.toEditTemplate()}" >
                                             </p:commandButton>
                                             <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true">
 
@@ -299,6 +299,7 @@
                                             </p:dialog>
 
                                         </h:panelGrid>
+                                        <h1>#{patientReportController.currentPatientReport.patientReportItemValues}</h1>
                                         <p:editor id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
 
                                         </p:editor>
@@ -416,13 +417,13 @@
 
 
 
-                                        <table id="micro" style="position: absolute; top: 35%; left:10%; font-size: 14px!important;" >
+                                        <table id="micro" style="position: absolute; top: 25%; left:5%; font-size: 12px!important;" >
 
                                             <tr>
                                                 <td>
                                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                                    #{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
-                                                                   style="font-weight: bold;font-size: 20px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
+                                                                   style="font-weight: bold;font-size: 20px!important; "/>
                                                 </td>
                                             </tr>
                                             <tr><td>
@@ -438,7 +439,7 @@
                                                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                             <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
                                                                 <tr style="vertical-align: top;">
-                                                                    <td style="min-width: 250px;padding-left: 1px; padding-right: 1px;">
+                                                                    <td style="min-width: 250px;padding-left: 1px; padding-right: 1px; padding-top: 10px;">
                                                                         <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"  />
                                                                     </td>
                                                                     <td style="min-width: 1150px;padding-left: 1px; padding-right: 1px;">

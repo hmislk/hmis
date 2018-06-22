@@ -1068,7 +1068,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        //System.err.println("creating a new microbiology report");
+        System.err.println("creating a new microbiology report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
