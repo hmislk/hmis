@@ -89,6 +89,8 @@
                                 <h:panelGrid columns="3" styleClass="alignTop" >
                                     <p:panel header="Enter Values"  
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
+                                       
+                                        #{patientReportController.currentPatientReport.patientReportItemValues}
                                         <table >
                                             <ui:repeat id="tblVals" value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                        var="pvv"  
@@ -99,6 +101,7 @@
                                                             <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                         </td>
                                                         <td >
+                                                            1
                                                             <p:inputText autocomplete="off" value="#{pvv.strValue}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                          rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and empty pvv.investigationItem.investigationItemValues}" >
                                                                 <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
