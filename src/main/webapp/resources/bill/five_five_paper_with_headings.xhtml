@@ -68,7 +68,7 @@
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
                             <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -96,7 +96,7 @@
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
                             <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -125,7 +125,7 @@
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
                             <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -153,7 +153,7 @@
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
                             <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -180,7 +180,7 @@
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 150px;"></td>
+                        <td style="width: 50px;"></td>
                         <td>
                             <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -372,10 +372,16 @@
             </div>
 
 
-            <div>
-                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" ></p:barcode>
+            <div style="width: 100%;text-align: center;font-size: 10px;">
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code128" cache="false" format="png" hrp="none"
+                           />
             </div>
 
+<!--            
+            <div style="width: 100%;text-align: center;font-size: 10px;">
+                <p:barcode value="01234567895" type="upca" format="png" cache="false"/>
+            </div>-->
+            
 
         </div>
     </cc:implementation>

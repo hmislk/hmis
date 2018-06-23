@@ -144,13 +144,13 @@ public class PatientReport implements Serializable {
         System.err.println("getTemplateItem");
         System.out.println("com.divudi.entity.lab.PatientReport.getTemplateItem()");
         System.out.println("templateItem = " + templateItem);
-        
-        if(templateItem==null){
-            for(PatientReportItemValue v:this.getPatientReportItemValues()){
+
+        if (templateItem == null) {
+            for (PatientReportItemValue v : this.getPatientReportItemValues()) {
                 System.err.println("this.getPatientReportItemValues() = " + this.getPatientReportItemValues());
-                if(v.getInvestigationItem().getIxItemType()==InvestigationItemType.Template){
+                if (v.getInvestigationItem().getIxItemType() == InvestigationItemType.Template) {
                     templateItem = v;
-                    if(templateItem.getLobValue()==null){
+                    if (templateItem.getLobValue() == null) {
                         templateItem.setLobValue("");
                     }
                 }
@@ -162,11 +162,7 @@ public class PatientReport implements Serializable {
     public void setTemplateItem(PatientReportItemValue templateItem) {
         this.templateItem = templateItem;
     }
-    
 
-    
-    
-    
     public Investigation getTransInvestigation() {
         if (item instanceof Investigation) {
             transInvestigation = (Investigation) item;
@@ -181,23 +177,33 @@ public class PatientReport implements Serializable {
         containCalculations = false;
         containFlags = false;
         containTemplates = false;
-        containDynamicLabels=false;
+        containDynamicLabels = false;
         if (getTransInvestigation() == null) {
             return;
         }
         for (InvestigationItem ii : getTransInvestigation().getReportItems()) {
             switch (ii.getIxItemType()) {
-                case Value:containValues=true;break;
-                case Calculation:containCalculations=true;break;
-                case Flag:containFlags=true;break;
-                case Template:containTemplates=true;break;
-                case DynamicLabel:containDynamicLabels=true;break;
+                case Value:
+                    containValues = true;
+                    break;
+                case Calculation:
+                    containCalculations = true;
+                    break;
+                case Flag:
+                    containFlags = true;
+                    break;
+                case Template:
+                    containTemplates = true;
+                    break;
+                case DynamicLabel:
+                    containDynamicLabels = true;
+                    break;
             }
         }
     }
 
     public Boolean getContainDynamicLabels() {
-        if(containDynamicLabels==null){
+        if (containDynamicLabels == null) {
             checkContains();
         }
         return containDynamicLabels;
@@ -206,11 +212,9 @@ public class PatientReport implements Serializable {
     public void setContainDynamicLabels(Boolean containDynamicLabels) {
         this.containDynamicLabels = containDynamicLabels;
     }
-    
-    
 
     public Boolean getContainValues() {
-        if(containValues==null){
+        if (containValues == null) {
             checkContains();
         }
         return containValues;
@@ -221,7 +225,7 @@ public class PatientReport implements Serializable {
     }
 
     public Boolean getContainCalculations() {
-        if(containCalculations==null){
+        if (containCalculations == null) {
             checkContains();
         }
         return containCalculations;
@@ -232,7 +236,7 @@ public class PatientReport implements Serializable {
     }
 
     public Boolean getContainFlags() {
-        if(containFlags==null){
+        if (containFlags == null) {
             checkContains();
         }
         return containFlags;
@@ -243,7 +247,7 @@ public class PatientReport implements Serializable {
     }
 
     public Boolean getContainTemplates() {
-        if(containTemplates==null){
+        if (containTemplates == null) {
             checkContains();
         }
         return containTemplates;
@@ -291,7 +295,11 @@ public class PatientReport implements Serializable {
 
     public void sortValues() {
         if (patientReportItemValues != null) {
-            Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
+            try {
+                Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
 //            patientReportItemOfCalculationType = null;
 //            patientReportItemOfDynamicLabelType = null;
 //            patientReportItemOfFlagType = null;
@@ -303,7 +311,11 @@ public class PatientReport implements Serializable {
     public List<PatientReportItemValue> getPatientReportItemValues() {
         if (patientReportItemValues != null) {
             if (filteredAndSorted == false) {
-                Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
+                try {
+                    Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
 //                patientReportItemOfCalculationType = null;
 //                patientReportItemOfDynamicLabelType = null;
 //                patientReportItemOfFlagType = null;
@@ -682,19 +694,33 @@ public class PatientReport implements Serializable {
             if (o1 == null) {
                 return 1;
             }
+            if (o1.getInvestigationItem() == null) {
+                return 1;
+            }
+            if (o1.getInvestigationItem().getRiTop() == 0.0) {
+                return 1;
+            }
             if (o2 == null) {
                 return -1;
             }
-            if (o1.getInvestigationItem() == null || o1.getInvestigationItem().getCssTop() == null) {
-                return 1;
-            }
-            if (o2.getInvestigationItem() == null || o2.getInvestigationItem().getCssTop() == null) {
+            if (o2.getInvestigationItem() == null) {
                 return -1;
             }
-            if (o1.getInvestigationItem().getCssTop().equalsIgnoreCase(o2.getInvestigationItem().getCssTop())) {
-                return o1.getInvestigationItem().getName().compareTo(o2.getInvestigationItem().getName());  //To change body of generated methods, choose Tools | Templates.
+            if (o2.getInvestigationItem().getRiTop() == 0.0) {
+                return -1;
             }
-            return o1.getInvestigationItem().getCssTop().compareTo(o2.getInvestigationItem().getCssTop());  //To change body of generated methods, choose Tools | Templates.
+            if (o1.getInvestigationItem().getRiTop() == o2.getInvestigationItem().getRiTop()) {
+                if (o1.getId() > o2.getId()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+
+            }
+            if (o1.getInvestigationItem().getRiTop() > o2.getInvestigationItem().getRiTop()) {
+                return 1;
+            }
+            return -1;
         }
     }
 
