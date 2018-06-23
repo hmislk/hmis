@@ -355,10 +355,10 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentPatientReport.getTemplateItem() == null) {
-            JsfUtil.addErrorMessage("Error");
-            return;
-        }
+//        if (currentPatientReport.getTemplateItem() == null) {
+//            JsfUtil.addErrorMessage("Error");
+//            return;
+//        }
         String finalText = investigationItem.getHtmltext();
         for (Selectable s : selectables) {
 
@@ -373,7 +373,7 @@ public class PatientReportController implements Serializable {
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
 
-        currentPatientReport.getTemplateItem().setLobValue(finalText);
+//        currentPatientReport.getTemplateItem().setLobValue(finalText);
     }
 
     public String toEditTemplate() {

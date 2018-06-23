@@ -166,8 +166,8 @@ public class PatientReportBean {
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
-                     ptReport.getPatientReportItemValues().add(val);
-                    System.out.println("1 New value added to pr teport" + ptReport);
+                    // ptReport.getPatientReportItemValues().add(val);
+                    //System.out.println("New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -194,8 +194,8 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                        ptReport.getPatientReportItemValues().add(val);
-                        System.out.println("3 value added to pr teport" + ptReport);
+                        //ptReport.getPatientReportItemValues().add(val);
+                        //System.out.println("value added to pr teport" + ptReport);
 
                     }
 
@@ -209,8 +209,8 @@ public class PatientReportBean {
                     val.setPatient(ptReport.getPatientInvestigation().getPatient());
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
-                     ptReport.getPatientReportItemValues().add(val);
-                    System.out.println("4 New value added to pr teport" + ptReport);
+                    // ptReport.getPatientReportItemValues().add(val);
+                    //System.out.println("New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
@@ -224,8 +224,8 @@ public class PatientReportBean {
                         val.setPatient(ptReport.getPatientInvestigation().getPatient());
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
-                         ptReport.getPatientReportItemValues().add(val);
-                        System.out.println("7 value added to pr teport" + ptReport);
+                        // ptReport.getPatientReportItemValues().add(val);
+                        //System.out.println("value added to pr teport" + ptReport);
 
                     }
 
