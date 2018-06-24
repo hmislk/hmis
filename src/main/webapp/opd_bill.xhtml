@@ -360,24 +360,23 @@
 
 
                                 <h:panelGroup id="panelBillReferrals" >
-                                    <p:tabView >
-                                        <p:tab title="Refering Doctor">
-                                            <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" 
-                                                            completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                            itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                                <p:column headerText="Name" >
-                                                    <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Code" >
-                                                    <h:outputLabel value="#{ix.code}" ></h:outputLabel>
-                                                </p:column>
-                                            </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button"  value="Add New Doctor" onclick="PF('dlg').show();" 
-                                                             actionListener="#{doctorController.prepareAdd}"  
-                                                             process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
-                                             
-                                             
-                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
+                                    <h:panelGrid columns="3" >
+                                        <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                        <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" 
+                                                        completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                        itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            <p:column headerText="Name" >
+                                                <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Code" >
+                                                <h:outputLabel value="#{ix.code}" ></h:outputLabel>
+                                            </p:column>
+                                        </p:autoComplete>
+                                        <h:panelGroup >
+                                            <p:commandLink id="btnAddNewDoc" type="button"  value="Add" onclick="PF('dlg').show();" 
+                                                           actionListener="#{doctorController.prepareAdd}"  
+                                                           process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
                                                 <h:panelGrid columns="2" style="margin-bottom:10px">  
                                                     <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
                                                     <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
@@ -407,98 +406,77 @@
                                                 </h:panelGrid>  
 
                                             </p:dialog> 
+                                        </h:panelGroup>
 
-                                        </p:tab>
-                                        <p:tab title="Credit" >
-                                            <p:panelGrid columns="2">
-                                                <p:outputLabel value="Credit Company"></p:outputLabel>
-                                                <p:autoComplete id="creditCompany" 
-                                                                forceSelection="true"
-                                                                value="#{billController.creditCompany}"  
-                                                                completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
-                                                                itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
+                                        <p:outputLabel value="Collecting Centre" />
+                                        <p:autoComplete id="creditCom" forceSelection="true" 
+                                                        value="#{billController.collectingCentre}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                                            <p:column>#{ix.institutionCode}</p:column>
+                                            <p:column>#{ix.name}</p:column>
+                                        </p:autoComplete>
+                                        <h:panelGroup >
+                                            <p:watermark for="creditCom" value="Type at least 3 charactors of Collecting Centre." ></p:watermark>
+                                            <p:commandLink id="btnAddNewCc" value="Add" ajax="false" action="/lab/collecting_centre"
+                                                           actionListener="#{collectingCentreController.prepareAdd()}"  />  
 
-                                                    <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
-                                                             execute="@this" 
-                                                             render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
-                                                </p:autoComplete> 
+                                        </h:panelGroup>
+                                        <p:outputLabel value="Credit Company"></p:outputLabel>
+                                        <p:autoComplete id="creditCompany" 
+                                                        forceSelection="true"
+                                                        value="#{billController.creditCompany}"  
+                                                        completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
+                                                        itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
 
+                                            <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
+                                                     execute="@this" 
+                                                     render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
+                                        </p:autoComplete> 
+                                        <h:panelGroup >
+                                            <p:watermark for="creditCompany" value="Type at least 3 charactors of Credit Company." ></p:watermark>
+                                            <p:commandLink id="btnAddNewCreditCom" value="Add" ajax="false" action="/lab/credit_company"
+                                                           actionListener="#{creditCompanyController.prepareAdd()}" />  
 
-                                                <p:outputLabel value="Staff Mamber"></p:outputLabel>
-                                                <p:autoComplete  style="width: 300px;" 
-                                                                 forceSelection="true" 
-                                                                 value="#{billController.toStaff}" 
-                                                                 id="creditStaff"
-                                                                 completeMethod="#{staffController.completeStaff}" 
-                                                                 var="mys" 
-                                                                 itemLabel="#{mys.person.nameWithTitle}" 
-                                                                 itemValue="#{mys}"
-                                                                 converter="stfcon" >
-                                                    <p:column headerText="Name" >
-                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Annual Entitlement">
-                                                        <h:outputLabel value="#{mys.annualWelfareQualified}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:column  headerText="Annual Utilized Value">
-                                                        <h:outputLabel value="#{mys.annualWelfareUtilized}" >
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputLabel>
-                                                    </p:column>
+                                        </h:panelGroup>
+                                        <p:outputLabel value="Staff Mamber"></p:outputLabel>
+                                        <p:autoComplete  style="width: 300px;" 
+                                                         forceSelection="true" 
+                                                         value="#{billController.toStaff}" 
+                                                         id="creditStaff"
+                                                         completeMethod="#{staffController.completeStaff}" 
+                                                         var="mys" 
+                                                         itemLabel="#{mys.person.nameWithTitle}" 
+                                                         itemValue="#{mys}"
+                                                         converter="stfcon" >
+                                            <p:column headerText="Name" >
+                                                <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Annual Entitlement">
+                                                <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column  headerText="Annual Utilized Value">
+                                                <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
 
-                                                    <p:ajax process="@this" 
-                                                            update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
-                                                            event="itemSelect"  listener="#{billController.calTotals()}" />
+                                            <p:ajax process="@this" 
+                                                    update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
+                                                    event="itemSelect"  listener="#{billController.calTotals()}" />
 
-                                                </p:autoComplete>
+                                        </p:autoComplete>
 
-                                                <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
-                                            </p:panelGrid>
-                                        </p:tab>  
+                                        <p:watermark for="creditStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
 
-
-
-                                        <p:tab title="Staff">
-                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{billController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 300px;">
-                                            </p:autoComplete>
-                                        </p:tab>
-                                        <p:tab title="Referrals">
-                                            <p:panelGrid columns="2">
-                                                <p:outputLabel value="Refferal Institution"></p:outputLabel>
-                                                <p:autoComplete forceSelection="true" id="cmdIns" 
-                                                                value="#{billController.referredByInstitution}" 
-                                                                completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                                itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
-                                                    <p:column headerText="Name">
-                                                        #{refi.name}
-                                                    </p:column>
-                                                    <p:column headerText="Code">
-                                                        #{refi.institutionCode}
-                                                    </p:column>
-                                                    <p:column headerText="Institution Type">
-                                                        #{refi.institutionType}
-                                                    </p:column>
-                                                </p:autoComplete>
-                                                <p:outputLabel value="Referral Number"></p:outputLabel>
-                                                <p:inputText value="#{billController.referralId}" style="width: 400px"></p:inputText>
-                                            </p:panelGrid>
-                                        </p:tab>
-                                    </p:tabView>
+                                    </h:panelGrid>
                                 </h:panelGroup>
 
 
 
                                 <h:panelGroup id="panelBillItems" >
-
-
                                     <p:tabView id="tblBillItem" >
-
-
-
-
-
                                         <p:tab id="tabBillItems" title="Bill Items" >
                                             <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{billController.lstBillEntries}" var="bi" >
 

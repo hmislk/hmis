@@ -142,6 +142,7 @@ public class BillController implements Serializable {
     private Institution referredByInstitution;
     String referralId;
     private Institution creditCompany;
+    private Institution collectingCentre;
     private Staff staff;
     Staff toStaff;
     private double total;
@@ -224,6 +225,10 @@ public class BillController implements Serializable {
     @Inject
     SearchController searchController;
 
+    public String toAddNewCollectingCentre(){
+        return "/lab/collecting_centre";
+    }
+    
     
     public List<Bill> validBillsOfBatchBill(Bill batchBill){
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
@@ -1326,6 +1331,7 @@ public class BillController implements Serializable {
         temp.setReferralNumber(referralId);
         temp.setReferredByInstitution(referredByInstitution);
         temp.setCreditCompany(creditCompany);
+        temp.setCollectingCentre(collectingCentre);
         temp.setComments(comment);
 
         getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
@@ -1532,10 +1538,10 @@ public class BillController implements Serializable {
             }
         }
 
-        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
-            UtilityController.addErrorMessage("Check Payment method");
-            return true;
-        }
+//        if ((getCreditCompany() != null || toStaff != null) && (paymentMethod != PaymentMethod.Credit && paymentMethod != PaymentMethod.Cheque && paymentMethod != PaymentMethod.Slip)) {
+//            UtilityController.addErrorMessage("Check Payment method");
+//            return true;
+//        }
 
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
 
@@ -1697,6 +1703,7 @@ public class BillController implements Serializable {
         setReferralId(null);
         setSessionDate(null);
         setCreditCompany(null);
+        setCollectingCentre(null);
         setYearMonthDay(null);
         setBills(null);
         setPaymentScheme(null);
@@ -2233,8 +2240,9 @@ public class BillController implements Serializable {
         this.referredBy = referredBy;
     }
 
+    
+    
     public Institution getCreditCompany() {
-
         return creditCompany;
     }
 
@@ -2687,6 +2695,14 @@ public class BillController implements Serializable {
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
+    }
+
+    public Institution getCollectingCentre() {
+        return collectingCentre;
+    }
+
+    public void setCollectingCentre(Institution collectingCentre) {
+        this.collectingCentre = collectingCentre;
     }
 
     /**
