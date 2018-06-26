@@ -911,7 +911,7 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientSample ps : patientSamplesSet) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("#{header}", "Name : " + ps.getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{header}",  ps.getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
             List<Item> tpiics = testComponantsForPatientSample(ps);
             tbis = "";
@@ -919,7 +919,7 @@ public class PatientInvestigationController implements Serializable {
                 tbis += i.getName() + ", ";
             }
             tbis = tbis.substring(0, tbis.length() - 2);
-            ptLabel = ptLabel.replace("#{footer}", "Tests : " + tbis);
+            ptLabel = ptLabel.replace("#{footer}", tbis);
             samplingRequestResponse += ptLabel;
         }
         samplingRequestResponse += "}#";

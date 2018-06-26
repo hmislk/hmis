@@ -79,6 +79,8 @@
                 <h:panelGrid columns="2" styleClass="alignTop" >
                     <h:outputLabel value="Institution Specific Items" ></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionSpecificItems}" ></h:selectBooleanCheckbox>
+                    <h:outputLabel value="Institution Restricted Billing" ></h:outputLabel>
+                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></h:selectBooleanCheckbox>
 
                     <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
@@ -99,7 +101,7 @@
 
                     <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
-                    
+
                     <h:outputLabel value="OPD Settle Without Patient Phone Number"></h:outputLabel>
                     <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 

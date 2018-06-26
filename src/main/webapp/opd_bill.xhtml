@@ -279,7 +279,7 @@
                                                         value="#{billController.currentBillItem.item}" 
                                                         completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                                         var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                        size="30"  style="width: 400px;" >
+                                                        size="10"  style="width: 400px;" maxResults="10" >
                                             <p:column style="max-width: 200px;" headerText="Name">
                                                 <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                                 <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
@@ -315,7 +315,7 @@
                                             <p:ajax process="@this" update="acIx" event="change"/>
                                         </p:selectOneMenu><br></br>
                                         <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
-                                        <p:defaultCommand target="btnAddIx" />
+                                        <!--<p:defaultCommand target="btnAddIx" />-->
                                         <p:panel header="Session"  >
                                             <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
                                                 <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
@@ -373,10 +373,13 @@
                                             </p:column>
                                         </p:autoComplete>
                                         <h:panelGroup >
-                                            <p:commandLink id="btnAddNewDoc" type="button"  value="Add" onclick="PF('dlg').show();" 
+                                            <p:commandLink id="btnAddNewDoc" type="button"  value="Add" oncomplete="PF('dlg').show();" 
                                                            actionListener="#{doctorController.prepareAdd}"  
                                                            process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
+                                                
+                                                
+                                                
                                                 <h:panelGrid columns="2" style="margin-bottom:10px">  
                                                     <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
                                                     <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
@@ -406,6 +409,9 @@
                                                 </h:panelGrid>  
 
                                             </p:dialog> 
+                                            
+                                            
+                                            
                                         </h:panelGroup>
 
                                         <p:outputLabel value="Collecting Centre" />

@@ -371,17 +371,10 @@
                 <br/>
             </div>
 
-
             <div style="width: 100%;text-align: center;font-size: 10px;">
-                <p:barcode value="#{cc.attrs.bill.idStr}" type="code128" cache="false" format="png" hrp="none"
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
                            />
             </div>
-
-<!--            
-            <div style="width: 100%;text-align: center;font-size: 10px;">
-                <p:barcode value="01234567895" type="upca" format="png" cache="false"/>
-            </div>-->
-            
 
         </div>
     </cc:implementation>
