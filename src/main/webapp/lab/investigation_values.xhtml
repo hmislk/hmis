@@ -165,6 +165,9 @@
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('ixitemDetails')} :#{p:component('filters')}" />
                                     <p:ajax event="rowUnselect" process="@this" update=":#{p:component('ixitemDetails')}  :#{p:component('filters')}" />
 
+                                    <p:column headerText="ID"  >
+                                        <p:outputLabel value="#{ii.item.id}" ></p:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Name"  >
                                         <p:outputLabel value="#{ii.name}" ></p:outputLabel>
                                     </p:column>

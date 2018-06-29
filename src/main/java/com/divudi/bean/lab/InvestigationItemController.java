@@ -2097,6 +2097,47 @@ public class InvestigationItemController implements Serializable {
         this.tube = tube;
     }
 
+    public List<InvestigationItem> getUserChangableItems() {
+        if (userChangableItems == null || userChangableItems.isEmpty()) {
+
+        } else {
+            InvestigationItem tii = userChangableItems.get(0);
+            Investigation tix = (Investigation) tii.getItem();
+            if (tix.equals(currentInvestigation)) {
+                return userChangableItems;
+            }
+        }
+        List<InvestigationItemType> l = new ArrayList<>();
+        l.add(InvestigationItemType.Label);
+        l.add(InvestigationItemType.Value);
+        l.add(InvestigationItemType.Flag);
+        l.add(InvestigationItemType.Calculation);
+        l.add(InvestigationItemType.Css);
+        l.add(InvestigationItemType.DynamicLabel);
+        l.add(InvestigationItemType.Investigation);
+        l.add(InvestigationItemType.AntibioticList);
+        l.add(InvestigationItemType.Template);
+        l.add(InvestigationItemType.Barcode);
+        l.add(InvestigationItemType.BarcodeVertical);
+//            Label,
+//    Value,
+//    Calculation,
+//    Flag,
+//    DynamicLabel,
+//    Css,
+//    Barcode,
+//    BarcodeVertical,
+//    Investigation,
+//    Template,
+//    AntibioticList,
+        userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        return userChangableItems;
+    }
+
+    public void setUserChangableItems(List<InvestigationItem> userChangableItems) {
+        this.userChangableItems = userChangableItems;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -2136,6 +2177,11 @@ public class InvestigationItemController implements Serializable {
         this.ixXml = ixXml;
     }
 
+    
+    private List<InvestigationItem> userChangableItems;
+    
+    
+    
     public List<InvestigationItem> getImportantItems() {
         if (importantItems == null || importantItems.isEmpty()) {
 

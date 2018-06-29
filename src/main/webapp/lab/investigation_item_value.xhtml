@@ -48,6 +48,7 @@
 
                             <p:dataTable id="lstIi" value="#{investigationItemController.current.investigationItemValues}" var="iivt" >
                                 <p:column >
+                                    
                                     <p:inputText autocomplete="off" value="#{iivt.code}" >
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>

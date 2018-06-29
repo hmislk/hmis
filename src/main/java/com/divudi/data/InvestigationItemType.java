@@ -9,17 +9,26 @@ public enum InvestigationItemType {
     Value,
     Calculation,
     Flag,
-    List,
     DynamicLabel,
-    Speciality,
-    Staff,
-    Person,
-    User,
-    Patient,
-    ItemsCatetgory,
     Css,
     Barcode,
     BarcodeVertical,
     Investigation,
     Template,
+    AntibioticList,
+    Antibiotic,
+    @Deprecated
+    List,
+    @Deprecated
+    Speciality,
+    @Deprecated
+    Staff,
+    @Deprecated
+    Person,
+    @Deprecated
+    User,
+    @Deprecated
+    Patient,
+    @Deprecated
+    ItemsCatetgory,
 }

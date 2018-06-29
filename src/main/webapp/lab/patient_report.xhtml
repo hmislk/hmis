@@ -216,11 +216,15 @@
                                                             <td >
 
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
+                                                                    <p:inputTextarea rendered="false" id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
                                                                                      completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                                      value="#{pvm.lobValue}" >
                                                                         <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                                     </p:inputTextarea>
+                                                                     <p:editor id="editorMicMemoVal"  style="width: 400px; height: 300px; "  
+                                                                                      disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                                     value="#{pvm.lobValue}" >
+                                                                    </p:editor>
                                                                 </h:panelGroup>
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
                                                                     <p:selectOneMenu id="cmbMicStrVal" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
@@ -422,8 +426,11 @@
 
 
 
-                                    <table id="micro" style="position: absolute; top: 25%; left:5%; font-size: 12px!important;" >
+                                    <table id="micro" style="position: absolute; top: 35%; left:5%; font-size: 12px!important;" >
 
+                                        
+                                        
+                                        
                                         <tr>
                                             <td>
                                                 <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
