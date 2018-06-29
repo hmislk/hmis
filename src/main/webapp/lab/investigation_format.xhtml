@@ -267,7 +267,7 @@
                             <p:panel  header="Investigation Items List" id="pIx">
                                 <p:selectOneMenu  id="dtbItem" value="#{investigationItemController.current}" style="width: 270px;" >
                                     <f:selectItem itemLabel="Select" />
-                                    <f:selectItems value="#{investigationItemController.items}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                    <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                     <p:ajax  event="change" process="dtbItem" update=":#{p:component('pDetails')} "/>
                                 </p:selectOneMenu>
                                 <p:commandButton action="#{investigationItemController.removeItem()}" value="Remove" ajax="false"/>

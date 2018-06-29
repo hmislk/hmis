@@ -330,12 +330,10 @@ public class PatientReportBean {
         sql = "select ii from InvestigationItem ii where ii.item=:i "
                 + " and ii.name=:a "
                 + " and ii.retired=false "
-                + " and ii.ixItemType=:iit "
-                + " and ii.ixItemValueType=:iivt";
+                + " and ii.ixItemType=:iit ";
         m.put("i", i);
         m.put("a", a.getName());
-        m.put("iit", InvestigationItemType.Value);
-        m.put("iivt", InvestigationItemValueType.Varchar);
+        m.put("iit", InvestigationItemType.Antibiotic);
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         System.out.println("-------");
         System.out.println("ii = " + ii);
@@ -351,7 +349,7 @@ public class PatientReportBean {
             }
             ii.setName(a.getName());
             ii.setItem(i);
-            ii.setIxItemType(InvestigationItemType.Value);
+            ii.setIxItemType(InvestigationItemType.Antibiotic);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
             System.out.println("ii.getId() = " + ii.getId());
