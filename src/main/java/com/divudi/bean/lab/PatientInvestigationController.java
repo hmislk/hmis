@@ -10,6 +10,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SmsType;
+import com.divudi.data.lab.SysMex;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -168,6 +169,57 @@ public class PatientInvestigationController implements Serializable {
     private String username;
     private String password;
 
+    private String msg;
+    private String machine;
+
+    private String apiResponse;
+
+    public void msgFromMiddleware() {
+        if (username == null || username.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Username}";
+            return;
+        }
+        if (password == null || password.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Password}";
+            return;
+        }
+        if (machine == null || machine.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Machine Specified}";
+            return;
+        }
+        if (msg == null || msg.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Request From Analyzer}";
+            return;
+        }
+        if (machine.trim().equals("SysMex")) {
+            apiResponse = msgFromSysmex();
+            return;
+        } else if (machine.trim().equals("Dimension")) {
+            apiResponse += "#{success=false|msg=Analyzer not configured}";
+            return;
+        }
+    }
+
+    private String msgFromSysmex() {
+        SysMex sysMex = new SysMex();
+        sysMex.setInputString(msg);
+        if(!sysMex.isCorrectReport()){
+            return "#{success=false|msg=Wrong Data. Please resent results}";
+        }
+        PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
+        if(ps==null){
+            return "#{success=false|msg=Wrong Sample ID. Please resent results}";
+        }
+        
+        return "#{success=true|msg=Data Added to LIMS}";
+    }
+
+    private PatientSample getPatientSampleFromId(Long id){
+        String j = "select ps from PatientSample ps where ps.id = :id";
+        Map m = new HashMap();
+        m.put("id", id);
+        return getPatientSampleFacade().findFirstBySQL(j, m);
+    }
     
     public void resetLists() {
         items = null;
@@ -708,10 +760,10 @@ public class PatientInvestigationController implements Serializable {
 //        Authenticator auth = new SMTPAuthenticator();
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(username, password);
+                    }
+                });
 
         try {
             Message message = new MimeMessage(session);
@@ -873,7 +925,6 @@ public class PatientInvestigationController implements Serializable {
         checkRefundBillItems(lstToSamle);
     }
 
-    
     public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
         if (inputBillId == null || inputBillId.trim().equals("")) {
@@ -904,14 +955,12 @@ public class PatientInvestigationController implements Serializable {
         Bill tb;
         tb = patientSamples.get(0).getBill();
         String tbis = "";
-       
-        
 
-        samplingRequestResponse += "|message=" ;
+        samplingRequestResponse += "|message=";
 
         for (PatientSample ps : patientSamplesSet) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("#{header}",  ps.getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{header}", ps.getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
             List<Item> tpiics = testComponantsForPatientSample(ps);
             tbis = "";
@@ -1099,7 +1148,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getFacade().findBySQL(j, m);
+        return getItemFacade().findBySQL(j, m);
     }
 
     private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
@@ -1479,6 +1528,30 @@ public class PatientInvestigationController implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getMachine() {
+        return machine;
+    }
+
+    public void setMachine(String machine) {
+        this.machine = machine;
+    }
+
+    public String getApiResponse() {
+        return apiResponse;
+    }
+
+    public void setApiResponse(String apiResponse) {
+        this.apiResponse = apiResponse;
     }
 
     /**
