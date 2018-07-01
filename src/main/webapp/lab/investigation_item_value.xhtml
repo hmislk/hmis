@@ -47,14 +47,14 @@
                             </p:panelGrid>
 
                             <p:dataTable id="lstIi" value="#{investigationItemController.current.investigationItemValues}" var="iivt" >
-                                <p:column >
+                                <p:column  headerText="Code">
                                     
-                                    <p:inputText autocomplete="off" value="#{iivt.code}" >
+                                    <p:inputText autocomplete="off" value="#{iivt.code}" style="width: 70px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>
-                                <p:column >
-                                    <p:inputText autocomplete="off" value="#{iivt.name}" >
+                                <p:column headerText="Value" >
+                                    <p:inputText autocomplete="off" value="#{iivt.name}" style="width: 300px;">
                                         <p:ajax event="blur" process="lstIi" listener="#{investigationItemController.saveSelected()}" />
                                     </p:inputText>
                                 </p:column>

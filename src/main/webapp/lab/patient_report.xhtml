@@ -208,7 +208,7 @@
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues }"  
                                                            var="pvm"   
                                                            >
-                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
+                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value' or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
                                                         <tr>
                                                             <td >
                                                                 <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
@@ -216,15 +216,11 @@
                                                             <td >
 
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea rendered="false" id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
+                                                                    <p:inputTextarea rendered="true" id="txtMicMemoVal" queryDelay="0"   minQueryLength="1"  style="min-width: 200px; "  
                                                                                      completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
                                                                                      value="#{pvm.lobValue}" >
                                                                         <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                                     </p:inputTextarea>
-                                                                     <p:editor id="editorMicMemoVal"  style="width: 400px; height: 300px; "  
-                                                                                      disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                                     value="#{pvm.lobValue}" >
-                                                                    </p:editor>
                                                                 </h:panelGroup>
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
                                                                     <p:selectOneMenu id="cmbMicStrVal" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
@@ -353,50 +349,38 @@
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                 <div id="divReport"  class="labReport" >
-
-
-
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
                                         </div>
                                     </ui:repeat>
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Template' and prv.investigationItem.retired eq false}"  escape="false" />
                                         </div>
                                     </ui:repeat>
-
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
                                         </div>
                                     </ui:repeat>
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.doubleValue}"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
                                         </div>
                                     </ui:repeat>
-
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel'}" escape="false" />
                                         </div>
                                     </ui:repeat>
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Flag'}" escape="false" />
                                         </div>
                                     </ui:repeat>
-
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                             <h:outputLabel value="#{prv.doubleValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
@@ -404,43 +388,32 @@
                                             </h:outputLabel>
                                         </div>
                                     </ui:repeat>
-
                                     <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
                                         <div style="#{myIi.cssStyle}; position:absolute;">
                                             <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
                                         </div>
                                     </ui:repeat>
-
-
                                 </div>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
-
-                                <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; ">
-
-
+                                <div id="divReportM"   class="labReport" >
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
 
 
 
-
-
-                                    <table id="micro" style="position: absolute; top: 35%; left:5%; font-size: 12px!important;" >
-
-                                        
-                                        
-                                        
+                                    <table id="micro" style="position: absolute;table-layout: fixed; top: 30%; left:5%; font-size: 12px!important; width: 90%!important; " >
                                         <tr>
-                                            <td>
-                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                               #{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+                                            <td style="text-align: center;">
+                                                <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
                                                                style="font-weight: bold;font-size: 20px!important; "/>
                                             </td>
                                         </tr>
-                                        <tr><td>
+                                        <tr>
+                                            <td>
                                                 <p:spacer height="50px" ></p:spacer>
-                                            </td></tr>
+                                            </td>
+                                        </tr>
                                         <tr><td><h:outputLabel/></td></tr>
                                         <tr><td><h:outputLabel/></td></tr>
                                         <tr><td><h:outputLabel/></td></tr>
@@ -475,7 +448,7 @@
                                                 </table>
                                             </td>
                                         </tr>
-                                        <br/><br/>
+
                                         <tr>
                                             <td id="micLabelsBeforeAbst">
 
@@ -489,7 +462,11 @@
 
                                             </td>
                                         </tr>
-
+                                        <tr>
+                                            <td>
+                                                <p:spacer height="10" ></p:spacer>
+                                            </td>
+                                        </tr>
                                         <tr>
                                             <td id="ablist">
                                                 <table>
@@ -500,6 +477,9 @@
                                                                            style="font-size: 120%; font-weight: bold; padding-left: 20px;"></h:outputLabel>
                                                         </td>
                                                     </tr>
+                                                    <td>
+                                                        <p:spacer height="10" ></p:spacer>
+                                                    </td>
                                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
                                                                 var="prv" >
                                                         <h:panelGroup 
@@ -540,6 +520,7 @@
                                         </tr>
 
                                     </table>
+
 
 
                                 </div>

@@ -99,6 +99,7 @@ public class InvestigationItemController implements Serializable {
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
     private List<InvestigationItem> importantItems = null;
+    
 
     String selectText = "";
     InvestigationItemValue removingItem;
@@ -705,12 +706,27 @@ public class InvestigationItemController implements Serializable {
 
         return selectedItems;
     }
+    
+    public void retireSelectedItems(){
+        if(selectedItems==null || selectedItems.isEmpty()){
+            return;
+        }
+        for(InvestigationItem tii:selectedItems){
+            tii.setRetired(true);
+            tii.setRetireComments("Bulk");
+            tii.setRetiredAt(new Date());
+            tii.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(tii);
+        }
+    }
 
     public void listInvestigationItem() {
         if (getCurrentInvestigation() == null || getCurrentInvestigation().getId() == null) {
             items = new ArrayList<>();
         } else {
             items = getEjbFacade().findBySQL("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
+            userChangableItems =null;
+            getUserChangableItems();
         }
     }
 
