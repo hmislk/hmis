@@ -893,31 +893,25 @@ public class PatientInvestigationController implements Serializable {
 
         samplingRequestResponse += "Login=1";
         String zplTemplate = "^XA\r\n"
-                + "^LH10,10\r\n"
+                + "^LH40,10\r\n"
                 + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
-                + "^LH10,30\r\n"
+                + "^LH40,30\r\n"
                 + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
-                + "^LH10,155\r\n"
+                + "^LH40,155\r\n"
                 + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
                 + "^XZ\r\n";
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
         String tbis = "";
-        for (BillItem tbi : tb.getBillItems()) {
-            tbis += tbi.getItem().getName() + ", ";
-        }
-        tbis = tbis.substring(0, tbis.length() - 2);
-        ptLabel = zplTemplate;
-        ptLabel = ptLabel.replace("#{header}", "Name : " + tb.getPatient().getPerson().getName());
-        ptLabel = ptLabel.replace("#{barcode}", "" + tb.getIdStr());
-        ptLabel = ptLabel.replace("#{footer}", "Tests : " + tbis);
+       
+        
 
-        samplingRequestResponse += "|message=" + ptLabel;
+        samplingRequestResponse += "|message=" ;
 
         for (PatientSample ps : patientSamplesSet) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("#{header}", "Name : " + ps.getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{header}",  ps.getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
             List<Item> tpiics = testComponantsForPatientSample(ps);
             tbis = "";
@@ -925,7 +919,7 @@ public class PatientInvestigationController implements Serializable {
                 tbis += i.getName() + ", ";
             }
             tbis = tbis.substring(0, tbis.length() - 2);
-            ptLabel = ptLabel.replace("#{footer}", "Tests : " + tbis);
+            ptLabel = ptLabel.replace("#{footer}", tbis);
             samplingRequestResponse += ptLabel;
         }
         samplingRequestResponse += "}#";

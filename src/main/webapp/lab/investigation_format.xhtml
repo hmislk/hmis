@@ -267,7 +267,7 @@
                             <p:panel  header="Investigation Items List" id="pIx">
                                 <p:selectOneMenu  id="dtbItem" value="#{investigationItemController.current}" style="width: 270px;" >
                                     <f:selectItem itemLabel="Select" />
-                                    <f:selectItems value="#{investigationItemController.items}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                    <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
                                     <p:ajax  event="change" process="dtbItem" update=":#{p:component('pDetails')} "/>
                                 </p:selectOneMenu>
                                 <p:commandButton action="#{investigationItemController.removeItem()}" value="Remove" ajax="false"/>
@@ -307,6 +307,7 @@
                                                         <f:selectItem itemLabel="Dynamic Label" itemValue="DynamicLabel"/>
                                                         <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
                                                         <f:selectItem itemLabel="Template" itemValue="Template"/>
+                                                        <f:selectItem itemLabel="Antibiotic" itemValue="AntibioticList"/>
                                                     </p:selectOneMenu>
                                                 </p:column>
                                                 <p:column >
@@ -587,7 +588,7 @@
 
 
                                         <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
-                                            <div style="#{myIi.outerCssStyle};background-color: wheat;" >
+                                            <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'}; border: 1px solid lightblue; " >
                                                 <h:outputLabel id="lblViewModeIi" 
                                                                rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
                                                                style="#{myIi.innerCssStyle}; color: black;" 
@@ -609,7 +610,7 @@
                                                 <p:inputText id="txtEditIi" 
                                                              rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
                                                              value="#{myIi.htmltext}" 
-                                                             style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important;"  >
+                                                             style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
                                                     <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:component('dtbItem')} :#{p:component('pDetails')} "  ></f:ajax>
                                                     <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:component('dtbItem')} :#{p:component('pDetails')}"></f:ajax>
                                                 </p:inputText>

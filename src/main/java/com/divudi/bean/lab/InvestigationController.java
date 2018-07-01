@@ -137,7 +137,11 @@ public class InvestigationController implements Serializable {
             i.setName(n);
             i.setPrintName(n);
             i.setFullName(n);
-            i.setCode(n.substring(0, 3));
+            if (n.length() > 3) {
+                i.setCode(n.substring(0, 3));
+            } else {
+                i.setCode(n);
+            }
             i.setReportType(current.getReportType());
             i.setInvestigationCategory(current.getInvestigationCategory());
             i.setInvestigationTube(current.getInvestigationTube());
@@ -236,7 +240,7 @@ public class InvestigationController implements Serializable {
 
         return "/lab/investigation_values";
     }
-    
+
     public String toEditReportFormatMoveAll() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -528,8 +532,6 @@ public class InvestigationController implements Serializable {
     public void setCatIxs(List<Investigation> catIxs) {
         this.catIxs = catIxs;
     }
-    
-    
 
     public List<Investigation> completeInvestigationsOfCurrentInstitution(String query) {
         if (query == null || query.trim().equals("")) {
@@ -547,9 +549,9 @@ public class InvestigationController implements Serializable {
         sql += " order by c.name";
         m.put("n", "%" + query.toUpperCase() + "%");
         Institution ins;
-        if(institution != null){
+        if (institution != null) {
             ins = institution;
-        }else{
+        } else {
             ins = getSessionController().getLoggedUser().getInstitution();
         }
         m.put("ins", ins);

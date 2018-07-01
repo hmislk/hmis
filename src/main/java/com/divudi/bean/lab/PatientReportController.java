@@ -355,10 +355,10 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-        if (currentPatientReport.getTemplateItem() == null) {
-            JsfUtil.addErrorMessage("Error");
-            return;
-        }
+//        if (currentPatientReport.getTemplateItem() == null) {
+//            JsfUtil.addErrorMessage("Error");
+//            return;
+//        }
         String finalText = investigationItem.getHtmltext();
         for (Selectable s : selectables) {
 
@@ -373,7 +373,7 @@ public class PatientReportController implements Serializable {
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
 
-        currentPatientReport.getTemplateItem().setLobValue(finalText);
+//        currentPatientReport.getTemplateItem().setLobValue(finalText);
     }
 
     public String toEditTemplate() {
@@ -1068,7 +1068,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        //System.err.println("creating a new microbiology report");
+        System.err.println("creating a new microbiology report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();

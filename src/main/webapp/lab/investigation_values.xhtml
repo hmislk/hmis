@@ -165,10 +165,13 @@
                                     <p:ajax event="rowSelect" process="@this" update=":#{p:component('ixitemDetails')} :#{p:component('filters')}" />
                                     <p:ajax event="rowUnselect" process="@this" update=":#{p:component('ixitemDetails')}  :#{p:component('filters')}" />
 
-                                    <p:column headerText="Name" >
+                                    <p:column headerText="ID"  >
+                                        <p:outputLabel value="#{ii.item.id}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Name"  >
                                         <p:outputLabel value="#{ii.name}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Type" >
+                                    <p:column headerText="Type" sortBy="#{ii.ixItemType}" filterBy="#{ii.ixItemType}">
                                         <p:outputLabel value="#{ii.ixItemType}" ></p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Automated" >

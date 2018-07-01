@@ -1,0 +1,19 @@
+@media screen{
+    .labReport{
+        width:21cm;
+        height: 28cm; 
+        position: relative;
+        background-color: whitesmoke;
+        border: 1px solid black;
+    }
+}
+
+@media print {
+    .labReport{
+        width:98%;
+        height: 98%; 
+        position: relative;
+        margin: auto;
+    }
+}
+

@@ -54,6 +54,7 @@ public class UserPreference implements Serializable {
     @ManyToOne
     Institution institution;
     boolean institutionSpecificItems=false;
+    private boolean institutionRestrictedBilling=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean partialPaymentOfOpdPreBillsAllowed;
@@ -91,6 +92,9 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
+    
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if(applicationInstitution==null){
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -530,6 +534,14 @@ public class UserPreference implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.UserPreference[ id=" + id + " ]";
+    }
+
+    public boolean isInstitutionRestrictedBilling() {
+        return institutionRestrictedBilling;
+    }
+
+    public void setInstitutionRestrictedBilling(boolean institutionRestrictedBilling) {
+        this.institutionRestrictedBilling = institutionRestrictedBilling;
     }
 
 }

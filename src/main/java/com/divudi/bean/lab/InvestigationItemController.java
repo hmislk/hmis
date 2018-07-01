@@ -99,6 +99,7 @@ public class InvestigationItemController implements Serializable {
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
     private List<InvestigationItem> importantItems = null;
+    
 
     String selectText = "";
     InvestigationItemValue removingItem;
@@ -705,12 +706,27 @@ public class InvestigationItemController implements Serializable {
 
         return selectedItems;
     }
+    
+    public void retireSelectedItems(){
+        if(selectedItems==null || selectedItems.isEmpty()){
+            return;
+        }
+        for(InvestigationItem tii:selectedItems){
+            tii.setRetired(true);
+            tii.setRetireComments("Bulk");
+            tii.setRetiredAt(new Date());
+            tii.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(tii);
+        }
+    }
 
     public void listInvestigationItem() {
         if (getCurrentInvestigation() == null || getCurrentInvestigation().getId() == null) {
             items = new ArrayList<>();
         } else {
             items = getEjbFacade().findBySQL("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
+            userChangableItems =null;
+            getUserChangableItems();
         }
     }
 
@@ -2097,6 +2113,47 @@ public class InvestigationItemController implements Serializable {
         this.tube = tube;
     }
 
+    public List<InvestigationItem> getUserChangableItems() {
+        if (userChangableItems == null || userChangableItems.isEmpty()) {
+
+        } else {
+            InvestigationItem tii = userChangableItems.get(0);
+            Investigation tix = (Investigation) tii.getItem();
+            if (tix.equals(currentInvestigation)) {
+                return userChangableItems;
+            }
+        }
+        List<InvestigationItemType> l = new ArrayList<>();
+        l.add(InvestigationItemType.Label);
+        l.add(InvestigationItemType.Value);
+        l.add(InvestigationItemType.Flag);
+        l.add(InvestigationItemType.Calculation);
+        l.add(InvestigationItemType.Css);
+        l.add(InvestigationItemType.DynamicLabel);
+        l.add(InvestigationItemType.Investigation);
+        l.add(InvestigationItemType.AntibioticList);
+        l.add(InvestigationItemType.Template);
+        l.add(InvestigationItemType.Barcode);
+        l.add(InvestigationItemType.BarcodeVertical);
+//            Label,
+//    Value,
+//    Calculation,
+//    Flag,
+//    DynamicLabel,
+//    Css,
+//    Barcode,
+//    BarcodeVertical,
+//    Investigation,
+//    Template,
+//    AntibioticList,
+        userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        return userChangableItems;
+    }
+
+    public void setUserChangableItems(List<InvestigationItem> userChangableItems) {
+        this.userChangableItems = userChangableItems;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -2136,6 +2193,11 @@ public class InvestigationItemController implements Serializable {
         this.ixXml = ixXml;
     }
 
+    
+    private List<InvestigationItem> userChangableItems;
+    
+    
+    
     public List<InvestigationItem> getImportantItems() {
         if (importantItems == null || importantItems.isEmpty()) {
 

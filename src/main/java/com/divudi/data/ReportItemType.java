@@ -13,6 +13,7 @@ public enum ReportItemType {
     AutherizedName,
     AutherizedCode,
     AutherizedPosition,
+    AutherizedQualification,
     AutherizedSignature,
     BarcodeBillId,
     BarcodeBillItemId,
