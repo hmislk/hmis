@@ -4,15 +4,17 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <f:metadata >
-        <f:viewParam name="username" value="#{sessionController.userName}" ></f:viewParam>
-        <f:viewParam name="password" value="#{sessionController.passord}" ></f:viewParam>
-        <f:viewAction action="#{sessionController.loginForRequests()}" ></f:viewAction>
+        <f:viewParam name="username" value="#{patientInvestigationController.username}" ></f:viewParam>
+        <f:viewParam name="password" value="#{patientInvestigationController.password}" ></f:viewParam>
+        <f:viewParam name="machine" value="#{patientInvestigationController.machine}" ></f:viewParam>
+        <f:viewParam name="msg" value="#{patientInvestigationController.msg}" ></f:viewParam>
+        <f:viewAction action="#{patientInvestigationController.msgFromMiddleware()}" ></f:viewAction>
     </f:metadata>
     <h:head>
-        <title></title>
+        <title>Login</title>
     </h:head>
     <h:body>
-        
+        #{patientInvestigationController.apiResponse}
     </h:body>
 </html>
 
