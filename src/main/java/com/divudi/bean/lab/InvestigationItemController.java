@@ -29,6 +29,7 @@ import com.divudi.entity.lab.Sample;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
@@ -84,6 +85,8 @@ public class InvestigationItemController implements Serializable {
     private ReportItemFacade riFacade;
     @EJB
     InvestigationFacade ixFacade;
+    @EJB
+    private ItemFacade ItemFacade;
     /**
      * Controllers
      */
@@ -183,7 +186,7 @@ public class InvestigationItemController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", currentInvestigation);
-        return getFacade().findBySQL(j, m);
+        return getItemFacade().findBySQL(j, m);
     }
 
     public void setCurrentReportComponants(List<Item> crc) {
@@ -2154,6 +2157,10 @@ public class InvestigationItemController implements Serializable {
         this.userChangableItems = userChangableItems;
     }
 
+    public ItemFacade getItemFacade() {
+        return ItemFacade;
+    }
+
     public enum EditMode {
 
         View_Mode,
@@ -2221,6 +2228,8 @@ public class InvestigationItemController implements Serializable {
         this.importantItems = importantItems;
     }
 
+    
+    
     /**
      *
      */

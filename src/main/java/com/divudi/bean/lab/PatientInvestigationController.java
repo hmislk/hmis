@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
@@ -10,6 +11,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SmsType;
+import com.divudi.data.lab.SysMex;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
@@ -22,6 +24,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportItem;
@@ -116,6 +119,7 @@ public class PatientInvestigationController implements Serializable {
     private PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     private ItemFacade itemFacade;
+
     /*
      * Controllers
      */
@@ -129,6 +133,10 @@ public class PatientInvestigationController implements Serializable {
     private InvestigationItemController investigationItemController;
     @Inject
     private BillController billController;
+    @Inject
+    private PatientReportController patientReportController;
+    @Inject
+    private ItemForItemController itemForItemController;
     /**
      * Class Variables
      */
@@ -168,7 +176,162 @@ public class PatientInvestigationController implements Serializable {
     private String username;
     private String password;
 
-    
+    private String msg;
+    private String machine;
+
+    private String apiResponse = "#{success=false|msg=No Requests}";
+
+    public void msgFromMiddleware() {
+        apiResponse = "";
+        if (username == null || username.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Username}";
+            return;
+        }
+        if (password == null || password.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Password}";
+            return;
+        }
+        if (machine == null || machine.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Machine Specified}";
+            return;
+        }
+        if (msg == null || msg.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Request From Analyzer}";
+            return;
+        }
+        if (!sessionController.loginForRequests(username, password)) {
+            apiResponse += "#{success=false|msg=Wrong username/password}";
+            return;
+        }
+        if (machine.trim().equals("SysMex")) {
+            apiResponse = msgFromSysmex();
+            return;
+        } else if (machine.trim().equals("Dimension")) {
+            apiResponse += "#{success=false|msg=Analyzer not configured}";
+            return;
+        }
+    }
+
+    private String msgFromSysmex() {
+        String temMsgs = "";
+        SysMex sysMex = new SysMex();
+        sysMex.setInputString(msg);
+        if (!sysMex.isCorrectReport()) {
+            return "#{success=false|msg=Wrong Data. Please resent results}";
+        }
+        PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
+        if (ps == null) {
+            return "#{success=false|msg=Wrong Sample ID. Please resent results}";
+        }
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers}";
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
+                PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
+                prs.add(tpr);
+            }
+            List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
+            for (Item ti : temItems) {
+                if (ti instanceof Investigation) {
+                    Investigation tix = (Investigation) ti;
+                    if (tix.getMachine().getName().toLowerCase().contains("sysmex")) {
+                        PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
+                        prs.add(tpr);
+                    }
+                }
+            }
+
+            for (PatientReport tpr : prs) {
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType()== InvestigationItemType.Value ) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        switch (test) {
+                            case "WBC":
+                                priv.setStrValue(sysMex.getWbc());
+                                break;
+                            case "NEUT%":
+                                priv.setStrValue(sysMex.getNeutPercentage());
+                                break;
+                            case "LYMPH%":
+                                priv.setStrValue(sysMex.getLymphPercentage());
+                                break;
+                            case "BASO%":
+                                priv.setStrValue(sysMex.getBasoPercentage());
+                                break;
+                            case "MONO%":
+                                priv.setStrValue(sysMex.getMonoPercentage());
+                                break;
+                            case "EO%":
+                                priv.setStrValue(sysMex.getEoPercentage());
+                                break;
+                            case "RBC":
+                                priv.setStrValue(sysMex.getRbc());
+                                break;
+                            case "HGB":
+                                priv.setStrValue(sysMex.getHgb());
+                                break;
+                            case "HCT":
+                                priv.setStrValue(sysMex.getHct());
+                                break;
+                            case "MCV":
+                                priv.setStrValue(sysMex.getMcv());
+                                break;
+                            case "MCH":
+                                priv.setStrValue(sysMex.getMch());
+                                break;
+                            case "MCHC":
+                                priv.setStrValue(sysMex.getMchc());
+                                break;
+                            case "PLT":
+                                priv.setStrValue(sysMex.getPlt());
+                                break;
+
+                        }
+                    }
+                }
+                tpr.setDataEntered(true);
+                tpr.setDataEntryAt(new Date());
+                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
+                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
+                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
+                getPrFacade().edit(tpr);
+            }
+        }
+
+        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
+    }
+
+    private PatientSample getPatientSampleFromId(Long id) {
+        String j = "select ps from PatientSample ps where ps.id = :id";
+        Map m = new HashMap();
+        m.put("id", id);
+        return getPatientSampleFacade().findFirstBySQL(j, m);
+    }
+
+    private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+        Map m = new HashMap();
+        m.put("ps", ps);
+        return patientSampleComponantFacade.findBySQL(j, m);
+    }
+
+    private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
+        Set<PatientInvestigation> ptixhs = new HashSet<>();
+        for (PatientSampleComponant psc : pscs) {
+            ptixhs.add(psc.getPatientInvestigation());
+        }
+        List<PatientInvestigation> ptixs = new ArrayList<>(ptixhs);
+        return ptixs;
+    }
+
     public void resetLists() {
         items = null;
         lstToSamle = null;
@@ -873,7 +1036,6 @@ public class PatientInvestigationController implements Serializable {
         checkRefundBillItems(lstToSamle);
     }
 
-    
     public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
         if (inputBillId == null || inputBillId.trim().equals("")) {
@@ -904,14 +1066,12 @@ public class PatientInvestigationController implements Serializable {
         Bill tb;
         tb = patientSamples.get(0).getBill();
         String tbis = "";
-       
-        
 
-        samplingRequestResponse += "|message=" ;
+        samplingRequestResponse += "|message=";
 
         for (PatientSample ps : patientSamplesSet) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("#{header}",  ps.getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{header}", ps.getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
             List<Item> tpiics = testComponantsForPatientSample(ps);
             tbis = "";
@@ -1099,7 +1259,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getFacade().findBySQL(j, m);
+        return getItemFacade().findBySQL(j, m);
     }
 
     private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
@@ -1479,6 +1639,46 @@ public class PatientInvestigationController implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getMachine() {
+        return machine;
+    }
+
+    public void setMachine(String machine) {
+        this.machine = machine;
+    }
+
+    public String getApiResponse() {
+        return apiResponse;
+    }
+
+    public void setApiResponse(String apiResponse) {
+        this.apiResponse = apiResponse;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public void setPatientReportController(PatientReportController patientReportController) {
+        this.patientReportController = patientReportController;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    public void setItemForItemController(ItemForItemController itemForItemController) {
+        this.itemForItemController = itemForItemController;
     }
 
     /**
