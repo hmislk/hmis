@@ -1146,8 +1146,6 @@ public class PatientReportController implements Serializable {
 
     public void createNewReport(PatientInvestigation pi) {
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
-        System.out.println("ix.getName() = " + ix.getName());
-        System.out.println("pi.getInvestigation().getName() = " + pi.getInvestigation().getName());
         currentReportInvestigation = ix;
         currentPtIx = pi;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
@@ -1156,7 +1154,6 @@ public class PatientReportController implements Serializable {
             createNewPatientReport(pi, ix);
         }
         getCommonReportItemController().setCategory(ix.getReportFormat());
-
     }
 
     public String enterNewReportFormat(PatientInvestigation pi, Investigation ix) {

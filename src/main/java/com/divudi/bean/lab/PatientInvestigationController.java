@@ -23,6 +23,7 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportItem;
@@ -191,6 +192,10 @@ public class PatientInvestigationController implements Serializable {
             apiResponse += "#{success=false|msg=No Request From Analyzer}";
             return;
         }
+        if(!sessionController.loginForRequests(username, password)){
+            apiResponse += "#{success=false|msg=Wrong username/password}";
+            return;
+        }
         if (machine.trim().equals("SysMex")) {
             apiResponse = msgFromSysmex();
             return;
@@ -210,8 +215,41 @@ public class PatientInvestigationController implements Serializable {
         if(ps==null){
             return "#{success=false|msg=Wrong Sample ID. Please resent results}";
         }
+        List<PatientSampleComponant> pscs= getPatientSampleComponents(ps);
+        if(pscs==null){
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers}";
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if(ptixs==null||ptixs.isEmpty()){
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
+        }
+        for(PatientInvestigation pi:ptixs){
+            for(InvestigationItem ii :pi.getInvestigation().getReportItems() ){
+                if(ii.getIxItemType()==InvestigationItemType.Value && ii.isRetired()==false){
+                    if(ii.getMachine().getName().toLowerCase().contains("sysmex")){
+                        
+                    }
+                }
+            }
+            if(pi.getInvestigation().getMachine().getName().equalsIgnoreCase("SysMex")){
+                
+            }
+        }
         
         return "#{success=true|msg=Data Added to LIMS}";
+    }
+    
+    private PatientReportItemValue getPatientReportItemValue(PatientInvestigation pi, InvestigationItem ii){
+        String j = "select priv from PatientReportItemValue priv where "
+                + " priv.investigationItem=:ii "
+                + " and priv.patientReport.patientInvestigation=:pi "
+                + " and priv.patientReport.approved=:app"
+                + " order by priv.id desc";
+        Map m = new HashMap();
+        m.put("ii", ii);
+        m.put("pi", pi);
+        m.put("app", false);
+        
     }
 
     private PatientSample getPatientSampleFromId(Long id){
@@ -220,6 +258,23 @@ public class PatientInvestigationController implements Serializable {
         m.put("id", id);
         return getPatientSampleFacade().findFirstBySQL(j, m);
     }
+    
+    private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps){
+        String j = "select psc from PatientSampleComponant psc where psc.PatientSample = :ps";
+        Map m = new HashMap();
+        m.put("ps", ps);
+        return patientSampleComponantFacade.findBySQL(j, m);
+    }
+    
+    private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant>  pscs){
+        Set<PatientInvestigation> ptixhs = new HashSet<>();
+        for(PatientSampleComponant psc:pscs){
+            ptixhs.add(psc.getPatientInvestigation());
+        }
+        List<PatientInvestigation> ptixs = new ArrayList<>(ptixhs);
+        return ptixs;
+    }
+    
     
     public void resetLists() {
         items = null;
