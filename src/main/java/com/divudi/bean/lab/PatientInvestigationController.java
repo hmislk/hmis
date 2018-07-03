@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
@@ -132,6 +133,10 @@ public class PatientInvestigationController implements Serializable {
     private InvestigationItemController investigationItemController;
     @Inject
     private BillController billController;
+    @Inject
+    private PatientReportController patientReportController;
+    @Inject
+    private ItemForItemController itemForItemController;
     /**
      * Class Variables
      */
@@ -174,9 +179,10 @@ public class PatientInvestigationController implements Serializable {
     private String msg;
     private String machine;
 
-    private String apiResponse;
+    private String apiResponse = "#{success=false|msg=No Requests}";
 
     public void msgFromMiddleware() {
+        apiResponse = "";
         if (username == null || username.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Username}";
             return;
@@ -207,6 +213,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
+        String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputString(msg);
         if (!sysMex.isCorrectReport()) {
@@ -225,34 +232,81 @@ public class PatientInvestigationController implements Serializable {
             return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
         }
         for (PatientInvestigation pi : ptixs) {
-            for (InvestigationItem ii : pi.getInvestigation().getReportItems()) {
-                if (ii.getIxItemType() == InvestigationItemType.Value && ii.isRetired() == false) {
-                    if (ii.getMachine().getName().toLowerCase().contains("sysmex")) {
-
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
+                PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
+                prs.add(tpr);
+            }
+            List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
+            for (Item ti : temItems) {
+                if (ti instanceof Investigation) {
+                    Investigation tix = (Investigation) ti;
+                    if (tix.getMachine().getName().toLowerCase().contains("sysmex")) {
+                        PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
+                        prs.add(tpr);
                     }
                 }
             }
-            if (pi.getInvestigation().getMachine().getName().equalsIgnoreCase("SysMex")) {
 
+            for (PatientReport tpr : prs) {
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType()== InvestigationItemType.Value ) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        switch (test) {
+                            case "WBC":
+                                priv.setStrValue(sysMex.getWbc());
+                                break;
+                            case "NEUT%":
+                                priv.setStrValue(sysMex.getNeutPercentage());
+                                break;
+                            case "LYMPH%":
+                                priv.setStrValue(sysMex.getLymphPercentage());
+                                break;
+                            case "BASO%":
+                                priv.setStrValue(sysMex.getBasoPercentage());
+                                break;
+                            case "MONO%":
+                                priv.setStrValue(sysMex.getMonoPercentage());
+                                break;
+                            case "EO%":
+                                priv.setStrValue(sysMex.getEoPercentage());
+                                break;
+                            case "RBC":
+                                priv.setStrValue(sysMex.getRbc());
+                                break;
+                            case "HGB":
+                                priv.setStrValue(sysMex.getHgb());
+                                break;
+                            case "HCT":
+                                priv.setStrValue(sysMex.getHct());
+                                break;
+                            case "MCV":
+                                priv.setStrValue(sysMex.getMcv());
+                                break;
+                            case "MCH":
+                                priv.setStrValue(sysMex.getMch());
+                                break;
+                            case "MCHC":
+                                priv.setStrValue(sysMex.getMchc());
+                                break;
+                            case "PLT":
+                                priv.setStrValue(sysMex.getPlt());
+                                break;
+
+                        }
+                    }
+                }
+                tpr.setDataEntered(true);
+                tpr.setDataEntryAt(new Date());
+                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
+                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
+                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
+                getPrFacade().edit(tpr);
             }
         }
 
-        return "#{success=true|msg=Data Added to LIMS}";
-    }
-
-    private PatientReportItemValue getPatientReportItemValue(PatientInvestigation pi, InvestigationItem ii) {
-        String j = "select priv from PatientReportItemValue priv where "
-                + " priv.investigationItem=:ii "
-                + " and priv.patientReport.patientInvestigation=:pi "
-                + " and priv.patientReport.approved=:app"
-                + " order by priv.id desc";
-        Map m = new HashMap();
-        m.put("ii", ii);
-        m.put("pi", pi);
-        m.put("app", false);
-        PatientReportItemValue priv=null;
-
-        return priv;
+        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
     }
 
     private PatientSample getPatientSampleFromId(Long id) {
@@ -263,7 +317,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
-        String j = "select psc from PatientSampleComponant psc where psc.PatientSample = :ps";
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
         return patientSampleComponantFacade.findBySQL(j, m);
@@ -817,10 +871,10 @@ public class PatientInvestigationController implements Serializable {
 //        Authenticator auth = new SMTPAuthenticator();
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
 
         try {
             Message message = new MimeMessage(session);
@@ -1609,6 +1663,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setApiResponse(String apiResponse) {
         this.apiResponse = apiResponse;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public void setPatientReportController(PatientReportController patientReportController) {
+        this.patientReportController = patientReportController;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    public void setItemForItemController(ItemForItemController itemForItemController) {
+        this.itemForItemController = itemForItemController;
     }
 
     /**

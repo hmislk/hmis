@@ -80,31 +80,42 @@ public class SysMex {
     private String eoPercentage;
     private String basoPercentage;
 
-    public boolean isCorrectReport(){
+    public boolean isCorrectReport() {
         boolean flag = true;
-        double id1= findValue(sampleId1Start, sampleId1End, 0);
+        if (bytes == null || bytes.isEmpty()) {
+            return false;
+        }
+        if (bytes.size() < 300) {
+            return false;
+        }
+        double id1 = findValue(sampleId1Start, sampleId1End, 0);
         System.out.println("id1 = " + id1);
-        double id2= findValue(sampleId2Start, sampleId2End, 0);
+        double id2 = findValue(sampleId2Start, sampleId2End, 0);
         System.out.println("id2 = " + id2);
-        if(id1!=id2){
+        if (id1 != id2) {
             return false;
         }
         double thb = findValue(hgbStart, hgbEnd, 2);
         System.out.println("thb = " + thb);
-        if(thb<2 || thb > 25){
+        if (thb < 2 || thb > 25) {
             return false;
         }
         double tpcv = findValue(hctStart, hctEnd, 2);
-        if(tpcv<5 || tpcv>95){
+        if (tpcv < 5 || tpcv > 95) {
             return false;
         }
         return true;
     }
-    
+
     private void textToByteArray() {
         bytes = new ArrayList<>();
         String strInput = inputString;
-        String[] strByte = strInput.split(Pattern.quote("+"));
+        String[] strByte;
+        if (inputString.contains(Pattern.quote("+"))) {
+            strByte = strInput.split(Pattern.quote("+"));
+        } else {
+            strByte = strInput.split("\\s+");
+        }
         for (String s : strByte) {
             System.out.println("s = " + s);
             s = s.replaceAll("\n", "");

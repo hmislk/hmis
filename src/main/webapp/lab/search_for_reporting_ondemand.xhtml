@@ -278,7 +278,9 @@
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
-                                <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" styleClass="noBorderGrid summeryBorder noBorder" >
+                                <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" 
+                                             rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" 
+                                             styleClass="noBorderGrid summeryBorder noBorder" >
                                     <p:column >
                                         <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
                                                        value="#{dpr.item.name}" 
