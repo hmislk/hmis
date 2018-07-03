@@ -118,6 +118,7 @@ public class PatientInvestigationController implements Serializable {
     private PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     private ItemFacade itemFacade;
+
     /*
      * Controllers
      */
@@ -192,7 +193,7 @@ public class PatientInvestigationController implements Serializable {
             apiResponse += "#{success=false|msg=No Request From Analyzer}";
             return;
         }
-        if(!sessionController.loginForRequests(username, password)){
+        if (!sessionController.loginForRequests(username, password)) {
             apiResponse += "#{success=false|msg=Wrong username/password}";
             return;
         }
@@ -208,38 +209,38 @@ public class PatientInvestigationController implements Serializable {
     private String msgFromSysmex() {
         SysMex sysMex = new SysMex();
         sysMex.setInputString(msg);
-        if(!sysMex.isCorrectReport()){
+        if (!sysMex.isCorrectReport()) {
             return "#{success=false|msg=Wrong Data. Please resent results}";
         }
         PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
-        if(ps==null){
+        if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results}";
         }
-        List<PatientSampleComponant> pscs= getPatientSampleComponents(ps);
-        if(pscs==null){
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
             return "#{success=false|msg=Wrong Sample Components. Please inform developers}";
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        if(ptixs==null||ptixs.isEmpty()){
+        if (ptixs == null || ptixs.isEmpty()) {
             return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
         }
-        for(PatientInvestigation pi:ptixs){
-            for(InvestigationItem ii :pi.getInvestigation().getReportItems() ){
-                if(ii.getIxItemType()==InvestigationItemType.Value && ii.isRetired()==false){
-                    if(ii.getMachine().getName().toLowerCase().contains("sysmex")){
-                        
+        for (PatientInvestigation pi : ptixs) {
+            for (InvestigationItem ii : pi.getInvestigation().getReportItems()) {
+                if (ii.getIxItemType() == InvestigationItemType.Value && ii.isRetired() == false) {
+                    if (ii.getMachine().getName().toLowerCase().contains("sysmex")) {
+
                     }
                 }
             }
-            if(pi.getInvestigation().getMachine().getName().equalsIgnoreCase("SysMex")){
-                
+            if (pi.getInvestigation().getMachine().getName().equalsIgnoreCase("SysMex")) {
+
             }
         }
-        
+
         return "#{success=true|msg=Data Added to LIMS}";
     }
-    
-    private PatientReportItemValue getPatientReportItemValue(PatientInvestigation pi, InvestigationItem ii){
+
+    private PatientReportItemValue getPatientReportItemValue(PatientInvestigation pi, InvestigationItem ii) {
         String j = "select priv from PatientReportItemValue priv where "
                 + " priv.investigationItem=:ii "
                 + " and priv.patientReport.patientInvestigation=:pi "
@@ -249,33 +250,34 @@ public class PatientInvestigationController implements Serializable {
         m.put("ii", ii);
         m.put("pi", pi);
         m.put("app", false);
-        
+        PatientReportItemValue priv=null;
+
+        return priv;
     }
 
-    private PatientSample getPatientSampleFromId(Long id){
+    private PatientSample getPatientSampleFromId(Long id) {
         String j = "select ps from PatientSample ps where ps.id = :id";
         Map m = new HashMap();
         m.put("id", id);
         return getPatientSampleFacade().findFirstBySQL(j, m);
     }
-    
-    private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps){
+
+    private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
         String j = "select psc from PatientSampleComponant psc where psc.PatientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
         return patientSampleComponantFacade.findBySQL(j, m);
     }
-    
-    private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant>  pscs){
+
+    private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
         Set<PatientInvestigation> ptixhs = new HashSet<>();
-        for(PatientSampleComponant psc:pscs){
+        for (PatientSampleComponant psc : pscs) {
             ptixhs.add(psc.getPatientInvestigation());
         }
         List<PatientInvestigation> ptixs = new ArrayList<>(ptixhs);
         return ptixs;
     }
-    
-    
+
     public void resetLists() {
         items = null;
         lstToSamle = null;
