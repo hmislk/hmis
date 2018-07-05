@@ -407,7 +407,7 @@
                                         <div id="labelsAndValues" style="left:5%; width: 90%; display: inline-block;" >
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                 <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
-                                                    <div style="vertical-align: top; text-align: left;  padding-top: 2%; padding-bottom: 2%;">
+                                                    <div style="vertical-align: top; text-align: left;  padding-top: 3%; padding-bottom: 3%;">
                                                         <div style="float: left;width: 5%; " ></div>
                                                         <div style=" float: left; text-align: left; width: 20%;padding-left: 1px; padding-right: 1px; padding-top: 5px; vertical-align: top;">
                                                             <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"/>
@@ -419,7 +419,7 @@
                                                     </div>
                                                 </h:panelGroup>
                                             </ui:repeat>
-                                            <div style="vertical-align: top; text-align: left;  padding-top: 2%; padding-bottom: 2%; clear: left;">
+                                            <div style="vertical-align: top; text-align: left;  padding-top: 3%; padding-bottom: 2%; clear: left;">
                                                 <h:outputLabel value="Antibiotic Sensitivity Test" 
                                                                rendered="#{patientReportController.currentPatientReport.transHasAbst}"
                                                                style="font-size: 120%; font-weight: bold; padding-left: 18px;"></h:outputLabel>

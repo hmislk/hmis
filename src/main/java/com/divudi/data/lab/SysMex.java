@@ -18,52 +18,57 @@ import java.util.regex.Pattern;
  */
 public class SysMex {
 
-    private String inputString;
+    private String inputStringBytesSpaceSeperated;
+    private String inputStringBytesPlusSeperated;
+    private String inputStringCharactors;
     private List<Byte> bytes;
-
+    private int shift1 = 0;
+    private int shift2 = -1;
     private int lengthOfMessage = 444;
-    private int instrumentId1Start = 4;
-    private int instrumentId1End = 19;
-    private int sampleId1Start = 33;
-    private int sampleId1End = 47;
-    private int year1Start = 48;
-    private int yearEnd = 51;
-    private int month1Start = 52;
-    private int month1End = 53;
-    private int date1Start = 54;
-    private int date1End = 55;
-    private int hour1Start = 56;
-    private int hour1End = 57;
-    private int min1Start = 58;
-    private int min1End = 59;
-    private int sampleId2Start = 222;
-    private int sampleId2End = 236;
-    private int wbcStart = 237;
-    private int wbcEnd = 242;
-    private int rbcStart = 243;
-    private int rbcEnd = 247;
-    private int hgbStart = 248;
-    private int hgbEnd = 252;
-    private int hctStart = 253;
-    private int hctEnd = 257;
-    private int mcvStart = 258;
-    private int mcvEnd = 262;
-    private int mchStart = 263;
-    private int mchEnd = 267;
-    private int mchcStart = 268;
-    private int mchcEnd = 272;
-    private int pltStart = 273;
-    private int pltEnd = 277;
-    private int lymphPercentStart = 278;
-    private int lymphPercentEnd = 282;
-    private int monoPercentStart = 283;
-    private int monoPercentEnd = 287;
-    private int neuPercentStart = 288;
-    private int neuPercentEnd = 292;
-    private int eoPercentStart = 293;
-    private int eoPercentEnd = 297;
-    private int basoPercentStart = 298;
-    private int basoPercentEnd = 302;
+    private int instrumentId1Start = 4 + shift1;
+    private int instrumentId1End = 19 + shift1;
+    private int sampleId1Start = 33 + shift1;
+    private int sampleId1End = 47 + shift1;
+    private int year1Start = 48 + shift1;
+    private int yearEnd = 51 + shift1;
+    private int month1Start = 52 + shift1;
+    private int month1End = 53 + shift1;
+    private int date1Start = 54 + shift1;
+    private int date1End = 55 + shift1;
+    private int hour1Start = 56 + shift1;
+    private int hour1End = 57 + shift1;
+    private int min1Start = 58 + shift1;
+    private int min1End = 59 + shift1;
+    private int sampleId2Start = 222 + shift2;
+    private int sampleId2End = 236 + shift2;
+    private int wbcStart = 237 + shift2;
+    private int wbcEnd = 242 + shift2;
+    private int rbcStart = 243 + shift2;
+    private int rbcEnd = 247 + shift2;
+    private int hgbStart = 248 + shift2;
+    private int hgbEnd = 252 + shift2;
+    private int hctStart = 253 + shift2;
+    private int hctEnd = 257 + shift2;
+    private int mcvStart = 258 + shift2;
+    private int mcvEnd = 262 + shift2;
+    private int mchStart = 263 + shift2;
+    private int mchEnd = 267 + shift2;
+    private int mchcStart = 268 + shift2;
+    private int mchcEnd = 272 + shift2;
+    private int pltStart = 273 + shift2;
+    private int pltEnd = 277 + shift2;
+    private int lymphPercentStart = 278 + shift2;
+    private int lymphPercentEnd = 282 + shift2;
+    private int monoPercentStart = 283 + shift2;
+    private int monoPercentEnd = 287 + shift2;
+    private int neuPercentStart = 288 + shift2;
+    private int neuPercentEnd = 292 + shift2;
+    private int eoPercentStart = 293 + shift2;
+    private int eoPercentEnd = 297 + shift2;
+    private int basoPercentStart = 298 + shift2;
+    private int basoPercentEnd = 302 + shift2;
+    private int instrumentId2Start = 421 + shift2;
+    private int instrumentId2End = 436 + shift2;
 
     private long sampleId;
     private String wbc;
@@ -81,20 +86,38 @@ public class SysMex {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
+        System.out.println("isCorrectReport");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
+            System.out.println("bytes empty");
             return false;
         }
         if (bytes.size() < 300) {
+            System.out.println("less than 300 = ");
             return false;
         }
         double id1 = findValue(sampleId1Start, sampleId1End, 0);
         System.out.println("id1 = " + id1);
         double id2 = findValue(sampleId2Start, sampleId2End, 0);
         System.out.println("id2 = " + id2);
-        if (id1 != id2) {
-            return false;
-        }
+        String insId1 = findStringValue(instrumentId1Start, instrumentId1End);
+        System.out.println("1. insId1 = " + insId1);
+        insId1 = insId1.replaceAll("\\s", "");
+        System.out.println("2. insId1 = " + insId1);
+        insId1 = insId1.substring(0, 7);
+        System.out.println("3. insId1 = " + insId1);
+        String insId2 = findStringValue(instrumentId2Start, instrumentId2End);
+        System.out.println("1. insId2 = " + insId2);
+        insId2 = insId2.replaceAll("\\s", "");
+        System.out.println("2. insId1 = " + insId2);
+        insId2 = insId2.substring(0, 7);
+        System.out.println("3. insId1 = " + insId2);
+//        if (id1 != id2) {
+//            return false;
+//        }
+//        if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
+//            return false;
+//        }
         double thb = findValue(hgbStart, hgbEnd, 2);
         System.out.println("thb = " + thb);
         if (thb < 2 || thb > 25) {
@@ -107,15 +130,57 @@ public class SysMex {
         return true;
     }
 
-    private void textToByteArray() {
+    public void shiftPositions() {
+        instrumentId1Start = 4 + shift1;
+        instrumentId1End = 19 + shift1;
+        sampleId1Start = 33 + shift1;
+        sampleId1End = 47 + shift1;
+        year1Start = 48 + shift1;
+        yearEnd = 51 + shift1;
+        month1Start = 52 + shift1;
+        month1End = 53 + shift1;
+        date1Start = 54 + shift1;
+        date1End = 55 + shift1;
+        hour1Start = 56 + shift1;
+        hour1End = 57 + shift1;
+        min1Start = 58 + shift1;
+        min1End = 59 + shift1;
+        sampleId2Start = 222 + shift2;
+        sampleId2End = 236 + shift2;
+        wbcStart = 237 + shift2;
+        wbcEnd = 242 + shift2;
+        rbcStart = 243 + shift2;
+        rbcEnd = 247 + shift2;
+        hgbStart = 248 + shift2;
+        hgbEnd = 252 + shift2;
+        hctStart = 253 + shift2;
+        hctEnd = 257 + shift2;
+        mcvStart = 258 + shift2;
+        mcvEnd = 262 + shift2;
+        mchStart = 263 + shift2;
+        mchEnd = 267 + shift2;
+        mchcStart = 268 + shift2;
+        mchcEnd = 272 + shift2;
+        pltStart = 273 + shift2;
+        pltEnd = 277 + shift2;
+        lymphPercentStart = 278 + shift2;
+        lymphPercentEnd = 282 + shift2;
+        monoPercentStart = 283 + shift2;
+        monoPercentEnd = 287 + shift2;
+        neuPercentStart = 288 + shift2;
+        neuPercentEnd = 292 + shift2;
+        eoPercentStart = 293 + shift2;
+        eoPercentEnd = 297 + shift2;
+        basoPercentStart = 298 + shift2;
+        basoPercentEnd = 302 + shift2;
+        instrumentId2Start = 421 + shift2;
+        instrumentId2End = 436 + shift2;
+    }
+
+    private void textToByteArraySeperatedByPlus() {
         bytes = new ArrayList<>();
-        String strInput = inputString;
-        String[] strByte;
-        if (inputString.contains(Pattern.quote("+"))) {
-            strByte = strInput.split(Pattern.quote("+"));
-        } else {
-            strByte = strInput.split("\\s+");
-        }
+        String strInput = inputStringBytesPlusSeperated;
+        String[] strByte = strInput.split(Pattern.quote("+"));
         for (String s : strByte) {
             System.out.println("s = " + s);
             s = s.replaceAll("\n", "");
@@ -123,6 +188,40 @@ public class SysMex {
             try {
                 Byte b = Byte.parseByte(s);
                 System.out.println("b = " + b);
+                bytes.add(b);
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+                bytes.add(null);
+            }
+        }
+    }
+
+    private void textToByteArraySeperatedBySpace() {
+        bytes = new ArrayList<>();
+        String strInput = inputStringBytesSpaceSeperated;
+        String[] strByte = strInput.split("\\s+");
+        for (String s : strByte) {
+            System.out.println("s = " + s);
+            s = s.replaceAll("\n", "");
+            s = s.replaceAll("\r", "");
+            try {
+                Byte b = Byte.parseByte(s);
+                System.out.println("b = " + b);
+                bytes.add(b);
+            } catch (Exception e) {
+                System.out.println("e = " + e);
+                bytes.add(null);
+            }
+        }
+    }
+
+    private void textToByteArrayByCharactors() {
+        bytes = new ArrayList<>();
+        String strInput = inputStringCharactors;
+        char[] strByte = strInput.toCharArray();
+        for (char s : strByte) {
+            try {
+                Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
                 System.out.println("e = " + e);
@@ -157,12 +256,16 @@ public class SysMex {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
+        System.out.println("from = " + from);
+        System.out.println("to = " + to);
+        
         String display = "";
         for (int i = from; i < to + 1; i++) {
-            System.out.println("i = " + i);
+//            System.out.println("i = " + i);
             int temN = bytes.get(i);
             display += (char) temN + "";
         }
+        System.out.println("display = " + display);
         if (decimals > 0) {
             String wn = display.substring(0, display.length() - decimals);
             String fn = display.substring(display.length() - decimals, display.length());
@@ -187,6 +290,16 @@ public class SysMex {
             }
         }
         return val;
+    }
+
+    private String findStringValue(int from, int to) {
+        String display = "";
+        for (int i = from; i < to + 1; i++) {
+//            System.out.println("i = " + i);
+            int temN = bytes.get(i);
+            display += (char) temN + "";
+        }
+        return display;
     }
 
     public int getLengthOfMessage() {
@@ -533,13 +646,13 @@ public class SysMex {
         this.basoPercentEnd = basoPercentEnd;
     }
 
-    public String getInputString() {
-        return inputString;
+    public String getInputStringBytesSpaceSeperated() {
+        return inputStringBytesSpaceSeperated;
     }
 
-    public void setInputString(String inputString) {
-        this.inputString = inputString;
-        textToByteArray();
+    public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
+        this.inputStringBytesSpaceSeperated = inputStringBytesSpaceSeperated;
+        textToByteArraySeperatedBySpace();
     }
 
     public List<Byte> getBytes() {
@@ -561,6 +674,10 @@ public class SysMex {
 
     public String getWbc() {
         double w = findValue(wbcStart, wbcEnd, 0);
+        String ws = findStringValue(wbcStart, wbcEnd);
+        System.out.println("wbcStart = " + wbcStart);
+        System.out.println("wbcEnd = " + wbcEnd);
+        System.out.println("ws = " + ws);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;
@@ -689,6 +806,56 @@ public class SysMex {
 
     public void setBasoPercentage(String basoPercentage) {
         this.basoPercentage = basoPercentage;
+    }
+
+    public String getInputStringBytesPlusSeperated() {
+        return inputStringBytesPlusSeperated;
+    }
+
+    public void setInputStringBytesPlusSeperated(String inputStringBytesPlusSeperated) {
+        this.inputStringBytesPlusSeperated = inputStringBytesPlusSeperated;
+        textToByteArraySeperatedByPlus();
+    }
+
+    public String getInputStringCharactors() {
+        return inputStringCharactors;
+    }
+
+    public void setInputStringCharactors(String inputStringCharactors) {
+        this.inputStringCharactors = inputStringCharactors;
+        textToByteArrayByCharactors();
+    }
+
+    public int getShift1() {
+        return shift1;
+    }
+
+    public void setShift1(int shift1) {
+        this.shift1 = shift1;
+    }
+
+    public int getShift2() {
+        return shift2;
+    }
+
+    public void setShift2(int shift2) {
+        this.shift2 = shift2;
+    }
+
+    public int getInstrumentId2Start() {
+        return instrumentId2Start;
+    }
+
+    public void setInstrumentId2Start(int instrumentId2Start) {
+        this.instrumentId2Start = instrumentId2Start;
+    }
+
+    public int getInstrumentId2End() {
+        return instrumentId2End;
+    }
+
+    public void setInstrumentId2End(int instrumentId2End) {
+        this.instrumentId2End = instrumentId2End;
     }
 
 }

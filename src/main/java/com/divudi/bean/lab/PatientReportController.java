@@ -1051,6 +1051,8 @@ public class PatientReportController implements Serializable {
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
+            r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addPatientReportItemValuesForReport(r);

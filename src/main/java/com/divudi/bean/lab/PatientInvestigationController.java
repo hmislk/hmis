@@ -178,6 +178,9 @@ public class PatientInvestigationController implements Serializable {
 
     private String msg;
     private String machine;
+    private String shift;
+    private String shift1;
+    private String shift2;
 
     private String apiResponse = "#{success=false|msg=No Requests}";
 
@@ -215,40 +218,63 @@ public class PatientInvestigationController implements Serializable {
     private String msgFromSysmex() {
         String temMsgs = "";
         SysMex sysMex = new SysMex();
-        sysMex.setInputString(msg);
+        sysMex.setInputStringBytesSpaceSeperated(msg);
+        if(shift.equalsIgnoreCase("true") && shift1!=null && shift2!=null){
+            int s1=0;
+            int s2=0;
+            try{
+                s1 = Integer.parseInt(shift1);
+                System.out.println("s1 = " + s1);
+                s2 = Integer.parseInt(shift2);
+                System.out.println("s2 = " + s2);
+            }catch(Exception e){
+                
+            }
+            sysMex.setShift1(s1);
+            sysMex.setShift2(s2);
+            sysMex.shiftPositions();
+        }
         if (!sysMex.isCorrectReport()) {
             return "#{success=false|msg=Wrong Data. Please resent results}";
         }
+        System.out.println("sysMex.getSampleId() = " + sysMex.getSampleId());
         PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
+        System.out.println("ps = " + ps);
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results}";
         }
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        System.out.println("pscs = " + pscs);
         if (pscs == null) {
             return "#{success=false|msg=Wrong Sample Components. Please inform developers}";
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        System.out.println("ptixs = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
         }
         for (PatientInvestigation pi : ptixs) {
+            System.out.println("pi = " + pi);
             List<PatientReport> prs = new ArrayList<>();
             if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
                 PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
                 prs.add(tpr);
             }
             List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
+            System.out.println("temItems = " + temItems);
             for (Item ti : temItems) {
                 if (ti instanceof Investigation) {
                     Investigation tix = (Investigation) ti;
                     if (tix.getMachine().getName().toLowerCase().contains("sysmex")) {
                         PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
+//                        pi.getPatientReports().add(tpr);
                         prs.add(tpr);
                     }
                 }
             }
-
+            System.out.println("prs = " + prs);
             for (PatientReport tpr : prs) {
+                
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType()== InvestigationItemType.Value ) {
                         String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
@@ -1681,6 +1707,30 @@ public class PatientInvestigationController implements Serializable {
         this.itemForItemController = itemForItemController;
     }
 
+    public String getShift() {
+        return shift;
+    }
+
+    public void setShift(String shift) {
+        this.shift = shift;
+    }
+
+    public String getShift1() {
+        return shift1;
+    }
+
+    public void setShift1(String shift1) {
+        this.shift1 = shift1;
+    }
+
+    public String getShift2() {
+        return shift2;
+    }
+
+    public void setShift2(String shift2) {
+        this.shift2 = shift2;
+    }
+
     /**
      *
      */
@@ -1740,4 +1790,6 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
+    
 }

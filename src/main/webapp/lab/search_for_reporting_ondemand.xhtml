@@ -196,24 +196,24 @@
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
-                                             rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
+                                             rendered="true" >
                                     <p:commandLink process="btnSample" update="tblBills"
-                                                   disabled="#{pi.collected or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   
+                                                   disabled="#{pi.collected or pi.billItem.bill.cancelled}"   
                                                    id="btnSample" 
                                                    action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet" disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}">
+                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet" disabled="#{pi.billItem.bill.cancelled}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
                                     <p:commandLink id="btnNewReport" ajax="false" 
-                                                   disabled="#{!pi.received or pi.billItem.bill.cancelled or pi.billItem.transRefund}" 
+                                                   disabled="#{!pi.received}" 
                                                    action="/lab/patient_report"  
                                                    actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
