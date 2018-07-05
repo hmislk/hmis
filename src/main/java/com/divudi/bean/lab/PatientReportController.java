@@ -1043,6 +1043,33 @@ public class PatientReportController implements Serializable {
         return currentPtIx;
     }
 
+    public PatientReport createNewPatientReportForRequests(PatientInvestigation pi, Investigation ix) {
+        System.err.println("creating a new patient report");
+        PatientReport r = null;
+        if (pi != null && ix != null) {
+            r = new PatientReport();
+            r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
+            r.setCreater(getSessionController().getLoggedUser());
+            System.err.println("getSessionController().getLoggedUser() = "+getSessionController().getLoggedUser());
+            r.setItem(ix);
+            r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
+            System.err.println("sessionController.getLoggedUser().getDepartment() = "+sessionController.getLoggedUser().getDepartment());
+            r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            System.err.println("sessionController.getLoggedUser().getInstitution() = " + sessionController.getLoggedUser().getInstitution());
+            getFacade().create(r);
+            r.setPatientInvestigation(pi);
+            getPrBean().addPatientReportItemValuesForReport(r);
+//            getEjbFacade().edit(r);
+//            setCurrentPatientReport(r);
+            pi.getPatientReports().add(r);
+            getPiFacade().edit(pi);
+//            getCommonReportItemController().setCategory(ix.getReportFormat());
+        } else {
+            UtilityController.addErrorMessage("No ptIx or Ix selected to add");
+        }
+        return r;
+    }
+
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
         //System.err.println("creating a new patient report");
         PatientReport r = null;

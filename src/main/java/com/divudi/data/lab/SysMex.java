@@ -10,6 +10,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -25,50 +26,50 @@ public class SysMex {
     private int shift1 = 0;
     private int shift2 = -1;
     private int lengthOfMessage = 444;
-    private int instrumentId1Start = 4 + shift1;
-    private int instrumentId1End = 19 + shift1;
-    private int sampleId1Start = 33 + shift1;
-    private int sampleId1End = 47 + shift1;
-    private int year1Start = 48 + shift1;
-    private int yearEnd = 51 + shift1;
-    private int month1Start = 52 + shift1;
-    private int month1End = 53 + shift1;
-    private int date1Start = 54 + shift1;
-    private int date1End = 55 + shift1;
-    private int hour1Start = 56 + shift1;
-    private int hour1End = 57 + shift1;
-    private int min1Start = 58 + shift1;
-    private int min1End = 59 + shift1;
-    private int sampleId2Start = 222 + shift2;
-    private int sampleId2End = 236 + shift2;
-    private int wbcStart = 237 + shift2;
-    private int wbcEnd = 242 + shift2;
-    private int rbcStart = 243 + shift2;
-    private int rbcEnd = 247 + shift2;
-    private int hgbStart = 248 + shift2;
-    private int hgbEnd = 252 + shift2;
-    private int hctStart = 253 + shift2;
-    private int hctEnd = 257 + shift2;
-    private int mcvStart = 258 + shift2;
-    private int mcvEnd = 262 + shift2;
-    private int mchStart = 263 + shift2;
-    private int mchEnd = 267 + shift2;
-    private int mchcStart = 268 + shift2;
-    private int mchcEnd = 272 + shift2;
-    private int pltStart = 273 + shift2;
-    private int pltEnd = 277 + shift2;
-    private int lymphPercentStart = 278 + shift2;
-    private int lymphPercentEnd = 282 + shift2;
-    private int monoPercentStart = 283 + shift2;
-    private int monoPercentEnd = 287 + shift2;
-    private int neuPercentStart = 288 + shift2;
-    private int neuPercentEnd = 292 + shift2;
-    private int eoPercentStart = 293 + shift2;
-    private int eoPercentEnd = 297 + shift2;
-    private int basoPercentStart = 298 + shift2;
-    private int basoPercentEnd = 302 + shift2;
-    private int instrumentId2Start = 421 + shift2;
-    private int instrumentId2End = 436 + shift2;
+    private int instrumentId1Start = 4;
+    private int instrumentId1End = 19;
+    private int sampleId1Start = 33;
+    private int sampleId1End = 47;
+    private int year1Start = 48;
+    private int yearEnd = 51;
+    private int month1Start = 52;
+    private int month1End = 53;
+    private int date1Start = 54;
+    private int date1End = 55;
+    private int hour1Start = 56;
+    private int hour1End = 57;
+    private int min1Start = 58;
+    private int min1End = 59;
+    private int sampleId2Start = 222;
+    private int sampleId2End = 236;
+    private int wbcStart = 237;
+    private int wbcEnd = 242;
+    private int rbcStart = 243;
+    private int rbcEnd = 247;
+    private int hgbStart = 248;
+    private int hgbEnd = 252;
+    private int hctStart = 253;
+    private int hctEnd = 257;
+    private int mcvStart = 258;
+    private int mcvEnd = 262;
+    private int mchStart = 263;
+    private int mchEnd = 267;
+    private int mchcStart = 268;
+    private int mchcEnd = 272;
+    private int pltStart = 273;
+    private int pltEnd = 277;
+    private int lymphPercentStart = 278;
+    private int lymphPercentEnd = 282;
+    private int monoPercentStart = 283;
+    private int monoPercentEnd = 287;
+    private int neuPercentStart = 288;
+    private int neuPercentEnd = 292;
+    private int eoPercentStart = 293;
+    private int eoPercentEnd = 297;
+    private int basoPercentStart = 298;
+    private int basoPercentEnd = 302;
+    private int instrumentId2Start = 421;
+    private int instrumentId2End = 436;
 
     private long sampleId;
     private String wbc;
@@ -86,7 +87,7 @@ public class SysMex {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        System.out.println("isCorrectReport");
+        System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             System.out.println("bytes empty");
@@ -96,37 +97,50 @@ public class SysMex {
             System.out.println("less than 300 = ");
             return false;
         }
-        double id1 = findValue(sampleId1Start, sampleId1End, 0);
+        Double id1 = findValue(sampleId1Start, sampleId1End, 0);
         System.out.println("id1 = " + id1);
-        double id2 = findValue(sampleId2Start, sampleId2End, 0);
+        Double id2 = findValue(sampleId2Start, sampleId2End, 0);
         System.out.println("id2 = " + id2);
+        if (!Objects.equals(id1, id2)) {
+            System.out.println("ID1 is not Equal to ID2");
+            return false;
+        }
+        System.out.println("ID check OK");
         String insId1 = findStringValue(instrumentId1Start, instrumentId1End);
-        System.out.println("1. insId1 = " + insId1);
         insId1 = insId1.replaceAll("\\s", "");
-        System.out.println("2. insId1 = " + insId1);
-        insId1 = insId1.substring(0, 7);
-        System.out.println("3. insId1 = " + insId1);
+        insId1 = insId1.substring(0, 5);
+        System.out.println("instrument Id1 = " + insId1);
         String insId2 = findStringValue(instrumentId2Start, instrumentId2End);
-        System.out.println("1. insId2 = " + insId2);
         insId2 = insId2.replaceAll("\\s", "");
-        System.out.println("2. insId1 = " + insId2);
-        insId2 = insId2.substring(0, 7);
-        System.out.println("3. insId1 = " + insId2);
-//        if (id1 != id2) {
-//            return false;
-//        }
-//        if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
-//            return false;
-//        }
-        double thb = findValue(hgbStart, hgbEnd, 2);
-        System.out.println("thb = " + thb);
-        if (thb < 2 || thb > 25) {
+        insId2 = insId2.substring(0, 5);
+        System.out.println("instrument Id2 = " + insId2);
+
+        if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
+            System.out.println("Ins IDs are not Equal");
             return false;
         }
-        double tpcv = findValue(hctStart, hctEnd, 2);
-        if (tpcv < 5 || tpcv > 95) {
+        System.out.println("Instrument ID checks ok");
+
+        Double thb = findValue(hgbStart, hgbEnd, 2);
+        System.out.println("Hb Check = " + thb);
+        if (thb < 2 || thb > 20) {
             return false;
         }
+        System.out.println("Hb  checks ok");
+
+        Double tpcv = findValue(hctStart, hctEnd, 2);
+        System.out.println("HCT Check = " + tpcv);
+        if (tpcv < 5 || tpcv > 60) {
+            return false;
+        }
+        System.out.println("HCT  checks ok");
+
+        Double twbc = findValue(wbcStart, wbcEnd, 0);
+        System.out.println("wbc check = " + twbc);
+        if (twbc < 1000 || twbc > 50000) {
+            return false;
+        }
+        System.out.println("WBC  checks ok");
         return true;
     }
 
@@ -182,15 +196,11 @@ public class SysMex {
         String strInput = inputStringBytesPlusSeperated;
         String[] strByte = strInput.split(Pattern.quote("+"));
         for (String s : strByte) {
-            System.out.println("s = " + s);
-            s = s.replaceAll("\n", "");
-            s = s.replaceAll("\r", "");
             try {
                 Byte b = Byte.parseByte(s);
-                System.out.println("b = " + b);
                 bytes.add(b);
             } catch (Exception e) {
-                System.out.println("e = " + e);
+//                System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -201,15 +211,11 @@ public class SysMex {
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");
         for (String s : strByte) {
-            System.out.println("s = " + s);
-            s = s.replaceAll("\n", "");
-            s = s.replaceAll("\r", "");
             try {
                 Byte b = Byte.parseByte(s);
-                System.out.println("b = " + b);
                 bytes.add(b);
             } catch (Exception e) {
-                System.out.println("e = " + e);
+//                System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -224,7 +230,7 @@ public class SysMex {
                 Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
-                System.out.println("e = " + e);
+//                System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -256,17 +262,25 @@ public class SysMex {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-        System.out.println("from = " + from);
-        System.out.println("to = " + to);
-        
+//        System.out.println("from = " + from);
+//        System.out.println("to = " + to);
+
         String display = "";
         for (int i = from; i < to + 1; i++) {
 //            System.out.println("i = " + i);
-            int temN = bytes.get(i);
+            int temN;
+            try {
+                temN = bytes.get(i);
+            } catch (Exception e) {
+                temN = 0;
+            }
+
             display += (char) temN + "";
         }
-        System.out.println("display = " + display);
-        if (decimals > 0) {
+
+        System.out.println("From " + from + " to " + to + " is = " + display);
+        if (decimals
+                > 0) {
             String wn = display.substring(0, display.length() - decimals);
             String fn = display.substring(display.length() - decimals, display.length());
             display = wn + "." + fn;
@@ -275,7 +289,8 @@ public class SysMex {
             } catch (Exception e) {
                 val = null;
             }
-        } else if (decimals > 0) {
+        } else if (decimals
+                > 0) {
             try {
                 val = Double.parseDouble(display);
             } catch (Exception e) {
@@ -664,7 +679,11 @@ public class SysMex {
     }
 
     public long getSampleId() {
-        sampleId = (findValue(sampleId1Start, sampleId1End, 0)).longValue();
+        try {
+            sampleId = (findValue(sampleId1Start, sampleId1End, 0)).longValue();
+        } catch (Exception e) {
+            sampleId = 0;
+        }
         return sampleId;
     }
 

@@ -88,6 +88,11 @@ public class CommonController implements Serializable {
         return timeInMs / (1000 * 60);
     }
 
+    public String shortDate(Date date) {
+        SimpleDateFormat dt1 = new SimpleDateFormat("d-M-yy");
+        return (dt1.format(date));
+    }
+
     public double dateDifferenceInSeconds(Date fromDate, Date toDate) {
         long timeInMs = toDate.getTime() - fromDate.getTime();
         return timeInMs / 1000;

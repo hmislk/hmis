@@ -681,7 +681,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public boolean loginForRequests(String temUserName, String temPassword) {
-        System.err.println("loginForRequests");
+//        System.err.println("loginForRequests");
 
         if (temUserName == null) {
             System.err.println("Username is null");
