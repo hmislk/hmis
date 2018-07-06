@@ -277,8 +277,10 @@
                             </p:column>
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
-
-                                <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" 
+                                
+                                
+                                
+                                <p:dataTable value="#{patientReportController.patientReports(pi)}" var="dpr" emptyMessage="" 
                                              rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" 
                                              styleClass="noBorderGrid summeryBorder noBorder" >
                                     <p:column >

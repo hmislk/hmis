@@ -687,6 +687,10 @@ public class SysMex {
         return sampleId;
     }
 
+    public String getSampleIdString() {
+        return findStringValue(sampleId1Start, sampleId1End);
+    }
+
     public void setSampleId(long sampleId) {
         this.sampleId = sampleId;
     }

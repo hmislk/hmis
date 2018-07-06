@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -161,7 +162,7 @@ public class PatientInvestigation implements Serializable {
     private Department outsourcedDepartment;
     @ManyToOne
     private Institution outsourcedInstitution;
-    @OneToMany(mappedBy="patientInvestigation")
+    @OneToMany(mappedBy="patientInvestigation",fetch = FetchType.EAGER)
     List<PatientReport> patientReports;
 
     public List<PatientReport> getPatientReports() {

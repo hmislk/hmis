@@ -142,6 +142,15 @@ public class PatientReportController implements Serializable {
     InvestigationItem investigationItem;
     private List<Selectable> selectables = new ArrayList<>();
 
+    
+    public List<PatientReport> patientReports(PatientInvestigation pi){
+        String j ="select r from PatientReport r "
+                + " where r.patientInvestigation=:pi";
+        Map m = new HashMap();
+        m.put("pi", pi);
+        return getFacade().findBySQL(j, m);
+    }
+    
     public void createHtmlFile() {
         try {
             File file = new File("/tmp/report" + getCurrentPatientReport().getId() + ".html");

@@ -219,7 +219,7 @@ public class PatientInvestigationController implements Serializable {
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
-
+        String sampleId = sysMex.getSampleIdString();
         System.out.println("Checking Report For the First Time");
         if (!sysMex.isCorrectReport()) {
             System.out.println("First TIme Not Correct Report. ");
@@ -245,7 +245,7 @@ public class PatientInvestigationController implements Serializable {
                                 System.out.println("Second TIme Not Correct Report. ");
                                 sysMex.setShift2(3);
                                 sysMex.shiftPositions();
-                                return "#{success=false|msg=Wrong Data. Please resent results}";
+                                return "#{success=false|msg=Wrong Data. Please resent results " + sampleId + "}";
                             }
                         }
                     }
@@ -256,17 +256,17 @@ public class PatientInvestigationController implements Serializable {
         PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
         System.out.println("ps = " + ps);
         if (ps == null) {
-            return "#{success=false|msg=Wrong Sample ID. Please resent results}";
+            return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
         }
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
         System.out.println("pscs = " + pscs);
         if (pscs == null) {
-            return "#{success=false|msg=Wrong Sample Components. Please inform developers}";
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
         System.out.println("ptixs = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
-            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers}";
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
         }
         for (PatientInvestigation pi : ptixs) {
             System.out.println("pi = " + pi);
