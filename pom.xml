@@ -33,6 +33,7 @@
             <artifactId>javax.el</artifactId>
             <version>3.0.0</version>
         </dependency>
+       
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
@@ -86,12 +87,7 @@
             <version>SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>unknown.binary</groupId>
-            <artifactId>org.eclipse.persistence.oracle</artifactId>
-            <version>SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
+        
         <dependency>
             <groupId>unknown.binary</groupId>
             <artifactId>org.eclipse.persistence.asm</artifactId>
