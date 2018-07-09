@@ -152,9 +152,13 @@
                                     </h:panelGroup>
                                 </p:column>    
                                 <p:column headerText="Client">                               
-                                    <h:commandLink id="pt" value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and bill.approvedAnyTest ne true}">
-                                        <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
-                                    </h:commandLink>
+                                    <h:panelGroup id="pt">
+                                        <h:commandLink  value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>
+                                        </h:commandLink>
+                                        <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                        </h:outputLabel>
+                                    </h:panelGroup>
                                     <p:tooltip for="pt">
                                         <p:panel header="Patient Details" >
                                             <p:panelGrid columns="2" >
