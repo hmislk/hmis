@@ -703,34 +703,34 @@ public class SessionController implements Serializable, HttpSessionListener {
 //        System.err.println("password = " + passord);
 
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
-            departments = listLoggableDepts(u);
-            if (departments.isEmpty()) {
-                loginRequestResponse += "Login=0|}";
-                return false;
-            }
+//            departments = listLoggableDepts(u);
+//            if (departments.isEmpty()) {
+//                loginRequestResponse += "Login=0|}";
+//                return false;
+//            }
 
             setLoggedUser(u);
-            dashboards = webUserController.listWebUserDashboards(u);
+//            dashboards = webUserController.listWebUserDashboards(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
 
             String sql;
 
-            UserPreference uf;
-            sql = "select p from UserPreference p where p.webUser=:u ";
-            m = new HashMap();
-            m.put("u", u);
-            uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
-            if (uf == null) {
-                uf = new UserPreference();
-                uf.setWebUser(u);
-                getUserPreferenceFacade().create(uf);
-            }
-            setUserPreference(uf);
+//            UserPreference uf;
+//            sql = "select p from UserPreference p where p.webUser=:u ";
+//            m = new HashMap();
+//            m.put("u", u);
+//            uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+//            if (uf == null) {
+//                uf = new UserPreference();
+//                uf.setWebUser(u);
+//                getUserPreferenceFacade().create(uf);
+//            }
+//            setUserPreference(uf);
 
             department = u.getDepartment();
-            selectDepartment();
+//            selectDepartment();
             loginRequestResponse += "Login=1|";
             loginRequestResponse += "Department=" + department.getName() + "|";
             loginRequestResponse += "DepartmentId=" + department.getId() + "|";

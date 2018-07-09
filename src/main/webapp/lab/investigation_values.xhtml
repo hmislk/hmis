@@ -51,12 +51,37 @@
                                     <p:ajax event="itemSelect" process="acPt" 
                                             update="tbl filters"/>
                                 </p:autoComplete> 
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Sample" ></p:outputLabel>
+                                    <p:outputLabel value="#{investigationItemController.currentInvestigation.sample.name}" ></p:outputLabel>
+                                    <p:outputLabel value="Container" ></p:outputLabel>
+                                    <p:outputLabel value="#{investigationItemController.currentInvestigation.investigationTube.name}" ></p:outputLabel>
+                                    <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                    <p:outputLabel value="#{investigationItemController.currentInvestigation.machine.name}" ></p:outputLabel>
+
+                                    <p:outputLabel value="Components" ></p:outputLabel>
+                                    <h:panelGroup >
+                                        <ui:repeat value="#{itemController.getInvestigationSampleComponents(investigationItemController.currentInvestigation)}" var="s" >
+                                            <p:outputLabel value=" |#{s.name}| " ></p:outputLabel>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                </p:panelGrid>
                                 <p:commandButton id="btnEditDetails" value="Edit Details" process="@this tbl" update="ixitemDetails"
                                                  oncomplete="PF('ixitemDetails').show()"  
                                                  disabled="#{investigationItemController.current eq null}">
                                 </p:commandButton>
 
-                                <p:commandButton id="btnIxMaster" value="Edit Investigation" 
+                              
+
+
+
+                                <p:commandButton id="btnMatch" value="Make All to Match Investigation" 
+                                                 ajax="false" action="#{investigationItemController.makeAllIxItemsToMachIxDetails}">
+                                </p:commandButton>
+                                
+                                
+                                  <p:commandButton id="btnIxMaster" value="Back to Investigations" 
                                                  ajax="false" action="/lab/investigation"
                                                  actionListener="#{investigationItemController.toInvestigationMaster()}"
                                                  disabled="#{investigationItemController.current eq null}">

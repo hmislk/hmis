@@ -111,13 +111,47 @@ public class ItemController implements Serializable {
         }
         if (current instanceof Investigation) {
             investigationSampleComponents = findInvestigationSampleComponents((Investigation) current);
-            if(investigationSampleComponents!=null && investigationSampleComponents.size()>1){
+            if (investigationSampleComponents != null && investigationSampleComponents.size() > 1) {
                 current.setHasMoreThanOneComponant(true);
                 getFacade().edit(current);
             }
         } else {
             investigationSampleComponents = null;
         }
+    }
+
+    public List<Item> getInvestigationSampleComponents(Item ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        if (ix instanceof Investigation) {
+            return findInvestigationSampleComponents((Investigation) ix);
+        }
+        return null;
+    }
+
+    public Item getFirstInvestigationSampleComponents(Item ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        if (ix instanceof Investigation) {
+            List<Item> is = findInvestigationSampleComponents((Investigation) ix);
+            if (is != null && !is.isEmpty()) {
+                return is.get(0);
+            } else {
+                Item sc = new Item();
+                sc.setParentItem(ix);
+                sc.setItemType(ItemType.SampleComponent);
+                sc.setCreatedAt(new Date());
+                sc.setCreater(sessionController.getLoggedUser());
+                sc.setName(ix.getName());
+                getFacade().create(sc);
+                return sc;
+            }
+        }
+        return null;
     }
 
     public List<Item> findInvestigationSampleComponents(Investigation ix) {
@@ -192,10 +226,10 @@ public class ItemController implements Serializable {
                     sampleComponent.setCreater(sessionController.getLoggedUser());
                     getFacade().create(sampleComponent);
                 } else {
-                    if (scs.size()>1) {
+                    if (scs.size() > 1) {
                         tix.setHasMoreThanOneComponant(true);
                         getFacade().edit(tix);
-                    }else{
+                    } else {
                         tix.setHasMoreThanOneComponant(false);
                         getFacade().edit(tix);
                     }

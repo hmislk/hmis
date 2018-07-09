@@ -1025,6 +1025,10 @@ public class InvestigationController implements Serializable {
             }
             getFacade().edit(getCurrent());
             Item sc = new Item();
+
+            sc.setCreatedAt(new Date());
+            sc.setCreater(sessionController.getLoggedUser());
+
             sc.setItemType(ItemType.SampleComponent);
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());

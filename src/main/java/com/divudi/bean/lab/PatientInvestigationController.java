@@ -1225,7 +1225,7 @@ public class PatientInvestigationController implements Serializable {
                 System.out.println("ixis = " + ixis);
                 for (InvestigationItem ixi : ixis) {
                     System.out.println("ixi = " + ixi);
-                    if (ixi.getIxItemType() == InvestigationItemType.Value && ixi.getIxItemValueType() != InvestigationItemValueType.Memo) {
+                    if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template  ) {
                         j = "select ps from PatientSample ps "
                                 + " where ps.tube=:tube "
                                 + " and ps.sample=:sample "
