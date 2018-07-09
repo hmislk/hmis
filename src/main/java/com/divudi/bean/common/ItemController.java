@@ -138,7 +138,9 @@ public class ItemController implements Serializable {
         }
         if (ix instanceof Investigation) {
             List<Item> is = findInvestigationSampleComponents((Investigation) ix);
+            System.err.println("is = " + is);
             if (is != null && !is.isEmpty()) {
+                System.err.println("found is = " + is.get(0));
                 return is.get(0);
             } else {
                 Item sc = new Item();
@@ -148,6 +150,7 @@ public class ItemController implements Serializable {
                 sc.setCreater(sessionController.getLoggedUser());
                 sc.setName(ix.getName());
                 getFacade().create(sc);
+                System.err.println("new is = " + sc);
                 return sc;
             }
         }

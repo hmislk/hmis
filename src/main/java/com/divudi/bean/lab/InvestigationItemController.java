@@ -170,14 +170,23 @@ public class InvestigationItemController implements Serializable {
             System.out.println("tixi = " + tixi);
             if (tixi.getItem() instanceof Investigation) {
                 System.err.println("Is Ix");
-                Investigation tix = (Investigation) tixi.getItem();
+
+                Investigation tix = investigationController.getInvestigationByIdAndSetAsCurrent(tixi.getItem().getId());
                 System.out.println("tix = " + tix);
                 if (tix.equals(currentInvestigation)) {
                     System.out.println("Is current ix");
                     tixi.setTube(tix.getInvestigationTube());
+                    System.out.println("tix.getInvestigationTube() = " + tix.getInvestigationTube());
+                    System.out.println("tixi.getTube() = " + tixi.getTube());
                     tixi.setSample(tix.getSample());
+                    System.out.println("tix.getSample() = " + tix.getSample());
+                    System.out.println("tixi.getSample() = " + tixi.getSample());
                     tixi.setMachine(tix.getMachine());
-                    tixi.setSampleComponent(itemController.getFirstInvestigationSampleComponents(tix));
+                    System.out.println("tix.getMachine() = " + tix.getMachine());
+                    System.out.println("tixi.getMachine() = " + tixi.getMachine());
+                    Item sc = itemController.getFirstInvestigationSampleComponents(tix);
+                    System.out.println("Sc = " + sc);
+                    tixi.setSampleComponent(sc);
                     getFacade().edit(tixi);
                 }
             }
@@ -2342,10 +2351,5 @@ public class InvestigationItemController implements Serializable {
             }
         }
     }
-    
-    
-    
-    
-    
-    
+
 }
