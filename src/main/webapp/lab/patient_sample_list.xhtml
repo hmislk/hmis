@@ -23,7 +23,7 @@
                             <p:commandButton ajax="false" value="Excel" >
                                 <p:dataExporter target="tbl" fileName="patient_samples" type="xls" ></p:dataExporter>
                             </p:commandButton>
-                            <p:commandButton ajax="false" action="#" value="Back" ></p:commandButton>
+                            <p:commandButton ajax="false" action="/reportsLab/lab_summeries_index" value="Back" ></p:commandButton>
                             
                             <h:commandButton value="Update" action="#{patientInvestigationController.temUpdatePatientSamplesToMatchCurrentDepartmentAndInstitution()}" >
                             </h:commandButton>

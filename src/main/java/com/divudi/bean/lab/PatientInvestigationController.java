@@ -1081,7 +1081,7 @@ public class PatientInvestigationController implements Serializable {
     
     
     public void listPatientSamples(){
-        String jpql = "select ps from PatientSample "
+        String jpql = "select ps from PatientSample ps"
                 + " where ps.sampleInstitution=:ins "
                 + " and ps.sampledAt between :fd and :td "
                 + " order by ps.id";
