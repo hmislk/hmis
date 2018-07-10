@@ -8,7 +8,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemType;
 import com.divudi.data.SmsType;
 import com.divudi.data.lab.SysMex;
@@ -1079,6 +1078,28 @@ public class PatientInvestigationController implements Serializable {
         checkRefundBillItems(lstToSamle);
     }
 
+    
+    
+    public void listPatientSamples(){
+        String jpql = "select ps from PatientSample "
+                + " where ps.sampleInstitution=:ins "
+                + " and ps.sampledAt between :fd and :td "
+                + " order by ps.id";
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ins", sessionController.getLoggedUser().getInstitution());
+        patientSamples = getPatientSampleFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        /**
+         * 
+         *  ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+            ps.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+            ps.setSampledAt(ps.getCreatedAt());
+            ps.setSampleCollecter(ps.getCreater());
+         */
+        
+    }
+    
     public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
         if (inputBillId == null || inputBillId.trim().equals("")) {
@@ -1193,6 +1214,18 @@ public class PatientInvestigationController implements Serializable {
         return bs;
     }
 
+    
+    public void temUpdatePatientSamplesToMatchCurrentDepartmentAndInstitution(){
+        List<PatientSample> pss = getPatientSampleFacade().findAll();
+        for(PatientSample ps:pss){
+            ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+            ps.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+            ps.setSampledAt(ps.getCreatedAt());
+            ps.setSampleCollecter(ps.getCreater());
+            getPatientSampleFacade().edit(ps);
+        }
+    }
+    
     public void prepareSampleCollectionByBills(List<Bill> bills) {
         System.out.println("prepareSampleCollectionByBills");
         System.out.println("bills = " + bills);
@@ -1257,6 +1290,10 @@ public class PatientInvestigationController implements Serializable {
                             pts.setMachine(ixi.getMachine());
                             pts.setPatient(b.getPatient());
                             pts.setBill(b);
+                            pts.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+                            pts.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+                            pts.setSampleCollecter(sessionController.getLoggedUser());
+                            pts.setSampledAt(new Date());
                             pts.setCreatedAt(new Date());
                             pts.setCreater(sessionController.getLoggedUser());
                             pts.setCollected(false);

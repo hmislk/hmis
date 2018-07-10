@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="./../resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel header="Sample List" >
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3" >
+                            <p:commandButton value="Process" action="#{patientInvestigationController.listPatientSamples()}" ajax="false" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" >
+                                <p:dataExporter target="tbl" fileName="patient_samples" type="xls" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" action="#" value="Back" ></p:commandButton>
+                            
+                            <h:commandButton value="Update" action="#{patientInvestigationController.temUpdatePatientSamplesToMatchCurrentDepartmentAndInstitution()}" >
+                            </h:commandButton>
+                            
+                        </h:panelGrid>
+                        <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" rowKey="#{ps.id}" rowIndexVar="n" >
+                            <p:column headerText="Number" >
+                                <p:outputLabel value="#{n+1}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="ID" filterBy="#{ps.idStr}" sortBy="#{ps.idStr}" filterMatchMode="contains">
+                                <p:outputLabel value="#{ps.idStr}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Bill No" filterBy="#{ps.bill.insId}" sortBy="#{ps.bill.insId}" filterMatchMode="contains">
+                                <p:outputLabel value="#{ps.bill.insId}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Patient" filterBy="#{ps.bill.patient.person.nameWithTitle}" sortBy="#{ps.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                <p:outputLabel value="#{ps.bill.patient.person.nameWithTitle}" ></p:outputLabel>
+                            </p:column>
+                            
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>
