@@ -358,7 +358,7 @@ public class PatientInvestigationController implements Serializable {
         return getPatientSampleFacade().findFirstBySQL(j, m);
     }
 
-    private List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
+    public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
         String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
