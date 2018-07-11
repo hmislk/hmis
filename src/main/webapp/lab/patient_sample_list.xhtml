@@ -25,12 +25,8 @@
                                 <p:dataExporter target="tbl" fileName="patient_samples" type="xls" ></p:dataExporter>
                             </p:commandButton>
                             <p:commandButton ajax="false" action="/reportsLab/lab_summeries_index" value="Back" ></p:commandButton>
-
-                            <h:commandButton value="Update" action="#{patientInvestigationController.temUpdatePatientSamplesToMatchCurrentDepartmentAndInstitution()}" >
-                            </h:commandButton>
-
                         </h:panelGrid>
-                        <p:dataTable value="#{patientInvestigationController.patientSamples}" var="ps" rowKey="#{ps.id}" rowIndexVar="n" >
+                        <p:dataTable id="tbl" value="#{patientInvestigationController.patientSamples}" var="ps" rowKey="#{ps.id}" rowIndexVar="n" >
                             <p:column headerText="No." width="20">
                                 <p:outputLabel value="#{n+1}" ></p:outputLabel>
                             </p:column>
