@@ -340,8 +340,10 @@
                                              rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
                                 <p:printer target="divPrint" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" actionListener="#{patientReportController.pdfPatientReport()}" 
-                                              rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission) and false}" />
+                            <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
+                                              rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
+                            <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF Save" action="#{patientReportController.createPDFAndSaveAsaFile}" 
+                                              rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
                         </div>
 
 

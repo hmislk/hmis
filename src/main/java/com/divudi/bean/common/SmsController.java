@@ -6,7 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -53,7 +53,7 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, SmsType smsType) {
+    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, MessageType smsType) {
 
         if (sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071") || sendingNo.contains("070")
@@ -150,7 +150,7 @@ public class SmsController implements Serializable {
             long l = 0l;
             for (Object[] ob : objects) {
                 SmsSummeryRow row = new SmsSummeryRow();
-                SmsType smsType = (SmsType) ob[0];
+                MessageType smsType = (MessageType) ob[0];
                 long count = (long) ob[1];
                 row.setSmsType(smsType);
                 row.setCount(count);
@@ -185,14 +185,14 @@ public class SmsController implements Serializable {
 
     public class SmsSummeryRow {
 
-        SmsType smsType;
+        MessageType smsType;
         long count;
 
-        public SmsType getSmsType() {
+        public MessageType getSmsType() {
             return smsType;
         }
 
-        public void setSmsType(SmsType smsType) {
+        public void setSmsType(MessageType smsType) {
             this.smsType = smsType;
         }
 

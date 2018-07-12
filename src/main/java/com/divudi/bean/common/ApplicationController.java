@@ -4,10 +4,14 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.entity.Email;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
+import com.divudi.entity.Sms;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
+import com.divudi.facade.util.JsfUtil;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,7 +33,7 @@ import javax.persistence.TemporalType;
 public class ApplicationController {
 
     @EJB
-    PatientFacade patientFacade;
+    private PatientFacade patientFacade;
 
     String personalHealthNumber;
     Long personalHealthNumberCount;
@@ -39,14 +43,13 @@ public class ApplicationController {
     Date startTime;
     Date storesExpiery;
 
-//    List<SessionController> sessionControllers;
-//    public List<SessionController> getSessionControllers() {
-//        return sessionControllers;
-//    }
-//
-//    public void setSessionControllers(List<SessionController> sessionControllers) {
-//        this.sessionControllers = sessionControllers;
-//    }
+    
+    private List<Email> mailsToSent;
+    private List<Sms> smsToSent;
+    
+    
+    
+    
     public Date getStartTime() {
         return startTime;
     }
@@ -207,6 +210,32 @@ public class ApplicationController {
         /* convert to string to be easier to take the last digit */
         digit = sum + "";
         return digit.substring(digit.length() - 1);
+    }
+
+    public List<Email> getMailsToSent() {
+        if(mailsToSent==null){
+            mailsToSent = new ArrayList<>();
+        }
+        return mailsToSent;
+    }
+
+    public void setMailsToSent(List<Email> mailsToSent) {
+        this.mailsToSent = mailsToSent;
+    }
+
+    public List<Sms> getSmsToSent() {
+        if(smsToSent==null){
+            smsToSent = new ArrayList<>();
+        }
+        return smsToSent;
+    }
+
+    public void setSmsToSent(List<Sms> smsToSent) {
+        this.smsToSent = smsToSent;
+    }
+
+    public PatientFacade getPatientFacade() {
+        return patientFacade;
     }
 
     class InstitutionLastPhn {

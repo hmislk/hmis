@@ -25,19 +25,20 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
-public class Sms implements Serializable {
-
+public class Email implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
+    
+    
+    
+    @ManyToOne
+    PatientReport patientReport;
     @ManyToOne
     private PatientInvestigation patientInvestigation;
     @ManyToOne
     private Bill bill;
-    @ManyToOne
-    PatientReport patientReport;
     @Lob
     String sendingMessage;
     @Lob
@@ -46,16 +47,21 @@ public class Sms implements Serializable {
     String password;
     String sendingUrl;
     @Enumerated(EnumType.STRING)
-    private MessageType smsType;
-    //Sending Properties
-    Boolean sentSuccessfully;
-    @Temporal(javax.persistence.TemporalType.DATE)
-    Date sentAt;
-    //Created Properties
+    private MessageType smsType;    
+    
+    
+    private String toEmail;
+    private String messageSubject;
+    private String messageBody;
+        //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date createdAt;
+    //Sending Properties
+    private Boolean sentSuccessfully;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date sentAt;
     //Retairing properties
     private boolean retired;
     @ManyToOne
@@ -73,6 +79,9 @@ public class Sms implements Serializable {
         this.bill = bill;
     }
 
+    
+    
+    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
@@ -81,6 +90,8 @@ public class Sms implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
+    
+    
     public PatientReport getPatientReport() {
         return patientReport;
     }
@@ -177,6 +188,8 @@ public class Sms implements Serializable {
         this.retireComments = retireComments;
     }
 
+    
+
     public Long getId() {
         return id;
     }
@@ -195,10 +208,10 @@ public class Sms implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Sms)) {
+        if (!(object instanceof Email)) {
             return false;
         }
-        Sms other = (Sms) object;
+        Email other = (Email) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -218,4 +231,44 @@ public class Sms implements Serializable {
         this.smsType = smsType;
     }
 
+    public String getToEmail() {
+        return toEmail;
+    }
+
+    public void setToEmail(String toEmail) {
+        this.toEmail = toEmail;
+    }
+
+    public String getMessageSubject() {
+        return messageSubject;
+    }
+
+    public void setMessageSubject(String messageSubject) {
+        this.messageSubject = messageSubject;
+    }
+
+    public String getMessageBody() {
+        return messageBody;
+    }
+
+    public void setMessageBody(String messageBody) {
+        this.messageBody = messageBody;
+    }
+
+    public Boolean getSentSuccessfully() {
+        return sentSuccessfully;
+    }
+
+    public void setSentSuccessfully(Boolean sentSuccessfully) {
+        this.sentSuccessfully = sentSuccessfully;
+    }
+
+    public Date getSentAt() {
+        return sentAt;
+    }
+
+    public void setSentAt(Date sentAt) {
+        this.sentAt = sentAt;
+    }
+    
 }

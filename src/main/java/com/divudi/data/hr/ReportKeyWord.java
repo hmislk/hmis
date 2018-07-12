@@ -8,7 +8,7 @@ package com.divudi.data.hr;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Area;
 import com.divudi.entity.Category;
@@ -77,7 +77,7 @@ public class ReportKeyWord {
     String address;
     AdmissionType admissionType;
     Area area;
-    SmsType smsType;
+    MessageType smsType;
     BillType billType;
     @Transient
     String transAddress1;
@@ -470,11 +470,11 @@ public class ReportKeyWord {
         this.billType = billType;
     }
 
-    public SmsType getSmsType() {
+    public MessageType getSmsType() {
         return smsType;
     }
 
-    public void setSmsType(SmsType smsType) {
+    public void setSmsType(MessageType smsType) {
         this.smsType = smsType;
     }
 

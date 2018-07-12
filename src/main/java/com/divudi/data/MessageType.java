@@ -9,8 +9,10 @@ package com.divudi.data;
  *
  * @author ruhunu
  */
-public enum SmsType {
+public enum MessageType {
     LabReport,
     ChannelDoctorAraival,
     Marketing,
+    BillCancellationInformationMail,
+    BillReturnInfromationMail,
 }

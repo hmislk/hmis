@@ -1,7 +1,9 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
+import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
 import com.divudi.bean.common.UtilityController;
@@ -12,6 +14,7 @@ import com.divudi.data.InvestigationReportType;
 import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.entity.Email;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -79,6 +82,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -118,14 +122,17 @@ public class PatientReportController implements Serializable {
     @Inject
     ItemForItemController itemForItemController;
     @Inject
-    CommonController commonController;
+    private CommonController commonController;
     @Inject
-    InvestigationItemController investigationItemController;
+    private InvestigationItemController investigationItemController;
     @Inject
     CommonReportItemController commonReportItemController;
     @Inject
     ReportFormatController reportFormatController;
-
+    @Inject
+    private ApplicationController applicationController;
+    @Inject
+    private SecurityController securityController;
     //Class Variables
     String selectText = "";
     private PatientInvestigation currentPtIx;
@@ -141,16 +148,35 @@ public class PatientReportController implements Serializable {
     List<PatientInvestigation> customerPis;
     InvestigationItem investigationItem;
     private List<Selectable> selectables = new ArrayList<>();
+    private String encryptedPatientReportId;
 
-    
-    public List<PatientReport> patientReports(PatientInvestigation pi){
-        String j ="select r from PatientReport r "
+    public void preparePatientReportByIdForRequests() {
+        currentPatientReport=null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        Long id = 0l;
+        try{
+            id = Long.parseLong(idStr);
+        }catch(Exception e){
+            return;
+        }
+        PatientReport pr = getFacade().find(id);
+        if(pr==null){
+            return;
+        }
+        currentPatientReport = pr;
+    }
+
+    public List<PatientReport> patientReports(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
                 + " where r.patientInvestigation=:pi";
         Map m = new HashMap();
         m.put("pi", pi);
         return getFacade().findBySQL(j, m);
     }
-    
+
     public void createHtmlFile() {
         try {
             File file = new File("/tmp/report" + getCurrentPatientReport().getId() + ".html");
@@ -883,6 +909,12 @@ public class PatientReportController implements Serializable {
         //UtilityController.addSuccessMessage("Saved");
     }
 
+    public String createHtmlForReport(PatientReport pr) {
+        String r = "";
+
+        return r;
+    }
+
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -908,6 +940,16 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
+
+        if (commonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
+            Email e = new Email();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setMessageBody(selectText);
+
+            applicationController.getMailsToSent().add(e);
+        }
+
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
@@ -966,8 +1008,6 @@ public class PatientReportController implements Serializable {
 
     }
 
-    static final String pdf_url = "http://localhost:8080/temp/faces/lab_patient_report.xhtml";
-
     public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
 //        long serialVersionUID = 626953318628565053L;
         System.out.println("enter 1");
@@ -975,6 +1015,11 @@ public class PatientReportController implements Serializable {
         HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
         System.out.println("enter 2");
         response.reset();
+
+        String pdf_url = commonController.getBaseUrl() + "faces/lab/patient_report.xhtml";
+
+        System.err.println("pdf_url = " + pdf_url);
+
         response.setHeader(pdf_url, "application/pdf");
         System.out.println("enter 3");
         OutputStream outputStream = response.getOutputStream();
@@ -1001,7 +1046,8 @@ public class PatientReportController implements Serializable {
         ExternalContext externalContext = facesContext.getExternalContext();
         HttpSession session = (HttpSession) externalContext.getSession(true);
 //        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
-        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml";
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId()+"");
+        System.err.println(url);
         try {
             ITextRenderer renderer = new ITextRenderer();
             renderer.setDocument(new URL(url).toString());
@@ -1014,6 +1060,39 @@ public class PatientReportController implements Serializable {
             renderer.createPDF(outputStream);
             JsfUtil.addSuccessMessage("PDF Created");
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+        facesContext.responseComplete();
+    }
+
+    public void createPDFAndSaveAsaFile() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        HttpSession session = (HttpSession) externalContext.getSession(true);
+//        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId()+"");
+        System.err.println(url);
+        FileOutputStream fop = null;
+        File file;
+        String content = "This is the text content";
+        try {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocument(new URL(url).toString());
+            
+            renderer.layout();
+            file = new File(currentPatientReport.getId() + ".pdf");
+            fop = new FileOutputStream(file);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            OutputStream outputStream = fop;
+            renderer.createPDF(outputStream);
+            JsfUtil.addSuccessMessage("PDF Created");
+            System.out.println("Path = " + file.getAbsolutePath());
+            System.out.println("File = " + file.getAbsoluteFile());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             e.printStackTrace();
         }
         facesContext.responseComplete();
@@ -1059,10 +1138,10 @@ public class PatientReportController implements Serializable {
             r = new PatientReport();
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
-            System.err.println("getSessionController().getLoggedUser() = "+getSessionController().getLoggedUser());
+            System.err.println("getSessionController().getLoggedUser() = " + getSessionController().getLoggedUser());
             r.setItem(ix);
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
-            System.err.println("sessionController.getLoggedUser().getDepartment() = "+sessionController.getLoggedUser().getDepartment());
+            System.err.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
             System.err.println("sessionController.getLoggedUser().getInstitution() = " + sessionController.getLoggedUser().getInstitution());
             getFacade().create(r);
@@ -1253,6 +1332,22 @@ public class PatientReportController implements Serializable {
         this.selectables = selectables;
     }
 
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public InvestigationItemController getInvestigationItemController() {
+        return investigationItemController;
+    }
+
+    public ApplicationController getApplicationController() {
+        return applicationController;
+    }
+
+    public SecurityController getSecurityController() {
+        return securityController;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -1295,6 +1390,14 @@ public class PatientReportController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + PatientReportController.class.getName());
             }
         }
+    }
+
+    public String getEncryptedPatientReportId() {
+        return encryptedPatientReportId;
+    }
+
+    public void setEncryptedPatientReportId(String encryptedPatientReportId) {
+        this.encryptedPatientReportId = encryptedPatientReportId;
     }
 
 }

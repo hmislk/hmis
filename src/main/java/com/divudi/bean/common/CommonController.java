@@ -15,9 +15,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -36,6 +39,12 @@ public class CommonController implements Serializable {
      * Creates a new instance of CommonController
      */
     public CommonController() {
+    }
+
+    public String getBaseUrl() {
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        String url = req.getRequestURL().toString();
+        return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
     public Date getCurrentDateTime() {
@@ -96,6 +105,19 @@ public class CommonController implements Serializable {
     public double dateDifferenceInSeconds(Date fromDate, Date toDate) {
         long timeInMs = toDate.getTime() - fromDate.getTime();
         return timeInMs / 1000;
+    }
+
+    public static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."
+                + "[a-zA-Z0-9_+&*-]+)*@"
+                + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
+                + "A-Z]{2,7}$";
+
+        Pattern pat = Pattern.compile(emailRegex);
+        if (email == null) {
+            return false;
+        }
+        return pat.matcher(email).matches();
     }
 
     public void printReportDetails(Date fromDate, Date toDate, Date startTime, String url) {

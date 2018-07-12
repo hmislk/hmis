@@ -9,7 +9,7 @@ import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ItemType;
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.data.lab.SysMex;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -174,6 +174,7 @@ public class PatientInvestigationController implements Serializable {
     private String inputBillId;
     private String username;
     private String password;
+  
 
     private String msg;
     private String machine;
@@ -797,7 +798,7 @@ public class PatientInvestigationController implements Serializable {
             sms.setCreater(getSessionController().getLoggedUser());
             sms.setBill(bill);
             sms.setSendingUrl(url);
-            sms.setSmsType(SmsType.LabReport);
+            sms.setSmsType(MessageType.LabReport);
             sms.setSendingMessage(messageBody2);
         } else {
             String url = "http://www.textit.biz/sendmsg/index.php";
@@ -1099,6 +1100,8 @@ public class PatientInvestigationController implements Serializable {
          */
         
     }
+    
+    
     
     public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
@@ -1805,6 +1808,8 @@ public class PatientInvestigationController implements Serializable {
         this.shift2 = shift2;
     }
 
+   
+
     /**
      *
      */
@@ -1864,4 +1869,6 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
+    
 }
