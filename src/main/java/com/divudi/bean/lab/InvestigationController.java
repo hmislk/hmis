@@ -1195,6 +1195,11 @@ public class InvestigationController implements Serializable {
     public InvestigationController() {
     }
 
+    public Investigation getInvestigationByIdAndSetAsCurrent(Long id) {
+        setCurrent(getFacade().find(id));
+        return current;
+    }
+    
     public Investigation getCurrent() {
         if (current == null) {
             current = new Investigation();

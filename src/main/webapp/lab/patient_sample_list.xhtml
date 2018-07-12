@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./../resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form >
+                    <p:panel header="Sample List" >
+                        <h:panelGrid columns="2" >
+                            <p:outputLabel value="From" ></p:outputLabel>
+                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3" >
+                            <p:commandButton value="Process" action="#{patientInvestigationController.listPatientSamples()}" ajax="false" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" >
+                                <p:dataExporter target="tbl" fileName="patient_samples" type="xls" ></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" action="/reportsLab/lab_summeries_index" value="Back" ></p:commandButton>
+                        </h:panelGrid>
+                        <p:dataTable id="tbl" value="#{patientInvestigationController.patientSamples}" var="ps" rowKey="#{ps.id}" rowIndexVar="n" >
+                            <p:column headerText="No." width="20">
+                                <p:outputLabel value="#{n+1}" ></p:outputLabel>
+                            </p:column>
+                            <p:column width="180" headerText="Collected At" sortBy="#{ps.sampledAt}" >
+                                <p:outputLabel value="#{ps.sampledAt}" >
+                                    <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column width="90" headerText="ID" filterBy="#{ps.idStr}" sortBy="#{ps.idStr}" filterMatchMode="contains">
+                                <p:outputLabel value="#{ps.idStr}" ></p:outputLabel>
+                            </p:column>
+                            <p:column width="120" headerText="Bill No" filterBy="#{ps.bill.insId}" sortBy="#{ps.bill.insId}" filterMatchMode="contains">
+                                <p:commandLink id="billNo"  ajax="false" target="_blank"  value="#{ps.bill.insId}" 
+                                               action="#{searchController.viewOPD(ps.bill)}">
+                                    <f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.billSearch}"/>
+                                </p:commandLink>
+                            </p:column>
+                            <p:column headerText="Patient" filterBy="#{ps.bill.patient.person.nameWithTitle}" sortBy="#{ps.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
+                                <p:outputLabel value="#{ps.bill.patient.person.nameWithTitle}" rendered="#{!(webUserController.hasPrivilege('LabEditPatient'))}"></p:outputLabel>
+
+
+                                <p:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient')}" 
+                                               value="#{ps.bill.patient.person.nameWithTitle}, #{ps.bill.patient.age}" 
+                                               action="/patient" target="_blank" ajax="false"
+                                               style="text-decoration:underline;"
+                                               styleClass="#{ps.bill.cancelled or ps.bill.refunded ? 'redtext':''}"
+                                               >
+                                    <f:setPropertyActionListener value="#{ps.bill.patient}" target="#{patientController.current}"/>
+                                    <f:setPropertyActionListener value="#{ps.bill}" target="#{billController.bill}"/>
+                                </p:commandLink>
+
+                            </p:column>
+                            <p:column headerText="Tests" >
+                                <ui:repeat value="#{patientInvestigationController.getPatientSampleComponents(ps)}" var="c" >
+                                    <p:commandLink  ajax="false" target="_blank" value="| #{c.investigationComponant.name} |" action="/lab/investigation" >
+                                        <f:setPropertyActionListener value="#{c.investigationComponant.parentItem}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                                    </p:commandLink>
+                                </ui:repeat>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

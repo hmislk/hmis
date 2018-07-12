@@ -89,7 +89,7 @@ public class CommonController implements Serializable {
     }
 
     public String shortDate(Date date) {
-        SimpleDateFormat dt1 = new SimpleDateFormat("d-M-yy");
+        SimpleDateFormat dt1 = new SimpleDateFormat("dMMMyy");
         return (dt1.format(date));
     }
 
