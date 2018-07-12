@@ -20,7 +20,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
@@ -500,8 +500,8 @@ public class EnumController implements Serializable {
         return AdmissionTypeEnum.values();
     }
     
-    public SmsType[] getSmsType() {
-        return SmsType.values();
+    public MessageType[] getSmsType() {
+        return MessageType.values();
     }
 
     /**
