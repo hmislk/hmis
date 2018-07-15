@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.CalculationType;
 import com.divudi.data.CssVerticalAlign;
@@ -144,6 +145,10 @@ public class EnumController implements Serializable {
 
     public BillType[] getBillTypes(){
         return BillType.values();
+    }
+    
+    public BillClassType[] getBillClassTypes(){
+        return BillClassType.values();
     }
     
     public CalculationType[] getCalculationTypes() {

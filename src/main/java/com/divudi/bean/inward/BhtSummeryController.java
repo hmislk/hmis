@@ -65,12 +65,15 @@ import com.divudi.facade.PatientItemFacade;
 import com.divudi.facade.PatientRoomFacade;
 import com.divudi.facade.ServiceFacade;
 import com.divudi.facade.TimedItemFeeFacade;
+import com.divudi.facade.util.JsfUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -1268,6 +1271,36 @@ public class BhtSummeryController implements Serializable {
         patientEncounter.setDateOfDischarge(null);
         getPatientEncounterFacade().edit(patientEncounter);
 
+    }
+
+    public void addVat() {
+        if (getPatientEncounter() == null) {
+            return;
+        }
+        Double rc = 0.0;
+        List<ChargeItemTotal> cts = getChargeItemTotals();
+        for (ChargeItemTotal ci : cts) {
+            if (ci.getInwardChargeType() == RoomCharges) {
+                rc = ci.getNetTotal();
+            }
+        }
+
+        
+        String j = "select i from Item i where i.inwardChargeType=:ict and i.retired=false order by i.id desc";
+        Map m = new HashMap();
+        m.put("ict", InwardChargeType.VAT);
+        Item i = getItemFacade().findFirstBySQL(j, m);
+        
+        
+        if(i==null){
+            JsfUtil.addErrorMessage("No VAT service");
+            return ;
+        }else{
+            
+        }
+        
+        
+        
     }
 
     public void discharge() {

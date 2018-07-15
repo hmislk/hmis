@@ -21,6 +21,12 @@
                         <p:panel id="Lab" header="Lab" >
                             <p:commandButton ajax="false"  action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:commandButton>
                             <p:commandButton ajax="false"  action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:commandButton>
+
+
+                            <p:commandButton ajax="false" action="/reportLab/lab_summeries_index" value="Summeries"  rendered="#{webUserController.hasPrivilege('LabSummeries')}" ></p:commandButton>
+                            <p:commandButton ajax="false" action="/lab/administration" value="Administration" rendered="#{webUserController.hasPrivilege('LabAdiministrator')}"  ></p:commandButton>
+
+
                         </p:panel>
                         <p:panel id="Pharmacy" header="Pharmacy" >
                             <p:outputLabel value="This Phrmacy Has #{searchController.createInwardBHTForIssueBillCount()} BHT Request Today." style="color: red;text-align: center;"
