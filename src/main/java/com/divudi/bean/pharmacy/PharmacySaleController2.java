@@ -1195,7 +1195,6 @@ public class PharmacySaleController2 implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1358,7 +1357,6 @@ public class PharmacySaleController2 implements Serializable {
         
         
         System.err.println("2.sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
-        System.err.println("2.Pharmacy Bill Start - = " + new Date());
         
 
     }
@@ -1373,7 +1371,6 @@ public class PharmacySaleController2 implements Serializable {
 //    checked
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
-            System.err.println("List Item " + bItem.getPharmaceuticalBillItem().getStock());
             if (bItem.getPharmaceuticalBillItem().getStock().equals(getBillItem().getPharmaceuticalBillItem().getStock())) {
                 return true;
             }
@@ -1646,7 +1643,6 @@ public class PharmacySaleController2 implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
             return dr;
@@ -1662,7 +1658,6 @@ public class PharmacySaleController2 implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 
@@ -1674,7 +1669,6 @@ public class PharmacySaleController2 implements Serializable {
         if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
             tdp = toInstitution.getPharmacyDiscount();
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 

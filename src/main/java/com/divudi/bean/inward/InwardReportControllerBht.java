@@ -944,7 +944,6 @@ public class InwardReportControllerBht implements Serializable {
         m.put("td", getReportKeyWord().getToDate());
 
         patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("patientRooms.size() = " + patientRooms.size());
 
     }
 

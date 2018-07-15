@@ -25,7 +25,7 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
-public class Email implements Serializable {
+public class AppEmail implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -53,6 +53,18 @@ public class Email implements Serializable {
     private String toEmail;
     private String messageSubject;
     private String messageBody;
+    
+    
+    private String senderUsername;
+    private String senderPassword;
+    private String sendingEmail;
+    
+    
+    
+    private String attachment1;
+    private String attachment2;
+    private String attachment3;
+    private String attachment4;
         //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -208,10 +220,10 @@ public class Email implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Email)) {
+        if (!(object instanceof AppEmail)) {
             return false;
         }
-        Email other = (Email) object;
+        AppEmail other = (AppEmail) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -270,5 +282,63 @@ public class Email implements Serializable {
     public void setSentAt(Date sentAt) {
         this.sentAt = sentAt;
     }
+
+    public String getAttachment1() {
+        return attachment1;
+    }
+
+    public void setAttachment1(String attachment1) {
+        this.attachment1 = attachment1;
+    }
+
+    public String getAttachment2() {
+        return attachment2;
+    }
+
+    public void setAttachment2(String attachment2) {
+        this.attachment2 = attachment2;
+    }
+
+    public String getAttachment3() {
+        return attachment3;
+    }
+
+    public void setAttachment3(String attachment3) {
+        this.attachment3 = attachment3;
+    }
+
+    public String getAttachment4() {
+        return attachment4;
+    }
+
+    public void setAttachment4(String attachment4) {
+        this.attachment4 = attachment4;
+    }
+
+    public String getSenderUsername() {
+        return senderUsername;
+    }
+
+    public void setSenderUsername(String senderUsername) {
+        this.senderUsername = senderUsername;
+    }
+
+    public String getSenderPassword() {
+        return senderPassword;
+    }
+
+    public void setSenderPassword(String senderPassword) {
+        this.senderPassword = senderPassword;
+    }
+
+    public String getSendingEmail() {
+        return sendingEmail;
+    }
+
+    public void setSendingEmail(String sendingEmail) {
+        this.sendingEmail = sendingEmail;
+    }
+
+
     
 }

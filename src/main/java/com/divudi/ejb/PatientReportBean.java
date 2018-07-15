@@ -144,9 +144,7 @@ public class PatientReportBean {
         String sql = "";
         System.out.println("going to add patient report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
-        System.out.println("Items getting for ix is - " + temIx.getName());
         for (ReportItem ii : temIx.getReportItems()) {
-            System.out.println("report items is " + ii.getName());
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
@@ -176,7 +174,6 @@ public class PatientReportBean {
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstBySQL(sql, hm);
-                    System.out.println("2 val is " + val);
                     if (val == null) {
                         //System.out.println("val is null");
                         val = new PatientReportItemValue();
@@ -215,9 +212,7 @@ public class PatientReportBean {
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
                     val = getPtRivFacade().findFirstBySQL(sql);
-                    System.out.println("5 val is " + val);
                     if (val == null) {
-                        System.out.println("6 val is null");
                         val = new PatientReportItemValue();
                         val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
                         val.setInvestigationItem((InvestigationItem) ii);
@@ -287,12 +282,10 @@ public class PatientReportBean {
 
         //Add Antibiotics
         List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
-        System.out.println("abs.size() = " + abs.size());
 
         for (Antibiotic a : abs) {
             System.err.println("*** " + a.getName());
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
-            System.out.println("*****ii = " + ii);
             PatientReportItemValue val;
             sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
                     + " and i.investigationItem=:inv";
@@ -339,7 +332,6 @@ public class PatientReportBean {
         System.out.println("ii = " + ii);
         System.out.println("a.getName() = " + a.getName());
         System.out.println("i.getName() = " + i.getName());
-        System.out.println("-------");
 
         if (ii == null) {
             ii = new InvestigationItem();
@@ -353,14 +345,12 @@ public class PatientReportBean {
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
             System.out.println("ii.getId() = " + ii.getId());
-            System.out.println("i.getId() = " + i.getId());
             getIiFacade().edit(ii);
             
             i.getReportItems().add(ii);
             getIxFacade().edit(i);
 
         } else {
-            System.out.println("ii was found and it is " + ii.getItem().getName() + " and " + ii.getName());
         }
         return ii;
     }

@@ -51,7 +51,6 @@ public class ServiceSessionFunctions {
             return null;
         }
         System.out.println("i.getSessionNumberType() = " + i.getSessionNumberType());
-        System.out.println("d = " + d);
         switch (i.getSessionNumberType()) {
             case ByCategory:
                 //   //System.out.println("by cat");
@@ -159,7 +158,6 @@ public class ServiceSessionFunctions {
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
         // ////System.out.println("bill item session switch - pre");
         Long count = calBillSessions(i, bi.getSessionDate());
-        System.err.println("COUNT " + count);
         if (count != null) {
             bs.setSerialNo(count.intValue() + 1);
         } else {

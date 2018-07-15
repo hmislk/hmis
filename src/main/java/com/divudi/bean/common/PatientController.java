@@ -149,7 +149,6 @@ public class PatientController implements Serializable {
         familyMember.setSerealNumber(familyMembers.size());
         familyMembers.add(familyMember);
         loggedIn = true;
-        System.out.println("familyMembers.size() = " + familyMembers.size());
 
         familyMember = null;
 
@@ -329,7 +328,6 @@ public class PatientController implements Serializable {
                 + " or upper(p.phn) like :q) ";
 
         if (getReportKeyWord().isAdditionalDetails()) {
-            System.err.println("*** Additonal ***");
             sql += " and p.code is not null ";
         }
 
@@ -338,7 +336,6 @@ public class PatientController implements Serializable {
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.out.println("getReportKeyWord().isAdditionalDetails() = " + getReportKeyWord().isAdditionalDetails());
         System.out.println("query = " + query);
-        System.out.println("sql = " + sql);
         System.err.println("patientList.size() = " + patientList.size());
         commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
         return patientList;
@@ -368,7 +365,6 @@ public class PatientController implements Serializable {
         }
         if (getCurrent().getPerson().getMembershipScheme() != null) {
             if (checkCodeNull()) {
-                System.err.println("****return");
                 return;
             }
         }
@@ -393,13 +389,11 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
             System.out.println("1.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
-            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
         } else {
             getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
             System.out.println("2.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
-            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
         }
         if (getCurrent().getId() == null) {
             System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
@@ -417,7 +411,6 @@ public class PatientController implements Serializable {
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             System.out.println("3.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
-            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
             if (getCurrent().getPerson().getMembershipScheme() != null) {
@@ -429,13 +422,11 @@ public class PatientController implements Serializable {
             getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             System.out.println("4.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
-            System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
         getPersonFacade().flush();
         getFacade().flush();
         System.out.println("5.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
-        System.out.println("getCurrent().getPerson().getNameWithTitle() = " + getCurrent().getPerson().getNameWithTitle());
     }
     
     public void saveSelectedPatient() {
@@ -504,7 +495,6 @@ public class PatientController implements Serializable {
                     m.put("p", p.getId());
                     System.out.println("m = " + m);
                     Bill b = getBillFacade().findFirstBySQL(sql, m);
-                    System.out.println("b = " + b);
                     if (b != null) {
                         p.setBill(b);
                     }
@@ -523,7 +513,6 @@ public class PatientController implements Serializable {
             patientList = getFacade().findBySQL(sql, getReportKeyWord().getNumOfRows());
         }
 
-        System.err.println("patientList.size() = " + patientList.size());
     }
 
     public void activePatient(Patient p) {
@@ -634,7 +623,6 @@ public class PatientController implements Serializable {
             return;
         }
         System.out.println("getReportKeyWord().getMembershipScheme().getName() = " + getCurrent().getPerson().getMembershipScheme().getName());
-        System.out.println("getReportKeyWord().getMembershipScheme().getCode() = " + getCurrent().getPerson().getMembershipScheme().getCode());
         if (getCurrent().getPerson().getMembershipScheme().getCode() == null
                 || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
             getCurrent().setCode(null);
@@ -643,7 +631,6 @@ public class PatientController implements Serializable {
         }
         if (getCurrent().getId() == null) {
             getCurrent().setCode(getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
-            System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
         } else {
             Patient p = getEjbFacade().find(getCurrent().getId());
             getCurrent().setCode(p.getCode());
@@ -678,13 +665,11 @@ public class PatientController implements Serializable {
             System.out.println("l = " + l);
             st += s;
             st += df.format(l);
-            System.out.println("s = " + st);
             return st;
         } else {
             System.err.println("P Null");
             st += s;
             st += df.format(1l);
-            System.out.println("s = " + st);
             return st;
         }
 
@@ -737,11 +722,9 @@ public class PatientController implements Serializable {
     private boolean checkCodeNull() {
         Patient p = null;
         if (getCurrent().getId() != null) {
-            System.out.println("getCurrent().getId() = " + getCurrent().getId());
             p = getEjbFacade().find(getCurrent().getId());
         }
         if (p != null) {
-            System.out.println("******p.getCode() = " + p.getCode());
             if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter a Code");
                 return true;
@@ -761,7 +744,6 @@ public class PatientController implements Serializable {
                 if (p != null) {
                     JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
                     System.out.println("p.getCode() = " + p.getCode());
-                    System.out.println("p.getPerson().getName() = " + p.getPerson().getName());
                     return true;
                 } else {
                     return false;
@@ -907,7 +889,6 @@ public class PatientController implements Serializable {
             } else {
                 key = Long.valueOf(value);
                 System.out.println(key);
-                System.out.println(value);
             }
             return key;
         }

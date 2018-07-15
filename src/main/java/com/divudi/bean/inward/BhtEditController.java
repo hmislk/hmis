@@ -109,13 +109,11 @@ public class BhtEditController implements Serializable {
         List<Bill> bills = getBillFacade().findBySQL(sql, hm);
         System.out.println("bills.size() = " + bills.size());
         if (bills.isEmpty()) {
-            System.err.println("empty");
             return flag;
         } else if (bills.size() == 1) {
             Bill b = bills.get(0);
             if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
                 List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-                System.out.println("enc.size() = " + enc.size());
                 for (EncounterComponent e : enc) {
                     if (!e.getBillFee().getPatientItem().isRetired()) {
                         flag = true;
@@ -128,7 +126,6 @@ public class BhtEditController implements Serializable {
         if (bills.size() > 1) {
             flag = true;
         }
-        System.out.println("flag = " + flag);
         return flag;
     }
 

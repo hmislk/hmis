@@ -167,12 +167,10 @@ public class InvestigationItemController implements Serializable {
             return;
         }
         for (InvestigationItem tixi : getImportantItems()) {
-            System.out.println("tixi = " + tixi);
             if (tixi.getItem() instanceof Investigation) {
                 System.err.println("Is Ix");
 
                 Investigation tix = investigationController.getInvestigationByIdAndSetAsCurrent(tixi.getItem().getId());
-                System.out.println("tix = " + tix);
                 if (tix.equals(currentInvestigation)) {
                     System.out.println("Is current ix");
                     tixi.setTube(tix.getInvestigationTube());
@@ -185,7 +183,6 @@ public class InvestigationItemController implements Serializable {
                     System.out.println("tix.getMachine() = " + tix.getMachine());
                     System.out.println("tixi.getMachine() = " + tixi.getMachine());
                     Item sc = itemController.getFirstInvestigationSampleComponents(tix);
-                    System.out.println("Sc = " + sc);
                     tixi.setSampleComponent(sc);
                     getFacade().edit(tixi);
                 }
@@ -382,7 +379,6 @@ public class InvestigationItemController implements Serializable {
         if (ii == null) {
             return;
         }
-        System.out.println("keyCode = " + keyCode);
         if (specialCode == 17) {
             specialCode = 17;
         } else {
@@ -479,9 +475,7 @@ public class InvestigationItemController implements Serializable {
 
     public void saveIiOnAjax(InvestigationItem ii) {
         System.out.println("saving Ii on Ajax");
-        System.out.println("ii = " + ii);
         if (ii != null) {
-            System.out.println("ii name = " + ii.getName());
             getFacade().edit(ii);
         }
         setCurrent(ii);
@@ -491,7 +485,6 @@ public class InvestigationItemController implements Serializable {
         System.out.println("saving Ii on Ajax");
         System.out.println("ii = " + ii);
         setCurrent(ii);
-        System.out.println("current = " + current);
     }
 
     public InvestigationItemValueFacade getIivFacade() {
@@ -605,13 +598,11 @@ public class InvestigationItemController implements Serializable {
 
         for (ReportItem ri : getAllReportItemList()) {
             if (fontFamily != null) {
-                System.out.println("update Font Family");
                 ri.setCssFontFamily(fontFamily);
                 riFacade.edit(ri);
             }
 
             if (fontSize != 0) {
-                System.out.println("update Font Size");
                 ri.setRiFontSize(fontSize);
                 riFacade.edit(ri);
             }
@@ -805,21 +796,18 @@ public class InvestigationItemController implements Serializable {
                     ri.setRiTop(Double.parseDouble(ri.getCssTop()));
                 } catch (Exception e) {
                     ri.setRiTop(11.11);
-                    System.out.println("ri.getCssTop() = " + ri.getCssTop());
                 }
 
                 try {
                     ri.setRiLeft(Double.parseDouble(ri.getCssLeft()));
                 } catch (Exception e) {
                     ri.setRiTop(22.22);
-                    System.out.println("ri.getCssLeft() = " + ri.getCssLeft());
                 }
 
                 try {
                     ri.setRiHeight(Double.parseDouble(ri.getCssHeight()));
                 } catch (Exception e) {
                     ri.setRiHeight(2);
-                    System.out.println("ri.getCssHeight() = " + ri.getCssHeight());
                 }
 
                 try {
@@ -829,11 +817,9 @@ public class InvestigationItemController implements Serializable {
                     }
                 } catch (Exception e) {
                     ri.setRiWidth(40);
-                    System.out.println("ri.getCssWidth() = " + ri.getCssWidth());
                 }
 
                 System.out.println("ri.getName() = " + ri.getName());
-                System.out.println("ri.getHtmltext() = " + ri.getHtmltext());
 
                 if (ri.getHtmltext() == null || ri.getHtmltext().trim().equals("")) {
                     ri.setHtmltext(ri.getName());
@@ -842,7 +828,6 @@ public class InvestigationItemController implements Serializable {
                 riFacade.edit(ri);
 
             } catch (Exception e) {
-                System.out.println("e = " + e);
             }
         }
 
@@ -864,7 +849,6 @@ public class InvestigationItemController implements Serializable {
         InputStream in;
 
         StringWriter writer = new StringWriter();
-        System.out.println("file = " + file);
         if (file != null) {
             try {
                 File uploadedFile = new File("/tmp/" + file.getFileName());
@@ -931,10 +915,8 @@ public class InvestigationItemController implements Serializable {
                 getIxFacade().edit(currentInvestigation);
             } catch (IOException io) {
                 System.err.println("IOException");
-                System.err.println(io.getMessage());
             } catch (Exception jdomex) {
                 System.err.println("JDOM Excepton");
-                System.err.println(jdomex.getMessage());
             }
 
         }
@@ -1114,7 +1096,6 @@ public class InvestigationItemController implements Serializable {
         XMLOutputter xmlOutput = new XMLOutputter();
         xmlOutput.setFormat(Format.getPrettyFormat());
         xml = xmlOutput.outputString(doc);
-        System.out.println("File Saved!");
 
         return xml;
     }
@@ -1809,7 +1790,6 @@ public class InvestigationItemController implements Serializable {
         System.out.println("current = " + current);
         System.out.println("this.current = " + this.current);
         this.current = current;
-        System.out.println("this.current = " + this.current);
     }
 
     private InvestigationItemFacade getFacade() {

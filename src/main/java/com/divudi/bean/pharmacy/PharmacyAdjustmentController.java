@@ -859,7 +859,6 @@ public class PharmacyAdjustmentController implements Serializable {
         bills = new ArrayList<>();
         for (Stock s : stocks) {
             System.out.println("s.getCalculated() = " + s.getCalculated());
-            System.out.println("s.getStock() = " + s.getStock());
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
                 saveDeptAdjustmentBill();
@@ -884,7 +883,6 @@ public class PharmacyAdjustmentController implements Serializable {
         bills = new ArrayList<>();
         for (Stock s : stocks) {
             System.out.println("s.getCalculated() = " + s.getCalculated());
-            System.out.println("s.getStock() = " + s.getStock());
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
                 saveDeptAdjustmentBill();
@@ -972,7 +970,6 @@ public class PharmacyAdjustmentController implements Serializable {
     public void listnerItemSelect() {
         stocks = new ArrayList<>();
         if (getItem() == null) {
-            System.err.println("Item Null");
             return;
         }
         String sql;
@@ -984,7 +981,6 @@ public class PharmacyAdjustmentController implements Serializable {
                 + " and i.stock>0 "
                 + " order by i.stock desc ";
         stocks = getStockFacade().findBySQL(sql, m);
-        System.out.println("stocks.size() = " + stocks.size());
         total = 0.0;
         for (Stock s : stocks) {
             s.setCalculated(s.getStock());
@@ -1005,7 +1001,6 @@ public class PharmacyAdjustmentController implements Serializable {
         double addQty = 0.0;
         System.out.println("total = " + total);
         System.out.println("qty = " + qty);
-        System.out.println("stocks.size() = " + stocks.size());
 
         if (total < qty) {
             for (Stock s : stocks) {
@@ -1018,7 +1013,6 @@ public class PharmacyAdjustmentController implements Serializable {
                 System.out.println("1.addQty = " + addQty);
                 System.out.println("s.getStock() = " + s.getStock());
                 addQty += s.getStock();
-                System.out.println("2.addQty = " + addQty);
                 if (flag) {
                     s.setCalculated(0.0);
                 } else {

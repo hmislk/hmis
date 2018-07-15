@@ -77,7 +77,6 @@ public class AgencyController implements Serializable {
             System.out.println("Agency = " + i.getName());
             System.out.println("Previous Balance = " + i.getBallance());
             i.setBallance(b1);
-            System.out.println("New Balance = " + i.getBallance());
             ejbFacade.edit(i);
         }
 
@@ -94,7 +93,6 @@ public class AgencyController implements Serializable {
             System.out.println("Agency = " + i.getName());
             System.out.println("Previous Balance = " + i.getBallance());
             i.setBallance(b2);
-            System.out.println("New Balance = " + i.getBallance());
             ejbFacade.edit(i);
         }
 

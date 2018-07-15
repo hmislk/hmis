@@ -222,27 +222,21 @@ public class PatientInvestigationController implements Serializable {
         String sampleId = sysMex.getSampleIdString();
         System.out.println("Checking Report For the First Time");
         if (!sysMex.isCorrectReport()) {
-            System.out.println("First TIme Not Correct Report. ");
             sysMex.setShift2(-1);
             sysMex.shiftPositions();
             if (!sysMex.isCorrectReport()) {
-                System.out.println("Second TIme Not Correct Report. ");
                 sysMex.setShift2(-2);
                 sysMex.shiftPositions();
                 if (!sysMex.isCorrectReport()) {
-                    System.out.println("Thired TIme Not Correct Report. ");
                     sysMex.setShift2(-3);
                     sysMex.shiftPositions();
                     if (!sysMex.isCorrectReport()) {
-                        System.out.println("Forth Time Not Correct Report. ");
                         sysMex.setShift2(1);
                         sysMex.shiftPositions();
                         if (!sysMex.isCorrectReport()) {
-                            System.out.println("Fifth TIme Not Correct Report. ");
                             sysMex.setShift2(2);
                             sysMex.shiftPositions();
                             if (!sysMex.isCorrectReport()) {
-                                System.out.println("Second TIme Not Correct Report. ");
                                 sysMex.setShift2(3);
                                 sysMex.shiftPositions();
                                 return "#{success=false|msg=Wrong Data. Please resent results " + sampleId + "}";
@@ -264,7 +258,6 @@ public class PatientInvestigationController implements Serializable {
             return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        System.out.println("ptixs = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
         }
@@ -273,7 +266,6 @@ public class PatientInvestigationController implements Serializable {
             System.out.println("pi.getBillItem().getBill().getInsId() = " + pi.getBillItem().getBill().getInsId());
             List<PatientReport> prs = new ArrayList<>();
             if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
-                System.out.println("1. pi.getInvestigation().getMachine().getName() = " + pi.getInvestigation().getMachine().getName());
                 PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
                 prs.add(tpr);
             }
@@ -283,13 +275,11 @@ public class PatientInvestigationController implements Serializable {
                 if (ti instanceof Investigation) {
                     Investigation tix = (Investigation) ti;
                     if (tix.getMachine() != null && tix.getMachine().getName().toLowerCase().contains("sysmex")) {
-                        System.out.println("2. tix.getMachine().getName().toLowerCase() = " + tix.getMachine().getName().toLowerCase());
                         PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
                         prs.add(tpr);
                     }
                 }
             }
-            System.out.println("prs = " + prs);
             for (PatientReport tpr : prs) {
 
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
@@ -770,7 +760,6 @@ public class PatientInvestigationController implements Serializable {
                     + "\"RHD your trusted diagnostics partner\"\n"
                     + "Get your report online http://goo.gl/Ae8p6L";
 
-            System.out.println("messageBody2 = " + messageBody2.length());
 
             final StringBuilder request = new StringBuilder(url);
             request.append(sendingNo.substring(1, 10));
@@ -783,7 +772,6 @@ public class PatientInvestigationController implements Serializable {
                 System.out.println("pw = " + pw);
                 System.out.println("sendingNo = " + sendingNo);
                 System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
 
                 stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
 
@@ -825,7 +813,6 @@ public class PatientInvestigationController implements Serializable {
                         .field("text", messageBody)
                         .asString();
 
-                System.out.println("stringResponse = " + stringResponse);
 
             } catch (Exception ex) {
                 return;
@@ -856,7 +843,6 @@ public class PatientInvestigationController implements Serializable {
 
         System.out.println("sms before saving = " + sms);
         getSmsFacade().create(sms);
-        System.out.println("sms after saving " + sms);
 
         UtilityController.addSuccessMessage("Sms send");
 
@@ -875,7 +861,6 @@ public class PatientInvestigationController implements Serializable {
         url = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
         System.out.println("2" + url);
         url += "faces/lab/patient_report_print_email_pfd.xhtml";
-        System.out.println("3" + url);
 // 
 
         try {
@@ -900,7 +885,6 @@ public class PatientInvestigationController implements Serializable {
 
     public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
 
-        System.out.println("" + getCurrent());
         System.out.println("" + getCurrent());
 
         final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
@@ -951,7 +935,6 @@ public class PatientInvestigationController implements Serializable {
 
             Transport.send(message);
 
-            System.out.println("Send Successfully");
 
         } catch (MessagingException e) {
             throw new RuntimeException(e);
@@ -1209,7 +1192,6 @@ public class PatientInvestigationController implements Serializable {
         Bill b = getBillFacade().findFirstBySQL(j, m);
         System.out.println("b = " + b);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
-        System.out.println("b = " + b);
         if (bs == null || bs.isEmpty()) {
             JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
             return null;
@@ -1231,7 +1213,6 @@ public class PatientInvestigationController implements Serializable {
     
     public void prepareSampleCollectionByBills(List<Bill> bills) {
         System.out.println("prepareSampleCollectionByBills");
-        System.out.println("bills = " + bills);
         String j = "";
         Map m;
         patientSamplesSet = new HashSet<>();
@@ -1245,7 +1226,6 @@ public class PatientInvestigationController implements Serializable {
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
-            System.out.println("pis = " + pis);
             for (PatientInvestigation ptix : pis) {
                 System.out.println("ptix = " + ptix);
                 Investigation ix = ptix.getInvestigation();
@@ -1258,9 +1238,7 @@ public class PatientInvestigationController implements Serializable {
                 getFacade().edit(ptix);
 
                 List<InvestigationItem> ixis = investigationItemController.getItems(ix);
-                System.out.println("ixis = " + ixis);
                 for (InvestigationItem ixi : ixis) {
-                    System.out.println("ixi = " + ixi);
                     if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template  ) {
                         j = "select ps from PatientSample ps "
                                 + " where ps.tube=:tube "
@@ -1318,7 +1296,6 @@ public class PatientInvestigationController implements Serializable {
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
                         ptsc = getPatientSampleComponantFacade().findFirstBySQL(j, m);
-                        System.out.println("ptsc = " + ptsc);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);
@@ -1417,7 +1394,6 @@ public class PatientInvestigationController implements Serializable {
                 + " where bi.referanceBillItem.id=:bi ";
         m.put("bi", pi.getBillItem().getId());
         List<BillItem> bis = billItemFacade.findBySQL(sql, m);
-        System.out.println("bis.size() = " + bis.size());
         if (bis.isEmpty()) {
             pi.getBillItem().setTransRefund(false);
         } else {

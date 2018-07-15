@@ -143,11 +143,9 @@ public class PatientReport implements Serializable {
     public PatientReportItemValue getTemplateItem() {
         System.err.println("getTemplateItem");
         System.out.println("com.divudi.entity.lab.PatientReport.getTemplateItem()");
-        System.out.println("templateItem = " + templateItem);
 
         if (templateItem == null) {
             for (PatientReportItemValue v : this.getPatientReportItemValues()) {
-                System.err.println("this.getPatientReportItemValues() = " + this.getPatientReportItemValues());
                 if (v.getInvestigationItem().getIxItemType() == InvestigationItemType.Template) {
                     templateItem = v;
                     if (templateItem.getLobValue() == null) {
@@ -298,7 +296,6 @@ public class PatientReport implements Serializable {
             try {
                 Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
             } catch (Exception e) {
-                System.err.println(e.getMessage());
             }
 //            patientReportItemOfCalculationType = null;
 //            patientReportItemOfDynamicLabelType = null;
@@ -314,7 +311,6 @@ public class PatientReport implements Serializable {
                 try {
                     Collections.sort(patientReportItemValues, new PatientReportItemValueComparator());
                 } catch (Exception e) {
-                    System.err.println(e.getMessage());
                 }
 //                patientReportItemOfCalculationType = null;
 //                patientReportItemOfDynamicLabelType = null;

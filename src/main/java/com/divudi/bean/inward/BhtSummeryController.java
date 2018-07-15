@@ -234,7 +234,6 @@ public class BhtSummeryController implements Serializable {
                 disValue = discountSet(cit, discountPercent);
         }
 
-        System.err.println("DIscount 1  " + disValue);
 
         cit.setDiscount(disValue);
 //        cit.setAdjustedTotal(cit.getTotal());
@@ -601,7 +600,6 @@ public class BhtSummeryController implements Serializable {
     public double discountSet(ChargeItemTotal cit) {
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient());
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), membershipScheme, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
-        System.out.println("cit.getInwardChargeType() = " + cit.getInwardChargeType());
         if (pm == null || pm.getDiscountPercent() == 0 || cit.getTotal() == 0
                 || cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
                 || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
@@ -634,7 +632,6 @@ public class BhtSummeryController implements Serializable {
 
         System.err.println("Service Value " + serviceValue);
         System.err.println("Patient Item Total " + patientItemTotal);
-        System.err.println("Out Side Total " + outSide);
         return value;
     }
 
@@ -652,7 +649,6 @@ public class BhtSummeryController implements Serializable {
             System.err.println("1 Fee Gross Value " + bf.getFeeGrossValue());
             System.err.println("1 Fee Net Value " + bf.getFeeValue());
             System.err.println("2 Fee Margin " + bf.getFeeMargin());
-            System.err.println("3 Discount Precent " + discountPercent);
             disTot += dis;
             bf.setFeeDiscount(dis);
             bf.setFeeValue(value - dis);
@@ -675,7 +671,6 @@ public class BhtSummeryController implements Serializable {
             double value = bf.getFeeGrossValue() + bf.getFeeMargin();
             System.err.println("1 Fee Gross Value " + bf.getFeeGrossValue());
             System.err.println("1 Fee Net Value " + bf.getFeeValue());
-            System.err.println("2 Fee Margin " + bf.getFeeMargin());
             bf.setFeeDiscount(0.0);
             bf.setFeeValue(value);
             getBillFeeFacade().edit(bf);
@@ -705,7 +700,6 @@ public class BhtSummeryController implements Serializable {
             System.err.println("Issue Value " + bf.getNetValue());
             System.err.println("Issue Margin " + bf.getMarginValue());
             System.err.println("Issue Discount % " + discountPercent);
-            System.err.println("Issue Discount Value " + dis);
             disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -751,7 +745,6 @@ public class BhtSummeryController implements Serializable {
             System.err.println("1 Fee Gross Value " + bf.getGrossValue());
             System.err.println("Issue Margin " + bf.getMarginValue());
             System.err.println("Issue Discount % " + pm.getDiscountPercent());
-            System.err.println("Issue Discount Value " + dis);
 //            disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -1379,7 +1372,6 @@ public class BhtSummeryController implements Serializable {
 
         System.err.println("1 " + patientEncounter);
         System.err.println("2 " + grantTotal);
-        System.err.println("3 " + paid);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             BillItem billItem = new BillItem();
@@ -1878,17 +1870,14 @@ public class BhtSummeryController implements Serializable {
             Date dischargedAt = p.getDischargedAt();
             System.out.println("dischargeAt = " + dischargedAt);
             long dCount = getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt);
-            System.out.println("dCount = " + dCount);
 
             if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
                 System.out.println("p.getCurrentMoCharge() = " + p.getCurrentMoCharge());
-                System.out.println("p.getAddedMoCharge() = " + p.getAddedMoCharge());
                 double calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
                 p.setCalculatedMoCharge(calculated);
             } else {
                 long extra = dCount - p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge();
                 System.out.println("extra = " + extra);
-                System.out.println("p.getRoomFacilityCharge().getMoChargeForAfterDuration() = " + p.getRoomFacilityCharge().getMoChargeForAfterDuration());
                 double calculated = (p.getCurrentMoChargeForAfterDuration() * extra) + p.getCurrentMoCharge();
                 p.setCalculatedMoCharge(calculated);
             }

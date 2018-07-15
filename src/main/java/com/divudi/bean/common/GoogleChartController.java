@@ -150,11 +150,9 @@ public class GoogleChartController implements Serializable {
             cal1.add(Calendar.DATE, 1);
             nowDate = cal1.getTime();
 
-            System.out.println("nowDate = " + nowDate);
         }
 
         System.out.println("jSONArray1.toString() = " + jSONArray1.toString());
-        System.out.println("cols.toString() = " + cols.toString());
 
         return jSONArray1.toString();
 
@@ -222,7 +220,6 @@ public class GoogleChartController implements Serializable {
         mainJSONArray.put(subArray);
 
         System.out.println("jSONArray1.length- = " + mainJSONArray.length());
-        System.out.println("jSONArray1.toString- = " + mainJSONArray.toString());
 
         return mainJSONArray.toString();
 
@@ -270,7 +267,6 @@ public class GoogleChartController implements Serializable {
             mainJSONArray.put(subArray);
             subArray = new JSONArray();
         }
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
         return mainJSONArray.toString();
 
     }
@@ -312,7 +308,6 @@ public class GoogleChartController implements Serializable {
             mainJSONArray.put(subArray);
             subArray = new JSONArray();
         }
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
         return mainJSONArray.toString();
 
     }
@@ -352,7 +347,6 @@ public class GoogleChartController implements Serializable {
             mainJSONArray.put(subArray);
             subArray = new JSONArray();
         }
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
         return mainJSONArray.toString();
     }
 
@@ -401,7 +395,6 @@ public class GoogleChartController implements Serializable {
         if (mainJSONArray.length()<2) {
             mainJSONArray = new JSONArray();
         }
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
         
         return mainJSONArray.toString();
     }
@@ -448,7 +441,6 @@ public class GoogleChartController implements Serializable {
             mainJSONArray.put(subArray);
             subArray = new JSONArray();
         }
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
         return mainJSONArray.toString();
 
     }
@@ -467,11 +459,9 @@ public class GoogleChartController implements Serializable {
 
         if (bill.getClass().equals(CancelledBill.class)) {
             sql += " and bf.bill.cancelled=true";
-            System.err.println("cancel");
         }
         if (bill.getClass().equals(RefundBill.class)) {
             sql += " and bf.bill.refunded=true";
-            System.err.println("Refund");
         }
 
         if (ft == FeeType.OwnInstitution) {
@@ -517,7 +507,6 @@ public class GoogleChartController implements Serializable {
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
         return d;
     }
 
@@ -535,11 +524,9 @@ public class GoogleChartController implements Serializable {
 
         if (bill.getClass().equals(CancelledBill.class)) {
             sql += " and bf.bill.cancelled=true";
-            System.err.println("cancel");
         }
         if (bill.getClass().equals(RefundBill.class)) {
             sql += " and bf.bill.refunded=true";
-            System.err.println("Refund");
         }
 
         if (ft == FeeType.OwnInstitution) {
@@ -585,7 +572,6 @@ public class GoogleChartController implements Serializable {
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
         return d;
     }
 
@@ -602,11 +588,9 @@ public class GoogleChartController implements Serializable {
 
         if (bill.getClass().equals(CancelledBill.class)) {
             sql += " and bf.bill.cancelled=true";
-            System.err.println("cancel");
         }
         if (bill.getClass().equals(RefundBill.class)) {
             sql += " and bf.bill.refunded=true";
-            System.err.println("Refund");
         }
 
         sql += " and bf.bill.createdAt between :fd and :td ";
@@ -622,7 +606,6 @@ public class GoogleChartController implements Serializable {
 
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
-        System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
         return d;
     }
 
@@ -724,7 +707,6 @@ public class GoogleChartController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         double tot = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("tot = " + tot);
         return tot;
 
     }
@@ -746,7 +728,6 @@ public class GoogleChartController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + m);
         double tot = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("tot = " + tot);
         return tot;
     }
 
@@ -762,7 +743,6 @@ public class GoogleChartController implements Serializable {
         LocalDate end = LocalDate.parse(endDate);
 
         System.out.println("start = " + start);
-        System.out.println("end = " + end);
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
             dates.add(String.valueOf(date.getYear()) + " - " + String.valueOf(date.getMonthOfYear()) + " - " + String.valueOf(date.getDayOfMonth()));
         }
@@ -854,7 +834,6 @@ public class GoogleChartController implements Serializable {
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
         if (count) {
             return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
@@ -905,7 +884,6 @@ public class GoogleChartController implements Serializable {
             }
 
         }
-        System.out.println("mainJSONArraycash.toString() = " + mainJSONArraycash.toString());
         return mainJSONArraycash.toString();
     }
 
@@ -984,7 +962,6 @@ public class GoogleChartController implements Serializable {
 //            getInwardCollections().add(newRow);
 ////            }}
         }
-        System.out.println("mainJSONArraycredit.toString() = " + mainJSONArraycredit.toString());
 
         return mainJSONArraycredit.toString();
     }
@@ -1058,7 +1035,6 @@ public class GoogleChartController implements Serializable {
         System.out.println("inward" + tot_inward);
         System.out.println("Lab" + tot_lab);
         System.out.println("pharmacy" + tot_pharma);
-        System.out.println("mainJSONArray.toString() = " + mainJSONArray.toString());
 
         return mainJSONArray.toString();
     }
@@ -1083,7 +1059,6 @@ public class GoogleChartController implements Serializable {
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.out.println("m = " + m);
-        System.out.println("getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP)" + getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }

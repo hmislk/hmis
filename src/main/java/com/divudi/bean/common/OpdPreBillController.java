@@ -1376,7 +1376,6 @@ public class OpdPreBillController implements Serializable {
     }
 
     public void changeListener() {
-        System.err.println("Change Listen 1 ");
         calTotals();
     }
 

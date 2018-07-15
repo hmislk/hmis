@@ -284,7 +284,6 @@ public class ChannelBean {
     }
 
     private boolean checkLeaveDate(Date date, Staff staff) {
-        System.err.println("Leave Staff " + staff);
         String slq = "Select s From ServiceSessionLeave s"
                 + "  Where s.sessionDate=:dt"
                 + "  and s.staff=:st"
@@ -303,7 +302,6 @@ public class ChannelBean {
 
     public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
         int sessionDayCount = 0;
-        System.err.println("Passing Sessions " + inputSessions);
         List<ServiceSession> createdSessions = new ArrayList<>();
 
         if (inputSessions == null || inputSessions.isEmpty()) {
@@ -442,7 +440,6 @@ public class ChannelBean {
         for (ServiceSession cs : createdSessions) {
             System.out.println("cs.getId() = " + cs.getId());
             System.out.println("cs.getName() = " + cs.getName());
-            System.out.println("cs.getSessionAt() = " + cs.getSessionAt());
         }
 
         return createdSessions;
@@ -470,7 +467,6 @@ public class ChannelBean {
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Start Genarate nowDate = " + nowDate);
         while (toDate.after(nowDate) && sessionDayCount < getFinalVariables().getSessionSessionDayCounterLargest(inputSessions)) {
             boolean hasSpecificDateSession = false;
 
@@ -482,7 +478,6 @@ public class ChannelBean {
                     nDate.setTime(nowDate);
                     System.out.println("ss.getId() = " + ss.getId());
                     System.out.println("(ss.getSessionDate() = " + ss.getSessionDate());
-                    System.out.println("ss.getName() = " + ss.getName());
                     if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                         hasSpecificDateSession = true;
                         ServiceSession newSs = new ServiceSession();
@@ -492,7 +487,6 @@ public class ChannelBean {
                         if (newSs == null) {
                             newSs = createServiceSessionForChannelShedule(ss, nowDate);
                         }
-                        System.out.println("newSs 3 = " + newSs);
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -519,10 +513,8 @@ public class ChannelBean {
                         newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                         if (newSs == null) {
                             newSs = new ServiceSession();
-                            System.err.println("Cretate New");
                             newSs = createServiceSessionForChannelShedule(ss, nowDate);
                         }
-                        System.out.println("newSs = " + newSs);
                         //Temprory
                         newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
@@ -579,7 +571,6 @@ public class ChannelBean {
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;
-        System.out.println("Doc = " + s.getPerson().getName() + " - Time = " + time + " Seconds");
 
         return createdSessions;
     }
@@ -620,7 +611,6 @@ public class ChannelBean {
                         System.err.println("spec Date");
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
-                        System.out.println("ss.getName() = " + ss.getName());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
@@ -628,7 +618,6 @@ public class ChannelBean {
                             if (newSs == null) {
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
-                            System.out.println("newSs 2 = " + newSs);
                             //Temprory
                             newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                             newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -690,7 +679,6 @@ public class ChannelBean {
                         System.err.println("spec Date");
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
-                        System.out.println("ss.getName() = " + ss.getName());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
@@ -698,7 +686,6 @@ public class ChannelBean {
                             if (newSs == null) {
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
-                            System.out.println("newSs 2 = " + newSs);
                             //Temprory
                             newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                             newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -751,7 +738,6 @@ public class ChannelBean {
 
         System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBooking(createdSessions, channelBillController.getPaymentMethod());
-        System.err.println("Time 3 = " + new Date());
 
         return createdSessions;
     }
@@ -854,7 +840,6 @@ public class ChannelBean {
     public SessionNumberGenerator saveSessionNumber(ServiceSession ss) {
         SessionNumberGenerator sessionNumberGenerator;
         sessionNumberGenerator = ss.getSessionNumberGenerator();
-        System.out.println("1.sessionNumberGenerator = " + sessionNumberGenerator);
         if (sessionNumberGenerator == null) {
             sessionNumberGenerator = new SessionNumberGenerator();
             sessionNumberGenerator.setSpeciality(ss.getStaff().getSpeciality());
@@ -867,7 +852,6 @@ public class ChannelBean {
 
     public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions, Date date) {
         int sessionDayCount = 0;
-        System.err.println("Passing Sessions " + inputSessions);
         List<ServiceSession> createdSessions = new ArrayList<>();
 
         if (inputSessions == null || inputSessions.isEmpty()) {

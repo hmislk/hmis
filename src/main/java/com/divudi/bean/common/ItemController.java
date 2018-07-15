@@ -138,9 +138,7 @@ public class ItemController implements Serializable {
         }
         if (ix instanceof Investigation) {
             List<Item> is = findInvestigationSampleComponents((Investigation) ix);
-            System.err.println("is = " + is);
             if (is != null && !is.isEmpty()) {
-                System.err.println("found is = " + is.get(0));
                 return is.get(0);
             } else {
                 Item sc = new Item();
@@ -150,7 +148,6 @@ public class ItemController implements Serializable {
                 sc.setCreater(sessionController.getLoggedUser());
                 sc.setName(ix.getName());
                 getFacade().create(sc);
-                System.err.println("new is = " + sc);
                 return sc;
             }
         }
@@ -441,10 +438,8 @@ public class ItemController implements Serializable {
             }
             getFacade().edit(ni);
             List<Item> ifis = itemForItemController.getItemsForParentItem(i);
-            System.out.println("ifis = " + ifis);
             if (ifis != null) {
                 for (Item ifi : ifis) {
-                    System.out.println("ifi = " + ifi);
                     ItemForItem ifin = new ItemForItem();
                     ifin.setParentItem(ni);
                     ifin.setChildItem(ifi);
@@ -1177,7 +1172,6 @@ public class ItemController implements Serializable {
 
     public void makeSelectedAsMasterItems() {
         for (Item i : selectedList) {
-            System.err.println("********");
             //System.out.println("i = " + i.getInstitution());
             if (i.getInstitution() != null) {
                 //System.out.println("i = " + i.getInstitution().getName());
@@ -1270,7 +1264,6 @@ public class ItemController implements Serializable {
         System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
-            System.out.println("tmp.size() = " + tmp.size());
             for (ItemFee itf : tmp) {
                 i.setItemFee(itf);
                 if (itf.getFeeType() == FeeType.OwnInstitution) {
@@ -1282,7 +1275,6 @@ public class ItemController implements Serializable {
                 }
             }
         }
-        System.out.println("itemlist.size() = " + itemlist.size());
     }
 
     public void createInwardList() {
@@ -1290,7 +1282,6 @@ public class ItemController implements Serializable {
         System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
-            System.out.println("tmp.size() = " + tmp.size());
             for (ItemFee itf : tmp) {
                 i.setItemFee(itf);
                 if (itf.getFeeType() == FeeType.OwnInstitution) {
@@ -1302,7 +1293,6 @@ public class ItemController implements Serializable {
                 }
             }
         }
-        System.out.println("itemlist.size() = " + itemlist.size());
     }
 
     /**

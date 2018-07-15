@@ -4,7 +4,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Email;
+import com.divudi.ejb.EmailManagerEjb;
+import com.divudi.entity.AppEmail;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
 import com.divudi.entity.Sms;
@@ -34,6 +35,8 @@ public class ApplicationController {
 
     @EJB
     private PatientFacade patientFacade;
+    @EJB
+    private EmailManagerEjb eejb;
 
     String personalHealthNumber;
     Long personalHealthNumberCount;
@@ -43,13 +46,17 @@ public class ApplicationController {
     Date startTime;
     Date storesExpiery;
 
-    
-    private List<Email> mailsToSent;
+    private List<AppEmail> mailsToSent;
     private List<Sms> smsToSent;
-    
-    
-    
-    
+
+    private String subject;
+    private String body;
+
+    public void sendEmail() {
+        eejb.sendEmail1(subject, body);
+        JsfUtil.addSuccessMessage("Check Mail");
+    }
+
     public Date getStartTime() {
         return startTime;
     }
@@ -212,19 +219,19 @@ public class ApplicationController {
         return digit.substring(digit.length() - 1);
     }
 
-    public List<Email> getMailsToSent() {
-        if(mailsToSent==null){
+    public List<AppEmail> getMailsToSent() {
+        if (mailsToSent == null) {
             mailsToSent = new ArrayList<>();
         }
         return mailsToSent;
     }
 
-    public void setMailsToSent(List<Email> mailsToSent) {
+    public void setMailsToSent(List<AppEmail> mailsToSent) {
         this.mailsToSent = mailsToSent;
     }
 
     public List<Sms> getSmsToSent() {
-        if(smsToSent==null){
+        if (smsToSent == null) {
             smsToSent = new ArrayList<>();
         }
         return smsToSent;
@@ -236,6 +243,30 @@ public class ApplicationController {
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
+    }
+
+    public EmailManagerEjb getEejb() {
+        return eejb;
+    }
+
+    public void setEejb(EmailManagerEjb eejb) {
+        this.eejb = eejb;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     class InstitutionLastPhn {

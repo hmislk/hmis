@@ -265,10 +265,8 @@ public class BookingPastController implements Serializable {
                     alreadyExists = true;
                 }
             }
-            System.out.println("bs = " + bs);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
-                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
                     if (serialNo == bi.getBillSession().getSerialNo()) {
                         alreadyExists = true;
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
@@ -288,10 +286,8 @@ public class BookingPastController implements Serializable {
             return true;
         }
         for (BillSession bs : billSessions) {
-            System.out.println("bs = " + bs);
             if (!bs.equals(selectedBillSession)) {
                 for (BillItem bi : bs.getBill().getBillItems()) {
-                    System.out.println("bi.getBillSession().getSerialNo() = " + bi.getBillSession().getSerialNo());
                     if (serialNo == bi.getBillSession().getSerialNo()) {
                         UtilityController.addErrorMessage("This Number Is Alredy Exsist");
                         flag = true;
@@ -310,7 +306,6 @@ public class BookingPastController implements Serializable {
         System.out.println("fd = " + fd);
         System.out.println("td = " + td);
         long lng = getCommonFunctions().getDayCount(fd, td);
-        System.out.println("lng = " + lng);
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
@@ -350,7 +345,6 @@ public class BookingPastController implements Serializable {
 
         for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
             bi.getBillSession().setSerialNo(serialNo);
-            System.out.println("bi = " + bi.getBillSession().getSerialNo());
             getBillItemFacade().edit(bi);
         }
 
@@ -408,7 +402,6 @@ public class BookingPastController implements Serializable {
         hh.put("ss", getSelectedServiceSession());
         System.out.println("hh = " + hh);
         System.out.println("sql = " + sql);
-        System.out.println("billSessions.size() = " + billSessions.size());
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
 
     }
@@ -441,7 +434,6 @@ public class BookingPastController implements Serializable {
                 s.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(s, s.getSessionDate()));
                 s.setTransRowNumber(a++);
             }
-            System.out.println("serviceSessions.size() = " + serviceSessions.size());
         }
 
         billSessions = new ArrayList<>();
@@ -457,7 +449,6 @@ public class BookingPastController implements Serializable {
             dbl = fetchFee(ss, FeeType.Staff);
             ss.setProfessionalFee(dbl[0]);
             ss.setProfessionalFfee(dbl[1]);
-            System.err.println("1111");
             dbl = fetchFee(ss, FeeType.Tax);
             ss.setTaxFee(dbl[0]);
             ss.setTaxFfee(dbl[1]);
@@ -545,7 +536,6 @@ public class BookingPastController implements Serializable {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         return getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
     
@@ -556,7 +546,6 @@ public class BookingPastController implements Serializable {
     }
     
     public List<Staff> getSelectedConsultants() {
-        System.out.println("selectText.length() = " + selectTextConsultant.length());
         String sql;
         Map m = new HashMap();
 
@@ -579,7 +568,6 @@ public class BookingPastController implements Serializable {
                     sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
                 }
                 System.out.println("m = " + m);
-                System.out.println("sql = " + sql);
                 consultants = getStaffFacade().findBySQL(sql, m);
             }
         } else {
@@ -596,14 +584,12 @@ public class BookingPastController implements Serializable {
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
                     System.out.println("m = " + m);
-                    System.out.println("sql = " + sql);
                     consultants = getStaffFacade().findBySQL(sql, m);
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
                             + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
-                    System.out.println("sql = " + sql);
                     consultants = getStaffFacade().findBySQL(sql);
                 }
 
@@ -628,7 +614,6 @@ public class BookingPastController implements Serializable {
                                 + " order by p.person.name";
                     }
                     System.out.println("m = " + m);
-                    System.out.println("sql = " + sql);
                     consultants = getStaffFacade().findBySQL(sql, m);
                 }
             }
@@ -638,7 +623,6 @@ public class BookingPastController implements Serializable {
         }
 
         if (consultants.size() > 0) {
-            System.out.println("consultants.size() = " + consultants.size());
             setStaff(consultants.get(0));
             setSpeciality(getStaff().getSpeciality());
         } else {

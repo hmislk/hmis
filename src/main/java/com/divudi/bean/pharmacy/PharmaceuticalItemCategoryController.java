@@ -90,7 +90,6 @@ public class PharmaceuticalItemCategoryController implements Serializable {
 
     private boolean errorCheck() {
         if (getCurrent() != null) {
-            System.out.println("getCurrent().getDescription() = " + getCurrent().getDescription());
             if (getCurrent().getDescription() == null || getCurrent().getDescription().isEmpty()) {
                 return false;
             } else {
@@ -103,7 +102,6 @@ public class PharmaceuticalItemCategoryController implements Serializable {
 
                 m.put("dis", getCurrent().getDescription());
                 List<PharmaceuticalItemCategory> list = getFacade().findBySQL(sql, m);
-                System.out.println("list.size() = " + list.size());
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getCurrent().getDescription() + " is alredy exsist.");
                     return true;

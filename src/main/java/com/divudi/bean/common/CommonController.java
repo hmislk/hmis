@@ -88,7 +88,6 @@ public class CommonController implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.setTime(dob);
         cal.add(Calendar.YEAR, 50);
-        System.out.println("cal = " + cal.getTime());
         return cal.getTime();
     }
 
@@ -142,7 +141,6 @@ public class CommonController implements Serializable {
         }
         s += "\n ***************";
 
-        System.err.println(s);
 
     }
 
@@ -154,6 +152,13 @@ public class CommonController implements Serializable {
         return s;
     }
 
+    public String getDateFormat(Date date, String formatString) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+    
     public String getDateFormat2(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");

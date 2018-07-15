@@ -232,7 +232,6 @@ public class PharmacyDealorBill implements Serializable {
     public void removeAll() {
         for (BillItem b : selectedBillItems) {
 
-            System.err.println("Removing Index " + b.getSearialNo());
             remove(b);
         }
 
@@ -427,7 +426,6 @@ public class PharmacyDealorBill implements Serializable {
         double refBallance = getReferenceBallance(tmp);
         double netValue = Math.abs(tmp.getNetValue());
 
-        System.err.println("RefBallance " + refBallance);
         //   ballance=refBallance-tmp.getNetValue();
         if (refBallance >= netValue) {
             return true;
@@ -472,7 +470,6 @@ public class PharmacyDealorBill implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }

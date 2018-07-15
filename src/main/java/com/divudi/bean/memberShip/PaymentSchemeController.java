@@ -207,14 +207,11 @@ public class PaymentSchemeController implements Serializable {
         if (getCurrent() != null) {
             if (getCurrent().getId() != null) {
                 getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());
-                System.out.println("getCurrent().getName() = " + getCurrent().getName());
             }
         }
-        System.out.println("getMembershipScheme() = " + getMembershipScheme());
         if (getMembershipScheme() != null) {
             if (getMembershipScheme().getId() != null) {
                 getCurrentAllowedPaymentMethod().setMembershipScheme(getMembershipScheme());
-                System.out.println("getMembershipScheme().getName() = " + getMembershipScheme().getName());
             }
         }
         

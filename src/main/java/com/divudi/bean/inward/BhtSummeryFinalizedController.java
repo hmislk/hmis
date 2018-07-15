@@ -826,7 +826,6 @@ public class BhtSummeryFinalizedController implements Serializable {
             if (feeValue != b.getNetValue()) {
                 i++;
                 System.err.println("**** " + i);
-                System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
 
                 sql = "Select bf from BillFee bf where bf.retired=false and  bf.billItem=:bt";
                 hm = new HashMap();
@@ -900,7 +899,6 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void errorCorrectionPharmacy() {
         for (BillItem bi : inwardBean.fetchBillItem1(BillType.PharmacyBhtPre)) {
             System.err.println("Id " + bi.getId());
-            System.err.println("Gross " + bi.getGrossValue());
             bi.setGrossValue(bi.getNetValue());
             billItemFacade.edit(bi);
         }
@@ -928,7 +926,6 @@ public class BhtSummeryFinalizedController implements Serializable {
         System.err.println("BillItem Total " + total);
         System.err.println("BillItem Discount " + discount);
         double discountPercent = (discount * 100) / total;
-        System.err.println("Discount Percent " + discountPercent);
         double disValue = 0;
 
         disValue = updateIssueBillFees(discountPercent, patientEncounter, billType);
@@ -1104,7 +1101,6 @@ public class BhtSummeryFinalizedController implements Serializable {
             if (feeValue != b.getNetValue()) {
                 i++;
                 System.err.println("**** " + i);
-                System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
 
                 sql = "Select bf "
                         + " from BillFee bf"
@@ -1160,7 +1156,6 @@ public class BhtSummeryFinalizedController implements Serializable {
             if (feeValue != b.getNetValue()) {
                 i++;
                 System.err.println("**** " + i);
-                System.err.println("PatientEncounter " + b.getBill().getPatientEncounter().getBhtNo());
 
                 sql = "Select bf "
                         + " from BillFee bf"

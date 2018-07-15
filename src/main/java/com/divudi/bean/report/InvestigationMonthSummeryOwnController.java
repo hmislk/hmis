@@ -1305,7 +1305,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         BillType[] bts = {BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill};
         List<Object[]> objects = getCount(Arrays.asList(bts));
 //        List<Object[]> objects = getCount(Arrays.asList(new BillType[]{BillType.OpdBill}));
-        System.out.println("objects.size() = " + objects.size());
         Machine lastMachine = null;
         InvestigationCountWithMachine row = new InvestigationCountWithMachine();
         for (Object[] ob : objects) {
@@ -1326,7 +1325,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 System.out.println("bt = " + bt);
                 System.out.println("classType = " + classType);
                 System.out.println("count = " + count);
-                System.out.println("tot = " + tot);
                 System.err.println("**1**");
                 continue;
             }
@@ -1336,7 +1334,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             System.out.println("lastMachine.getName() = " + lastMachine.getName());
             System.out.println("classType = " + classType);
             System.out.println("count = " + count);
-            System.out.println("tot = " + tot);
             System.err.println("*****");
             if (lastMachine == m) {
                 row.setCountAndTotal(count, bt, classType, tot);
@@ -1386,6 +1383,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         BillType[] bts = {BillType.OpdBill, BillType.LabBill, BillType.InwardBill, BillType.CollectingCentreBill};
         List<Object[]> objects = getCountWithInvestigation(Arrays.asList(bts));
+//        List<Object[]> objects = getCount(Arrays.asList(new BillType[]{BillType.OpdBill}));
 //        List<Object[]> objects = getCount(Arrays.asList(new BillType[]{BillType.OpdBill}));
         System.out.println("objects.size() = " + objects.size());
         InvestigationCountWithMachine row = new InvestigationCountWithMachine();
@@ -1483,17 +1481,16 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                     totalcc += row.getCcTotal();
                     totalInward += row.getInwardTotal();
 //                    total += (totalOpd + totalcc + totalInward);
+//                    total += (totalOpd + totalcc + totalInward);
 
                     investigationCountWithMachines.add(row);
 //                    System.out.println("row.getMachine().getName() = " + row.getMachine().getName());
 //                    System.out.println("totalCount = " + totalCount);
 //                    System.out.println("total = " + total);
-                    System.err.println("********Add********");
                     row = new InvestigationCountWithMachine();
                     row.setMachine(m);
                     lastMachine = m;
                     if (lastInvestigation == null) {
-                        System.err.println("****LIN****");
                         rowInv.setInvestigation(i);
                         rowInv.setCountAndTotal(count, bt, classType, tot);
                         lastInvestigation = i;
@@ -1512,11 +1509,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
             System.err.println("***" + j + "***");
             System.out.println("m.getName() = " + m.getName());
-            System.out.println("i.getName() = " + i.getName());
-//            System.out.println("bt = " + bt);
-//            System.out.println("classType = " + classType);
-//            System.out.println("count = " + count);
-//            System.out.println("tot = " + tot);
             System.err.println("*****");
             j++;
         }
@@ -1547,7 +1539,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
 
         investigationCountWithMachines.add(row);
-        System.out.println("investigationCountWithMachines.size() = " + investigationCountWithMachines.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/lab Report/Investigation Count/Machine count by bill type(/faces/reportLab/count_by_machine_and_bill_type.xhtml) new ");
     }

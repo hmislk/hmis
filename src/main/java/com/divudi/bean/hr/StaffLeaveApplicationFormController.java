@@ -254,7 +254,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
     }
 
     public StaffLeaveEntitle fetchLeaveEntitle(Staff staff, LeaveType leaveType, Date frm) {
-        System.out.println("frm = " + frm);
 
         String sql = "select  ss "
                 + " from StaffLeaveEntitle ss "
@@ -418,10 +417,8 @@ public class StaffLeaveApplicationFormController implements Serializable {
             System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
             System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
             Date nowDate = com.divudi.java.CommonFunctions.getEndOfDay();
-            System.out.println("nowDate = " + nowDate);
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
-                System.out.println("d = " + d);
                 if (d > 3) {
                     JsfUtil.addErrorMessage("You Can't Add This Addional."
                             + "because you can add only additionls within 3 days after Day off / PH To Date");

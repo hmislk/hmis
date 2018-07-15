@@ -199,7 +199,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("toDate", td);
 
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
         return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -242,7 +241,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("toDate", td);
 
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -323,7 +321,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
         if (count) {
             return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
@@ -402,7 +399,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
         if (count) {
             return getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
@@ -430,7 +426,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
 
         return getInstitutionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -459,7 +454,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
 
         return getStaffFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -485,7 +479,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
 
         return getSpecialityFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -515,7 +508,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
 
         return getStaffFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -540,7 +532,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fromDate", fd);
         m.put("toDate", td);
         System.err.println("Sql " + sql);
-        System.out.println("m = " + m);
 
         return getSpecialityFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -608,7 +599,6 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("bbills.size() = " + bbills.size());
         System.out.println("cbills.size() = " + cbills.size());
         System.out.println("rbills.size() = " + rbills.size());
-        System.out.println("crbills.size() = " + crbills.size());
 
         Double[] d = new Double[3];
         d[0] = 0.0;
@@ -701,11 +691,9 @@ public class ChannelReportTempController implements Serializable {
 
         if (bill.getClass().equals(CancelledBill.class)) {
             sql += " and bf.bill.cancelled=true";
-            System.err.println("cancel");
         }
         if (bill.getClass().equals(RefundBill.class)) {
             sql += " and bf.bill.refunded=true";
-            System.err.println("Refund");
         }
 
         if (ft == FeeType.OwnInstitution) {
@@ -764,7 +752,6 @@ public class ChannelReportTempController implements Serializable {
         Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
         bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null, getReportKeyWord().getInstitution());
         channelTotal.setNetTotal(fetchBillsNetTotal(bts, classes, fromDate, toDate, getSessionController().getInstitution(), null, getReportKeyWord().getInstitution()));
-        System.out.println("bills.size() = " + bills.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Agent Reports/Agent Deposite(/faces/channel/channel_report_agent_payment_bill.xhtml)");
 
@@ -778,7 +765,6 @@ public class ChannelReportTempController implements Serializable {
         Class[] classes = new Class[]{BilledBill.class, CancelledBill.class};
         bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null, getReportKeyWord().getInstitution());
         channelTotal.setNetTotal(fetchBillsNetTotal(bts, classes, fromDate, toDate, getSessionController().getInstitution(), null, getReportKeyWord().getInstitution()));
-        System.out.println("bills.size() = " + bills.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center deposists(/faces/reportLab/report_collecting_center_payment_bill.xhtml)");
 
@@ -997,7 +983,6 @@ public class ChannelReportTempController implements Serializable {
 
         sql += " order by b.insId ";
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -1048,7 +1033,6 @@ public class ChannelReportTempController implements Serializable {
 
         sql += " order by b.insId ";
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -1115,7 +1099,6 @@ public class ChannelReportTempController implements Serializable {
 
         sql += " order by b.insId ";
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -1185,7 +1168,6 @@ public class ChannelReportTempController implements Serializable {
             cal.setTime(nowDate);
             cal.add(Calendar.DATE, 1);
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Today all my booking summery(/faces/channel/channel_report_cashier_summery_date.xhtml)");
@@ -1203,7 +1185,6 @@ public class ChannelReportTempController implements Serializable {
             JsfUtil.addErrorMessage("This User Has not Bill any Bill Selected Day");
             return;
         }
-        System.out.println("todayLastBillDate = " + todayLastBillDate);
         channelDateDetailRows = new ArrayList<>();
         channelTotal = new ChannelTotal();
         Date nowDate = getFromDate();
@@ -1265,7 +1246,6 @@ public class ChannelReportTempController implements Serializable {
             cal.setTime(nowDate);
             cal.add(Calendar.DATE, 1);
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Today all my booking summery(credit date)(/faces/channel/channel_report_cashier_summery_date_created.xhtml)");
@@ -1282,7 +1262,6 @@ public class ChannelReportTempController implements Serializable {
                 JsfUtil.addErrorMessage("This User Has not Bill any Bill Selected Day");
                 return;
             }
-            System.out.println("todayLastBillDate = " + todayLastBillDate);
             ChannelUserSummeryRow row = new ChannelUserSummeryRow();
             row.setUser(wu);
             row.setDateDetailRows(fetchUserSummeryRows(wu, todayLastBillDate));
@@ -1333,7 +1312,6 @@ public class ChannelReportTempController implements Serializable {
             cal.setTime(nowDate);
             cal.add(Calendar.DATE, 1);
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         row = new ChannelSummeryDateRangeRow();
         row.setDate("VAT 15%");
@@ -1372,7 +1350,6 @@ public class ChannelReportTempController implements Serializable {
                 + fetchTotalVat(BillType.ChannelCash, PaymentMethod.Cheque, wu)
                 + fetchTotalVat(BillType.ChannelAgent, PaymentMethod.Agent, wu)
                 + fetchTotalVat(BillType.ChannelCash, PaymentMethod.Cash, wu);
-        System.out.println("d = " + d);
         return d;
     }
 
@@ -1471,7 +1448,6 @@ public class ChannelReportTempController implements Serializable {
                 cal.setTime(nowDate);
                 cal.add(Calendar.DATE, 1);
                 nowDate = cal.getTime();
-                System.out.println("nowDate = " + nowDate);
             }
 
         } else {
@@ -1479,13 +1455,11 @@ public class ChannelReportTempController implements Serializable {
                 ChannelSummeryDateRangeOrUserRow row = new ChannelSummeryDateRangeOrUserRow();
                 row.setUser(webUser);
                 row.setDateRangeRows(fetchDateRangeRows(getFromDate(), getToDate(), webUser, bts));
-                System.out.println("row.getDateRangeRows().size() = " + row.getDateRangeRows().size());
                 if (row.getDateRangeRows().size() > 1) {
                     channelSummeryDateRangeOrUserRows.add(row);
                 }
             }
         }
-        System.out.println("channelSummeryDateRangeOrUserRows.size() = " + channelSummeryDateRangeOrUserRows.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Channel count by users(/faces/channel/report_cashier_vise_count.xhtml)");
 
@@ -1535,17 +1509,14 @@ public class ChannelReportTempController implements Serializable {
                     fd = b.getCreatedAt();
                 }
                 System.out.println("2.b.getCreatedAt() = " + b.getCreatedAt());
-                System.out.println("2.fd = " + fd);
             }
 
             //
             row.setDateRangeRows(fetchDateRangeRowsSession(fd, commonFunctions.getEndOfDay(new Date()), webUser, bts));
-            System.out.println("row.getDateRangeRows().size() = " + row.getDateRangeRows().size());
             if (row.getDateRangeRows().size() > 1) {
                 channelSummeryDateRangeOrUserRows.add(row);
             }
         }
-        System.out.println("channelSummeryDateRangeOrUserRows.size() = " + channelSummeryDateRangeOrUserRows.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/New Channel report/Channel count by users(by appoinment date)(/faces/channel/report_cashier_vise_count_1.xhtml)");
 
@@ -1570,7 +1541,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
@@ -1581,7 +1551,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
             }
 
             ChannelSummeryDateRangeBillTotalRow acsr = new ChannelSummeryDateRangeBillTotalRow();
@@ -1604,7 +1573,6 @@ public class ChannelReportTempController implements Serializable {
                 cal.add(Calendar.MONTH, 1);
             }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         ChannelSummeryDateRangeBillTotalRow acsr = new ChannelSummeryDateRangeBillTotalRow();
         acsr.setDate("Total");
@@ -1630,7 +1598,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat("yy MM dd");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
@@ -1638,7 +1605,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat("yy MM");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
             }
             System.out.println("fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
             System.out.println("fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
@@ -1658,7 +1624,6 @@ public class ChannelReportTempController implements Serializable {
                 cal.add(Calendar.MONTH, 1);
             }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         ls.add((long) netTot);
         return ls;
@@ -1678,7 +1643,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat(" yy MM dd ");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
@@ -1686,7 +1650,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat(" yyyy MMM ");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
             }
             headers.add(formatedDate);
 
@@ -1698,7 +1661,6 @@ public class ChannelReportTempController implements Serializable {
                 cal.add(Calendar.MONTH, 1);
             }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         headers.add("Total");
 
@@ -1760,7 +1722,6 @@ public class ChannelReportTempController implements Serializable {
         } else {
             institutions.addAll(getInstitutionController().getAgencies());
         }
-        System.out.println("institutions.size() = " + institutions.size());
         for (Institution a : institutions) {
             ChannelSummeryDateRangeBillTotalTable aws = new ChannelSummeryDateRangeBillTotalTable();
             aws.setAgency(a);
@@ -1796,14 +1757,12 @@ public class ChannelReportTempController implements Serializable {
             ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
             row.setStaff(getReportKeyWord().getStaff());
             row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, getReportKeyWord().getStaff(), byDate, null));
-            System.out.println("row.getCounts().size() = " + row.getCounts().size());
             channelDoctorCountsRows.add(row);
         } else {
             for (Staff s : fetchBillsStaffs(getReportKeyWord().getSpeciality(), Arrays.asList(new BillType[]{BillType.ChannelPaid, BillType.ChannelCash, BillType.ChannelAgent}))) {
                 ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
                 row.setStaff(s);
                 row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, s, byDate, null));
-                System.out.println("row.getCounts().size() = " + row.getCounts().size());
                 channelDoctorCountsRows.add(row);
             }
         }
@@ -1818,7 +1777,6 @@ public class ChannelReportTempController implements Serializable {
             ChannelDoctorCountsRow row = new ChannelDoctorCountsRow();
             row.setSpeciality(s);
             row.setCounts(fetchChannelDocCountsRows(null, null, new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, false, true, null, byDate, s));
-            System.out.println("row.getCounts().size() = " + row.getCounts().size());
             channelDoctorCountsRows.add(row);
         }
 
@@ -2008,7 +1966,6 @@ public class ChannelReportTempController implements Serializable {
             cal.setTime(nowDate);
             cal.add(Calendar.DATE, 1);
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         ChannelSummeryDateRangeRow row = new ChannelSummeryDateRangeRow();
 //        row.setDate("Total");
@@ -2072,7 +2029,6 @@ public class ChannelReportTempController implements Serializable {
             cal.setTime(nowDate);
             cal.add(Calendar.DATE, 1);
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         ChannelSummeryDateRangeRow row = new ChannelSummeryDateRangeRow();
 //        row.setDate("Total");
@@ -2121,7 +2077,6 @@ public class ChannelReportTempController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         System.out.println("temMap = " + temMap);
-        System.out.println("sql = " + sql);
         return getBillFacade().findDateByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -2141,7 +2096,6 @@ public class ChannelReportTempController implements Serializable {
         channelSummeryDateRangeBillTotalTables = new ArrayList<>();
         List<Institution> institutions = new ArrayList<>();
         institutions.addAll(fetchBillsAgencys());
-        System.out.println("institutions.size() = " + institutions.size());
         channelTotal = new ChannelTotal();
         for (Institution a : institutions) {
             ChannelSummeryDateRangeBillTotalTable aws = new ChannelSummeryDateRangeBillTotalTable();
@@ -2179,7 +2133,6 @@ public class ChannelReportTempController implements Serializable {
             list.add((long) total);
         }
         row.setCounts(list);
-        System.out.println("Time 2 = " + new Date());
         channelDoctorCountsRows.add(row);
         Long l = 0l;
         for (String h : headers) {
@@ -2209,7 +2162,6 @@ public class ChannelReportTempController implements Serializable {
             list.add((long) total);
         }
         row.setCounts(list);
-        System.out.println("Time 2 = " + new Date());
         channelDoctorCountsRows.add(row);
         Long l = 0l;
         for (String h : headers) {
@@ -2243,7 +2195,6 @@ public class ChannelReportTempController implements Serializable {
         for (Staff s : doctors) {
 
             row = new ChannelReportSpecialityWiseSummeryRow();
-            System.out.println("s.getName() = " + s.getPerson().getName());
             //ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();
             row.setDoctor(s);
             row.setCounts(countsBetweenDates(s, fromDate, toDate));
@@ -2255,7 +2206,6 @@ public class ChannelReportTempController implements Serializable {
         Long l = 0l;
         for (String d : datesBetween(fromDate, toDate)) {
             c = new ColumnModel();
-            System.out.println("d = " + d);
             c.setHeader(d.toUpperCase());
             c.setProperty(l.toString());
 //           c.setProperty(d);
@@ -2267,10 +2217,9 @@ public class ChannelReportTempController implements Serializable {
         c.setHeader("Total");
         c.setProperty(l.toString());
         columns.add(c);
-
-        System.out.println("channelReportSpecialityWiseSummeryRows.size() = " + channelReportSpecialityWiseSummeryRows.size());
 //        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
 //        System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
+
 
         return channelReportSpecialityWiseSummeryRows;
     }
@@ -2292,7 +2241,6 @@ public class ChannelReportTempController implements Serializable {
             dates.add(String.valueOf(date.getYear()) + " - " + String.valueOf(date.getMonthOfYear()) + " - " + String.valueOf(date.getDayOfMonth()));
         }
 
-        System.out.println("dates.size() = " + dates.size());
         return dates;
 
     }
@@ -2340,12 +2288,10 @@ public class ChannelReportTempController implements Serializable {
 //                cal.add(Calendar.MONTH, 1);
 //            }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         //row.setSum((long) netTot);
         countsList.add((long) (btot - (ctot + rtot)));
         System.out.println("((long) (btot - (ctot + rtot))) = " + ((long) (btot - (ctot + rtot))));
-        System.out.println("countsList.size() = " + countsList.size());
         return countsList;
     }
 
@@ -2386,12 +2332,10 @@ public class ChannelReportTempController implements Serializable {
 //                cal.add(Calendar.MONTH, 1);
 //            }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         //row.setSum((long) netTot);
         totsList.add(netTot);
         System.out.println("(netTot) = " + netTot);
-        System.out.println("totsList.size() = " + totsList.size());
         return totsList;
 
     }
@@ -2439,7 +2383,6 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("dept = " + dept);
         System.out.println("billtype = " + billtype);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -2460,14 +2403,12 @@ public class ChannelReportTempController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("m = " + sql);
         total = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("total = " + total);
         return total;
     }
 
     public List<PaymentMethod> fetchPaymentMethods() {
 
         paymentMethods = Arrays.asList(PaymentMethod.values());
-        System.out.println("paymentMethods.size() = " + paymentMethods.size());
         return paymentMethods;
     }
 
@@ -2478,7 +2419,6 @@ public class ChannelReportTempController implements Serializable {
         ColumnModel c;
         for (PaymentMethod pm : fetchPaymentMethods()) {
             row = new ChannelVatReportPaymentSchemeWiseRow();
-            System.out.println("pm = " + pm);
             row.setPm(pm);
             row.setTot(totalsBetweenDates(pm, toDate, toDate));
             channelVatReportPaymentSchemeWiseRows.add(row);
@@ -2491,13 +2431,11 @@ public class ChannelReportTempController implements Serializable {
             c.setHeader(d.toUpperCase());
 
             c.setProperty(l.toString());
-            System.out.println("c.setProperty(l.toString()) = " + l.toString());
 //           c.setProperty(d);
             columns.add(c);
             l++;
         }
         c = new ColumnModel();
-        System.out.println("l = " + l);
         c.setHeader("Total");
         c.setProperty(l.toString());
         columns.add(c);
@@ -2540,7 +2478,6 @@ public class ChannelReportTempController implements Serializable {
             row.setServiceSessions(fetchServiceSessions(getReportKeyWord().getStaff()));
             channelSheduleSummeryRows.add(row);
         }
-        System.out.println("channelSheduleSummeryRows.size() = " + channelSheduleSummeryRows.size());
     }
 
     public void createAgencyBalanceTable() {
@@ -2621,7 +2558,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("class", ServiceSession.class);
 
         list = getStaffFacade().findBySQL(sql, m);
-        System.out.println("Staff list.size() = " + list.size());
 
         return list;
     }
@@ -2642,7 +2578,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("class", ServiceSession.class);
 
         list = getServiceSessionFacade().findBySQL(sql, m);
-        System.out.println("Service Session list.size() = " + list.size());
 
         return list;
     }
@@ -2666,7 +2601,6 @@ public class ChannelReportTempController implements Serializable {
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
         webUsers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("webUsers.size() = " + webUsers.size());
 
         return webUsers;
     }

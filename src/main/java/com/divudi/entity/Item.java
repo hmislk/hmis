@@ -287,7 +287,6 @@ public class Item implements Serializable, Comparable<Item> {
             try {
                 Collections.sort(worksheetItems, new ReportItemComparator());
             } catch (Exception e) {
-                System.err.println(e.getMessage());
             }
         } else {
             worksheetItems = new ArrayList<>();
@@ -308,7 +307,6 @@ public class Item implements Serializable, Comparable<Item> {
             try {
                 Collections.sort(reportItems, new ReportItemComparator());
             } catch (Exception e) {
-                System.err.println(e.getMessage());
             }
 
         } else {

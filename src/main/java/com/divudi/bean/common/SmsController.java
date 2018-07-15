@@ -75,7 +75,6 @@ public class SmsController implements Serializable {
 
             String messageBody2 = msg;
 
-            System.out.println("messageBody2 = " + messageBody2.length());
 
             final StringBuilder request = new StringBuilder(url);
             request.append(sendingNo.substring(1, 10));
@@ -85,7 +84,6 @@ public class SmsController implements Serializable {
                 System.out.println("pw = " + pw);
                 System.out.println("sendingNo = " + sendingNo);
                 System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
 
                 stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
 
@@ -143,7 +141,6 @@ public class SmsController implements Serializable {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("smses.size() = " + smses.size());
 
         if (getReportKeyWord().isAdditionalDetails()) {
             List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);

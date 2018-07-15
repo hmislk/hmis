@@ -56,7 +56,6 @@ public class BillItemController implements Serializable {
             return null;
         }
         for (BillItem bi : items) {
-            System.err.println("PASs " + id);
             if (id.equals(bi.getSearialNo())) {
                 return bi;
             }

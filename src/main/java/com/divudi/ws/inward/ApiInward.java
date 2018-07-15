@@ -137,7 +137,6 @@ public class ApiInward {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Json(Get Addmissions) = " + json);
         return json;
     }
 
@@ -171,7 +170,6 @@ public class ApiInward {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Json(Get Banks) = " + json);
         return json;
 
     }
@@ -195,7 +193,6 @@ public class ApiInward {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Json(Get Admission Is Validate) = " + json);
         return json;
 
     }
@@ -266,7 +263,6 @@ public class ApiInward {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Json(Get Payment) = " + json);
         return json;
 
     }
