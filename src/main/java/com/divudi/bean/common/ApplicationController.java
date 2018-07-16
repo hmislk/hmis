@@ -12,7 +12,6 @@ import com.divudi.entity.Sms;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.util.JsfUtil;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,7 +22,6 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 
 /**
  *
