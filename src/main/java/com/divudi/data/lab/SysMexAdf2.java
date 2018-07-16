@@ -33,7 +33,7 @@ public class SysMexAdf2 {
     private int rbcStart = 54;
     private int rbcEnd = 58;
     private int hgbStart = 59;
-    private int hgbEnd = 64;
+    private int hgbEnd = 63;
     private int hctStart = 64;
     private int hctEnd = 68;
     private int mcvStart = 69;

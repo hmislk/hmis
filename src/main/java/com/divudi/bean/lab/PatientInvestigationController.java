@@ -231,143 +231,22 @@ public class PatientInvestigationController implements Serializable {
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
-        if (sysMex.getBytes().size() == 191) {
+        if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();
             m1.setInputStringBytesSpaceSeperated(msg);
             if (m1.isCorrectReport()) {
                 return "#{success=true|msg=Received Result Format 1 for sample ID " + m1.getSampleId() + "}";
             }
-        } else if (sysMex.getBytes().size() == 255) {
+        } else if (sysMex.getBytes().size() > 253 && sysMex.getBytes().size() < 258 ) {
             SysMexAdf2 m2 = new SysMexAdf2();
             m2.setInputStringBytesSpaceSeperated(msg);
             if (m2.isCorrectReport()) {
-                return "#{success=true|msg=Received Result Format 1 for sample ID " + m2.getSampleId() + "}";
+                return "#{success=true|msg=Received Result Format 2 for sample ID " + m2.getSampleId() + "}";
             } else {
                 return extractDataFromSysMexAdf2(m2);
             }
         }
-
-        String sampleId = sysMex.getSampleIdString();
-        System.out.println("Checking Report For the First Time");
-        if (!sysMex.isCorrectReport()) {
-            sysMex.setShift2(-1);
-            sysMex.shiftPositions();
-            if (!sysMex.isCorrectReport()) {
-                sysMex.setShift2(-2);
-                sysMex.shiftPositions();
-                if (!sysMex.isCorrectReport()) {
-                    sysMex.setShift2(-3);
-                    sysMex.shiftPositions();
-                    if (!sysMex.isCorrectReport()) {
-                        sysMex.setShift2(1);
-                        sysMex.shiftPositions();
-                        if (!sysMex.isCorrectReport()) {
-                            sysMex.setShift2(2);
-                            sysMex.shiftPositions();
-                            if (!sysMex.isCorrectReport()) {
-                                sysMex.setShift2(3);
-                                sysMex.shiftPositions();
-                                return "#{success=false|msg=Wrong Data. Please resent results " + sampleId + "}";
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        System.out.println("sysMex.getSampleId() = " + sysMex.getSampleId());
-        PatientSample ps = getPatientSampleFromId(sysMex.getSampleId());
-        System.out.println("ps = " + ps);
-        if (ps == null) {
-            return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
-        }
-        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("pscs = " + pscs);
-        if (pscs == null) {
-            return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
-        }
-        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        if (ptixs == null || ptixs.isEmpty()) {
-            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
-        }
-        for (PatientInvestigation pi : ptixs) {
-            System.out.println("pi = " + pi);
-            System.out.println("pi.getBillItem().getBill().getInsId() = " + pi.getBillItem().getBill().getInsId());
-            List<PatientReport> prs = new ArrayList<>();
-            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
-                PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
-                prs.add(tpr);
-            }
-            List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
-            System.out.println("temItems = " + temItems);
-            for (Item ti : temItems) {
-                if (ti instanceof Investigation) {
-                    Investigation tix = (Investigation) ti;
-                    if (tix.getMachine() != null && tix.getMachine().getName().toLowerCase().contains("sysmex")) {
-                        PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
-                        prs.add(tpr);
-                    }
-                }
-            }
-            for (PatientReport tpr : prs) {
-
-                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
-                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
-                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
-                        switch (test) {
-                            case "WBC":
-                                priv.setStrValue(sysMex.getWbc());
-                                break;
-                            case "NEUT%":
-                                priv.setStrValue(sysMex.getNeutPercentage());
-                                break;
-                            case "LYMPH%":
-                                priv.setStrValue(sysMex.getLymphPercentage());
-                                break;
-                            case "BASO%":
-                                priv.setStrValue(sysMex.getBasoPercentage());
-                                break;
-                            case "MONO%":
-                                priv.setStrValue(sysMex.getMonoPercentage());
-                                break;
-                            case "EO%":
-                                priv.setStrValue(sysMex.getEoPercentage());
-                                break;
-                            case "RBC":
-                                priv.setStrValue(sysMex.getRbc());
-                                break;
-                            case "HGB":
-                                priv.setStrValue(sysMex.getHgb());
-                                break;
-                            case "HCT":
-                                priv.setStrValue(sysMex.getHct());
-                                break;
-                            case "MCV":
-                                priv.setStrValue(sysMex.getMcv());
-                                break;
-                            case "MCH":
-                                priv.setStrValue(sysMex.getMch());
-                                break;
-                            case "MCHC":
-                                priv.setStrValue(sysMex.getMchc());
-                                break;
-                            case "PLT":
-                                priv.setStrValue(sysMex.getPlt());
-                                break;
-
-                        }
-                    }
-                }
-                tpr.setDataEntered(true);
-                tpr.setDataEntryAt(new Date());
-                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
-                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
-                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
-                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
-                getPrFacade().edit(tpr);
-            }
-        }
-
-        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
+        return "#{success=false|msg=Wrong Data Communication}";
     }
 
     public String extractDataFromSysMexAdf2(SysMexAdf2 adf2) {
