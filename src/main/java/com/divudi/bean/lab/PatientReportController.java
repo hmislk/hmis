@@ -992,7 +992,7 @@ public class PatientReportController implements Serializable {
                 }
                 b += "</td></tr>";
             }
-            b+="<table>";
+            b+="</table>";
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -1013,7 +1013,7 @@ public class PatientReportController implements Serializable {
 
         
         b += "</body></html>";
-        
+        System.err.println("Report HTML is = " + b);
         return b;
     }
 

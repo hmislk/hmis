@@ -344,8 +344,6 @@
                                 </p:commandButton>
                                 <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
-<!--                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF Save" action="#{patientReportController.createPDFAndSaveAsaFile}" 
-                                                  rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />-->
                             </h:panelGrid>
 
                         </div>

@@ -5,39 +5,11 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.AppEmail;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeChange;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.ArrivalRecord;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.EmailFacade;
-import com.divudi.facade.FeeChangeFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
 import com.divudi.facade.util.JsfUtil;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -45,7 +17,6 @@ import javax.activation.FileDataSource;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -57,7 +28,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -151,10 +121,10 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
-            JsfUtil.addErrorMessage("Error. " + e.getMessage());
+            System.err.println("Error = " + e.getMessage());
             return false;
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error. " + e.getMessage());
+            System.err.println("Error = " + e.getMessage());
             return false;
         }
 
