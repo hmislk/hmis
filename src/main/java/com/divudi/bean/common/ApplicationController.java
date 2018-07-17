@@ -51,7 +51,7 @@ public class ApplicationController {
     private String body;
 
     public void sendEmail() {
-        eejb.sendEmail1(subject, body);
+        eejb.sendEmail("arogyafirst","arogya123@","arogyafirst@gmail.com","buddhika.ari@gmail.com", subject, body, null);
         JsfUtil.addSuccessMessage("Check Mail");
     }
 

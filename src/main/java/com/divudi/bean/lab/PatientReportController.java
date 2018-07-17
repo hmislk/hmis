@@ -65,6 +65,8 @@ import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -154,11 +156,24 @@ public class PatientReportController implements Serializable {
     InvestigationItem investigationItem;
     private List<Selectable> selectables = new ArrayList<>();
     private String encryptedPatientReportId;
+    private String encryptedExpiary;
 
     public void preparePatientReportByIdForRequests() {
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
             return;
+        }
+        if(encryptedExpiary!=null){
+            Date expiaryDate;
+            try {
+                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(securityController.decrypt(encryptedExpiary));
+            } catch (ParseException ex) {
+                System.err.println("Error = " + ex.getMessage());
+                return;
+            }
+            if(expiaryDate.after(new Date())){
+                return;
+            }
         }
         String idStr = getSecurityController().decrypt(encryptedPatientReportId);
         Long id = 0l;
@@ -309,33 +324,31 @@ public class PatientReportController implements Serializable {
     }
 
     public void sendEmail() {
-        
-        if(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail() == null){
+
+        if (getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail() == null) {
             JsfUtil.addErrorMessage("Email not given");
-            return ;
+            return;
         }
-        if(!CommonController.isValidEmail(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail())){
+        if (!CommonController.isValidEmail(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail())) {
             JsfUtil.addErrorMessage("Given email is NOT valid.");
-            return ;
+            return;
         }
-        
-        
-        
-        getEmailManagerEjb().sendEmail1(
+
+        boolean sent = getEmailManagerEjb().sendEmail(
+                getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername(),
+                getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword(),
+                getCurrentPatientReport().getApproveInstitution().getEmail(),
                 getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail(),
                 getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results",
-                emailMessageBody(currentPatientReport));
-        
-//        boolean sent = getEmailManagerEjb().sendEmail1(
-//                getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getEmail(),
-//                getCurrentPatientReport().getPatientInvestigation().getInvestigation().getName() + " Results",
-//                emailMessageBody(currentPatientReport),
-//                createPDFAndSaveAsaFile());
+                emailMessageBody(currentPatientReport),
+                createPDFAndSaveAsaFile());
 
-       
+        if (sent) {
             JsfUtil.addSuccessMessage("Email Sent");
-       
-        
+        } else {
+            JsfUtil.addErrorMessage("Email Sending Failed");
+        }
+
     }
 
     public void sendEmailOld() {
@@ -427,7 +440,6 @@ public class PatientReportController implements Serializable {
             String toBeReplaced;
 
             toBeReplaced = patternStart + s.getFullText() + patternEnd;
-
 
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
@@ -931,17 +943,34 @@ public class PatientReportController implements Serializable {
     }
 
     public String emailMessageBody(PatientReport r) {
-        String b = "";
-        b = "Dear " + r.getPatientInvestigation().getBillItem().getBill() + ",\n";
-        b += " Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready.\n\n";
-        b += "\tTest\tResults\tUnit\tReference\n";
+        String b = "<html><head></head><body>";
+        b = "<p>Dear " + r.getPatientInvestigation().getBillItem().getBill() + ",<br/>";
+        b += "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready.</br/></p>";
+        b += "<table>"
+                + "<tr>"
+                + "<th>"
+                + "Test"
+                + "</th>"
+                + "<th>"
+                + "Result"
+                + "</th>"
+                + "<th>"
+                + "Unit"
+                + "</th>"
+                + "<th>"
+                + "Reference"
+                + "</th>"
+                + "<tr>"
+                + "";
         for (PatientReportItemValue v : r.getPatientReportItemValues()) {
             if (v.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                b+="<tr><td>";
                 if (v.getInvestigationItem().getTestLabel() != null) {
-                    b += v.getInvestigationItem().getTestLabel().getName() + "\t";
+                    b += v.getInvestigationItem().getTestLabel().getName() ;
                 } else {
-                    b += v.getInvestigationItem().getName() + "\t";
+                    b += v.getInvestigationItem().getName();
                 }
+                b+="</td><td>";
                 switch (v.getInvestigationItem().getIxItemValueType()) {
                     case Varchar:
                         b += v.getStrValue() + "\t";
@@ -953,21 +982,38 @@ public class PatientReportController implements Serializable {
                         b += v.getDoubleValue() + "\t";
                         break;
                 }
+                b+="</td><td>";
                 if (v.getInvestigationItem().getUnitLabel() != null) {
-                    b += v.getInvestigationItem().getUnitLabel().getName() + "\t";
+                    b += v.getInvestigationItem().getUnitLabel().getName() ;
                 }
+                b+="</td><td>";
                 if (v.getInvestigationItem().getReferenceLabel() != null) {
-                    b += v.getInvestigationItem().getReferenceLabel().getName() + "\t";
+                    b += v.getInvestigationItem().getReferenceLabel().getName() ;
                 }
-                b += "\n";
+                b += "</td></tr>";
             }
+            b+="<table>";
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
         String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        url += "&user="+ed;
         ed = getSecurityController().encrypt(ed);
-        b += "\nYour Report is attached.\nPlease visit the following link to view or print the report.The link will expire in one month.\n";
+        b += "<p>"
+                + "Your Report is attached"
+                + "<br/>"
+                + "Please visit "
+                + "<a href=\""
+                + url
+                + "\">this link</a>"
+                + " to view or print the report.The link will expire in one month for privasy and confidentially issues."
+                + "<br/>"
+                + "</p>";
 
+        
+        b += "</body></html>";
+        
         return b;
     }
 
@@ -1002,16 +1048,22 @@ public class PatientReportController implements Serializable {
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
 
+            e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
             e.setMessageSubject("Your Report is Ready");
             e.setMessageBody(emailMessageBody(currentPatientReport));
             e.setAttachment1(createPDFAndSaveAsaFile());
 
             e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
             e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
-            e.setSendingEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
+            e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
+
+            
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            
+            e.setSentSuccessfully(false);
 
             getEmailFacade().create(e);
-            applicationController.getMailsToSent().add(e);
         }
 
         UtilityController.addSuccessMessage("Approved");
@@ -1076,7 +1128,7 @@ public class PatientReportController implements Serializable {
 //        long serialVersionUID = 626953318628565053L;
         System.out.println("enter 1");
 //        long serialVersionUID = 626953318628565053L;
-                FacesContext facesContext = FacesContext.getCurrentInstance();
+        FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
         System.out.println("enter 2");
         response.reset();
@@ -1406,6 +1458,14 @@ public class PatientReportController implements Serializable {
         return emailManagerEjb;
     }
 
+    public String getEncryptedExpiary() {
+        return encryptedExpiary;
+    }
+
+    public void setEncryptedExpiary(String encryptedExpiary) {
+        this.encryptedExpiary = encryptedExpiary;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -1458,4 +1518,6 @@ public class PatientReportController implements Serializable {
         this.encryptedPatientReportId = encryptedPatientReportId;
     }
 
+    
+    
 }

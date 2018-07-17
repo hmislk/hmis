@@ -26,46 +26,41 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class AppEmail implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
-    
+
     @ManyToOne
     PatientReport patientReport;
     @ManyToOne
     private PatientInvestigation patientInvestigation;
     @ManyToOne
     private Bill bill;
-    @Lob
-    String sendingMessage;
-    @Lob
-    String receivedMessage;
-    String userId;
-    String password;
-    String sendingUrl;
+
     @Enumerated(EnumType.STRING)
-    private MessageType smsType;    
-    
-    
-    private String toEmail;
+    private MessageType smsType;
+
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
+
+    private String receipientEmail;
     private String messageSubject;
+    @Lob
     private String messageBody;
-    
-    
+
     private String senderUsername;
     private String senderPassword;
-    private String sendingEmail;
-    
-    
-    
+    private String senderEmail;
+
     private String attachment1;
     private String attachment2;
     private String attachment3;
     private String attachment4;
-        //Created Properties
+    //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -91,9 +86,6 @@ public class AppEmail implements Serializable {
         this.bill = bill;
     }
 
-    
-    
-    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
@@ -102,8 +94,6 @@ public class AppEmail implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
-    
-    
     public PatientReport getPatientReport() {
         return patientReport;
     }
@@ -112,46 +102,7 @@ public class AppEmail implements Serializable {
         this.patientReport = patientReport;
     }
 
-    public String getSendingMessage() {
-        return sendingMessage;
-    }
-
-    public void setSendingMessage(String sendingMessage) {
-        this.sendingMessage = sendingMessage;
-    }
-
-    public String getReceivedMessage() {
-        return receivedMessage;
-    }
-
-    public void setReceivedMessage(String receivedMessage) {
-        this.receivedMessage = receivedMessage;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getSendingUrl() {
-        return sendingUrl;
-    }
-
-    public void setSendingUrl(String sendingUrl) {
-        this.sendingUrl = sendingUrl;
-    }
-
+    
     public WebUser getCreater() {
         return creater;
     }
@@ -200,8 +151,6 @@ public class AppEmail implements Serializable {
         this.retireComments = retireComments;
     }
 
-    
-
     public Long getId() {
         return id;
     }
@@ -243,12 +192,12 @@ public class AppEmail implements Serializable {
         this.smsType = smsType;
     }
 
-    public String getToEmail() {
-        return toEmail;
+    public String getReceipientEmail() {
+        return receipientEmail;
     }
 
-    public void setToEmail(String toEmail) {
-        this.toEmail = toEmail;
+    public void setReceipientEmail(String receipientEmail) {
+        this.receipientEmail = receipientEmail;
     }
 
     public String getMessageSubject() {
@@ -331,14 +280,30 @@ public class AppEmail implements Serializable {
         this.senderPassword = senderPassword;
     }
 
-    public String getSendingEmail() {
-        return sendingEmail;
+    public String getSenderEmail() {
+        return senderEmail;
     }
 
-    public void setSendingEmail(String sendingEmail) {
-        this.sendingEmail = sendingEmail;
+    public void setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
     }
 
+    public Institution getInstitution() {
+        return institution;
+    }
 
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    
     
 }
