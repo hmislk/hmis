@@ -1209,7 +1209,14 @@ public class PatientReportController implements Serializable {
     }
 
     public String createPDFAndSaveAsaFile() {
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
+        String temId = currentPatientReport.getId() + "";
+        temId = securityController.encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId,  "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error " + ex.getMessage());
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId;
         FileOutputStream fop = null;
         File file;
         try {
