@@ -8,6 +8,7 @@ package com.divudi.ejb;
 import com.divudi.entity.AppEmail;
 import com.divudi.facade.EmailFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -38,9 +39,7 @@ public class EmailManagerEjb {
 
     @EJB
     private EmailFacade emailFacade;
-    
-    
-    
+
     @SuppressWarnings("unused")
     @Schedule(second = "59", minute = "*/5", hour = "*", persistent = false)
     public void myTimer() {
@@ -57,11 +56,11 @@ public class EmailManagerEjb {
 //            e.getSentSuccessfully();
 //            e.getInstitution();
 //        }
-        for(AppEmail e:emails){
+        for (AppEmail e : emails) {
             e.setSentSuccessfully(Boolean.TRUE);
             getEmailFacade().edit(e);
-            
-            sendEmail(e.getInstitution().getEmailSendingUsername(), 
+
+            sendEmail(e.getInstitution().getEmailSendingUsername(),
                     e.getInstitution().getEmailSendingPassword(),
                     e.getSenderEmail(),
                     e.getReceipientEmail(),
@@ -69,7 +68,7 @@ public class EmailManagerEjb {
                     e.getMessageBody(),
                     e.getAttachment1());
         }
-        
+
     }
 
     public boolean sendEmail(
@@ -94,6 +93,7 @@ public class EmailManagerEjb {
             }
         });
         try {
+            System.err.println("Starting 1");
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(sendingEmail));
             message.setRecipients(Message.RecipientType.TO,
@@ -104,14 +104,19 @@ public class EmailManagerEjb {
 
             BodyPart msbp1 = new MimeBodyPart();
             msbp1.setContent(messageHtml, "text/html; charset=utf-8");
+            System.err.println("Starting 2 " + messageHtml);
             multipart.addBodyPart(msbp1);
 
+            System.err.println("Starting 3" + attachmentFile1Path);
             if (attachmentFile1Path != null) {
-                MimeBodyPart msbp2 = new MimeBodyPart();
-                DataSource source = new FileDataSource(attachmentFile1Path);
-                msbp2.setDataHandler(new DataHandler(source));
-                msbp2.setFileName(attachmentFile1Path);
-                multipart.addBodyPart(msbp2);
+                File f = new File(attachmentFile1Path);
+                if (f.exists() && !f.isDirectory()) {
+                    MimeBodyPart msbp2 = new MimeBodyPart();
+                    DataSource source = new FileDataSource(attachmentFile1Path);
+                    msbp2.setDataHandler(new DataHandler(source));
+                    msbp2.setFileName(attachmentFile1Path);
+                    multipart.addBodyPart(msbp2);
+                }
             }
 
             message.setContent(multipart);
@@ -133,8 +138,5 @@ public class EmailManagerEjb {
     public EmailFacade getEmailFacade() {
         return emailFacade;
     }
-    
-    
-    
 
 }

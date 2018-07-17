@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -163,23 +165,30 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        if(encryptedExpiary!=null){
+        if (encryptedExpiary != null) {
             Date expiaryDate;
             try {
-                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(securityController.decrypt(encryptedExpiary));
+                String ed = encryptedExpiary;
+                System.err.println("1 " + encryptedExpiary);
+                ed = securityController.decrypt(ed);
+                System.err.println("2 " + ed);
+                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
             } catch (ParseException ex) {
-                System.err.println("Error = " + ex.getMessage());
+                System.err.println("3 Error = " + ex.getMessage());
                 return;
             }
-            if(expiaryDate.after(new Date())){
+            if (expiaryDate.before(new Date())) {
                 return;
             }
         }
         String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        System.err.println("4 " + idStr);
         Long id = 0l;
         try {
             id = Long.parseLong(idStr);
+            System.err.println("5 " + id);
         } catch (Exception e) {
+            System.err.println("6 " + e.getMessage());
             return;
         }
         PatientReport pr = getFacade().find(id);
@@ -943,9 +952,16 @@ public class PatientReportController implements Serializable {
     }
 
     public String emailMessageBody(PatientReport r) {
-        String b = "<html><head></head><body>";
-        b = "<p>Dear " + r.getPatientInvestigation().getBillItem().getBill() + ",<br/>";
-        b += "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready.</br/></p>";
+        String b = "<!DOCTYPE html>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                + "<head>"
+                + "<title>"
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + "</title>"
+                + "</head>"
+                + "<body>";
+        b += "<p>Dear " + r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + ",<br/>";
+        b += "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready.<br/></p>";
         b += "<table>"
                 + "<tr>"
                 + "<th>"
@@ -960,17 +976,17 @@ public class PatientReportController implements Serializable {
                 + "<th>"
                 + "Reference"
                 + "</th>"
-                + "<tr>"
+                + "</tr>"
                 + "";
         for (PatientReportItemValue v : r.getPatientReportItemValues()) {
             if (v.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
-                b+="<tr><td>";
+                b += "<tr><td>";
                 if (v.getInvestigationItem().getTestLabel() != null) {
-                    b += v.getInvestigationItem().getTestLabel().getName() ;
+                    b += v.getInvestigationItem().getTestLabel().getName();
                 } else {
                     b += v.getInvestigationItem().getName();
                 }
-                b+="</td><td>";
+                b += "</td><td>";
                 switch (v.getInvestigationItem().getIxItemValueType()) {
                     case Varchar:
                         b += v.getStrValue() + "\t";
@@ -982,24 +998,38 @@ public class PatientReportController implements Serializable {
                         b += v.getDoubleValue() + "\t";
                         break;
                 }
-                b+="</td><td>";
+                b += "</td><td>";
                 if (v.getInvestigationItem().getUnitLabel() != null) {
-                    b += v.getInvestigationItem().getUnitLabel().getName() ;
+                    b += v.getInvestigationItem().getUnitLabel().getName();
                 }
-                b+="</td><td>";
+                b += "</td><td>";
                 if (v.getInvestigationItem().getReferenceLabel() != null) {
-                    b += v.getInvestigationItem().getReferenceLabel().getName() ;
+                    b += v.getInvestigationItem().getReferenceLabel().getName();
                 }
                 b += "</td></tr>";
             }
-            b+="</table>";
         }
+        b += "</table>";
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
+        
+        String temId = currentPatientReport.getId() + "";
+        temId=getSecurityController().encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        
         String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        url += "&user="+ed;
         ed = getSecurityController().encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -1007,11 +1037,10 @@ public class PatientReportController implements Serializable {
                 + "<a href=\""
                 + url
                 + "\">this link</a>"
-                + " to view or print the report.The link will expire in one month for privasy and confidentially issues."
+                + " to view or print the report.The link will expire in one month for privacy and confidentially issues."
                 + "<br/>"
                 + "</p>";
 
-        
         b += "</body></html>";
         System.err.println("Report HTML is = " + b);
         return b;
@@ -1057,10 +1086,9 @@ public class PatientReportController implements Serializable {
             e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
             e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
 
-            
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            
+
             e.setSentSuccessfully(false);
 
             getEmailFacade().create(e);
@@ -1518,6 +1546,4 @@ public class PatientReportController implements Serializable {
         this.encryptedPatientReportId = encryptedPatientReportId;
     }
 
-    
-    
 }
