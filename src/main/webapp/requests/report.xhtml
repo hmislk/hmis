@@ -11,6 +11,7 @@
 
     <f:metadata >
         <f:viewParam name="id" value="#{patientReportController.encryptedPatientReportId}" ></f:viewParam>
+        <f:viewParam name="user" value="#{patientReportController.encryptedExpiary}" ></f:viewParam>
         <f:viewAction action="#{patientReportController.preparePatientReportByIdForRequests()}" ></f:viewAction>
     </f:metadata>
     <head>
