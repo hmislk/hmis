@@ -164,7 +164,6 @@ public class TransferIssueController implements Serializable {
                 bItem.setItem(i.getBillItem().getItem());
                 bItem.setReferanceBillItem(i.getBillItem());
                 bItem.setTmpQty(sq.getQty());
-                System.err.println("Bill Item QTY " + bItem.getQty());
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));
                 //     //System.err.println("List "+bItem.getTmpSuggession());
@@ -254,7 +253,6 @@ public class TransferIssueController implements Serializable {
                     Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
-            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
                 //Addinng Staff

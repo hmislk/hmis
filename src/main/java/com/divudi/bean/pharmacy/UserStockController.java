@@ -112,11 +112,9 @@ public class UserStockController implements Serializable {
 
 
     public UserStockContainer saveUserStockContainer(UserStockContainer userStockContainer, WebUser webUser) {
-        System.err.println("START SAVE USER STOCK CONTAINER");
         if (userStockContainer.getId() == null) {
             System.err.println("1");
             retiredAllUserStockContainer(webUser);
-            System.err.println("2");
             userStockContainer.setCreater(webUser);
             userStockContainer.setCreatedAt(new Date());
 
@@ -128,7 +126,6 @@ public class UserStockController implements Serializable {
     }
 
     public UserStock saveUserStock(BillItem tbi, WebUser webUser, UserStockContainer userStockContainer) {
-        System.err.println("1");
         UserStock us = new UserStock();
         us.setStock(tbi.getPharmaceuticalBillItem().getStock());
         us.setUpdationQty(tbi.getQty());

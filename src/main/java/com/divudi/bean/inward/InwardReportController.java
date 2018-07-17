@@ -149,7 +149,6 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Select a Selection Methord");
             return;
         }
-        System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
         if (getReportKeyWord().getString().equals("0")) {
             fillAdmissions(null, null);
         } else if (getReportKeyWord().getString().equals("1")) {
@@ -230,7 +229,6 @@ public class InwardReportController implements Serializable {
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.err.println("Time = " + new Date());
         System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
 //        calTtoal();
         calTtoal(patientEncounters);
     }
@@ -269,7 +267,6 @@ public class InwardReportController implements Serializable {
                 netPaid += p.getPaidByCreditCompany() + p.getFinalBill().getPaidAmount();
             }
         }
-        System.err.println("Time = " + new Date());
     }
 
     public void fillAdmissionBookOnlyInwardDeleted() {
@@ -380,7 +377,6 @@ public class InwardReportController implements Serializable {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
             System.out.println("p.getBhtNo() = " + p.getBhtNo());
-            System.out.println("p.getFinalBill() = " + p.getFinalBill());
             if (p.getFinalBill()==null) {
                 continue;
             }
@@ -1040,7 +1036,6 @@ public class InwardReportController implements Serializable {
         }
 
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -1079,7 +1074,6 @@ public class InwardReportController implements Serializable {
         }
 
         System.out.println("sql = " + sql);
-        System.out.println("temMap = " + temMap);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }

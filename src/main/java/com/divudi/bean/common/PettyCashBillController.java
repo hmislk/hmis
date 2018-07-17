@@ -146,11 +146,9 @@ public class PettyCashBillController implements Serializable {
         h.put("fd", fd);
         h.put("inv", inv);
         System.out.println("h = " + h);
-        System.out.println("sql = " + sql);
         List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
         if (tmp.size() > 0) {
-            System.out.println("tmp.get(0).getInsId() =" + tmp.get(0).getInsId());
             return true;
         }
 
@@ -158,7 +156,6 @@ public class PettyCashBillController implements Serializable {
     }
 
     public void checkInvoiceNumber() {
-        System.out.println("createInvoiceNumberSuffix() = " + createInvoiceNumberSuffix());
     }
 
     private String createInvoiceNumberSuffix() {
@@ -181,7 +178,6 @@ public class PettyCashBillController implements Serializable {
 
         }
         String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
-        System.out.println("s = " + s);
 
         return s;
     }
@@ -285,7 +281,6 @@ public class PettyCashBillController implements Serializable {
         getSessionController().setLoggedUser(wb);
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
-        System.out.println("getCurrent().getInvoiceNumber() = " + getCurrent().getInvoiceNumber());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Petty Cash/ Petty Cash payment(/faces/petty_cash_bill.xhtml)");
 

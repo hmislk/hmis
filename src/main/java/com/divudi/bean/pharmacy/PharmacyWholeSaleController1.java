@@ -1255,7 +1255,6 @@ public class PharmacyWholeSaleController1 implements Serializable {
 //    checked
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
-            System.err.println("List Item " + bItem.getPharmaceuticalBillItem().getStock());
             if (bItem.getPharmaceuticalBillItem().getStock().equals(getBillItem().getPharmaceuticalBillItem().getStock())) {
                 return true;
             }
@@ -1527,7 +1526,6 @@ public class PharmacyWholeSaleController1 implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
             return dr;
@@ -1543,7 +1541,6 @@ public class PharmacyWholeSaleController1 implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 
@@ -1555,7 +1552,6 @@ public class PharmacyWholeSaleController1 implements Serializable {
         if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
             tdp = toInstitution.getPharmacyDiscount();
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 

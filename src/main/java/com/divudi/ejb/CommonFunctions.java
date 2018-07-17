@@ -64,7 +64,6 @@ public class CommonFunctions {
         Date startOfDay = getStartOfDay(firstDate);
         Date endOfDay = getEndOfDay(firstDate);
 
-        System.err.println("Start " + startOfDay);
         if (startOfDay.before(secondDate) && endOfDay.after(secondDate)) {
             return true;
         } else {
@@ -314,7 +313,6 @@ public class CommonFunctions {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DATE);
         calendar.set(year, month, day, 23, 59, 59);
-        System.out.println("2.calendar.getTime() = " + calendar.getTime());
         return calendar.getTime();
     }
 
@@ -332,7 +330,6 @@ public class CommonFunctions {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(cal.get(Calendar.YEAR), 0, 1, 0, 0, 0);
-        System.out.println("First : " + cal.getTime());
         return cal.getTime();
     }
 
@@ -352,7 +349,6 @@ public class CommonFunctions {
         cal.set(Calendar.MONTH, 11);
         cal.set(Calendar.DATE, 31);
         cal.set(cal.get(Calendar.YEAR), 11, 31, 23, 59, 59);
-        System.out.println("Last : " + cal.getTime());
         return cal.getTime();
     }
 
@@ -457,7 +453,6 @@ public class CommonFunctions {
         int ageMonths = period.getMonths();
         System.out.println("ageMonths = " + ageMonths);
         int ageDays = period.getDays();
-        System.out.println("ageDays = " + ageDays);
         
 //        Years years=Years.yearsBetween(birthDay, now);
 //        Months months=Months.monthsBetween(birthDay, now);

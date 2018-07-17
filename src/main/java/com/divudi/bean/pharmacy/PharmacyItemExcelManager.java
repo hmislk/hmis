@@ -439,7 +439,6 @@ public class PharmacyItemExcelManager implements Serializable {
             BillFee billFee = (BillFee) obj[0];
             BillItem billItem = (BillItem) obj[1];
 
-            System.err.println("BHT " + billFee.getBill().getPatientEncounter().getBhtNo() + "Fee Value : " + billFee.getFeeValue() + " Paid : " + billFee.getPaidValue() + " Paid NetTOtal :" + billItem.getNetValue());
             billFee.setPaidValue(billFee.getFeeValue());
             billFeeFacade.edit(billFee);
         }
@@ -611,7 +610,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.err.println("Po No " + b.getReferenceBill().getDeptId());
                 System.err.println("1 " + b.getBillType());
                 System.err.println("2 " + b.getReferenceBill().getBillType());
-                System.err.println("3" + refApproved.getBillType());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -668,7 +666,6 @@ public class PharmacyItemExcelManager implements Serializable {
 
     public void removeStoreItem() {
         for (Item storeItem : getItemController().fetchStoreItem()) {
-            System.err.println("Removing Store Item " + storeItem.getName());
 
             Item pharmacyItem = fetchPharmacyItem(storeItem);
 
@@ -909,9 +906,8 @@ public class PharmacyItemExcelManager implements Serializable {
                     + " from BillItem bi where bi.retired=false and bi.bill=:b ";
             temMap.put("b", b);
             totalBySql = getBillItemFacade().findDoubleByJpql(sql, temMap);
-
 //            if (b.getNetTotal() != totalBySql) {
-            System.err.println("Net Total " + b.getNetTotal());
+
             b.setNetTotal(totalBySql);
             getBillFacade().edit(b);
 //            }
@@ -991,10 +987,10 @@ public class PharmacyItemExcelManager implements Serializable {
 
             double value = obj.getNetRate() * obj.getPharmaceuticalBillItem().getQty();
             //System.out.println("*************************************");
+            //System.out.println("*************************************");
             System.err.println("BillClass " + obj.getBill().getClass());
             System.err.println("QTY " + obj.getPharmaceuticalBillItem().getQty());
             System.err.println("Net Rate " + obj.getNetRate());
-            System.err.println("Gross " + obj.getGrossValue());
 
             if (obj.getGrossValue() > 0) {
                 obj.setGrossValue(Math.abs(value));
@@ -1171,7 +1167,6 @@ public class PharmacyItemExcelManager implements Serializable {
         for (PharmaceuticalBillItem b : list) {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
-            System.err.println("Stock History " + b.getStockHistory().getStockQty());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             if (sh != null) {

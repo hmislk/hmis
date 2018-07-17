@@ -225,7 +225,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
         inwardProfessions = new ArrayList<>();
 
         for (AdmissionType at : getAdmissionTypeController().getItems()) {
-            System.err.println("1 " + at.getName());
             AdmissionTypeBills admB = new AdmissionTypeBills();
             admB.setAdmissionType(at);
             admB.setTotal(getInwardProfTot(at));
@@ -630,7 +629,6 @@ public class CashSummeryControllerExcel1 implements Serializable {
     public void createOPdCategoryTable() {
         string1Value2s = new ArrayList<>();
         for (Category cat : getBillBean().fetchBilledOpdCategory(fromDate, toDate, institution)) {
-            System.err.println("Cat " + cat.getName() + " TIME " + new Date());
             for (Item i : getBillBean().fetchBilledOpdItem(cat, fromDate, toDate, institution)) {
                 //   System.err.println("Item " + i.getName() + " TIME " + new Date());
                 double count = getBillBean().calBilledItemCount(i, getFromDate(), getToDate(), getInstitution());

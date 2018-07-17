@@ -185,7 +185,6 @@ public class PersonInstitutionController implements Serializable {
                 getPersonInstitutionFacade().create(p);
             } else {
                 System.out.println("pi.getInstitution().getName() = " + pi.getInstitution().getName());
-                System.out.println("pi.getStaff().getPerson().getNameWithInitials() = " + pi.getStaff().getPerson().getNameWithInitials());
                 pi.setRetired(false);
                 getPersonInstitutionFacade().edit(pi);
             }
@@ -265,7 +264,6 @@ public class PersonInstitutionController implements Serializable {
         withOutInstitutionPersonsStaffs.removeAll(staffsWithInstitutionPersons);
 
         System.out.println("staffsAll = " + staffsAll.size());
-        System.out.println("staffsWithInstitutionPersons = " + staffsWithInstitutionPersons.size());
     }
 
     public PersonInstitution findDeactivatedPersonInstitution(Institution i, Staff s, boolean b) {

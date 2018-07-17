@@ -98,7 +98,6 @@ public class CreditCompanyDueController implements Serializable {
         Date toDate = null;
 
         makeNull();
-        System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBills(true);
@@ -136,7 +135,6 @@ public class CreditCompanyDueController implements Serializable {
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBillsPharmacy(true);
-        System.out.println("list.size() = " + list.size());
 
         setIns.addAll(list);
 
@@ -165,7 +163,6 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         makeNull();
-        System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBills(false);
@@ -392,7 +389,6 @@ public class CreditCompanyDueController implements Serializable {
 
             System.err.println("DayCount " + dayCount);
             System.err.println("NetTotal " + b.getNetTotal());
-            System.err.println("Paid " + b.getPaidAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -419,7 +415,6 @@ public class CreditCompanyDueController implements Serializable {
 
             System.err.println("DayCount " + dayCount);
             System.err.println("NetTotal " + b.getNetTotal());
-            System.err.println("Paid " + b.getPaidAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -446,7 +441,6 @@ public class CreditCompanyDueController implements Serializable {
 
             System.err.println("DayCount " + dayCount);
             System.err.println("NetTotal " + b.getNetTotal());
-            System.err.println("Paid " + b.getPaidAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -463,14 +457,12 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
-        System.out.println("inst.getName() = " + inst.getName());
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
         for (PatientEncounter b : lst) {
             System.out.println("b.getBhtNo() = " + b.getBhtNo());
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
             double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
-            System.out.println("finalValue = " + finalValue);
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -567,11 +559,9 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         List<Institution> setIns = getCreditBean().getCreditInstitutionPharmacy(Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
-        System.out.println("setIns.size() = " + setIns.size());
         items = new ArrayList<>();
         for (Institution ins : setIns) {
             List<Bill> bills = getCreditBean().getCreditBillsPharmacy(ins, Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}), getFromDate(), getToDate(), true);
-            System.out.println("bills.size() = " + bills.size());
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
@@ -647,14 +637,12 @@ public class CreditCompanyDueController implements Serializable {
         finalPaidTotalPatient = 0.0;
         finalTransPaidTotal = 0.0;
         finalTransPaidTotalPatient = 0.0;
-        System.out.println("setIns.size() = " + setIns.size());
         for (Institution ins : setIns) {
             List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, true);
 
             InstitutionEncounters newIns = new InstitutionEncounters();
             newIns.setInstitution(ins);
             newIns.setPatientEncounters(lst);
-            System.out.println("lst.size() = " + lst.size());
             for (PatientEncounter b : lst) {
                 b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
                 b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
@@ -850,7 +838,6 @@ public class CreditCompanyDueController implements Serializable {
                 
                 System.out.println("b.getFinalBill().getNetTotal() = " + b.getFinalBill().getNetTotal());
                 System.out.println("b.getCreditPaidAmount() = " + b.getCreditPaidAmount());
-                System.out.println("b.getFinalBill().getPaidAmount() = " + b.getFinalBill().getPaidAmount());
                 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));

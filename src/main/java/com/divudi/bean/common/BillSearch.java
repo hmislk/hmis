@@ -461,7 +461,6 @@ public class BillSearch implements Serializable {
 //            UtilityController.addErrorMessage("Already Staff FeePaid");
 //            return;
 //        }
-        System.out.println("tmp.getBill().getDeptId() = " + tmp.getBill().getDeptId());
 
     }
 
@@ -507,7 +506,6 @@ public class BillSearch implements Serializable {
 
             if (rbi != null) {
                 System.err.println("rbi = " + rbi.getId());
-                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
                 System.err.println("rbi = " + rbi.getId());
                 UtilityController.addErrorMessage("This Bill Item Already Refunded");
                 return false;
@@ -750,7 +748,6 @@ public class BillSearch implements Serializable {
             Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
             refundBillItems(rb, p);
             System.out.println("getOpdPreSettleController().calBillPaidValue(rb) = " + getOpdPreSettleController().calBillPaidValue(rb));
-            System.out.println("1p.getPaidValue() = " + p.getPaidValue());
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
             paymentFacade.edit(p);
 
@@ -951,7 +948,6 @@ public class BillSearch implements Serializable {
 
             bi.setRefunded(Boolean.TRUE);
             getBillItemFacede().edit(bi);
-            System.out.println("bi.getRefunded() = " + bi.getRefunded());
             BillItem bbb = getBillItemFacade().find(bi.getId());
 
             String sql = "Select bf From BillFee bf where "
@@ -966,7 +962,8 @@ public class BillSearch implements Serializable {
     public void refundBillItems(RefundBill rb, Payment p) {
         for (BillItem bi : refundingItems) {
             System.out.println("refundingItems = " + refundingItems);
-            //set Bill Item as Refunded
+            //set Bill Item as Refunded //set Bill Item as Refunded
+                        //set Bill Item as Refunded
 
             BillItem rbi = new BillItem();
             rbi.copy(bi);
@@ -979,7 +976,6 @@ public class BillSearch implements Serializable {
 
             bi.setRefunded(Boolean.TRUE);
             getBillItemFacede().edit(bi);
-            System.out.println("bi.getRefunded() = " + bi.getRefunded());
             BillItem bbb = getBillItemFacade().find(bi.getId());
 
             String sql = "Select bf From BillFee bf where "
@@ -1211,7 +1207,6 @@ public class BillSearch implements Serializable {
 
                     List<BillFee> lstBillFees = new ArrayList<>();
                     lstBillFees.addAll(billFeeFacade.findBySQL("SELECT bf FROM BillFee bf WHERE bf.retired=false and bf.bill.id=" + getBill().getId()));
-                    System.out.println("lstBillFees = " + lstBillFees);
                     double feeTotalExceptCcfs = 0.0;
                     for (BillFee bf : lstBillFees) {
                         if (bf.getFee().getFeeType() != FeeType.CollectingCentre) {
@@ -2182,7 +2177,6 @@ public class BillSearch implements Serializable {
             createCollectingCenterfees(getBill());
 
         }
-        System.out.println("getBill().getRefundedBill() = " + getBill().getRefundedBill());
         if (getBill().getRefundedBill() != null) {
             System.out.println("getBill().getRefundedBill() = " + getBill().getRefundedBill());
             System.out.println("getBill().getId() = " + getBill().getId());
@@ -2197,17 +2191,14 @@ public class BillSearch implements Serializable {
             for (Bill b : bills) {
                 createCollectingCenterfees(b);
             }
-            System.out.println("bills.size() = " + bills.size());
         }
     }
 
     public void createCollectingCenterfees(Bill b) {
-        System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
             b.getCancelledBill().setTransTotalCCFee(0.0);
             b.getCancelledBill().setTransTotalWithOutCCFee(0.0);
-            System.out.println("b.getBillItems().getCancelledBill().size() = " + b.getCancelledBill().getBillItems().size());
             for (BillItem bi : b.getCancelledBill().getBillItems()) {
                 bi.setTransCCFee(0.0);
                 bi.setTransWithOutCCFee(0.0);
@@ -2230,7 +2221,6 @@ public class BillSearch implements Serializable {
         } else if (b.getRefundedBill() != null) {
             b.getRefundedBill().setTransTotalCCFee(0.0);
             b.getRefundedBill().setTransTotalWithOutCCFee(0.0);
-            System.out.println("b.getBillItems().getRefundedBill().size() = " + b.getRefundedBill().getBillItems().size());
             for (BillItem bi : b.getRefundedBill().getBillItems()) {
                 bi.setTransCCFee(0.0);
                 bi.setTransWithOutCCFee(0.0);
@@ -2252,7 +2242,6 @@ public class BillSearch implements Serializable {
         } else {
             b.setTransTotalCCFee(0.0);
             b.setTransTotalWithOutCCFee(0.0);
-            System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
             for (BillItem bi : b.getBillItems()) {
                 bi.setTransCCFee(0.0);
                 bi.setTransWithOutCCFee(0.0);
@@ -2266,12 +2255,10 @@ public class BillSearch implements Serializable {
 //                        bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());add vat for hos fee
                     }
                     System.out.println("bi.getTransWithOutCCFee() = " + bi.getTransWithOutCCFee());
-                    System.out.println("bi.getTransCCFee() = " + bi.getTransCCFee());
                 }
                 b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
                 b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
                 System.out.println("b.getTransTotalCCFee() = " + b.getTransTotalCCFee());
-                System.out.println("b.getTransTotalWithOutCCFee() = " + b.getTransTotalWithOutCCFee());
             }
             ah = fetchCCHistory(b);
             if (ah != null) {

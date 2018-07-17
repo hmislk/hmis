@@ -380,7 +380,6 @@ public class ReportsTransfer implements Serializable {
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("billItems.size() = " + billItems.size());
 
         return billItems;
     }
@@ -937,7 +936,6 @@ public class ReportsTransfer implements Serializable {
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
             System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -991,7 +989,6 @@ public class ReportsTransfer implements Serializable {
             Double preCancel = calCountCanItem(row.getItem(), bt, new PreBill());
             Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
             System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1030,7 +1027,6 @@ public class ReportsTransfer implements Serializable {
             Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreIssue, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
             System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1127,7 +1123,6 @@ public class ReportsTransfer implements Serializable {
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1175,7 +1170,6 @@ public class ReportsTransfer implements Serializable {
             Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
             System.err.println("PRE " + pre);
-            System.err.println("PRE CAN " + preCancel);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1505,7 +1499,6 @@ public class ReportsTransfer implements Serializable {
             } catch (Exception e) {
                 totalBHTValue = 0.0;
             }
-            System.out.println("totalBHTValue = " + totalBHTValue);
             count.setCountBht(qtyBHT);
             count.setTotalBht(totalBHTValue);
             itemBHTIssueCountTrancerReciveCounts.add(count);
@@ -1524,7 +1517,6 @@ public class ReportsTransfer implements Serializable {
                 + " order by s.itemBatch.item.name";
         m.put("d", toDepartment);
         List<Item> items = getItemFacade().findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
         return items;
     }
 

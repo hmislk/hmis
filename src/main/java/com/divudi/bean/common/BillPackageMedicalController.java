@@ -602,7 +602,6 @@ public class BillPackageMedicalController implements Serializable {
         bills.addAll(packageBills(item, false));
         System.out.println("1.bills.size() = " + bills.size());
         bills.addAll(packageBills(item, true));
-        System.out.println("2.bills.size() = " + bills.size());
         total = 0.0;
 
         if (bills == null) {
@@ -646,7 +645,6 @@ public class BillPackageMedicalController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
@@ -655,7 +653,6 @@ public class BillPackageMedicalController implements Serializable {
         double tot = 0.0;
         for (BillItem bi : billItm) {
             tot += bi.getNetValue();
-            System.out.println("total = " + total);
         }
 
         return tot;

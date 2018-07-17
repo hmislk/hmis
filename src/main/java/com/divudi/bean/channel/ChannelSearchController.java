@@ -140,7 +140,6 @@ public class ChannelSearchController implements Serializable {
         }
         if (getFromDate() != null && getToDate() != null) {
             double count = commonController.dateDifferenceInMinutes(getFromDate(), getToDate()) / (60 * 24);
-            System.out.println("count = " + count);
             if (count > 1) {
                 JsfUtil.addErrorMessage("Please Selected Date Range To Long.(Date Range limit for 1 day)");
                 return;
@@ -187,7 +186,6 @@ public class ChannelSearchController implements Serializable {
         }
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("searchedBillSessions = " + searchedBillSessions.size());
 
     }
 

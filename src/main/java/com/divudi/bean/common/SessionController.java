@@ -385,7 +385,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             calendar.set(Calendar.MILLISECOND, 999);
 
             Date expired = calendar.getTime();
-            System.out.println("expired = " + expired);
             Date nowDate = new Date();
 
             if (nowDate.after(expired)) {
@@ -421,7 +420,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             calendar.set(Calendar.MILLISECOND, 999);
 
             Date expired = calendar.getTime();
-            System.out.println("expired = " + expired);
             Date nowDate = new Date();
 
             if (nowDate.after(expired)) {
@@ -614,7 +612,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                     System.out.println("1");
                     System.out.println("sql = " + sql);
-                    System.out.println("m = " + m);
 
                     if (insPre == null) {
 
@@ -624,14 +621,12 @@ public class SessionController implements Serializable, HttpSessionListener {
                         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                         System.out.println("2");
                         System.out.println("sql = " + sql);
-                        System.out.println("m = " + m);
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
                             insPre = getUserPreferenceFacade().findFirstBySQL(sql);
                             System.out.println("3");
                             System.out.println("sql = " + sql);
-                            System.out.println("m = " + m);
 
                         }
 
@@ -684,11 +679,9 @@ public class SessionController implements Serializable, HttpSessionListener {
 //        System.err.println("loginForRequests");
 
         if (temUserName == null) {
-            System.err.println("Username is null");
             return false;
         }
         if (temPassword == null) {
-            System.err.println("Password is null");
             return false;
         }
         String temSQL;
@@ -739,7 +732,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
             loginRequestResponse += "}";
-            System.err.println("loginRequestResponse = " + loginRequestResponse);
             return true;
         }
         loginRequestResponse += "Login=0|}";
@@ -878,7 +870,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
 
         System.out.println("getDepartment().getName() = " + getDepartment().getName());
-        System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
             long i = searchController.createInwardBHTForIssueBillCount();

@@ -49,7 +49,6 @@ public class SystemTimeStamp {
     }
 
     private void processTime() {
-        System.err.println("Start Process Time");
         if (checkDate()) {
             return;
         }
@@ -71,7 +70,6 @@ public class SystemTimeStamp {
     }
 
     public void processTime(Date date) {
-        System.err.println("Start Process Time with Date");
         if (date == null) {
             return;
         }

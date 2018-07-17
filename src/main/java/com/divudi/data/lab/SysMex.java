@@ -90,11 +90,9 @@ public class SysMex {
         System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
-            System.out.println("bytes empty");
             return false;
         }
         if (bytes.size() < 300) {
-            System.out.println("less than 300 = ");
             return false;
         }
         Double id1 = findValue(sampleId1Start, sampleId1End, 0);
@@ -102,7 +100,6 @@ public class SysMex {
         Double id2 = findValue(sampleId2Start, sampleId2End, 0);
         System.out.println("id2 = " + id2);
         if (!Objects.equals(id1, id2)) {
-            System.out.println("ID1 is not Equal to ID2");
             return false;
         }
         System.out.println("ID check OK");
@@ -116,7 +113,6 @@ public class SysMex {
         System.out.println("instrument Id2 = " + insId2);
 
         if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
-            System.out.println("Ins IDs are not Equal");
             return false;
         }
         System.out.println("Instrument ID checks ok");
@@ -140,7 +136,6 @@ public class SysMex {
         if (twbc < 1000 || twbc > 50000) {
             return false;
         }
-        System.out.println("WBC  checks ok");
         return true;
     }
 
@@ -278,7 +273,6 @@ public class SysMex {
             display += (char) temN + "";
         }
 
-        System.out.println("From " + from + " to " + to + " is = " + display);
         if (decimals
                 > 0) {
             String wn = display.substring(0, display.length() - decimals);
@@ -700,7 +694,6 @@ public class SysMex {
         String ws = findStringValue(wbcStart, wbcEnd);
         System.out.println("wbcStart = " + wbcStart);
         System.out.println("wbcEnd = " + wbcEnd);
-        System.out.println("ws = " + ws);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;

@@ -112,10 +112,8 @@ public class Report3DController implements Serializable {
             row.setItem(i);
             row.setStock(fetchCurrentStock(i, getReportKeyWord().getDepartment()));
             row.setCounts(fetchItemSale(i, getReportKeyWord().isBool2(), getReportKeyWord().getDepartment()));
-            System.out.println("row.getCounts().size() = " + row.getCounts().size());
             getItemCounts().add(row);
         }
-        System.out.println("getItemCounts().size() = " + getItemCounts().size());
     }
 
     private double fetchCurrentStock(Item i, Department dep) {
@@ -195,13 +193,11 @@ public class Report3DController implements Serializable {
         System.out.println("objects(Month).size() = " + objects.size());
         double total = 0.0;
         for (String s : headers2) {
-            System.out.println("s = " + s);
             double c = 0.0;
             for (Object[] ob : objects) {
                 int in = (int) ob[0];
                 System.out.println("in = " + in);
                 double co = (double) ob[1];
-                System.out.println("co = " + co);
 //                Calendar cal = Calendar.getInstance();
 //                cal.set(Calendar.MONTH, in);
 //                System.out.println("cal.getTime() = " + cal.getTime());
@@ -216,7 +212,6 @@ public class Report3DController implements Serializable {
 
         ds.add(total);
 
-        System.out.println("ds.size() = " + ds.size());
 
         return ds;
     }
@@ -297,11 +292,9 @@ public class Report3DController implements Serializable {
 //            d = getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
 //            System.out.println("d count = " + d);
             double d = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-            System.out.println("db count = " + d);
             return d;
         } else {
             double d = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
-            System.out.println("d sum = " + d);
             return d;
         }
     }
@@ -321,7 +314,6 @@ public class Report3DController implements Serializable {
 
 //        items = getItemFacade().findBySQL(sql, m, 10);
         items = getItemFacade().findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
 
         return items;
     }
@@ -351,7 +343,6 @@ public class Report3DController implements Serializable {
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
         items = getItemFacade().findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
 
         return items;
     }
@@ -371,7 +362,6 @@ public class Report3DController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat(" yy MM dd ");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
 
             } else {
                 fd = commonFunctions.getStartOfMonth(nowDate);
@@ -381,7 +371,6 @@ public class Report3DController implements Serializable {
                 formatedDate = df.format(fd);
                 System.out.println("formatedDate = " + formatedDate);
                 df = new SimpleDateFormat("MM");
-                System.out.println("df.format(fd) = " + df.format(fd));
                 headers2.add(df.format(fd));
             }
             headers.add(formatedDate);
@@ -394,7 +383,6 @@ public class Report3DController implements Serializable {
                 cal.add(Calendar.MONTH, 1);
             }
             nowDate = cal.getTime();
-            System.out.println("nowDate = " + nowDate);
         }
         headers.add("Total");
 

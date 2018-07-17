@@ -463,7 +463,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
                 ss.setDayType(ss.getShift().getDayType());
             }
         }
-        System.out.println("3.ss.getDayType() = " + ss.getDayType());
     }
 
     private void fetchAndSetStaffLeave(StaffShift ss) {
@@ -694,7 +693,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         FingerPrintRecord fpr = null;
         System.out.println("ss.getStartRecord() = " + ss.getStartRecord());
         System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
-        System.out.println("ss.getNextStaffShift() = " + ss.getNextStaffShift());
         if (ss.getStartRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
             list.add(fpr);
@@ -1289,7 +1287,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             Date date1 = fetchFingerPrintRecord.getRecordTimeStamp();
             Date date2 = fingerPrintRecord.getRecordTimeStamp();
 
-            System.err.println("Date 1 " + date1);
 
             if (date1 != null & date2 != null) {
                 if (!date1.equals(date2)) {

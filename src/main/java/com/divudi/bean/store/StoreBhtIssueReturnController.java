@@ -315,7 +315,6 @@ public class StoreBhtIssueReturnController implements Serializable {
 
             double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), getBill().getBillType());
 
-            System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
 
             if (tmpQty <= 0) {

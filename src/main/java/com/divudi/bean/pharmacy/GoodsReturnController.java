@@ -282,7 +282,6 @@ public class GoodsReturnController implements Serializable {
         System.err.println("2");
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
-        System.err.println("3");
 //        saveComponent();
         saveComponent(p);
 
@@ -358,7 +357,6 @@ public class GoodsReturnController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }

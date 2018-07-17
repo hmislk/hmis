@@ -710,7 +710,6 @@ public class BillNumberGenerator {
                 System.out.println("bill.getCreatedAt() = " + bill.getCreatedAt());
                 String[] parts = bill.getDeptId().split("/");
                 System.out.println("parts = " + parts[0]);
-                System.out.println("parts = " + parts[1]);
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
                 billNumber.setBillClassType(billClassType);
@@ -752,7 +751,6 @@ public class BillNumberGenerator {
             }
 
             Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-            System.out.println("dd = " + dd);
             if (dd == null) {
                 dd = 0l;
             }
@@ -859,12 +857,10 @@ public class BillNumberGenerator {
             Bill bill = billFacade.findFirstBySQL(sql, hm);
             System.out.println("bill.getInsId() = " + bill.getInsId());
             System.out.println("bill.getDeptId() = " + bill.getDeptId());
-            System.out.println("bill.getCreatedAt() = " + bill.getCreatedAt());
 
             if (bill != null) {
                 String[] parts = bill.getInsId().split("/");
                 System.out.println("parts = " + parts[0]);
-                System.out.println("parts = " + parts[1]);
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
                 billNumber.setBillClassType(billClassType);
@@ -1470,7 +1466,6 @@ public class BillNumberGenerator {
         System.out.println("fd = " + fd);
         c.set(y + 1, 2, 31, 23, 59, 59);
         Date td = c.getTime();
-        System.out.println("td = " + td);
 
         String sql = "SELECT count(b) FROM BillItem b where "
                 + " b.bill.institution=:ins "

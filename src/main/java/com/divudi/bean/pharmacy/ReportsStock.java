@@ -343,7 +343,6 @@ public class ReportsStock implements Serializable {
         for (PharmaceuticalBillItem b : list) {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
             System.err.println("History Id " + b.getStockHistory().getId());
-            System.err.println("Stock History " + b.getStockHistory().getStockQty());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -467,7 +466,6 @@ public class ReportsStock implements Serializable {
                     System.err.println("Prv History Qty " + preHistoryQty);
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
                     System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                    System.err.println("History " + curHistory);
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {
@@ -597,7 +595,6 @@ public class ReportsStock implements Serializable {
         Set<Item> sis = new HashSet<>(itemFacade.findBySQL(sql, m));
 
         System.out.println("bis.size() before removing = " + bis.size());
-        System.out.println("sis.size() before removing " + sis.size());
         sis.removeAll(bis);
         items = new ArrayList<>(sis);
 
@@ -788,7 +785,6 @@ public class ReportsStock implements Serializable {
             }
             sql += " order by s.itemBatch.item.name ";
             List<Object[]> objects = getStockFacade().findAggregates(sql, m);
-            System.out.println("objects.size() = " + objects.size());
             stocks = new ArrayList<>();
             for (Object[] ob : objects) {
                 Item i = (Item) ob[0];

@@ -5,7 +5,7 @@
  */
 package com.divudi.entity;
 
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import java.io.Serializable;
@@ -26,15 +26,16 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class Sms implements Serializable {
-    @ManyToOne
-    private PatientInvestigation patientInvestigation;
-    @ManyToOne
-    private Bill bill;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
+    @ManyToOne
+    private PatientInvestigation patientInvestigation;
+    @ManyToOne
+    private Bill bill;
     @ManyToOne
     PatientReport patientReport;
     @Lob
@@ -45,9 +46,12 @@ public class Sms implements Serializable {
     String password;
     String sendingUrl;
     @Enumerated(EnumType.STRING)
-    private SmsType smsType;    
-    
-        //Created Properties
+    private MessageType smsType;
+    //Sending Properties
+    Boolean sentSuccessfully;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    Date sentAt;
+    //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -69,8 +73,6 @@ public class Sms implements Serializable {
         this.bill = bill;
     }
 
-    
-    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
@@ -79,8 +81,6 @@ public class Sms implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
-    
-    
     public PatientReport getPatientReport() {
         return patientReport;
     }
@@ -177,8 +177,6 @@ public class Sms implements Serializable {
         this.retireComments = retireComments;
     }
 
-    
-
     public Long getId() {
         return id;
     }
@@ -212,12 +210,12 @@ public class Sms implements Serializable {
         return "com.divudi.entity.Sms[ id=" + id + " ]";
     }
 
-    public SmsType getSmsType() {
+    public MessageType getSmsType() {
         return smsType;
     }
 
-    public void setSmsType(SmsType smsType) {
+    public void setSmsType(MessageType smsType) {
         this.smsType = smsType;
     }
-    
+
 }

@@ -80,7 +80,6 @@ public class ConsultantController implements Serializable {
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
         selectedItems = getFacade().findBySQL(sql, hm);
 
         return selectedItems;
@@ -124,7 +123,6 @@ public class ConsultantController implements Serializable {
         System.out.println("sql = " + sql);
         System.out.println("hm = " + m);
         items = getFacade().findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
         
     }
 

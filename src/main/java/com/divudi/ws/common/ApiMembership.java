@@ -142,7 +142,6 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Banks) = " + json);
         return json;
 
     }
@@ -183,7 +182,6 @@ public class ApiMembership {
 //            System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
             MembershipScheme ms = getMembershipSchemeFacade().find(3888l);
 //            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
-            System.out.println("ms.getCode() = " + ms.getCode());
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
             person.setName(decoder.decode(name, "+"));
@@ -234,7 +232,6 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Save Patient) = " + json);
         return json;
 
     }
@@ -248,7 +245,6 @@ public class ApiMembership {
         try {
             long l = Long.valueOf(patient_id);
             Patient p = getPatientFacade().find(l);
-            System.out.println("p = " + p);
             if (p != null) {
                 JSONObject object = new JSONObject();
                 object.put("save_patient_id", p.getId());
@@ -282,7 +278,6 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Patient) = " + json);
         return json;
 
     }
@@ -321,7 +316,6 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Service Value) = " + json);
         return json;
 
     }
@@ -350,7 +344,6 @@ public class ApiMembership {
 
             Bill b = saveBill(i, pmd, p, memo);
             String code = getPatientController().getCountPatientCode("LM");
-            System.out.println("p = " + p);
             p.setCode(code);
             p.setRetired(false);
             getPatientFacade().edit(p);
@@ -386,7 +379,6 @@ public class ApiMembership {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Membership API~~~~~~ Json(Get Pay For Membership) = " + json);
         return json;
     }
 

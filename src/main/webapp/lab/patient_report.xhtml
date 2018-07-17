@@ -336,12 +336,17 @@
 
 
                             </h:panelGroup>
-                            <p:commandButton value="Print" ajax="false" actionListener="#{patientReportController.printPatientReport()}"
-                                             rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
-                                <p:printer target="divPrint" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" actionListener="#{patientReportController.pdfPatientReport()}" 
-                                              rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission) and false}" />
+                            <h:panelGrid columns="3" >
+                                <p:commandButton value="Print" ajax="false" actionListener="#{patientReportController.printPatientReport()}"
+                                                 rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
+                                    <p:printer target="divPrint" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
+                                                  rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
+                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF Save" action="#{patientReportController.createPDFAndSaveAsaFile}" 
+                                                  rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
+                            </h:panelGrid>
+
                         </div>
 
 
@@ -408,14 +413,14 @@
                                             <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                                     <h:panelGroup style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
-                                                            <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
-                                                            <div style="display: inline-block; top: 0px; float: left; width: 20%; text-align: left; padding-top: 2%; padding-bottom: 1%; ">
-                                                                <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"/>
-                                                            </div>
-                                                            <div style="display: inline-block; float: left; width: 3%; " ></div>
-                                                            <div style="display: inline-block; text-align: left; float:left; width: 60%; padding-top: 2%; padding-bottom: 1%; ">
-                                                                <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"   escape="false"   />
-                                                            </div>
+                                                        <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
+                                                        <div style="display: inline-block; top: 0px; float: left; width: 20%; text-align: left; padding-top: 2%; padding-bottom: 1%; ">
+                                                            <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"/>
+                                                        </div>
+                                                        <div style="display: inline-block; float: left; width: 3%; " ></div>
+                                                        <div style="display: inline-block; text-align: left; float:left; width: 60%; padding-top: 2%; padding-bottom: 1%; ">
+                                                            <h:outputLabel value="#{fn:replace(prv.lobValue,'\\n','&lt;br/&gt;')}"   escape="false"   />
+                                                        </div>
                                                     </h:panelGroup>
                                                 </ui:repeat>
                                             </div>
