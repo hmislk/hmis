@@ -4066,12 +4066,12 @@ public class SearchController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.toDepartment=:dep ";
             temMap.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getDepartmentFrom() != null) {
             sql += " and b.fromDepartment=:depFrom ";
             temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
@@ -4264,12 +4264,12 @@ public class SearchController implements Serializable {
             sql += "and pi.encounter=:en";
             temMap.put("en", patientEncounter);
         }
-        
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.toDepartment=:dep ";
             temMap.put("dep", getReportKeyWord().getDepartment());
         }
-        
+
         if (getReportKeyWord().getDepartmentFrom() != null) {
             sql += " and b.fromDepartment=:depFrom ";
             temMap.put("depFrom", getReportKeyWord().getDepartmentFrom());
@@ -5009,6 +5009,14 @@ public class SearchController implements Serializable {
     WebUserController webUserController;
 
     public void createOpdBillSearch() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBill);
+        checkLabReportsApproved(bills);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
+
+    public void listOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill);
         checkLabReportsApproved(bills);
@@ -6920,7 +6928,6 @@ public class SearchController implements Serializable {
             }
         }
 
-
     }
 
     public void importToExcel() {
@@ -7161,8 +7168,8 @@ public class SearchController implements Serializable {
     public void listnerBillTypeChange() {
         reportKeyWord.setArea(null);
     }
-    
-    public void listnerReportSearch(){
+
+    public void listnerReportSearch() {
         getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
     }
 
