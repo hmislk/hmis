@@ -17,6 +17,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -54,7 +55,33 @@ public class PatientSample implements Serializable {
     private Department sampleDepartment;
     @ManyToOne
     private Institution sampleInstitution;
-    //
+    //Sent To Analyzer
+    private Boolean readyTosentToAnalyzer;
+    private Boolean sentToAnalyzer;
+    @ManyToOne
+    private WebUser sentToAnalyzerBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date sentToAnalyzerAt;
+    @Lob
+    private String sentToAnalyzerComments;
+    @ManyToOne
+    private Department sentToAnalyzerDepartment;
+    @ManyToOne
+    private Institution sentToAnalyzerInstitution;
+    //Sent To Analyzer
+    private Boolean receivedFromAnalyzer;
+    @ManyToOne
+    private WebUser receivedFromAnalyzerBy;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date receivedFromAnalyzerAt;
+    @Lob
+    private String receivedFromAnalyzerComments;
+    @ManyToOne
+    private Department receivedFromAnalyzerDepartment;
+    @ManyToOne
+    private Institution receivedFromAnalyzerInstitution;
+
+//
     @ManyToOne
     private Item investigationComponant;
     @ManyToOne
@@ -65,7 +92,7 @@ public class PatientSample implements Serializable {
     private Machine machine;
     @ManyToOne
     private Sample sample;
-            //Cancellation
+    //Cancellation
     private Boolean cancelled = false;
     @ManyToOne
     private WebUser cancelledUser;
@@ -76,8 +103,6 @@ public class PatientSample implements Serializable {
     private Department cancellDepartment;
     @ManyToOne
     private Institution cancellInstitution;
-    
-    
 
     public Long getId() {
         return id;
@@ -91,8 +116,7 @@ public class PatientSample implements Serializable {
         String formatted = String.format("%05d", id);
         return formatted;
     }
-    
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -302,6 +326,109 @@ public class PatientSample implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public Boolean getSentToAnalyzer() {
+        return sentToAnalyzer;
+    }
+
+    public void setSentToAnalyzer(Boolean sentToAnalyzer) {
+        this.sentToAnalyzer = sentToAnalyzer;
+    }
+
+    public WebUser getSentToAnalyzerBy() {
+        return sentToAnalyzerBy;
+    }
+
+    public void setSentToAnalyzerBy(WebUser sentToAnalyzerBy) {
+        this.sentToAnalyzerBy = sentToAnalyzerBy;
+    }
+
+    public Date getSentToAnalyzerAt() {
+        return sentToAnalyzerAt;
+    }
+
+    public void setSentToAnalyzerAt(Date sentToAnalyzerAt) {
+        this.sentToAnalyzerAt = sentToAnalyzerAt;
+    }
+
+    public String getSentToAnalyzerComments() {
+        return sentToAnalyzerComments;
+    }
+
+    public void setSentToAnalyzerComments(String sentToAnalyzerComments) {
+        this.sentToAnalyzerComments = sentToAnalyzerComments;
+    }
+
+    public Department getSentToAnalyzerDepartment() {
+        return sentToAnalyzerDepartment;
+    }
+
+    public void setSentToAnalyzerDepartment(Department sentToAnalyzerDepartment) {
+        this.sentToAnalyzerDepartment = sentToAnalyzerDepartment;
+    }
+
+    public Institution getSentToAnalyzerInstitution() {
+        return sentToAnalyzerInstitution;
+    }
+
+    public void setSentToAnalyzerInstitution(Institution sentToAnalyzerInstitution) {
+        this.sentToAnalyzerInstitution = sentToAnalyzerInstitution;
+    }
+
+    public Boolean getReceivedFromAnalyzer() {
+        return receivedFromAnalyzer;
+    }
+
+    public void setReceivedFromAnalyzer(Boolean receivedFromAnalyzer) {
+        this.receivedFromAnalyzer = receivedFromAnalyzer;
+    }
+
+    public WebUser getReceivedFromAnalyzerBy() {
+        return receivedFromAnalyzerBy;
+    }
+
+    public void setReceivedFromAnalyzerBy(WebUser receivedFromAnalyzerBy) {
+        this.receivedFromAnalyzerBy = receivedFromAnalyzerBy;
+    }
+
+    public Date getReceivedFromAnalyzerAt() {
+        return receivedFromAnalyzerAt;
+    }
+
+    public void setReceivedFromAnalyzerAt(Date receivedFromAnalyzerAt) {
+        this.receivedFromAnalyzerAt = receivedFromAnalyzerAt;
+    }
+
+    public String getReceivedFromAnalyzerComments() {
+        return receivedFromAnalyzerComments;
+    }
+
+    public void setReceivedFromAnalyzerComments(String receivedFromAnalyzerComments) {
+        this.receivedFromAnalyzerComments = receivedFromAnalyzerComments;
+    }
+
+    public Department getReceivedFromAnalyzerDepartment() {
+        return receivedFromAnalyzerDepartment;
+    }
+
+    public void setReceivedFromAnalyzerDepartment(Department receivedFromAnalyzerDepartment) {
+        this.receivedFromAnalyzerDepartment = receivedFromAnalyzerDepartment;
+    }
+
+    public Institution getReceivedFromAnalyzerInstitution() {
+        return receivedFromAnalyzerInstitution;
+    }
+
+    public void setReceivedFromAnalyzerInstitution(Institution receivedFromAnalyzerInstitution) {
+        this.receivedFromAnalyzerInstitution = receivedFromAnalyzerInstitution;
+    }
+
+    public Boolean getReadyTosentToAnalyzer() {
+        return readyTosentToAnalyzer;
+    }
+
+    public void setReadyTosentToAnalyzer(Boolean readyTosentToAnalyzer) {
+        this.readyTosentToAnalyzer = readyTosentToAnalyzer;
+    }
 
     
     

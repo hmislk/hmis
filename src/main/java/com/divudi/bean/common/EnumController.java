@@ -30,6 +30,7 @@ import com.divudi.data.hr.Times;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
+import com.divudi.data.lab.Priority;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import java.io.Serializable;
@@ -50,11 +51,14 @@ public class EnumController implements Serializable {
 
     SessionNumberType[] sessionNumberTypes;
 
-    
-    public Dashboard[] getDashboardTypes(){
+    public Priority[] getPriorities() {
+        return Priority.values();
+    }
+
+    public Dashboard[] getDashboardTypes() {
         return Dashboard.values();
     }
-    
+
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
@@ -133,7 +137,7 @@ public class EnumController implements Serializable {
     public InvestigationItemType[] getInvestigationItemTypes() {
         return InvestigationItemType.values();
     }
-    
+
     public InvestigationItemValueType[] getInvestigationItemValueTypes() {
         return InvestigationItemValueType.values();
     }
@@ -143,14 +147,14 @@ public class EnumController implements Serializable {
 
     }
 
-    public BillType[] getBillTypes(){
+    public BillType[] getBillTypes() {
         return BillType.values();
     }
-    
-    public BillClassType[] getBillClassTypes(){
+
+    public BillClassType[] getBillClassTypes() {
         return BillClassType.values();
     }
-    
+
     public CalculationType[] getCalculationTypes() {
         return CalculationType.values();
     }
@@ -296,6 +300,7 @@ public class EnumController implements Serializable {
 
         return b;
     }
+
     public BillType[] getCashFlowBillTypesCashier() {
         BillType[] b = {
             BillType.OpdBill,
@@ -306,20 +311,18 @@ public class EnumController implements Serializable {
             BillType.InwardPaymentBill,
             BillType.PharmacySale,
             BillType.GrnPaymentPre,
-            BillType.CollectingCentrePaymentReceiveBill,
-        };
+            BillType.CollectingCentrePaymentReceiveBill,};
 
         return b;
     }
+
     public BillType[] getCashFlowBillTypesChannel() {
         BillType[] b = {
-            
             BillType.ChannelCash,
             BillType.ChannelPaid,
             BillType.ChannelProPayment,
             BillType.ChannelIncomeBill,
-            BillType.ChannelExpenesBill,
-        };
+            BillType.ChannelExpenesBill,};
 
         return b;
     }
@@ -449,9 +452,9 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {PaymentMethod.Cash, PaymentMethod.Agent};
         return p;
     }
-    
-    public BillType[] getChannelType(){
-        BillType [] bt={BillType.Channel,BillType.XrayScan};
+
+    public BillType[] getChannelType() {
+        BillType[] bt = {BillType.Channel, BillType.XrayScan};
         return bt;
     }
 
@@ -504,7 +507,7 @@ public class EnumController implements Serializable {
     public AdmissionTypeEnum[] getAdmissionTypeEnum() {
         return AdmissionTypeEnum.values();
     }
-    
+
     public MessageType[] getSmsType() {
         return MessageType.values();
     }

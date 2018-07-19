@@ -5015,7 +5015,8 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-
+    
+    
     public void listOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill);
@@ -5079,7 +5080,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
 
         //System.err.println("Sql " + sql);
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 

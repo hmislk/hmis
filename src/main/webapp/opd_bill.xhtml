@@ -377,9 +377,9 @@
                                                            actionListener="#{doctorController.prepareAdd}"  
                                                            process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
                                             <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
-                                                
-                                                
-                                                
+
+
+
                                                 <h:panelGrid columns="2" style="margin-bottom:10px">  
                                                     <p:outputLabel id="lblNameD" value="Name" ></p:outputLabel>
                                                     <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
@@ -409,9 +409,9 @@
                                                 </h:panelGrid>  
 
                                             </p:dialog> 
-                                            
-                                            
-                                            
+
+
+
                                         </h:panelGroup>
 
                                         <p:outputLabel value="Collecting Centre" />
@@ -504,7 +504,14 @@
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-
+                                                <p:column>
+                                                    <f:facet name="header">Priority</f:facet>
+                                                    <p:selectOneMenu value="#{bi.billItem.priority}"    >
+                                                        <p:ajax event="blur" process="@this" ></p:ajax>
+                                                        <f:selectItem itemLabel="Not Set" ></f:selectItem>
+                                                        <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </p:column>
                                                 <p:column>
                                                     <h:commandButton id="btnRemove" value="X" action="#{billController.removeBillItem}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billController.index}" />

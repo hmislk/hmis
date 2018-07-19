@@ -11,6 +11,7 @@ import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.data.lab.Priority;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.Machine;
@@ -181,6 +182,8 @@ public class Item implements Serializable, Comparable<Item> {
     int maxTableRows;
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
     private boolean hasMoreThanOneComponant;
 
@@ -1090,6 +1093,16 @@ public class Item implements Serializable, Comparable<Item> {
         this.reportItem = reportItem;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

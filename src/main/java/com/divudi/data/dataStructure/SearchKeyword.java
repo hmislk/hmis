@@ -5,12 +5,14 @@
  */
 package com.divudi.data.dataStructure;
 
+import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.inward.AdmissionType;
+import java.util.List;
 
 /**
  *
@@ -53,6 +55,9 @@ public class SearchKeyword {
     Department frmDepartment;
     Department tooDepartment;
     Item item;
+    private List<BillType> billTypes;
+    
+    
     
     boolean activeAdvanceOption;
     boolean withRetiered;
@@ -408,4 +413,16 @@ public class SearchKeyword {
     public void setItem(Item item) {
         this.item = item;
     }
+
+    public List<BillType> getBillTypes() {
+        return billTypes;
+    }
+
+    public void setBillTypes(List<BillType> billTypes) {
+        this.billTypes = billTypes;
+    }
+
+
+
+
 }

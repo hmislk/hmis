@@ -187,6 +187,7 @@ public class PatientInvestigationController implements Serializable {
     private String apiResponse = "#{success=false|msg=No Requests}";
 
     public void msgFromMiddleware() {
+        System.err.println("msgFromMiddleware");
         apiResponse = "";
         if (username == null || username.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Username}";
@@ -209,10 +210,12 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         if (machine.trim().equals("SysMex")) {
+            System.err.println("SysMex");
             apiResponse = msgFromSysmex();
             return;
         } else if (machine.trim().equals("Dimension")) {
-            apiResponse += msgFromDimension();
+            System.err.println("Dim");
+            apiResponse = msgFromDimension();
             return;
         }
     }
@@ -220,10 +223,68 @@ public class PatientInvestigationController implements Serializable {
     private String msgFromDimension() {
         String temMsgs = "";
         Dimension dim = new Dimension();
+        System.err.println("msg = " + msg);
         dim.setInputStringBytesSpaceSeperated(msg);
-        dim.prepareMessage();
+        dim.analyzeReceivedMessage();
 
+        PatientSample temPs = nextPatientSampleToSendToDimension();
+        System.out.println("temPs = " + temPs);
+        if (temPs == null) {
+            dim.setLimsHasSamplesToSend(false);
+        } else {
+            dim.setLimsHasSamplesToSend(true);
+            dim.setLimsTests(getTestsFromPatientSample(temPs));
+        }
+        
+        dim.prepareResponse();
+        temMsgs = dim.getResponseString();
+        temMsgs = "#{success=true|toAnalyzer=" + temMsgs + "}";
         return temMsgs;
+    }
+
+    public List<String> getTestsFromPatientSample(PatientSample ps) {
+        List<String> temss = new ArrayList<>();
+        if(ps==null){
+            return temss;
+        }
+        for (InvestigationItem tii : ps.getPatientInvestigation().getInvestigation().getReportItems()) {
+            if (tii.getIxItemType() == InvestigationItemType.Value) {
+                if (tii.getItem().isHasMoreThanOneComponant()) {
+                    if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                        if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                            temss.add(tii.getTest().getCode());
+                        }
+                    }
+                } else {
+                    if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                        temss.add(tii.getTest().getCode());
+                    }
+                }
+            }
+        }
+        return temss;
+    }
+
+    public PatientSample nextPatientSampleToSendToDimension() {
+        String j = "select ps from PatientSample ps "
+                + "where ps.readyTosentToAnalyzer=true "
+                + " and ps.sentToAnalyzer=false "
+                + " and ps.patientInvestigation.investigation.institution=:ins "
+                + " and lower(ps.machine.name) like :ma "
+                + " and ps.sampledAt=:sa ";
+
+        Map m = new HashMap();
+        m.put("ins", getSessionController().getLoggedUser().getInstitution());
+        m.put("ma", "%dimension%");
+        m.put("sa", new Date());
+        PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
+        if (false) {
+            PatientSample temPs = new PatientSample();
+            temPs.getPatientInvestigation().getInvestigation().getInstitution();
+            temPs.getMachine().getName();
+            temPs.getSampledAt();
+        }
+        return ps;
     }
 
     private String msgFromSysmex() {
@@ -237,7 +298,7 @@ public class PatientInvestigationController implements Serializable {
             if (m1.isCorrectReport()) {
                 return "#{success=true|msg=Received Result Format 1 for sample ID " + m1.getSampleId() + "}";
             }
-        } else if (sysMex.getBytes().size() > 253 && sysMex.getBytes().size() < 258 ) {
+        } else if (sysMex.getBytes().size() > 253 && sysMex.getBytes().size() < 258) {
             SysMexAdf2 m2 = new SysMexAdf2();
             m2.setInputStringBytesSpaceSeperated(msg);
             if (m2.isCorrectReport()) {
@@ -900,10 +961,10 @@ public class PatientInvestigationController implements Serializable {
 //        Authenticator auth = new SMTPAuthenticator();
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        });
 
         try {
             Message message = new MimeMessage(session);
@@ -1274,6 +1335,8 @@ public class PatientInvestigationController implements Serializable {
                             pts.setCreatedAt(new Date());
                             pts.setCreater(sessionController.getLoggedUser());
                             pts.setCollected(false);
+                            pts.setReadyTosentToAnalyzer(true);
+                            pts.setSentToAnalyzer(false);
                             getPatientSampleFacade().create(pts);
                         }
                         patientSamplesSet.add(pts);

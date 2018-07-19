@@ -1637,7 +1637,9 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
-        System.out.println("getCurrentBillItem().getQty() = " + getCurrentBillItem().getQty());
+        if(getCurrentBillItem().getItem().getPriority()!=null){
+            getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
+        }
         if (getCurrentBillItem().getQty() == null) {
             getCurrentBillItem().setQty(1.0);
         }

@@ -692,6 +692,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = getFacede().findFirstBySQL(temSQL, m);
 
+        if(u==null){
+            return false;
+        }
+        
 //        System.err.println("username = " + userName);
 //        System.err.println("password = " + passord);
 
