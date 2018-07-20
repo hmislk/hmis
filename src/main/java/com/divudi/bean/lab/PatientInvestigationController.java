@@ -11,6 +11,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
 import com.divudi.data.lab.Dimension;
+import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
@@ -233,7 +234,9 @@ public class PatientInvestigationController implements Serializable {
             dim.setLimsHasSamplesToSend(false);
         } else {
             dim.setLimsHasSamplesToSend(true);
-            List<String> temSss = getTestsFromPatientSample(temPs);
+            dim.setLimsSampleId(temPs.getIdStr());
+            dim.setLimsPatientId(temPs.getPatient().getPhn());
+            List<String> temSss = getTestsFromPatientSample(temPs, dim);
             System.out.println("getTestsFromPatientSample(temPs) = " + temSss);
             dim.setLimsTests(temSss);
         }
@@ -251,7 +254,7 @@ public class PatientInvestigationController implements Serializable {
 //        m.put("ps", ps);
 //        return getPatientSampleComponantFacade().findBySQL(msg, m);
 //    }
-    public List<String> getTestsFromPatientSample(PatientSample ps) {
+    public List<String> getTestsFromPatientSample(PatientSample ps, Dimension dim) {
         System.out.println("getTestsFromPatientSample");
 
         List<String> temss = new ArrayList<>();
@@ -264,6 +267,14 @@ public class PatientInvestigationController implements Serializable {
             for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
                 System.out.println("tii = " + tii);
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
+                    if(tii.getSample()!=null){
+                        dim.setLimsSampleType(tii.getSample().getName());
+                    }
+                    if(tii.getItem().getPriority()!=null){
+                        dim.setLimsPriority(tii.getItem().getPriority());
+                    }else{
+                        dim.setLimsPriority(Priority.Routeine);
+                    }
                     if (tii.getItem().isHasMoreThanOneComponant()) {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
                             if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
