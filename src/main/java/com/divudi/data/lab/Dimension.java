@@ -126,7 +126,7 @@ public class Dimension {
         System.out.println("determineMessageSubtype");
         System.out.println("analyzerMessageType = " + analyzerMessageType);
         System.out.println("requestValue = " + requestValue);
-        
+
         if (analyzerMessageType == MessageType.Poll) {
             if (firstPollValue == 1) {
                 analyzerMessageSubtype = MessageSubtype.FirstPoll;
@@ -155,11 +155,12 @@ public class Dimension {
         System.out.println("analyzerMessageType = " + analyzerMessageType);
         if (analyzerMessageSubtype == MessageSubtype.FirstPoll) {
             createNoSampleRequestMessage();
-        }else if(analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy){
+        } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy) {
             createNoSampleRequestMessage();
             return;
-        }else if(analyzerMessageSubtype == MessageSubtype.ConversationalPollReady){
+        } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollReady) {
             if (limsHasSamplesToSend) {
+                toDeleteSampleRequest = false;
                 createSampleRequestMessage();
             } else {
                 createNoSampleRequestMessage();
@@ -210,16 +211,16 @@ public class Dimension {
 
     private void convertSampleStringToSampleType() {
         if (limsSampleType == null) {
-            analyzerSampleType = null;
+            analyzerSampleType = SampleTypeForDimension.One;
         } else if (limsSampleType.toLowerCase().contains("blood")) {
             analyzerSampleType = SampleTypeForDimension.W;
-        } else if (limsSampleType.toLowerCase().contains("Serum")) {
+        } else if (limsSampleType.toLowerCase().contains("serum")) {
             analyzerSampleType = SampleTypeForDimension.One;
-        } else if (limsSampleType.toLowerCase().contains("Plasma")) {
+        } else if (limsSampleType.toLowerCase().contains("plasma")) {
             analyzerSampleType = SampleTypeForDimension.Two;
-        } else if (limsSampleType.toLowerCase().contains("Urine")) {
+        } else if (limsSampleType.toLowerCase().contains("urine")) {
             analyzerSampleType = SampleTypeForDimension.Three;
-        } else if (limsSampleType.toLowerCase().contains("CSF")) {
+        } else if (limsSampleType.toLowerCase().contains("csf")) {
             analyzerSampleType = SampleTypeForDimension.Four;
         }
     }
@@ -228,10 +229,10 @@ public class Dimension {
         String temRs = "";
         System.out.println("responseFields.size() = " + responseFields.size());
         for (int i = 0; i < responseFields.size(); i++) {
-            temRs +=  responseFields.get(i) + (char) 28 ;
+            temRs += responseFields.get(i) + (char) 28;
             System.out.println("responseFields.get(i) = " + responseFields.get(i));
         }
-        
+
         System.out.println("temRs = " + temRs);
         String checkSum = calculateChecksum(temRs);
         System.out.println("checkSum = " + checkSum);
@@ -240,18 +241,14 @@ public class Dimension {
         byte[] temRes = temRs.getBytes(StandardCharsets.US_ASCII);
         System.out.println("temRes = " + temRes);
         temRs = "";
-        for(Byte b:temRes){
-            temRs += b +"+" ;
+        for (Byte b : temRes) {
+            temRs += b + "+";
             System.out.println("b = " + b);
         }
         System.out.println("temRs = " + temRs);
         responseString = temRs;
     }
 
-    
-   
-    
-    
     public String calculateChecksum(String input, boolean replaceFieldSeperator) {
         String ip = input;
         String fs = (char) 28 + "";
@@ -361,7 +358,7 @@ public class Dimension {
         List<Byte> temBytes = new ArrayList<>();
         requestFields = new HashMap<>();
         for (Byte b : bytes) {
-            if (b !=2 && b != 3 && b != 5) {
+            if (b != 2 && b != 3 && b != 5) {
                 temBytes.add(b);
                 System.out.println("b = " + b);
             }
@@ -585,6 +582,9 @@ public class Dimension {
 
     public void setLimsPriority(Priority limsPriority) {
         this.limsPriority = limsPriority;
+        if(limsPriority==null){
+            limsPriority = Priority.Routeine;
+        }
         switch (limsPriority) {
             case Asap:
                 analyzerPriority = DimensionPriority.Two;
@@ -595,6 +595,8 @@ public class Dimension {
             case Routeine:
                 analyzerPriority = DimensionPriority.Zero;
                 break;
+            default:
+                analyzerPriority = DimensionPriority.Zero;
         }
     }
 
