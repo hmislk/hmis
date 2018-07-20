@@ -224,76 +224,23 @@ public class PatientInvestigationController implements Serializable {
     private String msgFromDimension() {
         String temMsgs = "";
         Dimension dim = new Dimension();
-        System.err.println("msg = " + msg);
         dim.setInputStringBytesSpaceSeperated(msg);
         dim.analyzeReceivedMessage();
-
-        PatientSample temPs = nextPatientSampleToSendToDimension();
-        System.out.println("temPs = " + temPs);
-        if (temPs == null) {
-            dim.setLimsHasSamplesToSend(false);
-        } else {
-            dim.setLimsHasSamplesToSend(true);
-            dim.setLimsSampleId(temPs.getIdStr());
-            dim.setLimsPatientId(temPs.getPatient().getPhn());
-            List<String> temSss = getTestsFromPatientSample(temPs, dim);
-            System.out.println("getTestsFromPatientSample(temPs) = " + temSss);
-            dim.setLimsTests(temSss);
+        if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.Poll) {
+            PatientSample nps = nextPatientSampleToSendToDimension();
+            dim.setLimsPatientSample(nps);
+            dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
+            dim.prepareResponseForPollMessages();
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
+            dim.prepareResponseForResultMessages();
+        }else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
+            dim.prepareResponseForCaliberationResultMessages();
         }
 
-        dim.prepareResponse();
+        dim.createResponseString();
         temMsgs = dim.getResponseString();
         temMsgs = "#{success=true|toAnalyzer=" + temMsgs + "}";
         return temMsgs;
-    }
-
-//    public List<PatientSampleComponant> getPatientSampleComponants(PatientSample ps){
-//        String j = "select c from PatientSampleComponant c "
-//                + " where c.patientSample=:ps";
-//        Map m = new HashMap();
-//        m.put("ps", ps);
-//        return getPatientSampleComponantFacade().findBySQL(msg, m);
-//    }
-    public List<String> getTestsFromPatientSample(PatientSample ps, Dimension dim) {
-        System.out.println("getTestsFromPatientSample");
-
-        List<String> temss = new ArrayList<>();
-        if (ps == null) {
-            return temss;
-        }
-
-        for (PatientSampleComponant c : getPatientSampleComponents(ps)) {
-            System.out.println("c = " + c);
-            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
-                System.out.println("tii = " + tii);
-                if (tii.getIxItemType() == InvestigationItemType.Value) {
-                    if(tii.getSample()!=null){
-                        dim.setLimsSampleType(tii.getSample().getName());
-                    }
-                    if(tii.getItem().getPriority()!=null){
-                        dim.setLimsPriority(tii.getItem().getPriority());
-                    }else{
-                        dim.setLimsPriority(Priority.Routeine);
-                    }
-                    if (tii.getItem().isHasMoreThanOneComponant()) {
-                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                temss.add(tii.getTest().getCode());
-                                System.out.println("1 tii.getTest().getCode() = " + tii.getTest().getCode());
-                            }
-                        }
-                    } else {
-                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            temss.add(tii.getTest().getCode());
-                            System.out.println("2 tii.getTest().getCode() = " + tii.getTest().getCode());
-                        }
-                    }
-                }
-            }
-
-        }
-
-        return temss;
     }
 
     public PatientSample nextPatientSampleToSendToDimension() {

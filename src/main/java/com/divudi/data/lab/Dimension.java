@@ -5,6 +5,11 @@
  */
 package com.divudi.data.lab;
 
+import com.divudi.data.InvestigationItemType;
+import com.divudi.entity.Patient;
+import com.divudi.entity.lab.InvestigationItem;
+import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.PatientSampleComponant;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.Charset;
@@ -36,6 +41,7 @@ public class Dimension {
     private String responseString;
 
     private Boolean limsHasSamplesToSend;
+    private Boolean limsFoundPatientInvestigationToEnterResults;
 
     private MessageType limsMessageType;
     private MessageSubtype limsMessageSubtype;
@@ -44,6 +50,10 @@ public class Dimension {
     private String limsSampleType;
     private Priority limsPriority;
     private List<String> limsTests;
+    private PatientSample limsPatientSample;
+    private List<PatientSampleComponant> limsPatientSampleComponants;
+
+    private Patient patient;
 
     private Boolean toDeleteSampleRequest;
 
@@ -66,11 +76,6 @@ public class Dimension {
         determineValues();
         determineMessageSubtype();
 
-    }
-
-    public void prepareResponse() {
-        createResponseFields();
-        createResponseString();
     }
 
     private void classifyMessage() {
@@ -123,9 +128,9 @@ public class Dimension {
     }
 
     private void determineMessageSubtype() {
-        System.out.println("determineMessageSubtype");
-        System.out.println("analyzerMessageType = " + analyzerMessageType);
-        System.out.println("requestValue = " + requestValue);
+//        System.out.println("determineMessageSubtype");
+//        System.out.println("analyzerMessageType = " + analyzerMessageType);
+//        System.out.println("requestValue = " + requestValue);
 
         if (analyzerMessageType == MessageType.Poll) {
             if (firstPollValue == 1) {
@@ -149,10 +154,8 @@ public class Dimension {
         System.out.println("analyzerMessageSubtype = " + analyzerMessageSubtype);
     }
 
-    private void createResponseFields() {
-        System.out.println("createResponseFields");
+    private void createResponseFieldsForPollMessage() {
         responseFields = new HashMap<>();
-        System.out.println("analyzerMessageType = " + analyzerMessageType);
         if (analyzerMessageSubtype == MessageSubtype.FirstPoll) {
             createNoSampleRequestMessage();
         } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy) {
@@ -225,27 +228,23 @@ public class Dimension {
         }
     }
 
-    private void createResponseString() {
+    public void createResponseString() {
         String temRs = "";
-        System.out.println("responseFields.size() = " + responseFields.size());
+        if (getResponseFields().isEmpty()) {
+            responseString = "";
+            return;
+        }
         for (int i = 0; i < responseFields.size(); i++) {
             temRs += responseFields.get(i) + (char) 28;
-            System.out.println("responseFields.get(i) = " + responseFields.get(i));
         }
-
-        System.out.println("temRs = " + temRs);
         String checkSum = calculateChecksum(temRs);
-        System.out.println("checkSum = " + checkSum);
         temRs = (char) 2 + temRs + checkSum + (char) 3;
-        System.out.println("temRs = " + temRs);
         byte[] temRes = temRs.getBytes(StandardCharsets.US_ASCII);
-        System.out.println("temRes = " + temRes);
         temRs = "";
         for (Byte b : temRes) {
             temRs += b + "+";
-            System.out.println("b = " + b);
         }
-        System.out.println("temRs = " + temRs);
+        System.out.println("createResponseString = " + temRs);
         responseString = temRs;
     }
 
@@ -360,7 +359,7 @@ public class Dimension {
         for (Byte b : bytes) {
             if (b != 2 && b != 3 && b != 5) {
                 temBytes.add(b);
-                System.out.println("b = " + b);
+//                System.out.println("b = " + b);
             }
         }
         String temStr = "";
@@ -368,7 +367,7 @@ public class Dimension {
         for (byte b : temBytes) {
             if (b == 28) {
                 requestFields.put(i, temStr);
-                System.out.println("temStr = " + temStr);
+//                System.out.println("temStr = " + temStr);
                 i++;
                 temStr = new String();
             } else {
@@ -377,8 +376,8 @@ public class Dimension {
             }
         }
         fieldCount = i;
-        System.out.println("fieldCount = " + fieldCount);
-        System.out.println("requestFields.size() = " + requestFields.size());
+//        System.out.println("fieldCount = " + fieldCount);
+//        System.out.println("requestFields.size() = " + requestFields.size());
     }
 
     public String addDecimalSeperator(String val) {
@@ -403,6 +402,84 @@ public class Dimension {
             returnVal = bd.doubleValue() + "";
         }
         return returnVal;
+    }
+
+    public void prepareResponseForResultMessages() {
+        System.out.println("prepareResponseForPollMessages");
+        responseFields = null;
+        if (limsFoundPatientInvestigationToEnterResults = true) {
+            createResultAcceptanceMessageFields();
+        } else {
+            createResultRejectMessageFields();
+        }
+    }
+
+    public void prepareResponseForCaliberationResultMessages() {
+        createResultAcceptanceMessageFields();
+    }
+
+    private void createResultAcceptanceMessageFields() {
+        responseFields = new HashMap<>();
+        getResponseFields().put(0, "M");
+        getResponseFields().put(1, "A");
+        getResponseFields().put(2, "");
+    }
+
+    private void createResultRejectMessageFields() {
+        responseFields = new HashMap<>();
+        getResponseFields().put(0, "M");
+        getResponseFields().put(1, "R");
+        getResponseFields().put(2, "1");
+    }
+
+    public void prepareResponseForPollMessages() {
+        System.out.println("prepareResponseForPollMessages");
+        PatientSample temPs = this.limsPatientSample;
+        if (temPs == null) {
+            setLimsHasSamplesToSend(false);
+        } else {
+            setLimsHasSamplesToSend(true);
+            setLimsSampleId(temPs.getIdStr());
+            setLimsPatientId(temPs.getPatient().getPhn());
+            List<String> temSss = getTestsFromPatientSample();
+            this.setLimsTests(temSss);
+        }
+        createResponseFieldsForPollMessage();
+        createResponseString();
+    }
+
+    public List<String> getTestsFromPatientSample() {
+        List<String> temss = new ArrayList<>();
+        if (limsPatientSample == null) {
+            return temss;
+        }
+        for (PatientSampleComponant c : limsPatientSampleComponants) {
+            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
+                if (tii.getIxItemType() == InvestigationItemType.Value) {
+                    if (tii.getSample() != null) {
+                        this.setLimsSampleType(tii.getSample().getName());
+                    }
+                    if (tii.getItem().getPriority() != null) {
+                        this.setLimsPriority(tii.getItem().getPriority());
+                    } else {
+                        this.setLimsPriority(Priority.Routeine);
+                    }
+                    if (tii.getItem().isHasMoreThanOneComponant()) {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            if (tii.getSampleComponent().equals(limsPatientSample.getInvestigationComponant())) {
+                                temss.add(tii.getTest().getCode());
+                            }
+                        }
+                    } else {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            temss.add(tii.getTest().getCode());
+                        }
+                    }
+                }
+            }
+
+        }
+        return temss;
     }
 
     public String getInputStringBytesSpaceSeperated() {
@@ -472,6 +549,9 @@ public class Dimension {
     }
 
     public Map<Integer, String> getResponseFields() {
+        if (responseFields == null) {
+            responseFields = new HashMap<>();
+        }
         return responseFields;
     }
 
@@ -582,7 +662,7 @@ public class Dimension {
 
     public void setLimsPriority(Priority limsPriority) {
         this.limsPriority = limsPriority;
-        if(limsPriority==null){
+        if (limsPriority == null) {
             limsPriority = Priority.Routeine;
         }
         switch (limsPriority) {
@@ -638,6 +718,38 @@ public class Dimension {
 
     public void setLimsMessageSubtype(MessageSubtype limsMessageSubtype) {
         this.limsMessageSubtype = limsMessageSubtype;
+    }
+
+    public PatientSample getLimsPatientSample() {
+        return limsPatientSample;
+    }
+
+    public void setLimsPatientSample(PatientSample limsPatientSample) {
+        this.limsPatientSample = limsPatientSample;
+    }
+
+    public List<PatientSampleComponant> getLimsPatientSampleComponants() {
+        return limsPatientSampleComponants;
+    }
+
+    public void setLimsPatientSampleComponants(List<PatientSampleComponant> limsPatientSampleComponants) {
+        this.limsPatientSampleComponants = limsPatientSampleComponants;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Boolean getLimsFoundPatientInvestigationToEnterResults() {
+        return limsFoundPatientInvestigationToEnterResults;
+    }
+
+    public void setLimsFoundPatientInvestigationToEnterResults(Boolean limsFoundPatientInvestigationToEnterResults) {
+        this.limsFoundPatientInvestigationToEnterResults = limsFoundPatientInvestigationToEnterResults;
     }
 
 }
