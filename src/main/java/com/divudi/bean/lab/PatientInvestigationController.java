@@ -235,33 +235,51 @@ public class PatientInvestigationController implements Serializable {
             dim.setLimsHasSamplesToSend(true);
             dim.setLimsTests(getTestsFromPatientSample(temPs));
         }
-        
+
         dim.prepareResponse();
         temMsgs = dim.getResponseString();
         temMsgs = "#{success=true|toAnalyzer=" + temMsgs + "}";
         return temMsgs;
     }
 
+//    public List<PatientSampleComponant> getPatientSampleComponants(PatientSample ps){
+//        String j = "select c from PatientSampleComponant c "
+//                + " where c.patientSample=:ps";
+//        Map m = new HashMap();
+//        m.put("ps", ps);
+//        return getPatientSampleComponantFacade().findBySQL(msg, m);
+//    }
     public List<String> getTestsFromPatientSample(PatientSample ps) {
+        System.out.println("getTestsFromPatientSample");
+
         List<String> temss = new ArrayList<>();
-        if(ps==null){
+        if (ps == null) {
             return temss;
         }
-        for (InvestigationItem tii : ps.getPatientInvestigation().getInvestigation().getReportItems()) {
-            if (tii.getIxItemType() == InvestigationItemType.Value) {
-                if (tii.getItem().isHasMoreThanOneComponant()) {
-                    if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                        if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
-                            temss.add(tii.getTest().getCode());
+
+        for (PatientSampleComponant c : getPatientSampleComponents(ps)) {
+            System.out.println("c = " + c);
+            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
+                System.out.println("tii = " + tii);
+                if (tii.getIxItemType() == InvestigationItemType.Value) {
+                    if (tii.getItem().isHasMoreThanOneComponant()) {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                temss.add(tii.getTest().getCode());
+                                System.out.println("1 tii.getTest().getCode() = " + tii.getTest().getCode());
+                            }
                         }
-                    }
-                } else {
-                    if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                        temss.add(tii.getTest().getCode());
+                    } else {
+                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                            temss.add(tii.getTest().getCode());
+                            System.out.println("2 tii.getTest().getCode() = " + tii.getTest().getCode());
+                        }
                     }
                 }
             }
+
         }
+
         return temss;
     }
 
@@ -269,19 +287,20 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps "
                 + "where ps.readyTosentToAnalyzer=true "
                 + " and ps.sentToAnalyzer=false "
-                + " and ps.patientInvestigation.investigation.institution=:ins "
-                + " and lower(ps.machine.name) like :ma "
-                + " and ps.sampledAt=:sa ";
+                + " and ps.sampleInstitution=:ins "
+                + " and lower(ps.machine.name) like :ma ";
+//                + " and ps.sampledAt=:sa ";
 
         Map m = new HashMap();
         m.put("ins", getSessionController().getLoggedUser().getInstitution());
         m.put("ma", "%dimension%");
-        m.put("sa", new Date());
+//        m.put("sa", new Date());
         PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
         if (false) {
             PatientSample temPs = new PatientSample();
             temPs.getPatientInvestigation().getInvestigation().getInstitution();
             temPs.getMachine().getName();
+            temPs.getSampleInstitution();
             temPs.getSampledAt();
         }
         return ps;
