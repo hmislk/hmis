@@ -233,7 +233,9 @@ public class PatientInvestigationController implements Serializable {
             dim.setLimsHasSamplesToSend(false);
         } else {
             dim.setLimsHasSamplesToSend(true);
-            dim.setLimsTests(getTestsFromPatientSample(temPs));
+            List<String> temSss = getTestsFromPatientSample(temPs);
+            System.out.println("getTestsFromPatientSample(temPs) = " + temSss);
+            dim.setLimsTests(temSss);
         }
 
         dim.prepareResponse();

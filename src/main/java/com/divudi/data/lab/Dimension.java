@@ -158,7 +158,7 @@ public class Dimension {
         }else if(analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy){
             createNoSampleRequestMessage();
             return;
-        }else if(analyzerMessageSubtype == MessageSubtype.ConversationalPollBusy){
+        }else if(analyzerMessageSubtype == MessageSubtype.ConversationalPollReady){
             if (limsHasSamplesToSend) {
                 createSampleRequestMessage();
             } else {
