@@ -122,6 +122,9 @@ public class Dimension {
         } else if (analyzerMessageType == MessageType.ResultAcceptance) {
             requestAcceptanceStatus = requestFields.get(1);
             //TODO: Reason for Rejection, Get Cup Positions
+        } else if (analyzerMessageType == MessageType.RequestAcceptance) {
+            requestAcceptanceStatus = requestFields.get(1);
+            //TODO: Reason for Rejection, Get Cup Positions
         } else if (analyzerMessageType == MessageType.QueryMessage) {
             analyzerSampleId = requestFields.get(1);
         }
@@ -445,7 +448,7 @@ public class Dimension {
             this.setLimsTests(temSss);
         }
         createResponseFieldsForPollMessage();
-        createResponseString();
+//        createResponseString();
     }
 
     public List<String> getTestsFromPatientSample() {

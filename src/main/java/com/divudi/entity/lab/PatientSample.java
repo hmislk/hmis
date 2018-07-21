@@ -5,6 +5,7 @@
  */
 package com.divudi.entity.lab;
 
+import com.divudi.data.lab.SampleRequestType;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -14,6 +15,8 @@ import com.divudi.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -57,6 +60,8 @@ public class PatientSample implements Serializable {
     private Institution sampleInstitution;
     //Sent To Analyzer
     private Boolean readyTosentToAnalyzer;
+    @Enumerated(EnumType.STRING)
+    private SampleRequestType sampleRequestType;
     private Boolean sentToAnalyzer;
     @ManyToOne
     private WebUser sentToAnalyzerBy;
@@ -428,6 +433,14 @@ public class PatientSample implements Serializable {
 
     public void setReadyTosentToAnalyzer(Boolean readyTosentToAnalyzer) {
         this.readyTosentToAnalyzer = readyTosentToAnalyzer;
+    }
+
+    public SampleRequestType getSampleRequestType() {
+        return sampleRequestType;
+    }
+
+    public void setSampleRequestType(SampleRequestType sampleRequestType) {
+        this.sampleRequestType = sampleRequestType;
     }
 
     

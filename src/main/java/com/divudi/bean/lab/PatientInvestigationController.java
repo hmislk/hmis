@@ -12,6 +12,7 @@ import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
 import com.divudi.data.lab.Dimension;
 import com.divudi.data.lab.Priority;
+import com.divudi.data.lab.SampleRequestType;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
@@ -146,6 +147,7 @@ public class PatientInvestigationController implements Serializable {
     List<PatientInvestigation> selectedItems;
     private PatientInvestigation current;
     Investigation currentInvestigation;
+    private PatientSample currentPatientSample;
     List<InvestigationItem> currentInvestigationItems;
     private List<PatientInvestigation> items = null;
     private List<PatientInvestigation> lstToSamle = null;
@@ -187,6 +189,42 @@ public class PatientInvestigationController implements Serializable {
 
     private String apiResponse = "#{success=false|msg=No Requests}";
 
+    
+    public void sentRequestToAnalyzer(){
+        if(currentPatientSample ==null){
+            JsfUtil.addErrorMessage("Nothing to Add");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(true);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.A);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+    
+    
+    public void stopSendingRequestToAnalyzer(){
+        if(currentPatientSample ==null){
+            JsfUtil.addErrorMessage("Nothing to Add");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(false);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.A);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+    
+    public void sentRequestToDeleteToAnalyzer(){
+        if(currentPatientSample ==null){
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(true);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.D);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+    
+    
     public void msgFromMiddleware() {
         System.err.println("msgFromMiddleware");
         apiResponse = "";
@@ -229,11 +267,16 @@ public class PatientInvestigationController implements Serializable {
         if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.Poll) {
             PatientSample nps = nextPatientSampleToSendToDimension();
             dim.setLimsPatientSample(nps);
+            if (nps.getSampleRequestType() == SampleRequestType.D) {
+                dim.setToDeleteSampleRequest(true);
+            } else {
+                dim.setToDeleteSampleRequest(false);
+            }
             dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
             dim.prepareResponseForPollMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
             dim.prepareResponseForResultMessages();
-        }else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
             dim.prepareResponseForCaliberationResultMessages();
         }
 
@@ -256,6 +299,10 @@ public class PatientInvestigationController implements Serializable {
         m.put("ma", "%dimension%");
 //        m.put("sa", new Date());
         PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
+        ps.setReadyTosentToAnalyzer(false);
+        ps.setSentToAnalyzer(true);
+        getPatientSampleFacade().edit(ps);
+        
         if (false) {
             PatientSample temPs = new PatientSample();
             temPs.getPatientInvestigation().getInvestigation().getInstitution();
@@ -1822,6 +1869,14 @@ public class PatientInvestigationController implements Serializable {
         this.shift2 = shift2;
     }
 
+    public PatientSample getCurrentPatientSample() {
+        return currentPatientSample;
+    }
+
+    public void setCurrentPatientSample(PatientSample currentPatientSample) {
+        this.currentPatientSample = currentPatientSample;
+    }
+
     /**
      *
      */
@@ -1881,4 +1936,6 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
+    
 }
