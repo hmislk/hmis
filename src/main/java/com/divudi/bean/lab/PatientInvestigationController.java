@@ -189,9 +189,8 @@ public class PatientInvestigationController implements Serializable {
 
     private String apiResponse = "#{success=false|msg=No Requests}";
 
-    
-    public void sentRequestToAnalyzer(){
-        if(currentPatientSample ==null){
+    public void sentRequestToAnalyzer() {
+        if (currentPatientSample == null) {
             JsfUtil.addErrorMessage("Nothing to Add");
             return;
         }
@@ -200,10 +199,9 @@ public class PatientInvestigationController implements Serializable {
         currentPatientSample.setSampleRequestType(SampleRequestType.A);
         getPatientSampleFacade().edit(currentPatientSample);
     }
-    
-    
-    public void stopSendingRequestToAnalyzer(){
-        if(currentPatientSample ==null){
+
+    public void stopSendingRequestToAnalyzer() {
+        if (currentPatientSample == null) {
             JsfUtil.addErrorMessage("Nothing to Add");
             return;
         }
@@ -212,9 +210,9 @@ public class PatientInvestigationController implements Serializable {
         currentPatientSample.setSampleRequestType(SampleRequestType.A);
         getPatientSampleFacade().edit(currentPatientSample);
     }
-    
-    public void sentRequestToDeleteToAnalyzer(){
-        if(currentPatientSample ==null){
+
+    public void sentRequestToDeleteToAnalyzer() {
+        if (currentPatientSample == null) {
             JsfUtil.addErrorMessage("Nothing to Delete");
             return;
         }
@@ -223,8 +221,7 @@ public class PatientInvestigationController implements Serializable {
         currentPatientSample.setSampleRequestType(SampleRequestType.D);
         getPatientSampleFacade().edit(currentPatientSample);
     }
-    
-    
+
     public void msgFromMiddleware() {
         System.err.println("msgFromMiddleware");
         apiResponse = "";
@@ -290,19 +287,16 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps "
                 + "where ps.readyTosentToAnalyzer=true "
                 + " and ps.sentToAnalyzer=false "
-                + " and ps.sampleInstitution=:ins "
                 + " and lower(ps.machine.name) like :ma ";
-//                + " and ps.sampledAt=:sa ";
 
         Map m = new HashMap();
-        m.put("ins", getSessionController().getLoggedUser().getInstitution());
         m.put("ma", "%dimension%");
-//        m.put("sa", new Date());
         PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
-        ps.setReadyTosentToAnalyzer(false);
-        ps.setSentToAnalyzer(true);
-        getPatientSampleFacade().edit(ps);
-        
+        if (ps != null) {
+            ps.setReadyTosentToAnalyzer(false);
+            ps.setSentToAnalyzer(true);
+            getPatientSampleFacade().edit(ps);
+        }
         if (false) {
             PatientSample temPs = new PatientSample();
             temPs.getPatientInvestigation().getInvestigation().getInstitution();
@@ -1936,6 +1930,4 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
-    
-    
 }

@@ -60,8 +60,9 @@
 
                             </p:column>
                             <p:column headerText="Analyzer" >
-                                <p:outputLabel value="Awaiting to sent to Analyzer" rendered="#{ps.readyTosentToAnalyzer}" ></p:outputLabel>
-                                <p:outputLabel value="Sent to Analyzer" rendered="#{ps.sentToAnalyzer}" ></p:outputLabel>
+                                <p:outputLabel value="#{ps.machine.name}" ></p:outputLabel>
+                                <p:outputLabel value=" - Awaiting to sent to Analyzer" rendered="#{ps.readyTosentToAnalyzer}" style="color: red;" ></p:outputLabel>
+                                <p:outputLabel value=" - Sent to Analyzer" rendered="#{ps.sentToAnalyzer}" style="color: green;" ></p:outputLabel>
                             </p:column>
                             <p:column headerText="Tests" >
                                 <ui:repeat value="#{patientInvestigationController.getPatientSampleComponents(ps)}" var="c" >
@@ -70,17 +71,17 @@
                                     </p:commandLink>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="Action" >
-                                <h:panelGrid columns="2" >
-                                    <p:commandButton ajax="false" value="Stop Sending to Analyzer" action="#{patientInvestigationController.stopSendingRequestToAnalyzer()}">
+                            <p:column headerText="Analyzer Actions" >
+                                <h:panelGrid columns="3" style="border: none;" >
+                                    <p:commandLink ajax="false" value="Stop" action="#{patientInvestigationController.stopSendingRequestToAnalyzer()}">
                                         <f:setPropertyActionListener value="#{ps}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton ajax="false" value="Sent Request to Analyzer" action="#{patientInvestigationController.sentRequestToAnalyzer()}">
+                                    </p:commandLink>
+                                    <p:commandLink ajax="false" value="Send" action="#{patientInvestigationController.sentRequestToAnalyzer()}">
                                         <f:setPropertyActionListener value="#{ps}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton ajax="false" value="Delete Request" action="#{patientInvestigationController.sentRequestToDeleteToAnalyzer()}">
+                                    </p:commandLink>
+                                    <p:commandLink ajax="false" value="Delete" action="#{patientInvestigationController.sentRequestToDeleteToAnalyzer()}">
                                         <f:setPropertyActionListener value="#{ps}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                    </p:commandButton>
+                                    </p:commandLink>
                                 </h:panelGrid>
                             </p:column>
                         </p:dataTable>
