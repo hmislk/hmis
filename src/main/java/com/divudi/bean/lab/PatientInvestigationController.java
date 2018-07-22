@@ -11,6 +11,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
 import com.divudi.data.lab.Dimension;
+import com.divudi.data.lab.DimensionTestResult;
 import com.divudi.data.lab.Priority;
 import com.divudi.data.lab.SampleRequestType;
 import com.divudi.data.lab.SysMex;
@@ -223,7 +224,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void msgFromMiddleware() {
-        System.err.println("msgFromMiddleware");
         apiResponse = "";
         if (username == null || username.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Username}";
@@ -246,11 +246,9 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         if (machine.trim().equals("SysMex")) {
-            System.err.println("SysMex");
             apiResponse = msgFromSysmex();
             return;
         } else if (machine.trim().equals("Dimension")) {
-            System.err.println("Dim");
             apiResponse = msgFromDimension();
             return;
         }
@@ -261,24 +259,35 @@ public class PatientInvestigationController implements Serializable {
         Dimension dim = new Dimension();
         dim.setInputStringBytesSpaceSeperated(msg);
         dim.analyzeReceivedMessage();
+
         if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.Poll) {
             PatientSample nps = nextPatientSampleToSendToDimension();
-            if (nps != null) {
-                dim.setLimsPatientSample(nps);
-                if (nps.getSampleRequestType() == null) {
-                    dim.setToDeleteSampleRequest(true);
-                } else if (nps.getSampleRequestType() == SampleRequestType.D) {
+            dim.setLimsPatientSample(nps);
+            if (nps == null) {
+                dim.setLimsFoundPatientInvestigationToEnterResults(false);
+            } else {
+                if (nps.getSampleRequestType() == null || nps.getSampleRequestType() == SampleRequestType.D) {
                     dim.setToDeleteSampleRequest(true);
                 } else {
                     dim.setToDeleteSampleRequest(false);
                 }
+                dim.setLimsFoundPatientInvestigationToEnterResults(true);
                 dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
-                dim.prepareResponseForPollMessages();
-            }else{
-                dim.prepareResponseForPollMessages();
             }
+            dim.prepareResponseForPollMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
+            boolean resultAdded = true;
+            for (DimensionTestResult r : dim.getAnalyzerTestResults()) {
+                System.out.println("r.getTestName() = " + r.getTestName());
+                boolean tb = addResultsToReportsForDimension(dim.getAnalyzerSampleId(), r.getTestName(), r.getTestResult(), r.getTestUnit(), r.getErrorCode());
+                if (tb = false) {
+                    resultAdded = false;
+                }
+            }
+            temMsgs = "Results Added " + resultAdded;
+            dim.setLimsFoundPatientInvestigationToEnterResults(resultAdded);
             dim.prepareResponseForResultMessages();
+
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
             dim.prepareResponseForCaliberationResultMessages();
         }
@@ -287,6 +296,77 @@ public class PatientInvestigationController implements Serializable {
         temMsgs = dim.getResponseString();
         temMsgs = "#{success=true|toAnalyzer=" + temMsgs + "}";
         return temMsgs;
+    }
+
+    public boolean addResultsToReportsForDimension(String sampleId, String testStr, String result, String unit, String error) {
+        System.out.println("sampleId = " + sampleId);
+        System.out.println("testStr = " + testStr);
+        System.out.println("result = " + result);
+        System.out.println("unit = " + unit);
+        System.out.println("error = " + error);
+        boolean temFlag = false;
+        Long sid;
+        try {
+            sid = Long.parseLong(sampleId);
+        } catch (Exception e) {
+            System.out.println("e = " + e);
+            sid = 0l;
+        }
+        PatientSample ps = getPatientSampleFromId(sid);
+
+        if (ps == null) {
+            return temFlag;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+
+        if (pscs == null) {
+            return temFlag;
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return temFlag;
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("dim")) {
+                PatientReport tpr;
+                tpr = patientReportController.getUnapprovedPatientReport(pi);
+                if (tpr == null) {
+                    tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
+                }
+                System.out.println("1. tpr = " + tpr);
+                prs.add(tpr);
+            }
+            for (PatientReport rtpr : prs) {
+                System.out.println("rtpr = " + rtpr);
+                for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
+                    System.out.println("priv = " + priv);
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        System.out.println("test = " + test);
+                        if (test.toLowerCase().equals(testStr.toLowerCase())) {
+                            priv.setStrValue(result);
+                            Double dbl = 0d;
+                            try {
+                                dbl = Double.parseDouble(result);
+                            } catch (Exception e) {
+                                System.out.println("e = " + e);
+                            }
+                            priv.setDoubleValue(dbl);
+                            System.out.println("priv.getStrValue() = " + priv.getStrValue());
+                            temFlag = true;
+                        }
+                    }
+                }
+                rtpr.setDataEntered(true);
+                rtpr.setDataEntryAt(new Date());
+                rtpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                getPrFacade().edit(rtpr);
+            }
+        }
+
+        return temFlag;
     }
 
     public PatientSample nextPatientSampleToSendToDimension() {
@@ -333,12 +413,10 @@ public class PatientInvestigationController implements Serializable {
         String temMsgs = "";
         Long sampleId = adf2.getSampleId();
         PatientSample ps = getPatientSampleFromId(adf2.getSampleId());
-        System.out.println("ps = " + ps);
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
         }
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("pscs = " + pscs);
         if (pscs == null) {
             return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
         }
@@ -347,15 +425,12 @@ public class PatientInvestigationController implements Serializable {
             return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
         }
         for (PatientInvestigation pi : ptixs) {
-            System.out.println("pi = " + pi);
-            System.out.println("pi.getBillItem().getBill().getInsId() = " + pi.getBillItem().getBill().getInsId());
             List<PatientReport> prs = new ArrayList<>();
             if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
                 PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
                 prs.add(tpr);
             }
             List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
-            System.out.println("temItems = " + temItems);
             for (Item ti : temItems) {
                 if (ti instanceof Investigation) {
                     Investigation tix = (Investigation) ti;
@@ -852,9 +927,6 @@ public class PatientInvestigationController implements Serializable {
 //            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
 //            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
             try {
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
 
                 stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
 
@@ -884,10 +956,6 @@ public class PatientInvestigationController implements Serializable {
             messageBody = messageBody + bill.getInstitution().getWeb();
 
             try {
-                System.out.println("id = " + id);
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("text = " + messageBody);
 
                 stringResponse = Unirest.post(url)
                         .field("id", id)
@@ -909,21 +977,14 @@ public class PatientInvestigationController implements Serializable {
             sms.setSendingMessage(messageBody);
         }
 
-        System.out.println("Updating current PtIx = " + getCurrent());
-
-        System.out.println("SMS status before updating " + getCurrent().getBillItem().getBill().getSmsed());
-
         getCurrent().getBillItem().getBill().setSmsed(true);
         getCurrent().getBillItem().getBill().setSmsedAt(new Date());
         getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
         getFacade().edit(current);
         getCurrent().getBillItem().getBill().getSentSmses().add(sms);
 
-        System.out.println("SMS status aftr updating " + getCurrent().getBillItem().getBill().getSmsed());
-
         billFacade.edit(getCurrent().getBillItem().getBill());
 
-        System.out.println("sms before saving = " + sms);
         getSmsFacade().create(sms);
 
         UtilityController.addSuccessMessage("Sms send");
@@ -939,9 +1000,7 @@ public class PatientInvestigationController implements Serializable {
         String url = "http://localhost:8080/temp/faces/lab/patient_report_print_email_pfd.xhtml";
 
         url = req.getRequestURL().toString();
-        System.out.println("1" + url);
         url = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
-        System.out.println("2" + url);
         url += "faces/lab/patient_report_print_email_pfd.xhtml";
 // 
 
@@ -966,8 +1025,6 @@ public class PatientInvestigationController implements Serializable {
 //    ...............sendEmail...............................................
 
     public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
-
-        System.out.println("" + getCurrent());
 
         final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
         final String password = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
@@ -1262,12 +1319,10 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
-        System.out.println("com.divudi.bean.lab.PatientInvestigationController.prepareSampleCollectionByBillNumber()");
         String j = "Select b from Bill b where b.insId=:id";
         Map m = new HashMap();
         m.put("id", insId);
         Bill b = getBillFacade().findFirstBySQL(j, m);
-        System.out.println("b = " + b);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
             JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
@@ -1288,13 +1343,11 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void prepareSampleCollectionByBills(List<Bill> bills) {
-        System.out.println("prepareSampleCollectionByBills");
         String j = "";
         Map m;
         patientSamplesSet = new HashSet<>();
         patientSamples = null;
         for (Bill b : bills) {
-            System.out.println("b = " + b);
             m = new HashMap();
             m.put("can", false);
             m.put("bill", b);
@@ -1303,7 +1356,6 @@ public class PatientInvestigationController implements Serializable {
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
             for (PatientInvestigation ptix : pis) {
-                System.out.println("ptix = " + ptix);
                 Investigation ix = ptix.getInvestigation();
 
                 ptix.setCollected(true);
@@ -1336,7 +1388,6 @@ public class PatientInvestigationController implements Serializable {
                         }
 
                         PatientSample pts = getPatientSampleFacade().findFirstBySQL(j, m);
-                        System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
