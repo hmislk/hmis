@@ -342,6 +342,13 @@ public class PatientInvestigationController implements Serializable {
                         System.out.println("test = " + test);
                         if (test.toLowerCase().equals(testStr.toLowerCase())) {
                             priv.setStrValue(result);
+                            Double dbl = 0d;
+                            try {
+                                dbl = Double.parseDouble(result);
+                            } catch (Exception e) {
+                                System.out.println("e = " + e);
+                            }
+                            priv.setDoubleValue(dbl);
                             System.out.println("priv.getStrValue() = " + priv.getStrValue());
                             temFlag = true;
                         }
@@ -972,14 +979,11 @@ public class PatientInvestigationController implements Serializable {
             sms.setSendingMessage(messageBody);
         }
 
-
-
         getCurrent().getBillItem().getBill().setSmsed(true);
         getCurrent().getBillItem().getBill().setSmsedAt(new Date());
         getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
         getFacade().edit(current);
         getCurrent().getBillItem().getBill().getSentSmses().add(sms);
-
 
         billFacade.edit(getCurrent().getBillItem().getBill());
 
@@ -1023,7 +1027,6 @@ public class PatientInvestigationController implements Serializable {
 //    ...............sendEmail...............................................
 
     public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
-
 
         final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
         final String password = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
