@@ -17,9 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.http.Consts;
 
@@ -116,6 +118,7 @@ public class Dimension {
     }
 
     private void determineValues() {
+        System.out.println("determineValues = " + analyzerMessageType);
         if (analyzerMessageType == MessageType.Poll) {
             instrumentId = requestFields.get(1);
             firstPollValue = getByte(requestFields.get(2));
@@ -128,20 +131,19 @@ public class Dimension {
             //TODO: Reason for Rejection, Get Cup Positions
         } else if (analyzerMessageType == MessageType.QueryMessage) {
             analyzerSampleId = requestFields.get(1);
-        }
-        else if (analyzerMessageType == MessageType.ResultMessage) {
+        } else if (analyzerMessageType == MessageType.ResultMessage) {
             analyzerPatientId = requestFields.get(2);
             analyzerSampleId = requestFields.get(3);
             int resultsCount = Integer.parseInt(requestFields.get(10));
             analyzerTestResults = new ArrayList<>();
-            for(int i=0;i<resultsCount;i++){
-                int count = 11+i*4;
+            for (int i = 0; i < resultsCount; i++) {
+                int count = 11 + i * 4;
                 DimensionTestResult tr = new DimensionTestResult();
                 tr.setTestName(requestFields.get(count));
-                tr.setTestResult(requestFields.get(count+1));
-                System.out.println("requestFields.get(count+1) = " + requestFields.get(count+1));
-                tr.setTestUnit(requestFields.get(count+2));
-                tr.setErrorCode(requestFields.get(count+3));
+                tr.setTestResult(requestFields.get(count + 1));
+                System.out.println("requestFields.get(count+1) = " + requestFields.get(count + 1));
+                tr.setTestUnit(requestFields.get(count + 2));
+                tr.setErrorCode(requestFields.get(count + 3));
                 analyzerTestResults.add(tr);
             }
         }
@@ -190,6 +192,17 @@ public class Dimension {
             }
             return;
         }
+    }
+
+    private void createResponseFieldsForQueryMessage() {
+        System.out.println("createResponseFieldsForQueryMessage = ");
+        responseFields = new HashMap<>();
+        if (limsHasSamplesToSend) {
+            createSampleRequestMessage();
+        } else {
+            createNoSampleRequestMessage();
+        }
+        return;
     }
 
     private void createNoSampleRequestMessage() {
@@ -468,7 +481,27 @@ public class Dimension {
 //        createResponseString();
     }
 
+    public void prepareResponseForQueryMessages() {
+        System.out.println("prepareResponseForQueryMessages");
+        PatientSample temPs = this.limsPatientSample;
+        if (temPs == null) {
+            setLimsHasSamplesToSend(false);
+            System.out.println("No Samples");
+        } else {
+            System.out.println("has samples");
+            setLimsHasSamplesToSend(true);
+            setLimsSampleId(temPs.getIdStr());
+            setLimsPatientId(temPs.getPatient().getPhn());
+            List<String> temSss = getTestsFromPatientSample();
+            System.out.println("temSss = " + temSss);
+            this.setLimsTests(temSss);
+        }
+        createResponseFieldsForQueryMessage();
+//        createResponseString();
+    }
+
     public List<String> getTestsFromPatientSample() {
+        Set<String> temsss = new HashSet<>();
         List<String> temss = new ArrayList<>();
         if (limsPatientSample == null) {
             return temss;
@@ -487,18 +520,19 @@ public class Dimension {
                     if (tii.getItem().isHasMoreThanOneComponant()) {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
                             if (tii.getSampleComponent().equals(limsPatientSample.getInvestigationComponant())) {
-                                temss.add(tii.getTest().getCode());
+                                temsss.add(tii.getTest().getCode());
                             }
                         }
                     } else {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            temss.add(tii.getTest().getCode());
+                            temsss.add(tii.getTest().getCode());
                         }
                     }
                 }
             }
 
         }
+        temss = new ArrayList<>(temsss);
         return temss;
     }
 
@@ -780,6 +814,4 @@ public class Dimension {
         this.analyzerTestResults = analyzerTestResults;
     }
 
-    
-    
 }

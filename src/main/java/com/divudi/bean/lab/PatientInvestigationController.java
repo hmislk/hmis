@@ -275,6 +275,20 @@ public class PatientInvestigationController implements Serializable {
                 dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
             }
             dim.prepareResponseForPollMessages();
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.QueryMessage) {
+            System.out.println("Query Message");
+            PatientSample nps = patientSampleFromId(dim.getAnalyzerSampleId());
+            System.out.println("QM nps = " + nps);
+            
+            dim.setLimsPatientSample(nps);
+            if (nps == null) {
+                dim.setLimsFoundPatientInvestigationToEnterResults(false);
+            } else {
+                dim.setToDeleteSampleRequest(false);
+                dim.setLimsFoundPatientInvestigationToEnterResults(true);
+                dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
+            }
+            dim.prepareResponseForQueryMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
             boolean resultAdded = true;
             for (DimensionTestResult r : dim.getAnalyzerTestResults()) {
@@ -362,6 +376,16 @@ public class PatientInvestigationController implements Serializable {
         }
 
         return temFlag;
+    }
+
+    public PatientSample patientSampleFromId(String id) {
+        Long pid = 0l;
+        try {
+            pid = Long.parseLong(id);
+        } catch (Exception e) {
+            System.out.println("e = " + e);
+        }
+        return getPatientSampleFacade().find(pid);
     }
 
     public PatientSample nextPatientSampleToSendToDimension() {
