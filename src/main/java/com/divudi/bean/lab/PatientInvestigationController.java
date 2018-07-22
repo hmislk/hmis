@@ -1429,7 +1429,7 @@ public class PatientInvestigationController implements Serializable {
                             pts.setCreatedAt(new Date());
                             pts.setCreater(sessionController.getLoggedUser());
                             pts.setCollected(false);
-                            pts.setReadyTosentToAnalyzer(true);
+                            pts.setReadyTosentToAnalyzer(false);
                             pts.setSentToAnalyzer(false);
                             getPatientSampleFacade().create(pts);
                         }

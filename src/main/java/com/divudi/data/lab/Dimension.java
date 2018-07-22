@@ -474,7 +474,7 @@ public class Dimension {
             setLimsHasSamplesToSend(false);
         } else {
             setLimsHasSamplesToSend(true);
-            setLimsSampleId(temPs.getIdStr());
+            setLimsSampleId(analyzerSampleId);
             setLimsPatientId(temPs.getPatient().getPhn());
             List<String> temSss = getTestsFromPatientSample();
             this.setLimsTests(temSss);
@@ -492,8 +492,10 @@ public class Dimension {
         } else {
             System.out.println("has samples");
             setLimsHasSamplesToSend(true);
-            setLimsSampleId(temPs.getIdStr());
-            setLimsPatientId(temPs.getPatient().getPhn());
+            setLimsSampleId(analyzerSampleId);
+            String temName = temPs.getPatient().getPerson().getName() + "                              ";
+            temName = temName.substring(0, 25);
+            setLimsPatientId(temName);
             List<String> temSss = getTestsFromPatientSample();
             System.out.println("temSss = " + temSss);
             this.setLimsTests(temSss);
