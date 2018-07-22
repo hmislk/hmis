@@ -166,7 +166,7 @@ public class Dimension {
             return;
         } else if (analyzerMessageSubtype == MessageSubtype.ConversationalPollReady) {
             if (limsHasSamplesToSend) {
-                toDeleteSampleRequest = false;
+//                toDeleteSampleRequest = false;
                 createSampleRequestMessage();
             } else {
                 createNoSampleRequestMessage();
@@ -199,7 +199,9 @@ public class Dimension {
             responseFields.put(3, "A");
         }
         responseFields.put(4, limsPatientId);
+        System.out.println("limsPatientId = " + limsPatientId);
         responseFields.put(5, limsSampleId);
+        System.out.println("limsSampleId = " + limsSampleId);
         responseFields.put(6, analyzerSampleType.getFiledValue());
         responseFields.put(7, "");
         responseFields.put(8, analyzerPriority.getValue() + "");

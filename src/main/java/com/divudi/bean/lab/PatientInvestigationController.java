@@ -263,14 +263,20 @@ public class PatientInvestigationController implements Serializable {
         dim.analyzeReceivedMessage();
         if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.Poll) {
             PatientSample nps = nextPatientSampleToSendToDimension();
-            dim.setLimsPatientSample(nps);
-            if (nps.getSampleRequestType() == SampleRequestType.D) {
-                dim.setToDeleteSampleRequest(true);
-            } else {
-                dim.setToDeleteSampleRequest(false);
+            if (nps != null) {
+                dim.setLimsPatientSample(nps);
+                if (nps.getSampleRequestType() == null) {
+                    dim.setToDeleteSampleRequest(true);
+                } else if (nps.getSampleRequestType() == SampleRequestType.D) {
+                    dim.setToDeleteSampleRequest(true);
+                } else {
+                    dim.setToDeleteSampleRequest(false);
+                }
+                dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
+                dim.prepareResponseForPollMessages();
+            }else{
+                dim.prepareResponseForPollMessages();
             }
-            dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
-            dim.prepareResponseForPollMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
             dim.prepareResponseForResultMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
@@ -296,13 +302,6 @@ public class PatientInvestigationController implements Serializable {
             ps.setReadyTosentToAnalyzer(false);
             ps.setSentToAnalyzer(true);
             getPatientSampleFacade().edit(ps);
-        }
-        if (false) {
-            PatientSample temPs = new PatientSample();
-            temPs.getPatientInvestigation().getInvestigation().getInstitution();
-            temPs.getMachine().getName();
-            temPs.getSampleInstitution();
-            temPs.getSampledAt();
         }
         return ps;
     }
