@@ -1298,6 +1298,20 @@ public class PatientReportController implements Serializable {
         return r;
     }
 
+    
+    public PatientReport getUnapprovedPatientReport(PatientInvestigation pi) {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation = :pi "
+                + " and (r.approved = :a or r.approved is null) "
+                + " order by r.id desc";
+        
+        Map m = new HashMap();
+        m.put("pi", pi);
+        m.put("a", false);
+        PatientReport r = getFacade().findFirstBySQL(j, m);
+        return r;
+    }
+    
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
         //System.err.println("creating a new patient report");
         PatientReport r = null;

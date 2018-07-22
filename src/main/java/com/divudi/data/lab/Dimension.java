@@ -63,6 +63,7 @@ public class Dimension {
     private String analyzerSampleId;
     private SampleTypeForDimension analyzerSampleType;
     private DimensionPriority analyzerPriority;
+    private List<DimensionTestResult> analyzerTestResults;
 
     private String instrumentId;
     private Byte firstPollValue;
@@ -127,6 +128,22 @@ public class Dimension {
             //TODO: Reason for Rejection, Get Cup Positions
         } else if (analyzerMessageType == MessageType.QueryMessage) {
             analyzerSampleId = requestFields.get(1);
+        }
+        else if (analyzerMessageType == MessageType.ResultMessage) {
+            analyzerPatientId = requestFields.get(2);
+            analyzerSampleId = requestFields.get(3);
+            int resultsCount = Integer.parseInt(requestFields.get(10));
+            analyzerTestResults = new ArrayList<>();
+            for(int i=0;i<resultsCount;i++){
+                int count = 11+i*4;
+                DimensionTestResult tr = new DimensionTestResult();
+                tr.setTestName(requestFields.get(count));
+                tr.setTestResult(requestFields.get(count+1));
+                System.out.println("requestFields.get(count+1) = " + requestFields.get(count+1));
+                tr.setTestUnit(requestFields.get(count+2));
+                tr.setErrorCode(requestFields.get(count+3));
+                analyzerTestResults.add(tr);
+            }
         }
     }
 
@@ -755,4 +772,14 @@ public class Dimension {
         this.limsFoundPatientInvestigationToEnterResults = limsFoundPatientInvestigationToEnterResults;
     }
 
+    public List<DimensionTestResult> getAnalyzerTestResults() {
+        return analyzerTestResults;
+    }
+
+    public void setAnalyzerTestResults(List<DimensionTestResult> analyzerTestResults) {
+        this.analyzerTestResults = analyzerTestResults;
+    }
+
+    
+    
 }
