@@ -30,6 +30,23 @@
 
     <h:body>
         <div id="panelFullSpread" class="fullSpread ui-widget-content " >
+
+            <h:panelGroup rendered="false" >
+                <h:form >
+                    <p:panelGrid columns="2" >
+
+                        <p:outputLabel value="Message" ></p:outputLabel>
+                        <p:inputText value="#{applicationController.subject}" ></p:inputText>
+
+                        <p:outputLabel value="Body" ></p:outputLabel>
+                        <p:inputText value="#{applicationController.body}" ></p:inputText>
+
+                        <p:commandButton ajax="false" action="#{applicationController.sendEmail()}" value="Send" ></p:commandButton>
+
+                    </p:panelGrid>
+                </h:form>
+            </h:panelGroup>
+
             <p:growl id="publicGrowl"    />
             <h:panelGroup >
                 <h:form>
