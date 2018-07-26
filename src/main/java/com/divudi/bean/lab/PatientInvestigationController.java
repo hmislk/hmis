@@ -360,8 +360,7 @@ public class PatientInvestigationController implements Serializable {
                         String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
                         System.out.println("test = " + test);
                         if (test.toLowerCase().equals(testStr.toLowerCase())) {
-                            
-                            if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                            if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
                                 System.out.println("Sample Components are same");
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
@@ -373,7 +372,19 @@ public class PatientInvestigationController implements Serializable {
                                 priv.setDoubleValue(dbl);
                                 System.out.println("priv.getStrValue() = " + priv.getStrValue());
                                 temFlag = true;
-                            }else{
+                            } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                System.out.println("Sample Components are same");
+                                priv.setStrValue(result);
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                } catch (Exception e) {
+                                    System.out.println("e = " + e);
+                                }
+                                priv.setDoubleValue(dbl);
+                                System.out.println("priv.getStrValue() = " + priv.getStrValue());
+                                temFlag = true;
+                            } else {
                                 System.out.println("Sample Components are different");
                             }
                         }
