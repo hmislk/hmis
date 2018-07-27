@@ -357,7 +357,13 @@ public class PatientInvestigationController implements Serializable {
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
                     System.out.println("priv = " + priv);
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
-                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        String test;
+                        test = priv.getInvestigationItem().getResultCode();
+
+                        if (test == null || test.trim().equals("")) {
+                            test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        }
+
                         System.out.println("test = " + test);
                         if (test.toLowerCase().equals(testStr.toLowerCase())) {
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
