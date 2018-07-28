@@ -8,7 +8,7 @@
     <f:metadata >
         <f:viewParam name="username" value="#{sessionController.userName}" ></f:viewParam>
         <f:viewParam name="password" value="#{sessionController.passord}" ></f:viewParam>
-        <f:viewAction action="#{sessionController.loginForRequests()}" ></f:viewAction>
+        <f:viewAction action="#{sessionController.loginForRequestsForDoctors()}" ></f:viewAction>
     </f:metadata>
     <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css"></link>
@@ -27,13 +27,17 @@
             </h:panelGroup>
             <h:panelGroup rendered="#{sessionController.logged}" >
                 <ui:insert name="mcontent" >
-                    <p:panelGrid columns="1" style="width: 98%; margin: auto; height: 98%; text-align: center;" >
-                        <p:commandButton value="Search Patients" style="width: 95%;margin: auto;"></p:commandButton>
-                        <p:commandButton value="View Recent Investigations"  style="width: 95%;margin: auto;"></p:commandButton>
-                    </p:panelGrid>
+                    <h:form>
+                        <p:panelGrid columns="1" style="width: 98%; margin: auto; height: 98%; text-align: center;" >
+                            <p:commandButton value="Search Patients" action="#{patientReportController.searchRecentReportsOrderedByMyself}" style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="View Recent Investigations" action="#{patientReportController.searchRecentReportsOrderedByMyself()}" ajax="false" style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="Order Investigations"  style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="Income"  style="width: 95%;margin: auto;"></p:commandButton>
+                        </p:panelGrid>
+                    </h:form>
                 </ui:insert>
             </h:panelGroup>
-            
+
 
 
             <f:facet name="footer">
