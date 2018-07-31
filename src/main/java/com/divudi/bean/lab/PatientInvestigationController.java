@@ -304,6 +304,12 @@ public class PatientInvestigationController implements Serializable {
 
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
             dim.prepareResponseForCaliberationResultMessages();
+        }else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.RequestAcceptance) {
+            temMsgs = "#{success=true|}";
+            return temMsgs;
+        }else{
+            temMsgs = "#{success=true|}";
+            return temMsgs;
         }
 
         dim.createResponseString();
