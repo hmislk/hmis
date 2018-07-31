@@ -676,8 +676,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public boolean loginForRequests(String temUserName, String temPassword) {
-//        System.err.println("loginForRequests");
-
         if (temUserName == null) {
             return false;
         }
@@ -692,12 +690,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = getFacede().findFirstBySQL(temSQL, m);
 
-        if(u==null){
+        if (u == null) {
             return false;
         }
-        
-//        System.err.println("username = " + userName);
-//        System.err.println("password = " + passord);
 
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
 //            departments = listLoggableDepts(u);
@@ -725,7 +720,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //                getUserPreferenceFacade().create(uf);
 //            }
 //            setUserPreference(uf);
-
             department = u.getDepartment();
 //            selectDepartment();
             loginRequestResponse += "Login=1|";
