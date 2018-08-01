@@ -114,6 +114,12 @@ public class Institution implements Serializable {
     String emailSendingUsername;
     String emailSendingPassword;
     
+    private String smsSendingUsername;
+    private String smsSendingPassword;
+    private String smsSendingAlias;
+    
+    
+    
     //Inactive Status
     private boolean inactive;
 
@@ -574,6 +580,30 @@ public class Institution implements Serializable {
 
     public void setTransAddress7(String transAddress7) {
         this.transAddress7 = transAddress7;
+    }
+
+    public String getSmsSendingUsername() {
+        return smsSendingUsername;
+    }
+
+    public void setSmsSendingUsername(String smsSendingUsername) {
+        this.smsSendingUsername = smsSendingUsername;
+    }
+
+    public String getSmsSendingPassword() {
+        return smsSendingPassword;
+    }
+
+    public void setSmsSendingPassword(String smsSendingPassword) {
+        this.smsSendingPassword = smsSendingPassword;
+    }
+
+    public String getSmsSendingAlias() {
+        return smsSendingAlias;
+    }
+
+    public void setSmsSendingAlias(String smsSendingAlias) {
+        this.smsSendingAlias = smsSendingAlias;
     }
 
 }
