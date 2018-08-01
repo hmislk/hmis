@@ -969,6 +969,13 @@ public class PatientInvestigationController implements Serializable {
         s.setSmsType(MessageType.LabReport);
         getSmsFacade().create(s);
 
+        System.out.println("getSmsManagerEjb() = " + getSmsManagerEjb());
+        System.out.println("s.getReceipientNumber() = " + messageBody);
+        System.out.println("messageBody = " + s.getReceipientNumber());
+        System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
+        System.out.println("  s.getInstitution().getSmsSendingPassword() = " +   s.getInstitution().getSmsSendingPassword());
+        System.out.println("s.getInstitution().getSmsSendingAlias() = " + s.getInstitution().getSmsSendingAlias());
+        
         getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
                 s.getInstitution().getSmsSendingUsername(),
                 s.getInstitution().getSmsSendingPassword(),
