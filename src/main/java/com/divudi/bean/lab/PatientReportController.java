@@ -15,8 +15,10 @@ import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Doctor;
+import com.divudi.entity.Sms;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -32,6 +34,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
@@ -120,6 +123,10 @@ public class PatientReportController implements Serializable {
     private TestFlagFacade testFlagFacade;
     @EJB
     private EmailFacade emailFacade;
+    @EJB
+    SmsManagerEjb smsManager;
+    @EJB
+    SmsFacade smsFacade;
     //Controllers
     @Inject
     private PatientReportBean prBean;
@@ -1078,6 +1085,32 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    
+    public String smsBody(PatientReport r) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = currentPatientReport.getId() + "";
+        temId = getSecurityController().encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        ed = getSecurityController().encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + "is ready."
+                + url;
+        return b;
+    }
+    
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -1124,6 +1157,22 @@ public class PatientReportController implements Serializable {
             e.setSentSuccessfully(false);
 
             getEmailFacade().create(e);
+        }
+        if(!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")){
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
         }
 
         UtilityController.addSuccessMessage("Approved");
@@ -1606,4 +1655,22 @@ public class PatientReportController implements Serializable {
         this.encryptedPatientReportId = encryptedPatientReportId;
     }
 
+    public SmsManagerEjb getSmsManager() {
+        return smsManager;
+    }
+
+    public void setSmsManager(SmsManagerEjb smsManager) {
+        this.smsManager = smsManager;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
+    }
+
+    
+    
 }

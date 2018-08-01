@@ -237,6 +237,15 @@
             <version>2.0</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>lk.mobitel.esms</groupId>
+            <artifactId>esms</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/ESMS.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -18,6 +18,7 @@ import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
@@ -124,7 +125,8 @@ public class PatientInvestigationController implements Serializable {
     private PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
     private ItemFacade itemFacade;
-
+    @EJB
+    private SmsManagerEjb smsManagerEjb;
     /*
      * Controllers
      */
@@ -304,10 +306,10 @@ public class PatientInvestigationController implements Serializable {
 
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
             dim.prepareResponseForCaliberationResultMessages();
-        }else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.RequestAcceptance) {
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.RequestAcceptance) {
             temMsgs = "#{success=true|}";
             return temMsgs;
-        }else{
+        } else {
             temMsgs = "#{success=true|}";
             return temMsgs;
         }
@@ -935,116 +937,128 @@ public class PatientInvestigationController implements Serializable {
             UtilityController.addErrorMessage("Nothing to send sms");
             return;
         }
-
         Bill bill = current.getBillItem().getBill();
-
-        System.out.println("running the sending sms.");
-        if (bill == null) {
-        }
-
         if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
+            JsfUtil.addErrorMessage("System Error");
             return;
         }
-
         String sendingNo = bill.getPatient().getPerson().getPhone();
-        if (sendingNo.contains("077") || sendingNo.contains("076")
+        if (sendingNo.contains("077") || sendingNo.contains("076") || sendingNo.contains("070")
                 || sendingNo.contains("071") || sendingNo.contains("072")
                 || sendingNo.contains("075") || sendingNo.contains("078")) {
         } else {
+            JsfUtil.addErrorMessage("Wrong Telephone Number");
             return;
         }
 
-        StringBuilder sb = new StringBuilder(sendingNo);
-        sb.deleteCharAt(3);
-        sendingNo = sb.toString();
+        Sms s = new Sms();
+        s.setBill(bill);
+        s.setCreatedAt(new Date());
+        s.setCreater(sessionController.getLoggedUser());
+        s.setDepartment(sessionController.getLoggedUser().getDepartment());
+        s.setInstitution(sessionController.getLoggedUser().getInstitution());
+        s.setPatientInvestigation(current);
+        s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
-        if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-            HttpResponse<String> stringResponse;
-            String pw = "&q=14488825498722";
-//            String messageBody = "Dear Sir/Madam,\n"
-//                    + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-//                    + "\"Ruhunu Hospital Diagnostics your trusted diagnostics partner\"";
+        String messageBody = "Dear Sir/Madam,\n"
+                + "Report bearing number " + bill.getInsId() + " is ready for collection at\n"
+                + sessionController.getLoggedUser().getDepartment().getPrintingName() + ".";
+
+        s.setSendingMessage(messageBody);
+        s.setSentSuccessfully(true);
+        s.setSmsType(MessageType.LabReport);
+        getSmsFacade().create(s);
+
+        getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
+                s.getInstitution().getSmsSendingUsername(),
+                s.getInstitution().getSmsSendingPassword(),
+                s.getInstitution().getSmsSendingAlias());
+
+//        StringBuilder sb = new StringBuilder(sendingNo);
+//        sb.deleteCharAt(3);
+//        sendingNo = sb.toString();
+//
+//        if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+//            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
+//            HttpResponse<String> stringResponse;
+//            String pw = "&q=14488825498722";
+////            String messageBody = "Dear Sir/Madam,\n"
+////                    + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
+////                    + "\"Ruhunu Hospital Diagnostics your trusted diagnostics partner\"";
+////            
+////            System.out.println("messageBody = " + messageBody.length());
+//            String messageBody2 = "Dear Sir/Madam,\n"
+//                    + "Report bearing number " + bill.getInsId() + " is ready for collection.\n"
+//                    + "\"RHD your trusted diagnostics partner\"\n"
+//                    + "Get your report online http://goo.gl/Ae8p6L";
+//
+//            final StringBuilder request = new StringBuilder(url);
+//            request.append(sendingNo.substring(1, 10));
+//            request.append(pw);
+////            request.append(messageBody);
+////            System.out.println("request.toString().charAt(105) = " + request.toString().charAt(105));
+////            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
+////            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
+//            try {
+//
+//                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
+//
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//                return;
+//            }
 //            
-//            System.out.println("messageBody = " + messageBody.length());
-            String messageBody2 = "Dear Sir/Madam,\n"
-                    + "Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-                    + "\"RHD your trusted diagnostics partner\"\n"
-                    + "Get your report online http://goo.gl/Ae8p6L";
-
-            final StringBuilder request = new StringBuilder(url);
-            request.append(sendingNo.substring(1, 10));
-            request.append(pw);
-//            request.append(messageBody);
-//            System.out.println("request.toString().charAt(105) = " + request.toString().charAt(105));
-//            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
-//            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
-            try {
-
-                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
-            sms = new Sms();
+//            sms = new Sms();
+//            sms.setPassword(pw);
+//            sms.setCreatedAt(new Date());
+//            sms.setCreater(getSessionController().getLoggedUser());
+//            sms.setBill(bill);
+//            sms.setSendingUrl(url);
+//            sms.setSmsType(MessageType.LabReport);
+//            sms.setSendingMessage(messageBody2);
+//        } else {
+//            String url = "http://www.textit.biz/sendmsg/index.php";
+//            HttpResponse<String> stringResponse;
+//            String messageBody;
+//            String id = "94715812399";
+//            String pw = "5672";
+//
+//            messageBody = "Reports ready. ";
+//            messageBody = messageBody + bill.getInstitution().getName() + ". ";
+//            messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
+//            messageBody = messageBody + bill.getInstitution().getWeb();
+//
+//            try {
+//
+//                stringResponse = Unirest.post(url)
+//                        .field("id", id)
+//                        .field("pw", pw)
+//                        .field("to", sendingNo)
+//                        .field("text", messageBody)
+//                        .asString();
+//
+//            } catch (Exception ex) {
+//                return;
+//            }
+//            sms = new Sms();
 //            sms.setUserId(id);
-            sms.setPassword(pw);
-            sms.setCreatedAt(new Date());
-            sms.setCreater(getSessionController().getLoggedUser());
-            sms.setBill(bill);
-            sms.setSendingUrl(url);
-            sms.setSmsType(MessageType.LabReport);
-            sms.setSendingMessage(messageBody2);
-        } else {
-            String url = "http://www.textit.biz/sendmsg/index.php";
-            HttpResponse<String> stringResponse;
-            String messageBody;
-            String id = "94715812399";
-            String pw = "5672";
-
-            messageBody = "Reports ready. ";
-            messageBody = messageBody + bill.getInstitution().getName() + ". ";
-            messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
-            messageBody = messageBody + bill.getInstitution().getWeb();
-
-            try {
-
-                stringResponse = Unirest.post(url)
-                        .field("id", id)
-                        .field("pw", pw)
-                        .field("to", sendingNo)
-                        .field("text", messageBody)
-                        .asString();
-
-            } catch (Exception ex) {
-                return;
-            }
-            sms = new Sms();
-            sms.setUserId(id);
-            sms.setPassword(pw);
-            sms.setCreatedAt(new Date());
-            sms.setCreater(getSessionController().getLoggedUser());
-            sms.setBill(bill);
-            sms.setSendingUrl(url);
-            sms.setSendingMessage(messageBody);
-        }
-
+//            sms.setPassword(pw);
+//            sms.setCreatedAt(new Date());
+//            sms.setCreater(getSessionController().getLoggedUser());
+//            sms.setBill(bill);
+//            sms.setSendingUrl(url);
+//            sms.setSendingMessage(messageBody);
+//        }
         getCurrent().getBillItem().getBill().setSmsed(true);
         getCurrent().getBillItem().getBill().setSmsedAt(new Date());
         getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
         getFacade().edit(current);
-        getCurrent().getBillItem().getBill().getSentSmses().add(sms);
-
+        getCurrent().getBillItem().getBill().getSentSmses().add(s);
         billFacade.edit(getCurrent().getBillItem().getBill());
-
-        getSmsFacade().create(sms);
-
         UtilityController.addSuccessMessage("Sms send");
-
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-//    ...............Create PDF.... Jasper.........
+
 
     public void create() throws DocumentException, com.lowagie.text.DocumentException {
 
@@ -1972,6 +1986,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setCurrentPatientSample(PatientSample currentPatientSample) {
         this.currentPatientSample = currentPatientSample;
+    }
+
+    public SmsManagerEjb getSmsManagerEjb() {
+        return smsManagerEjb;
+    }
+
+    public void setSmsManagerEjb(SmsManagerEjb smsManagerEjb) {
+        this.smsManagerEjb = smsManagerEjb;
     }
 
     /**

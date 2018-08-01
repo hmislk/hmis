@@ -45,12 +45,13 @@ public class Sms implements Serializable {
     String userId;
     String password;
     String sendingUrl;
+    private String receipientNumber;
     @Enumerated(EnumType.STRING)
     private MessageType smsType;
     //Sending Properties
-    Boolean sentSuccessfully;
+    private Boolean sentSuccessfully;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date sentAt;
+    private Date sentAt;
     //Created Properties
     @ManyToOne
     private WebUser creater;
@@ -64,7 +65,16 @@ public class Sms implements Serializable {
     private Date retiredAt;
     private String retireComments;
     //DataEntry
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
 
+
+    
+    
+    
+    
     public Bill getBill() {
         return bill;
     }
@@ -216,6 +226,46 @@ public class Sms implements Serializable {
 
     public void setSmsType(MessageType smsType) {
         this.smsType = smsType;
+    }
+
+    public Boolean getSentSuccessfully() {
+        return sentSuccessfully;
+    }
+
+    public void setSentSuccessfully(Boolean sentSuccessfully) {
+        this.sentSuccessfully = sentSuccessfully;
+    }
+
+    public Date getSentAt() {
+        return sentAt;
+    }
+
+    public void setSentAt(Date sentAt) {
+        this.sentAt = sentAt;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getReceipientNumber() {
+        return receipientNumber;
+    }
+
+    public void setReceipientNumber(String receipientNumber) {
+        this.receipientNumber = receipientNumber;
     }
 
 }
