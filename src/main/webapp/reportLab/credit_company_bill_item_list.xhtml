@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel  >
+                        <f:facet name="header" >
+                            <h:outputLabel value="OPD BILL ITEM LIST FOR CREDIT COMPANIES"/>  
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            </p:calendar>
+                            <h:outputLabel value="Credit Company"/>
+                            <p:autoComplete value="#{searchController.creditCompany}" completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="c" itemLabel="#{c.name}" itemValue="#{c}" forceSelection="true" ></p:autoComplete>
+                        </h:panelGrid>
+                        <h:panelGrid columns="3" >
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemListForCreditCompany()}"/>
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
+                                <pe:exporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable rowIndexVar="i" 
+                                     id="tblBills" 
+                                     value="#{searchController.billItems}" 
+                                     var="pi">
+                            <p:column headerText="No" styleClass="alignTop" width="20">
+                                <h:outputLabel value="#{i+1}"/>
+                            </p:column>
+                            <p:column headerText="Billed At"  styleClass="alignTop" width="160" >
+                                <h:outputLabel value="#{pi.bill.billTime}" >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                                <h:panelGroup rendered="#{pi.bill.cancelled}" >
+                                    <br/>
+                                    <h:outputLabel style="color: red;" value="Cancelled at " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.bill.cancelled}" value="#{pi.bill.cancelledBill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{pi.refunded}" >
+                                    <br/>
+                                    <h:outputLabel style="color: red;" value="Refunded at " />
+                                    <h:outputLabel style="color: red;" rendered="#{pi.refunded}" value="#{pi.referanceBillItem.bill.createdAt}" >
+                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+                            </p:column>
+                            <p:column headerText="Bill No" styleClass="alignTop" width="100">
+                                <h:outputLabel value="#{pi.bill.insId}" >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Patient"  styleClass="alignTop"  >
+                                <h:outputLabel value="#{pi.bill.patient.person.nameWithTitle}, " >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{pi.bill.patient.age}, " >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{pi.bill.patient.person.sex}, " >
+                                </h:outputLabel>
+                                <h:outputLabel value="#{pi.bill.patient.person.phone}" >
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Investigation/Service"  styleClass="alignTop" width="200" >
+                                <h:outputLabel value="#{pi.item.name}" >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Payment"    width="60">
+                                <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount Scheme"  width="110">
+                                <h:outputLabel value="#{pi.bill.paymentScheme.name}" ></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Gross Value"  width="60"   style="text-align: right;" >
+                                <h:outputLabel value="#{pi.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Discount"  width="60"   style="text-align: right;" >
+                                <h:outputLabel value="#{pi.bill.discount}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Net Value" width="60" style="text-align: right;" >
+                                <h:outputLabel value="#{pi.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
