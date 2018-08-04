@@ -161,7 +161,6 @@ public class StoreTransferIssueController implements Serializable {
                 bItem.setItem(i.getBillItem().getItem());
                 bItem.setReferanceBillItem(i.getBillItem());
                 bItem.setTmpQty(sq.getQty());
-                System.err.println("Bill Item QTY " + bItem.getQty());
 
 //               s bItem.setTmpSuggession(getSuggession(i.getBillItem().getItem()));
                 //     //System.err.println("List "+bItem.getTmpSuggession());

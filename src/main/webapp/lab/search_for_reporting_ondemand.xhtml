@@ -153,7 +153,7 @@
                             <p:column  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient') and pi.billItem.bill.approvedAnyTest}" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
-                                               action="/patient" 
+                                               action="/patient" target="_blank"
                                                style="text-decoration:underline;"
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"
                                                >
@@ -196,24 +196,24 @@
 
                             <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="5" style="border: none;" styleClass="noBorderGrid"
-                                             rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
+                                             rendered="true" >
                                     <p:commandLink process="btnSample" update="tblBills"
-                                                   disabled="#{pi.collected or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   
+                                                   disabled="#{pi.collected or pi.billItem.bill.cancelled}"   
                                                    id="btnSample" 
                                                    action="#{patientInvestigationController.markAsSampled}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true or pi.billItem.bill.cancelled or pi.billItem.transRefund}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                    <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
                                     </p:commandLink>
-                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet" disabled="#{pi.billItem.bill.cancelled or pi.billItem.transRefund}">
+                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet" disabled="#{pi.billItem.bill.cancelled}">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                     </p:commandLink>
                                     <p:commandLink id="btnNewReport" ajax="false" 
-                                                   disabled="#{!pi.received or pi.billItem.bill.cancelled or pi.billItem.transRefund}" 
+                                                   disabled="#{!pi.received}" 
                                                    action="/lab/patient_report"  
                                                    actionListener="#{patientReportController.createNewReport(pi)}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
@@ -277,8 +277,10 @@
                             </p:column>
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
-
-                                <p:dataTable value="#{pi.patientReports}" var="dpr" emptyMessage="" 
+                                
+                                
+                                
+                                <p:dataTable value="#{patientReportController.patientReports(pi)}" var="dpr" emptyMessage="" 
                                              rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" 
                                              styleClass="noBorderGrid summeryBorder noBorder" >
                                     <p:column >

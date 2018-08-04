@@ -176,7 +176,6 @@ public class Api {
         }
 
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Doctors) = " + json);
         return json;
     }
 
@@ -215,7 +214,6 @@ public class Api {
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Doctor) = " + json);
         return json;
     }
 
@@ -305,10 +303,42 @@ public class Api {
 //            jSONObjectOut.put("error", "1");
 //            jSONObjectOut.put("error_description", "Invalid Argument.");
 //        }
+//        try {
+//            List<Object[]> sessions = sessionsList(doc_code, null, null);
+//            if (!sessions.isEmpty()) {
+//                for (Object[] s : sessions) {
+//                    object.put("session_id", s[0]);
+//                    object.put("session_date", getCommonController().getDateFormat((Date) s[1]));
+//                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s[2]));
+//                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s[3]));
+//                    object.put("session_max_no", s[4]);
+//                    object.put("session_is_refundable", s[5]);
+//                    object.put("session_duration", s[6]);
+//                    object.put("session_room_no", s[7]);
+//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
+//                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
+//                    object.put("session_is_leaved", s[10]);
+//                    System.out.println("s.length = " + s.length);
+//                    array.put(object);
+////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
+//                }
+//                jSONObjectOut.put("session", array);
+//                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
+//                jSONObjectOut.put("error", "0");
+//                jSONObjectOut.put("error_description", "");
+//            } else {
+//                jSONObjectOut.put("session", sessions);
+//                jSONObjectOut.put("error", "1");
+//                jSONObjectOut.put("error_description", "No Data.");
+//            }
+//        } catch (Exception e) {
+//            jSONObjectOut.put("session", object);
+//            jSONObjectOut.put("error", "1");
+//            jSONObjectOut.put("error_description", "Invalid Argument.");
+//        }
 
         String json = jSONObjectOut.toString();
 //        String json = new Gson().toJson(sessions);
-        System.err.println("~~~~~~Channel API~~~~~~ (Get Sessions) = " + json);
         return json;
     }
 
@@ -375,7 +405,6 @@ public class Api {
         }
 
         json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Make Booking) = " + json);
         return json;
     }
 
@@ -447,7 +476,6 @@ public class Api {
         }
 
         json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Make Booking) = " + json);
         return json;
     }
 
@@ -467,7 +495,8 @@ public class Api {
     public String getBookings(@PathParam("bill_id") String bill_id) {
 //        /bookings/20058204
         System.err.println("~~~~~~Channel API~~~~~~ Get Booking(/bookings/{bill_id})");
-        JSONObject jSONObjectOut = new JSONObject();
+//        /bookings/20058204
+                JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(bill_id);
@@ -488,7 +517,6 @@ public class Api {
         }
 //        String json = new Gson().toJson(bill);
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Booking) = " + json);
         return json;
     }
 
@@ -499,7 +527,8 @@ public class Api {
     public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
 //        /bookings/20058554/2016-08-01/2016-08-15
         System.err.println("~~~~~~Channel API~~~~~~ Get All Bookings Using Agent id , From Date and To Date(/bookings/{agent_id}/{from_date}/{to_date})");
-        JSONObject jSONObjectOut = new JSONObject();
+//        /bookings/20058554/2016-08-01/2016-08-15
+                JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
             long b_id = Long.parseLong(agent_id);
@@ -522,7 +551,6 @@ public class Api {
         }
 //        String json = new Gson().toJson(bill);
         String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ json(Get All Bookings) = " + json);
         return json;
     }
 
@@ -553,8 +581,6 @@ public class Api {
 
         String json = array.toString();
 //        String json = jSONObjectOut.toString();
-
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get All Specilities) = " + json);
         return json;
     }
 
@@ -586,7 +612,6 @@ public class Api {
 
         String json = array.toString();
 //        String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get All Doctors) = " + json);
         return json;
     }
 
@@ -621,7 +646,6 @@ public class Api {
 
         String json = array.toString();
 //        String json = jSONObjectOut.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Doctors Selected Specility) = " + json);
         return json;
     }
 
@@ -671,7 +695,6 @@ public class Api {
         }
 
         String json = array.toString();
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Doc Sessions) = " + json);
         return json;
     }
 
@@ -713,7 +736,6 @@ public class Api {
         }
         String json = array.toString();
 
-        System.err.println("~~~~~~Channel API~~~~~~ Json(Get Bill Sessions) = " + json);
         return json;
     }
 
@@ -819,7 +841,6 @@ public class Api {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("sessions.size() = " + sessions.size());
 
         return sessions;
     }

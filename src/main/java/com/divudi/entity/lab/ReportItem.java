@@ -161,6 +161,8 @@ public class ReportItem implements Serializable {
     private Item sampleComponent;
     @ManyToOne
     private InvestigationTube tube;
+    private String resultCode;
+    
     
     
     
@@ -1082,6 +1084,14 @@ public class ReportItem implements Serializable {
 
     public void setTube(InvestigationTube tube) {
         this.tube = tube;
+    }
+
+    public String getResultCode() {
+        return resultCode;
+    }
+
+    public void setResultCode(String resultCode) {
+        this.resultCode = resultCode;
     }
 
     

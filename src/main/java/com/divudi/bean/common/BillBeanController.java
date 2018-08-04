@@ -1417,7 +1417,6 @@ public class BillBeanController implements Serializable {
         hm.put("pm4", PaymentMethod.Slip);
         double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
         System.out.println("billType--" + billType);
-        System.out.println("netTotal--" + netTotal);
 
         return netTotal;
     }
@@ -1438,7 +1437,6 @@ public class BillBeanController implements Serializable {
         hm.put("pm", PaymentMethod.Credit);
         double netTotal = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
         System.out.println("billType" + billType);
-        System.out.println("netTotal" + netTotal);
 
         return netTotal;
     }
@@ -2879,7 +2877,6 @@ public class BillBeanController implements Serializable {
             //System.out.println("cashRemain" + billController.getCashRemain());
             if (billController.getCashRemain() != 0) {
                 if (tot > billController.getCashRemain()) {
-                    System.out.println("1.1.cashRemain" + billController.getCashRemain());
                     bill.setBalance(tot - billController.getCashRemain());
                     bill.setTotal(tot);
                     bill.setNetTotal(billController.getCashRemain());
@@ -2887,7 +2884,6 @@ public class BillBeanController implements Serializable {
                     bill.setCashPaid(billController.getCashRemain());
                     billController.setCashRemain(0.0);
                 } else {
-                    System.out.println("2.1.cashRemain" + billController.getCashRemain());
                     bill.setBalance(0.0);
                     bill.setTotal(tot);
                     bill.setNetTotal(net);
@@ -3358,7 +3354,6 @@ public class BillBeanController implements Serializable {
                     //  f.setBill(billItem.getBill());
                     f.setBillItem(billItem);
                     f.setCreatedAt(new Date());
-                    System.out.println("i.getFeeType() = " + i.getFeeType());
                     if (pi.getDepartment() != null) {
                         if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
                             f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
@@ -3389,7 +3384,6 @@ public class BillBeanController implements Serializable {
 
                     if (f.getBillItem().getItem().isVatable()) {
                         System.out.println("f.getFee().getFeeType() = " + f.getFee().getFeeType());
-                        System.out.println("collectingCentreBillController.getCollectingCentre() = " + collectingCentreBillController.getCollectingCentre());
                         if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                             f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
                         }
@@ -3421,7 +3415,6 @@ public class BillBeanController implements Serializable {
                     } else {
                         f.setDepartment(billItem.getItem().getDepartment());
                     }
-                    System.out.println("f.getDepartment().getName() = " + f.getDepartment().getName());
                 } else {
                     //  f.setDepartment(billItem.getBill().getDepartment());
                 }
@@ -3433,7 +3426,6 @@ public class BillBeanController implements Serializable {
                     } else {
                         f.setInstitution(billItem.getItem().getInstitution());
                     }
-                    System.out.println("f.getInstitution().getName() = " + f.getInstitution().getName());
                 } else {
                     //   f.setInstitution(billItem.getBill().getDepartment().getInstitution());
                 }
@@ -3446,7 +3438,6 @@ public class BillBeanController implements Serializable {
 
                 if (f.getBillItem().getItem().isVatable()) {
                     System.out.println("f.getFee().getFeeType() = " + f.getFee().getFeeType());
-                    System.out.println("collectingCentreBillController.getCollectingCentre() = " + collectingCentreBillController.getCollectingCentre());
                     if (!(f.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                         f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
                     }
@@ -3614,7 +3605,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> getBillFee(BillItem b) {
-        System.err.println("11111 " + b);
         HashMap hm = new HashMap();
         String sql = "Select bf From BillFee bf "
                 + " where bf.retired=false"

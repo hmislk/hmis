@@ -9,6 +9,7 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PaymentMethodValue;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.dataStructure.CashierSummeryData;
 import com.divudi.data.dataStructure.WebUserBillsTotal;
@@ -114,6 +115,40 @@ public class CashierReportController implements Serializable {
         return cashierDatas;
     }
 
+    private BillsTotals calculateBillTotalsByPaymentMethod(BillType billType, String suffix, Bill bill, WebUser webUser) {
+        BillsTotals newB = new BillsTotals();
+        newB.setName(billType.getLabel() + " " + suffix);
+        for (Object o : userBillTotalsWithPaymentMethods(webUser, bill, billType)) {
+            PaymentMethodValue pmv = (PaymentMethodValue) o;
+            switch (pmv.getPaymentMethod()) {
+                case Card:
+                    newB.setCard(pmv.getValue());
+                    finalCardTot += pmv.getValue();
+                    break;
+                case Cash:
+                    newB.setCash(pmv.getValue());
+                    finalCashTot += pmv.getValue();
+                    break;
+
+                case Cheque:
+                    newB.setCheque(pmv.getValue());
+                    finalChequeTot += pmv.getValue();
+                    break;
+                case Credit:
+                    newB.setCredit(pmv.getValue());
+                    finalCreditTot += pmv.getValue();
+                    break;
+                case Slip:
+                    newB.setSlip(pmv.getValue());
+                    finalSlipTot += pmv.getValue();
+                    break;
+            }
+        }
+        return newB;
+    }
+
+//    New Method is calculateBillTotalsByPaymentMethod
+    @Deprecated
     private BillsTotals createRow(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
@@ -146,7 +181,6 @@ public class CashierReportController implements Serializable {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
         newB.setCard(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Card, billType));
-        System.out.println("newB.getCard() = " + newB.getCard());
         finalCardTot += newB.getCard();
         newB.setCash(calTotalValueOwnWithoutPro(webUser, bill, PaymentMethod.Cash, billType));
         finalCashTot += newB.getCash();
@@ -657,7 +691,6 @@ public class CashierReportController implements Serializable {
             return;
         }
         toDate = commonReport.fetchDate(toReciptNo);
-        System.out.println("toDate = " + toDate);
         if (toDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
             return;
@@ -667,6 +700,62 @@ public class CashierReportController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "All cashier report(Using recipt No)(/reportCashier/report_cashier_summery_all_by_reciptno.xhtml)");
     }
 
+    
+    public void calculateCashierSummeryTotals() {
+        Date startTime = new Date();
+        finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
+        webUserBillsTotals = new ArrayList<>();
+        for (WebUser webUser : getCashiers()) {
+            System.out.println("com.divudi.bean.report.CashierReportController.calculateCashierSummeryTotals()");
+            System.err.println("webUser = " + webUser);
+            WebUserBillsTotal tmp = new WebUserBillsTotal();
+            tmp.setWebUser(webUser);
+            List<BillsTotals> billls = new ArrayList<>();
+
+            double uCard = 0;
+            double uCash = 0;
+            double uCheque = 0;
+            double uCredit = 0;
+            double uSlip = 0;
+            for (BillType btp : getEnumController().getCashFlowBillTypes()) {
+                System.err.println("btp = " + btp);
+                BillsTotals newB = calculateBillTotalsByPaymentMethod(btp, "Billed", new BilledBill(), webUser);
+                BillsTotals newC = calculateBillTotalsByPaymentMethod(btp, "Cancelled", new CancelledBill(), webUser);
+                BillsTotals newR = calculateBillTotalsByPaymentMethod(btp, "Refunded", new RefundBill(), webUser);
+
+                uCard += (newB.getCard() + newC.getCard() + newR.getCard());
+                uCash += (newB.getCash() + newC.getCash() + newR.getCash());
+                uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
+                uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
+                uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
+                
+                System.err.println("uCash = " + uCash);
+
+            }
+
+            
+
+            BillsTotals newSum = new BillsTotals();
+            newSum.setName("Total ");
+            newSum.setBold(true);
+            newSum.setCard(uCard);
+            newSum.setCash(uCash);
+            newSum.setCheque(uCheque);
+            newSum.setCredit(uCredit);
+            newSum.setSlip(uSlip);
+
+            if (newSum.getCard() != 0 || newSum.getCash() != 0 || newSum.getCheque() != 0 || newSum.getCredit() != 0 || newSum.getSlip() != 0) {
+                billls.add(newSum);
+            }
+
+            tmp.setBillsTotals(billls);
+            webUserBillsTotals.add(tmp);
+
+        }
+        commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
+
+    }
+    
     public void calCashierDataTotalOnly() {
         Date startTime = new Date();
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -682,9 +771,9 @@ public class CashierReportController implements Serializable {
             double uCredit = 0;
             double uSlip = 0;
             for (BillType btp : getEnumController().getCashFlowBillTypes()) {
-                BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
-                BillsTotals newC = createRow(btp, "Cancelled", new CancelledBill(), webUser);
-                BillsTotals newR = createRow(btp, "Refunded", new RefundBill(), webUser);
+                BillsTotals newB = calculateBillTotalsByPaymentMethod(btp, "Billed", new BilledBill(), webUser);
+                BillsTotals newC = calculateBillTotalsByPaymentMethod(btp, "Cancelled", new CancelledBill(), webUser);
+                BillsTotals newR = calculateBillTotalsByPaymentMethod(btp, "Refunded", new RefundBill(), webUser);
 
                 uCard += (newB.getCard() + newC.getCard() + newR.getCard());
                 uCash += (newB.getCash() + newC.getCash() + newR.getCash());
@@ -956,7 +1045,6 @@ public class CashierReportController implements Serializable {
             return;
         }
         toDate = commonReport.fetchDate(toReciptNo);
-        System.out.println("toDate = " + toDate);
         if (toDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
             return;
@@ -1014,6 +1102,28 @@ public class CashierReportController implements Serializable {
 
     private List<WebUserBillsTotal> webUserBillsTotals;
 
+    private List<Object> userBillTotalsWithPaymentMethods(WebUser w, Bill billClass, BillType billType) {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select new com.divudi.data.PaymentMethodValue(b.paymentMethod, sum(b.netTotal+b.vat))"
+                + " from Bill b "
+                + " where type(b)=:bill "
+                + " and b.creater=:cret "
+                + " and b.institution=:ins"
+                + " and b.retired=false "
+                + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate "
+                + " group by b.paymentMethod";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTp", billType);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("ins", getSessionController().getInstitution());
+        return getBillFacade().findObjectBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+//  New One  userBillTotalsWithPaymentMethods
+    @Deprecated
     private double calTotalValueOwn(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
 ////        int day= Calendar.HOUR_OF_DAY(getToDate())- Calendar.DATE(getFromDate()) ;
 //        Date a;
@@ -1452,15 +1562,11 @@ public class CashierReportController implements Serializable {
         Map temMap = new HashMap();
         BillType[] btpArr = enumController.getCashFlowBillTypes();
         List<BillType> btpList = Arrays.asList(btpArr);
-        sql = "select us from "
+        sql = "select DISTINCT(b.creater) from "
                 + " Bill b "
-                + " join b.creater us "
-                + " where b.retired=false "
-                + " and b.institution=:ins "
+                + " where b.institution=:ins "
                 + " and b.billType in :btp "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " group by us "
-                + " having sum(b.netTotal)!=0 ";
+                + " and b.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
@@ -1523,7 +1629,6 @@ public class CashierReportController implements Serializable {
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
         cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("cashiers.size() = " + cashiers.size());
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }

@@ -116,7 +116,6 @@ public class ServiceSessionBean {
         // //////System.out.println("bill item session switch - pre");
 
         int count = getBillSessions(i, bi.getSessionDate()).size() + 1;
-        System.err.println("COUNT " + count);
         bs.setSerialNo(count);
 //        if (bs != null) {
 //            getBillSessionFacade().create(bs);
@@ -228,7 +227,6 @@ public class ServiceSessionBean {
         //System.out.println("sql = " + sql);
         //System.out.println("hh = " + hh);
         //System.out.println("lgValue= " + lgValue);
-        System.out.println("value" + lgValue);
         if (lgValue == null) {
             return 1;
         }

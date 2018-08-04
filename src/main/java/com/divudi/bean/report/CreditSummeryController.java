@@ -120,7 +120,6 @@ public class CreditSummeryController implements Serializable {
     }
 
     private List<Department> findDepartment() {
-        System.out.println("department = ");
 
         String sql;
         Map temMap = new HashMap();
@@ -349,7 +348,6 @@ public class CreditSummeryController implements Serializable {
     }
 
     public double getDepartmentTotal() {
-        System.out.println("Cal Total");
         double tmp = 0.0;
         for (DailyCash d : getDailyCashSummery()) {
             tmp += d.getDepartmentTotal();
@@ -406,24 +404,20 @@ public class CreditSummeryController implements Serializable {
 
             for (Department d : findDepartment()) {
                 DailyCash tmp = new DailyCash();
-                System.out.println("d = " + d);
                 tmp.setDepartment(d);
                 dailyCash.add(tmp);
             }
 
             for (DailyCash d : dailyCash) {
-                System.out.println("d = " + d);
                 List<CategoryWithItem> tmpCatList = new ArrayList<>();
 
                 for (Category cat : findCategory(d.getDepartment())) {
-                    System.out.println("cat = " + cat);
                     CategoryWithItem n = new CategoryWithItem();
                     n.setCategory(cat);
 
                     List<ItemWithFee> tmpItemList = new ArrayList<>();
 
                     for (Item i : findItem(cat, d.getDepartment())) {
-                        System.out.println("i = " + i);
                         ItemWithFee iwf = new ItemWithFee();
                         iwf.setItem(i);
                         iwf.setCount(getCount(iwf));
@@ -588,7 +582,6 @@ public class CreditSummeryController implements Serializable {
                     vat = (double) objects[1];
                 }
                 refAmount = net + vat;
-                System.err.println("refAmount = " + refAmount);
                 if ((b.getNetTotal() + b.getVat()) - (Math.abs(getCreditBean().getPaidAmount(b, BillType.CashRecieveBill)) -refAmount) == 0.0) {
                     bills.add(b);
                     continue;

@@ -163,7 +163,6 @@ public class StaffImageController implements Serializable {
     }
 
     public StreamedContent getSignatureFromStaffController() {
-        System.err.println("Get Sigature By Staff Controller");
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
             //System.err.println("Contex Response");
@@ -172,14 +171,11 @@ public class StaffImageController implements Serializable {
         } else {
             Staff temImg = getStaffController().getCurrent();
             System.err.println("getStaffController()  " + getStaffController());
-            System.err.println("getStaffController().getCurrent();()  " + getStaffController().getCurrent());
             if (temImg != null) {
-                System.err.println("Img 1 " + temImg);
                 byte[] imgArr = null;
                 try {
                     imgArr = temImg.getBaImage();
                 } catch (Exception e) {
-                    System.err.println("Try  " + e.getMessage());
                     return new DefaultStreamedContent();
                 }
 
@@ -193,7 +189,6 @@ public class StaffImageController implements Serializable {
     }
 
     public StreamedContent getSignatureFromPatientReport() {
-        System.err.println("Get Sigature By Staff Controller");
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
             //System.err.println("Contex Response");
@@ -201,16 +196,12 @@ public class StaffImageController implements Serializable {
             return new DefaultStreamedContent();
         } else {
             if(patientReportController==null){
-                System.err.println("Patient Report Controller is null()  ");
             }
             if(patientReportController.getCurrentPatientReport()==null){
-                System.err.println("Patient Report is null()  ");
             }
             if(patientReportController.getCurrentPatientReport().getApproveUser()==null){
-                System.err.println("Patient Report Approved User is null()  ");
             }
             if(patientReportController.getCurrentPatientReport().getApproveUser().getStaff()==null){
-                System.err.println("Patient Report Approved User Staff is null()  ");
             }
             Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
             
@@ -220,7 +211,6 @@ public class StaffImageController implements Serializable {
                 try {
                     imgArr = temImg.getBaImage();
                 } catch (Exception e) {
-                    System.err.println("Try  " + e.getMessage());
                     return new DefaultStreamedContent();
                 }
 

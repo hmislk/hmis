@@ -471,6 +471,9 @@
                                                 </p:column>
                                             </p:autoComplete>
 
+                                            <h:outputText value="Result Code"/>
+                                            <p:inputText value="#{investigationItemController.current.resultCode}" ></p:inputText>
+                                            
                                             <p:outputLabel value="Sample" ></p:outputLabel>
                                             <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
                                                 <f:selectItem itemLabel="Please select a sample"/>

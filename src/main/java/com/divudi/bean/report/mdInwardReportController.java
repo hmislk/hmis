@@ -401,7 +401,6 @@ public class mdInwardReportController implements Serializable {
             BillType[] bts = new BillType[]{BillType.InwardFinalBill};
             billListWithTotals = billEjb.findBillsAndTotals(fromDate, toDate, bts, null, null, null, null, null, null, null,
                     reportKeyWord.getInstitution(), pms, null, null, true, admissionType);
-            System.out.println("billListWithTotals.getBills().size() = " + billListWithTotals.getBills().size());
             if (!billListWithTotals.getBills().isEmpty()) {
                 bills = new ArrayList<>();
                 bills.addAll(billListWithTotals.getBills());
@@ -425,7 +424,6 @@ public class mdInwardReportController implements Serializable {
             if (!billListWithTotals.getBills().isEmpty()) {
                 bills = new ArrayList<>();
                 for (Bill b : billListWithTotals.getBills()) {
-                    System.out.println("b.getToStaff() = " + b.getToStaff());
                     if (b.getToStaff() == null) {
                         bills.add(b);
                         total += b.getNetTotal();

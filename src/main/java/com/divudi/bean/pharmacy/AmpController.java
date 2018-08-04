@@ -436,7 +436,6 @@ public class AmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
-        System.out.println("getCurrent().getCategory().getDescription() = " + getCurrent().getCategory().getDescription());
         if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().equals("")) {
             JsfUtil.addErrorMessage("Please Select Category Code");
             getCurrent().setCode("");
@@ -478,7 +477,6 @@ public class AmpController implements Serializable {
             } else {
                 getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(i));
             }
-            System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
         } else {
             getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(1));
         }
@@ -516,7 +514,6 @@ public class AmpController implements Serializable {
                 return true;
             }
         }
-        System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
         if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
             UtilityController.addErrorMessage("Code Empty.You Can't Save Item without Code.");
             return true;

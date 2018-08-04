@@ -100,7 +100,6 @@ public class RoomChangeController implements Serializable {
         
         AdmissionTypeEnum admissionTypeEnum = pR.getPatientEncounter().getAdmissionType().getAdmissionTypeEnum();
 
-        System.out.println("pR.getPreviousRoom() = " + pR.getPreviousRoom());
         if (admissionTypeEnum == AdmissionTypeEnum.Admission
                 && pR.getPreviousRoom() == null) {
             UtilityController.addErrorMessage("To Delete Patient Room There should be Previus room U can ReSet Correct Room Facility and update");

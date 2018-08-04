@@ -940,12 +940,10 @@ public class InwardStaffPaymentBillController implements Serializable {
 
             if (rbi != null) {
                 System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
-                System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
                 removeingBillFees.add(bf);
             }
 
         }
-        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
         dueBillFees.removeAll(removeingBillFees);
 
     }

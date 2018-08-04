@@ -200,9 +200,10 @@
 
 
             <div class="billline">
-                <br></br>
-                <hr></hr>
-                <br></br>
+                <div style="width: 100%;text-align: center;font-size: 10px;">
+                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                               />
+                </div>
             </div>
 
 
@@ -371,10 +372,7 @@
                 <br/>
             </div>
 
-            <div style="width: 100%;text-align: center;font-size: 10px;">
-                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                           />
-            </div>
+
 
         </div>
     </cc:implementation>

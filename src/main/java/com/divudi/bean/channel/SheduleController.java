@@ -328,13 +328,10 @@ public class SheduleController implements Serializable {
                 cal.setTime(i.getSessionDate());
                 Calendar calNow = Calendar.getInstance();
                 System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.YEAR));
-                System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.YEAR));
                 if (cal.get(Calendar.YEAR) <= calNow.get(Calendar.YEAR)) {
                     System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.MONTH));
-                    System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.MONTH));
                     if (cal.get(Calendar.MONTH) <= calNow.get(Calendar.MONTH)) {
                         System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.DATE));
-                        System.out.println("calNow.get(Calendar.YEAR) = " + calNow.get(Calendar.DATE));
                         if (cal.get(Calendar.DATE) < calNow.get(Calendar.DATE)) {
                             tmp.add(i);
                         }
@@ -343,7 +340,6 @@ public class SheduleController implements Serializable {
 
             }
         }
-        System.out.println("tmp.size() = " + tmp.size());
         items.removeAll(tmp);
 
         return items;
@@ -466,7 +462,6 @@ public class SheduleController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("1.sss.size() = " + sss.size());
         return sss.size() > 0;
     }
 
@@ -485,7 +480,6 @@ public class SheduleController implements Serializable {
         m.put("class", ServiceSession.class);
         List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("2.sss.size() = " + sss.size());
         return sss.isEmpty();
     }
 
@@ -553,21 +547,18 @@ public class SheduleController implements Serializable {
             current.setSessionNumberGenerator(ss);
         }
 
-        System.err.println("1 " + getItemFees().size());
 
         getCurrent().setStaff(currentStaff);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getCurrent().setEditer(getSessionController().getLoggedUser());
             getCurrent().setEditedAt(new Date());
             getFacade().edit(getCurrent());
-            System.err.println("edit Ses");
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
             stockHistoryRecorder.generateSessions(currentStaff);
-            System.err.println("cre Ses");
             UtilityController.addSuccessMessage("Saved Successfully");
         }
 
@@ -596,7 +587,6 @@ public class SheduleController implements Serializable {
         System.out.println("ss.getDepartment() = " + ss.getDepartment());
         System.out.println("ss.getStartingTime() = " + ss.getStartingTime());
         System.out.println("ss.getEndingTime() = " + ss.getEndingTime());
-        System.out.println("ss.getMaxNo() = " + ss.getMaxNo());
         for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
             System.out.println("i.getName() = " + i.getName());
             System.out.println("i.getInstitution() = " + i.getInstitution());
@@ -605,7 +595,6 @@ public class SheduleController implements Serializable {
             System.out.println("i.getEndingTime() = " + i.getEndingTime());
             System.out.println("i.getMaxNo() = " + i.getMaxNo());
             System.out.println("i.getDuration() = " + i.getDuration());
-            System.out.println("i.getRoomNo() = " + i.getRoomNo());
 
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -646,7 +635,6 @@ public class SheduleController implements Serializable {
         m.put("class", ServiceSession.class);
         m.put("sd", commonFunctions.getStartOfDay());
         items = getFacade().findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
         return items;
     }
 
@@ -657,7 +645,6 @@ public class SheduleController implements Serializable {
                 + " where f.retired=false "
                 + " and f.serviceSession is not null ";
         List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
-        System.out.println("serviceSessionsAll.size() = " + serviceSessionsAll.size());
         for (ServiceSession s : serviceSessionsAll) {
 
         }
@@ -714,7 +701,6 @@ public class SheduleController implements Serializable {
         System.err.println("********");
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("list.size() = " + list.size());
         System.err.println("********");
         return list;
 
@@ -736,14 +722,12 @@ public class SheduleController implements Serializable {
                 } else {
                     System.err.println("**** No Specility****");
                     System.out.println("ss.getName() = " + ss.getName());
-                    System.out.println("ss.getStaff() = " + ss.getStaff());
                     System.err.println("**** No Specility****");
                     return;
                 }
             } catch (Exception e) {
                 System.err.println("**** No Specility****");
                 System.out.println("ss.getName() = " + ss.getName());
-                System.out.println("ss.getStaff() = " + ss.getStaff());
                 System.err.println("**** No Specility****");
                 return;
             }
@@ -755,7 +739,6 @@ public class SheduleController implements Serializable {
         for (ServiceSession ss : serviceSessions) {
             System.err.println("*********");
             System.out.println("s.getName() = " + ss.getName());
-            System.out.println("s.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName());
             System.err.println("*********");
             createFee(ss, name, ft);
         }
@@ -811,7 +794,6 @@ public class SheduleController implements Serializable {
             for (FeeChange fc : feeChanges) {
                 fc.getFee().setStaff(currentStaff);
                 fc.getFee().setSpeciality(speciality);
-                System.err.println("setstaff");
             }
         }
         String sql;
@@ -827,7 +809,6 @@ public class SheduleController implements Serializable {
         }
         m.put("ed", effectiveDate);
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("changes.size() = " + changes.size());
         for (FeeChange fc : feeChanges) {
             if ((fc.getFee().getFee() == 0) && (fc.getFee().getFfee() == 0)) {
                 continue;
@@ -851,7 +832,6 @@ public class SheduleController implements Serializable {
                         System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
                         System.out.println("c.getFee().getFee() = " + c.getFee().getFee());
                         System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
-                        System.out.println("c.getFee().getFfee() = " + c.getFee().getFfee());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());
@@ -892,7 +872,6 @@ public class SheduleController implements Serializable {
                 + " and fc.validFrom>:ed ";
         m.put("ed", effectiveDate);
         feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("feeChangesList.size() = " + feeChangesList.size());
     }
 
     public void removeAddFee(FeeChange fc) {

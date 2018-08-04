@@ -246,7 +246,6 @@ public class InstitutionController implements Serializable {
         if (ins != null) {
             for (Institution i : ins) {
                 System.out.println("i.getInstitutionCode() = " + i.getInstitutionCode());
-                System.out.println("getCurrent().getInstitutionCode() = " + getCurrent().getInstitutionCode());
                 if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
                     continue;
                 }
@@ -265,7 +264,6 @@ public class InstitutionController implements Serializable {
         if (ins != null) {
             for (Institution i : ins) {
                 System.out.println("i.getInstitutionCode() = " + i.getInstitutionCode());
-                System.out.println("getCurrent().getInstitutionCode() = " + getAgency().getInstitutionCode());
                 if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
                     continue;
                 }
@@ -354,7 +352,6 @@ public class InstitutionController implements Serializable {
             getFacade().edit(getAgency());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            System.out.println("getAgency().getInstitutionCode() = " + getAgency().getInstitutionCode());
             if (getAgency().getInstitutionCode() != null) {
                 if (!checkCodeExistAgency()) {
                     getAgency().setInstitutionCode(getAgency().getInstitutionCode());
@@ -399,7 +396,6 @@ public class InstitutionController implements Serializable {
         System.out.println("acl = " + acl);
         System.out.println("current.getAllowedCredit() = " + current.getAllowedCredit());
         double scl = i.getStandardCreditLimit();
-        System.out.println("scl = " + scl);
 
         if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
             UtilityController.addErrorMessage("Allowed Credit Limit must Grater Than or Equal To Standard Credit Limit");
@@ -418,7 +414,6 @@ public class InstitutionController implements Serializable {
 
         if (current.getStandardCreditLimit() != scl) {
             System.err.println("Update Standard Credit Limit");
-            System.out.println("scl = " + scl);
             createAgentCreditLimitUpdateHistory(current, scl, current.getStandardCreditLimit(), historyType, "Standard Credit Limit");
             System.err.println("Update Standard Credit Limit");
             UtilityController.addSuccessMessage("Standard Credit Limit Updated");
@@ -426,7 +421,6 @@ public class InstitutionController implements Serializable {
 
         if (current.getAllowedCredit() != acl) {
             System.err.println("Update Allowed Credit Limit");
-            System.out.println("acl = " + acl);
             createAgentCreditLimitUpdateHistory(current, acl, current.getAllowedCredit(), historyType, "Allowed Credit Limit");
             System.err.println("Update Allowed Credit Limit");
             UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
@@ -434,7 +428,6 @@ public class InstitutionController implements Serializable {
 
         if (current.getMaxCreditLimit() != mcl) {
             System.err.println("Update Max Credit Limit");
-            System.out.println("mcl = " + mcl);
             createAgentCreditLimitUpdateHistory(current, mcl, current.getMaxCreditLimit(), historyType, "Max Credit Limit");
             System.err.println("Update Max Credit Limit");
             UtilityController.addSuccessMessage("Max Credit Limit Updated");

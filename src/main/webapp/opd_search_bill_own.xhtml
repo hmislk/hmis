@@ -156,9 +156,13 @@
                                 </h:panelGroup>
                             </p:column>    
                             <p:column headerText="Client">                               
-                                <h:commandLink id="pt" value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and bill.approvedAnyTest ne true}">
-                                    <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
-                                </h:commandLink>
+                                <h:panelGroup id="pt">
+                                    <h:commandLink  value="#{bill.patient.person.name}" action="patient" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                        <f:setPropertyActionListener value="#{bill.patient.person.nameWithTitle}" target="#{patientController.current}"/>
+                                    </h:commandLink>
+                                    <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                    </h:outputLabel>
+                                </h:panelGroup>
                                 <p:tooltip for="pt">
                                     <p:panel header="Patient Details" >
                                         <p:panelGrid columns="2" >
@@ -221,102 +225,102 @@
                         </p:dataTable>
 
 
-                        <div style="display: block;" >
+                        <div class="printBlock">
                             <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
                                          var="bill1" paginator="false">
                                 <p:column headerText="No" >
                                     <h:outputLabel value="#{i+1}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" >   
-                                    <p:outputLabel value="#{bill.insId}" ></p:outputLabel>
+                                    <p:outputLabel value="#{bill1.insId}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Billed From Institution"  >                                
-                                    <h:outputLabel value="#{bill.institution.name}" />
+                                    <h:outputLabel value="#{bill1.institution.name}" />
                                 </p:column>
                                 <p:column headerText="Billed From Department"  >                                
-                                    <h:outputLabel value="#{bill.department.name}" />
+                                    <h:outputLabel value="#{bill1.department.name}" />
                                 </p:column>
                                 <p:column headerText="Bill Date">
-                                    <p:outputLabel value="#{bill.billDate}" >
+                                    <p:outputLabel value="#{bill1.billDate}" >
                                         <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bill From" >                                
-                                    <h:outputLabel   value="#{bill.deptId}"/>
+                                    <h:outputLabel   value="#{bill1.deptId}"/>
                                 </p:column> 
                                 <p:column headerText="Institution Billed For"  >                                
-                                    <h:outputLabel value="#{bill.toInstitution.name}" />
+                                    <h:outputLabel value="#{bill1.toInstitution.name}" />
                                 </p:column>
                                 <p:column headerText="Department Billed For"  >                                
-                                    <h:outputLabel value="#{bill.toDepartment.name}" />
+                                    <h:outputLabel value="#{bill1.toDepartment.name}" />
                                 </p:column>
                                 <p:column headerText="Collecting Centre"  >                                
-                                    <h:outputLabel value="#{bill.collectingCentre.name}" />
+                                    <h:outputLabel value="#{bill1.collectingCentre.name}" />
                                 </p:column>
                                 <p:column headerText="Billed At"  >                                
-                                    <h:outputLabel value="#{bill.institution.name} - #{bill.department.name}" />
+                                    <h:outputLabel value="#{bill1.institution.name} - #{bill.department.name}" />
                                 </p:column>
                                 <p:column headerText="Billed by" >
-                                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                    <h:outputLabel value="#{bill1.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Calcelled" >
-                                    <h:outputLabel value="Yes" rendered="#{bill.cancelled}" ></h:outputLabel>
-                                    <h:outputLabel value="No" rendered="#{!bill.cancelled}" ></h:outputLabel>
+                                    <h:outputLabel value="Yes" rendered="#{bill1.cancelled}" ></h:outputLabel>
+                                    <h:outputLabel value="No" rendered="#{!bill1.cancelled}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Calcelled by" >
-                                    <h:panelGroup rendered="#{bill.cancelled}" >
-                                        <h:outputLabel style="color: red;" rendered="#{bill.cancelled}"
-                                                       value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                    <h:panelGroup rendered="#{bill1.cancelled}" >
+                                        <h:outputLabel style="color: red;" rendered="#{bill1.cancelled}"
+                                                       value="#{bill1.cancelledBill.creater.webUserPerson.name}" >                                       
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Refunded" >
-                                    <h:outputLabel value="Yes" rendered="#{bill.refunded}" ></h:outputLabel>
-                                    <h:outputLabel value="No" rendered="#{!bill.refunded}" ></h:outputLabel>
+                                    <h:outputLabel value="Yes" rendered="#{bill1.refunded}" ></h:outputLabel>
+                                    <h:outputLabel value="No" rendered="#{!bill1.refunded}" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Refunded by" >
-                                    <h:panelGroup rendered="#{bill.refunded}" >
+                                    <h:panelGroup rendered="#{bill1.refunded}" >
                                         <h:outputLabel value="Refunded By " />
-                                        <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
+                                        <h:outputLabel rendered="#{bill1.refunded}" value="#{bill1.refundedBill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>    
                                 <p:column headerText="Client Name">                               
-                                    <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />                                   
+                                    <h:outputLabel value="#{bill1.patient.person.nameWithTitle}" />                                   
                                 </p:column>
                                 <p:column headerText="Client Phone No">                              
-                                    <h:outputLabel value="#{bill.patient.person.phone}" />
+                                    <h:outputLabel value="#{bill1.patient.person.phone}" />
                                 </p:column>
-                                 <p:column headerText="Client Email">                              
-                                     <h:outputLabel value="#{bill.patient.person.email}" />
+                                <p:column headerText="Client Email">                              
+                                    <h:outputLabel value="#{bill1.patient.person.email}" />
                                 </p:column>
-                                
+
                                 <p:column headerText="Paymentmethod" >                                
-                                    <h:outputLabel value="#{bill.paymentMethod}" /><br/>
-                                    <h:outputLabel value="#{bill.paymentScheme.name}" />
+                                    <h:outputLabel value="#{bill1.paymentMethod}" /><br/>
+                                    <h:outputLabel value="#{bill1.paymentScheme.name}" />
                                 </p:column>
                                 <p:column headerText="Gross Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.total}" >
+                                    <h:outputLabel value="#{bill1.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discount" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.discount}" >
+                                    <h:outputLabel value="#{bill1.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                    <h:outputLabel value="#{bill.netTotal}" >
+                                    <h:outputLabel value="#{bill1.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>                         
                                 <p:column headerText="Comments" >
-                                    <h:outputLabel  value="#{bill.comments}" >
+                                    <h:outputLabel  value="#{bill1.comments}" >
                                     </h:outputLabel>
-                                    <h:outputLabel rendered="#{bill.refundedBill ne null}" value="#{bill.refundedBill.comments}" >
+                                    <h:outputLabel rendered="#{bill1.refundedBill ne null}" value="#{bill1.refundedBill.comments}" >
                                     </h:outputLabel>
-                                    <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
+                                    <h:outputLabel  rendered="#{bill1.cancelledBill ne null}" value="#{bill1.cancelledBill.comments}" >
                                     </h:outputLabel>
                                 </p:column>
                             </p:dataTable>

@@ -789,9 +789,7 @@ public class InwardSearch implements Serializable {
         if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {
-            System.out.println("b = " + b);
             if (b!=null) {
-                System.out.println("b.getInsId() = " + b.getInsId());
             }
             return true;
         }
@@ -816,7 +814,6 @@ public class InwardSearch implements Serializable {
                 //System.out.println("e = " + e);
                 //System.out.println("e.getBillFee().getPatientItem().isRetired() = " + e.getBillFee().getPatientItem().isRetired());
                 if (!e.getBillFee().getPatientItem().isRetired()) {
-                    System.out.println("e.getBillFee().getBill().getInsId() = " + e.getBillFee().getBill().getInsId());
                     return false;
                 }
             }

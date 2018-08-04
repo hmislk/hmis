@@ -2301,7 +2301,6 @@ public class CommonReport implements Serializable {
         double tmp = 0.0;
         for (BillsTotals bt : list) {
             if (bt != null) {
-                System.err.println("CRDIT " + bt.getCredit());
                 //   System.err.println("Size " + bt.getBills().size());
                 tmp += bt.getCredit();
             }
@@ -2315,7 +2314,6 @@ public class CommonReport implements Serializable {
         double tmp = 0.0;
         for (BillsTotals bt : list) {
             if (bt != null) {
-                System.err.println("CRDIT " + bt.getSaleCredit());
                 //   System.err.println("Size " + bt.getBills().size());
                 tmp += bt.getSaleCredit();
             }
@@ -2969,7 +2967,6 @@ public class CommonReport implements Serializable {
             return;
         }
         toDate = fetchDate(toReciptNo);
-        System.out.println("toDate = " + toDate);
         if (toDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct To Bill No");
             return;
@@ -3377,6 +3374,7 @@ public class CommonReport implements Serializable {
         m.put("bn", s);
         b = getBillFacade().findBySQLWithoutCache(sql, m);
 //        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
         System.out.println("b = " + b);
@@ -3386,12 +3384,9 @@ public class CommonReport implements Serializable {
             b = getBillFacade().findBySQL(sql, m);
             System.err.println("m = " + m);
             System.err.println("sql = " + sql);
-            System.err.println("b = " + b);
         }
-        System.out.println("b.size() = " + b.size());
         if (!b.isEmpty()) {
             d = b.get(0).getCreatedAt();
-            System.out.println("d = " + d);
         }
 
         return d;
@@ -4249,7 +4244,6 @@ public class CommonReport implements Serializable {
 
         items = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("items = " + items);
 
         return items;
     }
@@ -4260,7 +4254,6 @@ public class CommonReport implements Serializable {
         canBillItems=fetchDirectPurchaseBillItems(new CancelledBill());
         System.out.println("canBillItems.size() = " + canBillItems.size());
         refBillItems=fetchDirectPurchaseBillItems(new RefundBill());
-        System.out.println("refBillItems.size() = " + refBillItems.size());
     }
 
     public List<BillItem> fetchDirectPurchaseBillItems(Bill b) {
@@ -4373,7 +4366,6 @@ public class CommonReport implements Serializable {
                 tmp += bt.getExpense();
             }
         }
-        System.out.println("tmp = " + tmp);
         return tmp;
     }
 
@@ -4752,7 +4744,6 @@ public class CommonReport implements Serializable {
         System.out.println("creditCard = " + creditCard);
         System.out.println("cheque = " + cheque);
         System.out.println("cash = " + cash);
-        System.out.println("credit = " + credit);
 //        tmp1.setValue(creditCard + cheque + cash + slip + credit);
         tmp1.setValue(creditCard + cheque + cash + credit);
 
@@ -5116,7 +5107,6 @@ public class CommonReport implements Serializable {
         for (Institution i : fetchCollectingCenters(billTypes)) {
             CollectingCenteRow row = new CollectingCenteRow();
             row.setI(i);
-            System.out.println("i = " + i.getName());
             List<Bill> bs = new ArrayList<>();
             bs = getBillList(billTypes, i);
             double tot = 0.0;
@@ -5184,7 +5174,6 @@ public class CommonReport implements Serializable {
     public void createCollectingCenterfees(Bill b) {
         b.setTransTotalCCFee(0.0);
         b.setTransTotalWithOutCCFee(0.0);
-        System.out.println("b.getBillItems().size() = " + b.getBillItems().size());
         for (BillItem bi : b.getBillItems()) {
             bi.setTransCCFee(0.0);
             bi.setTransWithOutCCFee(0.0);

@@ -163,7 +163,6 @@ public class ServiceFeeEdit implements Serializable {
         calBillFees();
 
         billItem = getBillItemFacade().find(billFee.getBillItem().getId());
-        System.err.println("Net Value " + billItem.getNetValue());
 
         Bill b = getBillFacade().find(billFee.getBill().getId());
         billItem.setBill(b);

@@ -15,9 +15,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -36,6 +39,12 @@ public class CommonController implements Serializable {
      * Creates a new instance of CommonController
      */
     public CommonController() {
+    }
+
+    public String getBaseUrl() {
+        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        String url = req.getRequestURL().toString();
+        return url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
     }
 
     public Date getCurrentDateTime() {
@@ -79,7 +88,6 @@ public class CommonController implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.setTime(dob);
         cal.add(Calendar.YEAR, 50);
-        System.out.println("cal = " + cal.getTime());
         return cal.getTime();
     }
 
@@ -88,9 +96,27 @@ public class CommonController implements Serializable {
         return timeInMs / (1000 * 60);
     }
 
+    public String shortDate(Date date) {
+        SimpleDateFormat dt1 = new SimpleDateFormat("dMMMyy");
+        return (dt1.format(date));
+    }
+
     public double dateDifferenceInSeconds(Date fromDate, Date toDate) {
         long timeInMs = toDate.getTime() - fromDate.getTime();
         return timeInMs / 1000;
+    }
+
+    public static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."
+                + "[a-zA-Z0-9_+&*-]+)*@"
+                + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
+                + "A-Z]{2,7}$";
+
+        Pattern pat = Pattern.compile(emailRegex);
+        if (email == null) {
+            return false;
+        }
+        return pat.matcher(email).matches();
     }
 
     public void printReportDetails(Date fromDate, Date toDate, Date startTime, String url) {
@@ -115,7 +141,6 @@ public class CommonController implements Serializable {
         }
         s += "\n ***************";
 
-        System.err.println(s);
 
     }
 
@@ -127,6 +152,13 @@ public class CommonController implements Serializable {
         return s;
     }
 
+    public String getDateFormat(Date date, String formatString) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+    
     public String getDateFormat2(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");

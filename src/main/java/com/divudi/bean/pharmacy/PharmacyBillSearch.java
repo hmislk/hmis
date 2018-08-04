@@ -436,7 +436,6 @@ public class PharmacyBillSearch implements Serializable {
         for (BillItem b : bill.getBillItems()) {
             System.err.println("id " + b.getPharmaceuticalBillItem().getId());
             System.err.println("Qty " + b.getPharmaceuticalBillItem().getQtyInUnit());
-            System.err.println("Pur " + b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             tmp += tmp2;
         }
@@ -747,7 +746,6 @@ public class PharmacyBillSearch implements Serializable {
                 return true;
             }
         }
-        System.out.println("getBill().getBillType() = " + getBill().getBillType());
         if (getBill().getBillType() == BillType.PharmacyPre) {
             if (checkSaleReturn(getBill())) {
                 UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
@@ -756,7 +754,6 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         if (getBill().getBillType() == BillType.PharmacySale) {
-            System.out.println("getBill().getReferenceBill() = " + getBill().getReferenceBill().getInsId());
             if (checkSaleReturn(getBill().getReferenceBill())) {
                 UtilityController.addErrorMessage("Sale had been Returned u can't cancell bill ");
                 return true;
@@ -1005,7 +1002,6 @@ public class PharmacyBillSearch implements Serializable {
             //get billfees from using cancel billItem
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmp = " + tmp);
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
@@ -1114,7 +1110,6 @@ public class PharmacyBillSearch implements Serializable {
             //get billfees from using cancel billItem
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmp = " + tmp);
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
@@ -1309,7 +1304,6 @@ public class PharmacyBillSearch implements Serializable {
             //get billfees from using cancel billItem
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmp = " + tmp);
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
@@ -1351,7 +1345,6 @@ public class PharmacyBillSearch implements Serializable {
     public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
-            System.out.println("bf = " + bf);
             setBillFeePaymentAndPayment(bf, p);
             System.err.println("BillFee For Out");
         }
@@ -1446,7 +1439,6 @@ public class PharmacyBillSearch implements Serializable {
             //get billfees from using cancel billItem
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getBillItem().getId();
             List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
-            System.out.println("tmp = " + tmp);
             cancelBillFee(can, b, tmp);
 
             //create BillFeePayments For cancel
@@ -1980,10 +1972,8 @@ public class PharmacyBillSearch implements Serializable {
         System.err.println("Ph Qty" + pharmaceuticalBillItem.getQtyInUnit());
         System.err.println("Ph Qty" + pharmaceuticalBillItem.getQty());
         System.err.println("Ph Qty" + pharmaceuticalBillItem.getFreeQty());
-        System.err.println("Ph Qty" + pharmaceuticalBillItem.getFreeQtyInUnit());
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()+pharmaceuticalBillItem.getFreeQtyInUnit()) > stockQty) {
             System.err.println("Check Item : " + pharmaceuticalBillItem.getBillItem().getItem());
-            System.err.println("Item Qty : " + pharmaceuticalBillItem.getQtyInUnit());
             return true;
         } else {
             return false;

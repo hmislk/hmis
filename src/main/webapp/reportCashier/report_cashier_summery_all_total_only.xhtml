@@ -18,8 +18,8 @@
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                     <f:facet name="header">
 
-                        <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
-                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnly()}" />  
+                        <p:commandButton id="btnRefresh" ajax="false" value="Process" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
+                                         styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calculateCashierSummeryTotals()}" />  
                         <p:commandButton id="btnRefresh1" ajax="false" value="Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
                                          styleClass="noPrintButton" style="float: right;" actionListener="#{cashierReportController.calCashierDataTotalOnlyChannel()}" />  
                         <p:commandButton id="btnRefresh2" ajax="false" value="Cashier" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"

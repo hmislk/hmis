@@ -82,17 +82,32 @@
                                     <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
                                 </p:column>  
                                 <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                                    <p:commandLink ajax="false" target="_blank" value="#{ix.name}" action="/lab/investigation" >
+                                        <f:setPropertyActionListener value="#{ix}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                                    </p:commandLink>
                                 </p:column>
-                                <p:column headerText="Category" sortBy="#{ix.category.name}" width="120">
+                                <p:column headerText="Category" sortBy="#{ix.category.name}" width="180">
                                     <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Institution" sortBy="#{ix.institution.name}" width="120">
+                                <p:column headerText="Institution" sortBy="#{ix.institution.name}" width="220">
                                     <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Department" sortBy="#{ix.department.name}" width="120">
+                                <p:column headerText="Department" sortBy="#{ix.department.name}" width="220">
                                     <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Analyzer" sortBy="#{ix.machine.name}" width="120">
+                                    <h:outputLabel value="#{ix.machine.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Container" sortBy="#{ix.investigationTube.name}" width="120">
+                                    <h:outputLabel value="#{ix.investigationTube.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Sample" sortBy="#{ix.sample.name}" width="120">
+                                    <h:outputLabel value="#{ix.sample.name}" ></h:outputLabel>
+                                </p:column>
+                                
+                                
+                                
+                                
                                 <p:column headerText="Price" sortBy="#{ix.total}" style="text-align: right; width: 80px;">
                                     <h:outputLabel value="#{ix.total}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-            xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -20,7 +20,6 @@
                          header="Turn Around Time">
 
                     <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
-
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" styleClass="dateTimePicker" navigator="true" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
@@ -48,14 +47,19 @@
 
                         </p:autoComplete>
                         <p:watermark for="acPt" value="Item"/>
-                        <p:commandButton ajax="false"  value="Process"  
-                                         action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
-                                         styleClass="noPrintButton" />
-                        <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="turn over time"/>
-                        </p:commandButton>
-
-
+                        <h:panelGroup >
+                            <p:commandButton ajax="false"  value="Process"  
+                                             action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
+                                             styleClass="noPrintButton" />
+                            <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
+                                <pe:exporter type="xlsx" target="tbl" fileName="turn over time"/>
+                            </p:commandButton>
+                            <p:commandButton value="Print" ajax="false" styleClass="noPrintButton" >
+                                <p:printer target="tbl" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
+                            </p:commandButton> 
+                        </h:panelGroup>
                     </h:panelGrid>
 
                     <p:panel style="width: 100%; margin-top: 20px;" styleClass="noBorder summeryBorder">
@@ -74,19 +78,16 @@
                             <p:column headerText="Bill Type" >
                                 <p:outputLabel value="#{pi.billItem.bill.billType}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="toDepartment" >
-                                <p:outputLabel value="#{pi.billItem.bill.toDepartment.name}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="department" >
-                                <p:outputLabel value="#{pi.billItem.bill.department.name}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="fromDepartment" >
+                            <p:column headerText="Billed at" >
                                 <p:outputLabel value="#{pi.billItem.bill.fromDepartment.name}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Investigation" sortBy="#{pi.billItem.item.name}" >
+                            <p:column headerText="Done at" >
+                                <p:outputLabel value="#{pi.billItem.bill.toDepartment.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Test" sortBy="#{pi.billItem.item.name}" >
                                 <p:outputLabel value="#{pi.billItem.item.name}" ></p:outputLabel>
                             </p:column>
-                            <p:column headerText="Sample Colleted At" >
+                            <p:column headerText="Colleted At" >
                                 <p:outputLabel value="#{pi.sampledAt}" >
                                     <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
@@ -117,7 +118,7 @@
                                     </p:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            
+
 
                         </p:dataTable>
 

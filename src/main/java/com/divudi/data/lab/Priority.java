@@ -3,14 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.data;
+package com.divudi.data.lab;
 
 /**
  *
- * @author ruhunu
+ * @author buddhika_ari
  */
-public enum SmsType {
-    LabReport,
-    ChannelDoctorAraival,
-    Marketing,
+public enum Priority {
+    Stat,
+    Asap,
+    Routeine,
+    Delayed,
+    Other,
 }

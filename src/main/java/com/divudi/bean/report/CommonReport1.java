@@ -537,7 +537,6 @@ public class CommonReport1 implements Serializable {
             docTotals.add(row);
             biledBillsTotal += tot;
         }
-        System.out.println("docTotals.size() = " + docTotals.size());
 
     }
 
@@ -609,7 +608,6 @@ public class CommonReport1 implements Serializable {
         for (Object[] o : objects) {
             Doctor d = (Doctor) o[0];
             if (d == null) {
-                System.out.println("d = " + d);
                 Doctor doc = new Doctor();
                 Person p = new Person();
                 p.setName("No Name");
@@ -637,9 +635,7 @@ public class CommonReport1 implements Serializable {
             try {
                 tot = (double) o[3];
             } catch (Exception e) {
-                System.out.println("Errrror d.getName() = " + d.getPerson().getName());
             }
-            System.out.println("tot = " + tot);
             if (lastDoctor == null) {
                 row.setDoctor(d);
                 row.setTotal(tot);
@@ -671,7 +667,6 @@ public class CommonReport1 implements Serializable {
         row.setTotal(total);
         row.setCount(count);
         docTotals.add(row);
-        System.out.println("docTotals.size() = " + docTotals.size());
 
     }
 
@@ -734,7 +729,6 @@ public class CommonReport1 implements Serializable {
                 long c = (long) ob[1];
                 double t = (double) ob[2];
                 if (bct == BillClassType.CancelledBill || bct == BillClassType.RefundBill) {
-                    System.out.println("c = " + c);
                     if (c < 0) {
                         count += c;
                     } else {
@@ -750,7 +744,6 @@ public class CommonReport1 implements Serializable {
             o[3] = total;
             objects.add(o);
         }
-        System.out.println("objects.size() = " + objects.size());
         return objects;
 
     }
@@ -785,7 +778,6 @@ public class CommonReport1 implements Serializable {
             docTotals.add(row);
             biledBillsTotal += tot;
         }
-        System.out.println("docTotals.size() = " + docTotals.size());
 
     }
 
@@ -2041,7 +2033,6 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
         System.out.println("tm = " + tm);
-        System.out.println("sql = " + sql);
 
         return getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
     }
@@ -2081,7 +2072,6 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
         System.out.println("tm = " + tm);
-        System.out.println("sql = " + sql);
 
         return getBillItemFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
     }
@@ -2122,7 +2112,6 @@ public class CommonReport1 implements Serializable {
         System.out.println("sql = " + sql);
 
         Object[] ob = (Object[]) getBillFacade().findAggregates(sql, tm, TemporalType.TIMESTAMP).get(0);
-        System.out.println("ob = " + ob);
 
         if (ob != null) {
             try {
@@ -2135,7 +2124,6 @@ public class CommonReport1 implements Serializable {
                 vat = (double) ob[3];
                 System.out.println("vat = " + vat);
                 netTotal = (double) ob[4];
-                System.out.println("netTotal = " + netTotal);
             } catch (Exception e) {
             }
         }
@@ -2153,10 +2141,8 @@ public class CommonReport1 implements Serializable {
 
         PersonInstitution pi = personInstitutionFacade.findFirstBySQL(sql, m);
         if (pi != null) {
-            System.out.println("pi.getStaff().getPerson().getName() = " + pi.getStaff().getPerson().getName());
             return false;
         } else {
-            System.err.println("Not Channel Doc = " + doctor.getPerson().getName());
             return true;
         }
 

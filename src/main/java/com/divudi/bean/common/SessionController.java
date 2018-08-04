@@ -385,7 +385,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             calendar.set(Calendar.MILLISECOND, 999);
 
             Date expired = calendar.getTime();
-            System.out.println("expired = " + expired);
             Date nowDate = new Date();
 
             if (nowDate.after(expired)) {
@@ -421,7 +420,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             calendar.set(Calendar.MILLISECOND, 999);
 
             Date expired = calendar.getTime();
-            System.out.println("expired = " + expired);
             Date nowDate = new Date();
 
             if (nowDate.after(expired)) {
@@ -614,7 +612,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                     System.out.println("1");
                     System.out.println("sql = " + sql);
-                    System.out.println("m = " + m);
 
                     if (insPre == null) {
 
@@ -624,14 +621,12 @@ public class SessionController implements Serializable, HttpSessionListener {
                         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                         System.out.println("2");
                         System.out.println("sql = " + sql);
-                        System.out.println("m = " + m);
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
                             insPre = getUserPreferenceFacade().findFirstBySQL(sql);
                             System.out.println("3");
                             System.out.println("sql = " + sql);
-                            System.out.println("m = " + m);
 
                         }
 
@@ -681,14 +676,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public boolean loginForRequests(String temUserName, String temPassword) {
-        System.err.println("loginForRequests");
-
         if (temUserName == null) {
-            System.err.println("Username is null");
             return false;
         }
         if (temPassword == null) {
-            System.err.println("Password is null");
             return false;
         }
         String temSQL;
@@ -699,38 +690,38 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = getFacede().findFirstBySQL(temSQL, m);
 
-//        System.err.println("username = " + userName);
-//        System.err.println("password = " + passord);
+        if (u == null) {
+            return false;
+        }
 
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
-            departments = listLoggableDepts(u);
-            if (departments.isEmpty()) {
-                loginRequestResponse += "Login=0|}";
-                return false;
-            }
+//            departments = listLoggableDepts(u);
+//            if (departments.isEmpty()) {
+//                loginRequestResponse += "Login=0|}";
+//                return false;
+//            }
 
             setLoggedUser(u);
-            dashboards = webUserController.listWebUserDashboards(u);
+//            dashboards = webUserController.listWebUserDashboards(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
 
             String sql;
 
-            UserPreference uf;
-            sql = "select p from UserPreference p where p.webUser=:u ";
-            m = new HashMap();
-            m.put("u", u);
-            uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
-            if (uf == null) {
-                uf = new UserPreference();
-                uf.setWebUser(u);
-                getUserPreferenceFacade().create(uf);
-            }
-            setUserPreference(uf);
-
+//            UserPreference uf;
+//            sql = "select p from UserPreference p where p.webUser=:u ";
+//            m = new HashMap();
+//            m.put("u", u);
+//            uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
+//            if (uf == null) {
+//                uf = new UserPreference();
+//                uf.setWebUser(u);
+//                getUserPreferenceFacade().create(uf);
+//            }
+//            setUserPreference(uf);
             department = u.getDepartment();
-            selectDepartment();
+//            selectDepartment();
             loginRequestResponse += "Login=1|";
             loginRequestResponse += "Department=" + department.getName() + "|";
             loginRequestResponse += "DepartmentId=" + department.getId() + "|";
@@ -739,7 +730,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
             loginRequestResponse += "}";
-            System.err.println("loginRequestResponse = " + loginRequestResponse);
             return true;
         }
         loginRequestResponse += "Login=0|}";
@@ -878,7 +868,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
 
         System.out.println("getDepartment().getName() = " + getDepartment().getName());
-        System.out.println("getDepartment().getDepartmentType() = " + getDepartment().getDepartmentType());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
             long i = searchController.createInwardBHTForIssueBillCount();
