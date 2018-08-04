@@ -24,6 +24,8 @@
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
+                                    
+                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
                                 </p:panelGrid>
                             </p:tab>
                             <p:tab title="Collecting Centres" >
