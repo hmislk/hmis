@@ -675,7 +675,13 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loginForRequests(userName, passord);
     }
 
+    public boolean loginForRequestsForDoctors() {
+        return loginForRequestsForDoctors(userName, passord);
+    }
+
     public boolean loginForRequests(String temUserName, String temPassword) {
+        logged = false;
+        loggedUser = null;
         if (temUserName == null) {
             return false;
         }
@@ -727,6 +733,42 @@ public class SessionController implements Serializable, HttpSessionListener {
             loginRequestResponse += "DepartmentId=" + department.getId() + "|";
             loginRequestResponse += "Institution=" + department.getInstitution().getName() + "|";
             loginRequestResponse += "InstitutionId=" + department.getInstitution().getId() + "|";
+            loginRequestResponse += "User=" + u.getName() + "|";
+            loginRequestResponse += "UserId=" + u.getId() + "|";
+            loginRequestResponse += "}";
+            return true;
+        }
+        loginRequestResponse += "Login=0|}";
+        return false;
+    }
+
+    public boolean loginForRequestsForDoctors(String temUserName, String temPassword) {
+        logged = false;
+        loggedUser = null;
+        if (temUserName == null) {
+            return false;
+        }
+        if (temPassword == null) {
+            return false;
+        }
+        String temSQL;
+        loginRequestResponse = "#{";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        Map m = new HashMap();
+
+        m.put("n", temUserName.trim().toLowerCase());
+        WebUser u = getFacede().findFirstBySQL(temSQL, m);
+
+        if (u == null) {
+            return false;
+        }
+
+        if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
+            setLoggedUser(u);
+            setLogged(Boolean.TRUE);
+            setActivated(u.isActivated());
+            setRole(u.getRole());
+            loginRequestResponse += "Login=1|";
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
             loginRequestResponse += "}";

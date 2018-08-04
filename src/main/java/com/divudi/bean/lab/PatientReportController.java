@@ -15,7 +15,10 @@ import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AppEmail;
+import com.divudi.entity.Doctor;
+import com.divudi.entity.Sms;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -31,6 +34,7 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientInvestigationItemValueFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
@@ -119,6 +123,10 @@ public class PatientReportController implements Serializable {
     private TestFlagFacade testFlagFacade;
     @EJB
     private EmailFacade emailFacade;
+    @EJB
+    SmsManagerEjb smsManager;
+    @EJB
+    SmsFacade smsFacade;
     //Controllers
     @Inject
     private PatientReportBean prBean;
@@ -159,6 +167,35 @@ public class PatientReportController implements Serializable {
     private List<Selectable> selectables = new ArrayList<>();
     private String encryptedPatientReportId;
     private String encryptedExpiary;
+    private List<PatientReport> recentReportsOrderedByDoctor;
+
+    public String searchRecentReportsOrderedByMyself() {
+        Doctor doctor;
+        String j = "Select r from PatientReport r "
+                + " where r.patientInvestigation.billItem.bill.referredBy=:doc "
+                + " and r.approved=:app "
+                + " order by r.approveAt";
+        Map m = new HashMap();
+        if (getSessionController()
+                .getLoggedUser().getStaff() instanceof Doctor) {
+            doctor = (Doctor) getSessionController().getLoggedUser().getStaff();
+        } else {
+            JsfUtil.addErrorMessage("You are NOT a Doctor. Only Doctors can view recent Investigations you order.");
+            recentReportsOrderedByDoctor = null;
+            return "";
+        }
+        m.put("doc", doctor);
+        m.put("app", true);
+        recentReportsOrderedByDoctor = getFacade().findBySQL(j, m, 100);
+        if (false) {
+            PatientReport r = new PatientReport();
+            r.getApproved();
+            r.getPatientInvestigation().getBillItem().getBill().getReferredBy();
+            r.getApproveAt();
+        }
+
+        return "/mobile/recent_reports_ordered_by_mysqlf";
+    }
 
     public void preparePatientReportByIdForRequests() {
         currentPatientReport = null;
@@ -733,8 +770,10 @@ public class PatientReportController implements Serializable {
                 System.err.println("calString = " + calString);
                 try {
                     result = (double) engine.eval(calString);
+
                 } catch (Exception ex) {
-                    Logger.getLogger(PatientReportController.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PatientReportController.class
+                            .getName()).log(Level.SEVERE, null, ex);
                     result = 0.0;
                 }
                 priv.setDoubleValue(result);
@@ -1012,15 +1051,15 @@ public class PatientReportController implements Serializable {
         b += "</table>";
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        
+
         String temId = currentPatientReport.getId() + "";
-        temId=getSecurityController().encrypt(temId);
+        temId = getSecurityController().encrypt(temId);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             System.err.println("Error = " + ex.getMessage());
         }
-        
+
         String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
         ed = getSecurityController().encrypt(ed);
         try {
@@ -1028,7 +1067,7 @@ public class PatientReportController implements Serializable {
         } catch (UnsupportedEncodingException ex) {
             System.err.println("Error = " + ex.getMessage());
         }
-        
+
         String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         b += "<p>"
                 + "Your Report is attached"
@@ -1046,6 +1085,32 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    
+    public String smsBody(PatientReport r) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = currentPatientReport.getId() + "";
+        temId = getSecurityController().encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        ed = getSecurityController().encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            System.err.println("Error = " + ex.getMessage());
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + "is ready."
+                + url;
+        return b;
+    }
+    
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -1092,6 +1157,22 @@ public class PatientReportController implements Serializable {
             e.setSentSuccessfully(false);
 
             getEmailFacade().create(e);
+        }
+        if(!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")){
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
         }
 
         UtilityController.addSuccessMessage("Approved");
@@ -1212,7 +1293,7 @@ public class PatientReportController implements Serializable {
         String temId = currentPatientReport.getId() + "";
         temId = securityController.encrypt(temId);
         try {
-            temId = URLEncoder.encode(temId,  "UTF-8");
+            temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             System.err.println("Error " + ex.getMessage());
         }
@@ -1298,20 +1379,19 @@ public class PatientReportController implements Serializable {
         return r;
     }
 
-    
     public PatientReport getUnapprovedPatientReport(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation = :pi "
                 + " and (r.approved = :a or r.approved is null) "
                 + " order by r.id desc";
-        
+
         Map m = new HashMap();
         m.put("pi", pi);
         m.put("a", false);
         PatientReport r = getFacade().findFirstBySQL(j, m);
         return r;
     }
-    
+
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix) {
         //System.err.println("creating a new patient report");
         PatientReport r = null;
@@ -1515,6 +1595,14 @@ public class PatientReportController implements Serializable {
         this.encryptedExpiary = encryptedExpiary;
     }
 
+    public List<PatientReport> getRecentReportsOrderedByDoctor() {
+        return recentReportsOrderedByDoctor;
+    }
+
+    public void setRecentReportsOrderedByDoctor(List<PatientReport> recentReportsOrderedByDoctor) {
+        this.recentReportsOrderedByDoctor = recentReportsOrderedByDoctor;
+    }
+
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
 
@@ -1567,4 +1655,22 @@ public class PatientReportController implements Serializable {
         this.encryptedPatientReportId = encryptedPatientReportId;
     }
 
+    public SmsManagerEjb getSmsManager() {
+        return smsManager;
+    }
+
+    public void setSmsManager(SmsManagerEjb smsManager) {
+        this.smsManager = smsManager;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade smsFacade) {
+        this.smsFacade = smsFacade;
+    }
+
+    
+    
 }
