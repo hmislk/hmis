@@ -61,6 +61,9 @@
                                                     <p:column headerText="Fill Name" >
                                                         <h:outputLabel value="#{ix.fullName}" ></h:outputLabel>
                                                     </p:column>
+                                                     <p:column headerText="Department" >
+                                                        <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                                                    </p:column>
                                                 </p:autoComplete>
 
 
@@ -191,6 +194,7 @@
                                                             </p:column>
                                                             <p:column >
                                                                 <h:outputText value="Master Item" rendered="#{ix2.institution eq null}" ></h:outputText>
+                                                                <h:outputText value="#{ix2.institution.name}" rendered="#{ix2.institution ne null}"  ></h:outputText>
                                                             </p:column>
                                                         </p:autoComplete>
                                                         <h:outputText value="***" style="color: red; font-weight: bold;" rendered="#{investigationController.current.reportedAs.institution ne null}" ></h:outputText>

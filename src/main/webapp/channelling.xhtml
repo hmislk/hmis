@@ -144,7 +144,7 @@
                                     <f:selectItems value="#{billController.title}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
-                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
+                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
                                 </p:inputText>
                                 <h:outputLabel value="Phone"/>
                                 <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">

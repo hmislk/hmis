@@ -1522,8 +1522,8 @@ public class BillController implements Serializable {
         }
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null) {
-                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
+            if (toStaff == null && creditCompany == null && collectingCentre==null) {
+                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
             if (toStaff != null && creditCompany != null) {
