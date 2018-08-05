@@ -92,6 +92,8 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
+    private boolean printBarcodeInOpdBill;
+    
     
     
     
@@ -542,6 +544,14 @@ public class UserPreference implements Serializable {
 
     public void setInstitutionRestrictedBilling(boolean institutionRestrictedBilling) {
         this.institutionRestrictedBilling = institutionRestrictedBilling;
+    }
+
+    public boolean isPrintBarcodeInOpdBill() {
+        return printBarcodeInOpdBill;
+    }
+
+    public void setPrintBarcodeInOpdBill(boolean printBarcodeInOpdBill) {
+        this.printBarcodeInOpdBill = printBarcodeInOpdBill;
     }
 
 }
