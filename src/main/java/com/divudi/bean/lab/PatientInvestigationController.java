@@ -4,6 +4,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
@@ -144,6 +145,8 @@ public class PatientInvestigationController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     private ItemForItemController itemForItemController;
+    @Inject
+    private SmsController smsController;
     /**
      * Class Variables
      */
@@ -960,8 +963,8 @@ public class PatientInvestigationController implements Serializable {
         s.setPatientInvestigation(current);
         s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
-        String messageBody = "Dear Sir/Madam,\n"
-                + "Report bearing number " + bill.getInsId() + " is ready for collection at\n"
+        String messageBody = "Dear Sir/Madam, "
+                + "Report bearing number " + bill.getInsId() + " is ready for collection at "
                 + sessionController.getLoggedUser().getDepartment().getPrintingName() + ".";
 
         s.setSendingMessage(messageBody);
@@ -973,9 +976,9 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("s.getReceipientNumber() = " + messageBody);
         System.out.println("messageBody = " + s.getReceipientNumber());
         System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
-        System.out.println("  s.getInstitution().getSmsSendingPassword() = " +   s.getInstitution().getSmsSendingPassword());
+        System.out.println("  s.getInstitution().getSmsSendingPassword() = " + s.getInstitution().getSmsSendingPassword());
         System.out.println("s.getInstitution().getSmsSendingAlias() = " + s.getInstitution().getSmsSendingAlias());
-        
+        getSmsController();
         getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
                 s.getInstitution().getSmsSendingUsername(),
                 s.getInstitution().getSmsSendingPassword(),
@@ -1065,7 +1068,6 @@ public class PatientInvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Sms send");
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-
 
     public void create() throws DocumentException, com.lowagie.text.DocumentException {
 
@@ -2003,6 +2005,10 @@ public class PatientInvestigationController implements Serializable {
         this.smsManagerEjb = smsManagerEjb;
     }
 
+    public SmsController getSmsController() {
+        return smsController;
+    }
+
     /**
      *
      */
@@ -2062,4 +2068,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
 }

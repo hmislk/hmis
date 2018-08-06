@@ -1106,7 +1106,7 @@ public class PatientReportController implements Serializable {
         String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
-                + "is ready."
+                + "is ready. "
                 + url;
         return b;
     }
