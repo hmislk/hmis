@@ -157,7 +157,7 @@ public class SmsManagerEjb {
         m.put("message", message);
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
-        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
+//        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
         System.out.println("res = " + res);
         if (res == null) {
             System.out.println("Error in sending sms as res is null");
