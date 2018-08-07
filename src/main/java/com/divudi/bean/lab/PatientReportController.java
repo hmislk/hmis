@@ -209,6 +209,9 @@ public class PatientReportController implements Serializable {
                 System.err.println("1 " + encryptedExpiary);
                 ed = securityController.decrypt(ed);
                 System.err.println("2 " + ed);
+                if (ed == null) {
+                    return;
+                }
                 expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
             } catch (ParseException ex) {
                 System.err.println("3 Error = " + ex.getMessage());
@@ -1085,7 +1088,6 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
-    
     public String smsBody(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -1106,11 +1108,11 @@ public class PatientReportController implements Serializable {
         String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
-                + "is ready. "
+                + " is ready. "
                 + url;
         return b;
     }
-    
+
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -1137,44 +1139,47 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
-        if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
-            AppEmail e = new AppEmail();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
+        if (getSessionController().getInstitutionPreference().getSentEmailWithInvestigationReportApproval()) {
+            if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
+                AppEmail e = new AppEmail();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
 
-            e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
-            e.setMessageSubject("Your Report is Ready");
-            e.setMessageBody(emailMessageBody(currentPatientReport));
-            e.setAttachment1(createPDFAndSaveAsaFile());
+                e.setReceipientEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail());
+                e.setMessageSubject("Your Report is Ready");
+                e.setMessageBody(emailMessageBody(currentPatientReport));
+                e.setAttachment1(createPDFAndSaveAsaFile());
 
-            e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
-            e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
-            e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
+                e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
+                e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
+                e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
 
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
 
-            e.setSentSuccessfully(false);
+                e.setSentSuccessfully(false);
 
-            getEmailFacade().create(e);
+                getEmailFacade().create(e);
+            }
         }
-        if(!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")){
-            Sms e = new Sms();
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setBill(currentPtIx.getBillItem().getBill());
-            e.setPatientReport(currentPatientReport);
-            e.setPatientInvestigation(currentPtIx);
-            e.setCreatedAt(new Date());
-            e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
-            e.setSendingMessage(smsBody(currentPatientReport));
-            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSentSuccessfully(false);
-            getSmsFacade().create(e);
+        if (getSessionController().getInstitutionPreference().getSentSmsWithInvestigationRequestApproval()) {
+            if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+                Sms e = new Sms();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setBill(currentPtIx.getBillItem().getBill());
+                e.setPatientReport(currentPatientReport);
+                e.setPatientInvestigation(currentPtIx);
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+                e.setSendingMessage(smsBody(currentPatientReport));
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setSentSuccessfully(false);
+                getSmsFacade().create(e);
+            }
         }
-
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
@@ -1671,6 +1676,4 @@ public class PatientReportController implements Serializable {
         this.smsFacade = smsFacade;
     }
 
-    
-    
 }

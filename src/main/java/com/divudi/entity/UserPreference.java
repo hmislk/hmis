@@ -92,6 +92,9 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
+    private Boolean sentEmailWithInvestigationReportApproval;
+    private Boolean sentSmsWithInvestigationRequestApproval;
+    private Boolean sentDailySmsSummeryForReferringDoctors;
     
     
     
@@ -542,6 +545,39 @@ public class UserPreference implements Serializable {
 
     public void setInstitutionRestrictedBilling(boolean institutionRestrictedBilling) {
         this.institutionRestrictedBilling = institutionRestrictedBilling;
+    }
+
+    public Boolean getSentEmailWithInvestigationReportApproval() {
+        if(sentEmailWithInvestigationReportApproval==null){
+            sentEmailWithInvestigationReportApproval=true;
+        }
+        return sentEmailWithInvestigationReportApproval;
+    }
+
+    public void setSentEmailWithInvestigationReportApproval(Boolean sentEmailWithInvestigationReportApproval) {
+        this.sentEmailWithInvestigationReportApproval = sentEmailWithInvestigationReportApproval;
+    }
+
+    public Boolean getSentSmsWithInvestigationRequestApproval() {
+        if(sentSmsWithInvestigationRequestApproval==null){
+            sentSmsWithInvestigationRequestApproval=true;
+        }
+        return sentSmsWithInvestigationRequestApproval;
+    }
+
+    public void setSentSmsWithInvestigationRequestApproval(Boolean sentSmsWithInvestigationRequestApproval) {
+        this.sentSmsWithInvestigationRequestApproval = sentSmsWithInvestigationRequestApproval;
+    }
+
+    public Boolean getSentDailySmsSummeryForReferringDoctors() {
+        if(sentDailySmsSummeryForReferringDoctors==false){
+            sentDailySmsSummeryForReferringDoctors=true;
+        }
+        return sentDailySmsSummeryForReferringDoctors;
+    }
+
+    public void setSentDailySmsSummeryForReferringDoctors(Boolean sentDailySmsSummeryForReferringDoctors) {
+        this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
     }
 
 }
