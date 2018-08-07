@@ -443,13 +443,11 @@ public class PharmacyBean {
         }
 
         if (s.getId() == null || s.getId() == 0) {
-            System.err.println("Initial Stock Before Updation" + s.getStock());
             s.setStock(s.getStock() + qty);
             getStockFacade().create(s);
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
-            System.err.println("Before Stock Updation " + s.getStock());
-//            addToStockHistory(pharmaceuticalBillItem, s, staff);
+            //            addToStockHistory(pharmaceuticalBillItem, s, staff);
                         s.setStock(s.getStock() + qty);
             getStockFacade().edit(s);
         }
@@ -624,7 +622,6 @@ public class PharmacyBean {
         double toAddQty = qty;
         for (Stock s : stocks) {
             System.out.println("s.getItemBatch().getItem().getName() = " + s.getItemBatch().getItem().getName());
-            System.out.println("s.getStock() = " + s.getStock());
             if (s.getStock() >= toAddQty) {
                 list.add(new StockQty(s, toAddQty));
                 break;
@@ -654,7 +651,6 @@ public class PharmacyBean {
 
         stock = getStockFacade().find(stock.getId());
 
-        System.err.println("Before Update " + stock.getStock());
         stock.setStock(stock.getStock() - qty);
         getStockFacade().edit(stock);
 

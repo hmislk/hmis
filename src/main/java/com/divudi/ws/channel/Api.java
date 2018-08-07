@@ -153,7 +153,6 @@ public class Api {
     @Path("/doctors")
     @Produces("application/json")
     public String getDoctors() {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Doctors(/doctors)");
         List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -184,7 +183,6 @@ public class Api {
     @Path("/doctors/{doc_code}")
     @Produces("application/json")
     public String getDoctor(@PathParam("doc_code") String doc_code) {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Doctor(/doctors/{doc_code})");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -228,7 +226,6 @@ public class Api {
     @Path("/sessions/{doc_code}")
     @Produces("application/json")
     public String getSessions(@PathParam("doc_code") String doc_code) {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Sessions(/sessions/{doc_code})");
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -349,7 +346,6 @@ public class Api {
     public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
-        System.err.println("~~~~~~Channel API~~~~~~ Make Booking(/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no})");
         JSONArray bill = new JSONArray();
         String json = new String();
         List<Object[]> list = new ArrayList<>();
@@ -416,7 +412,6 @@ public class Api {
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no,
             @PathParam("foriegn") String st_foriegn) {
-        System.err.println("~~~~~~Channel API~~~~~~ Make Booking(/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}/{foriegn})");
         JSONArray bill = new JSONArray();
         String json = new String();
         List<Object[]> list = new ArrayList<>();
@@ -494,8 +489,7 @@ public class Api {
     @Produces("application/json")
     public String getBookings(@PathParam("bill_id") String bill_id) {
 //        /bookings/20058204
-        System.err.println("~~~~~~Channel API~~~~~~ Get Booking(/bookings/{bill_id})");
-//        /bookings/20058204
+        //        /bookings/20058204
                 JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
@@ -526,8 +520,7 @@ public class Api {
     @Produces("application/json")
     public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
 //        /bookings/20058554/2016-08-01/2016-08-15
-        System.err.println("~~~~~~Channel API~~~~~~ Get All Bookings Using Agent id , From Date and To Date(/bookings/{agent_id}/{from_date}/{to_date})");
-//        /bookings/20058554/2016-08-01/2016-08-15
+        //        /bookings/20058554/2016-08-01/2016-08-15
                 JSONObject jSONObjectOut = new JSONObject();
         JSONArray bill = new JSONArray();
         try {
@@ -558,7 +551,6 @@ public class Api {
     @Path("/specility/")
     @Produces("application/json")
     public String getAllSpecilities() {
-        System.err.println("~~~~~~Channel API~~~~~~ Get All Specilities(/specility/)");
         List<Object[]> specilities = specilityList();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -588,7 +580,6 @@ public class Api {
     @Path("/docs/")
     @Produces("application/json")
     public String getAllDoctors() {
-        System.err.println("~~~~~~Channel API~~~~~~ Get All Doctors(/docs/)");
         List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         if (!consultants.isEmpty()) {
@@ -620,7 +611,6 @@ public class Api {
     @Path("/doc/{spec_id}/")
     @Produces("application/json")
     public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Doctors Selected Specility(/doc/{spec_id}/)");
         long sp_id = Long.parseLong(spec_id);
         List<Object[]> consultants = doctorsList(null, sp_id);
         JSONArray array = new JSONArray();
@@ -653,7 +643,6 @@ public class Api {
     @Path("/ses/{doc_code}")
     @Produces("application/json")
     public String getDocSessions(@PathParam("doc_code") String doc_code) {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Doc Sessions(/ses/{doc_code})");
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -702,7 +691,6 @@ public class Api {
     @Path("/apps/{ses_id}/")
     @Produces("application/json")
     public String getBillSessions(@PathParam("ses_id") String ses_id) {
-        System.err.println("~~~~~~Channel API~~~~~~ Get Bill Sessions(/apps/{ses_id}/)");
         long sp_id = Long.parseLong(ses_id);
         List<BillSession> billSessions = fillBillSessions(sp_id);
         JSONArray array = new JSONArray();
@@ -840,7 +828,6 @@ public class Api {
         sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         return sessions;
     }

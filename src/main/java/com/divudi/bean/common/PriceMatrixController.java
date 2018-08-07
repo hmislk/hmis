@@ -288,7 +288,6 @@ public class PriceMatrixController implements Serializable {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
         System.err.println(paymentMethod);
-        System.err.println(membershipScheme);
         //Get Discount From Category    
         opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
 
@@ -352,7 +351,6 @@ public class PriceMatrixController implements Serializable {
         System.err.println(paymentMethod);
         // System.err.println(paymentScheme);
         // System.err.println(paymentScheme);
-        System.err.println(department);
 
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, item);

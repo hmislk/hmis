@@ -739,8 +739,9 @@ public class ServiceSummery implements Serializable {
         billFees = getBillFeeFacade().findBySQL(sql, m);
 //        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
 //        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         for (BillFee bf : billFees) {
 
@@ -748,12 +749,10 @@ public class ServiceSummery implements Serializable {
             System.out.println("bf.getBillItem().getBill().getInsId() = " + bf.getBillItem().getBill().getInsId());
             System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
             System.out.println("bf.getFee().getId() = " + bf.getFee().getId());
-            System.err.println("**");
             sql = "Select f from ItemFee f where f.id = " + bf.getFee().getId();
             ItemFee itemFee = itemFeeFacade.findFirstBySQL(sql);
 
             if (itemFee != null) {
-                System.err.println("**");
                 System.err.println("**");
             }
             bf.getFee().setFeeType(FeeType.OwnInstitution);
@@ -1225,7 +1224,6 @@ public class ServiceSummery implements Serializable {
                 } else {
                     name += " ," + bf.getStaff().getPerson().getName();
                 }
-                System.out.println("bf.getStaff().getPerson().getName() = " + bf.getStaff().getPerson().getName());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1391,9 +1389,7 @@ public class ServiceSummery implements Serializable {
             System.err.println("*****");
             System.out.println("bf.getDepartment() = " + bf.getDepartment().getName());
             if (!bf.getDepartment().equals(bf.getBill().getToDepartment())) {
-                System.out.println("bf.getBill().getDeptId() = " + bf.getBill().getDeptId());
             }
-            System.err.println("*****");
         }
 
         billItemWithFees = new ArrayList<>();

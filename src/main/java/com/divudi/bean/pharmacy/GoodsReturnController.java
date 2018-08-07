@@ -279,7 +279,6 @@ public class GoodsReturnController implements Serializable {
             return;
         }
 
-        System.err.println("2");
         saveReturnBill();
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 //        saveComponent();

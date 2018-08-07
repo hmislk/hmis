@@ -142,7 +142,6 @@ public class PatientReportBean {
 
     public void addPatientReportItemValuesForReport(PatientReport ptReport) {
         String sql = "";
-        System.out.println("going to add patient report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
             PatientReportItemValue val = null;
@@ -284,7 +283,6 @@ public class PatientReportBean {
         List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
 
         for (Antibiotic a : abs) {
-            System.err.println("*** " + a.getName());
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
             PatientReportItemValue val;
             sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -331,7 +329,6 @@ public class PatientReportBean {
         System.out.println("-------");
         System.out.println("ii = " + ii);
         System.out.println("a.getName() = " + a.getName());
-        System.out.println("i.getName() = " + i.getName());
 
         if (ii == null) {
             ii = new InvestigationItem();
@@ -344,7 +341,6 @@ public class PatientReportBean {
             ii.setIxItemType(InvestigationItemType.Antibiotic);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
-            System.out.println("ii.getId() = " + ii.getId());
             getIiFacade().edit(ii);
             
             i.getReportItems().add(ii);

@@ -43,7 +43,6 @@ public class EmailManagerEjb {
     @SuppressWarnings("unused")
     @Schedule(second = "59", minute = "*/5", hour = "*", persistent = false)
     public void myTimer() {
-        System.err.println("Timer ticked " + new Date());
         sendReportApprovalEmails();
 
     }
@@ -122,14 +121,11 @@ public class EmailManagerEjb {
             message.setContent(multipart);
 
             Transport.send(message);
-            System.err.println("Email send successfully");
             return true;
 
         } catch (MessagingException e) {
-            System.err.println("Error = " + e.getMessage());
             return false;
         } catch (Exception e) {
-            System.err.println("Error = " + e.getMessage());
             return false;
         }
 

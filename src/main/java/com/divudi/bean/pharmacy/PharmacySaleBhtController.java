@@ -1023,7 +1023,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         System.out.println("getPreBill().getNetTotal() = " + getPreBill().getNetTotal());
         System.out.println("getPreBill().getTotal() = " + getPreBill().getTotal());
-        System.out.println("getPreBill().getGrantTotal() = " + getPreBill().getGrantTotal());
 
     }
 
@@ -1085,7 +1084,6 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
         System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
-        System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
 
     }
 
@@ -1102,7 +1100,6 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetValue(bi.getQty() * bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
         System.out.println("bi.getNetValue() = " + bi.getNetValue());
-        System.out.println("bi.getGrossValue() = " + bi.getGrossValue());
 
     }
 
@@ -1135,7 +1132,6 @@ public class PharmacySaleBhtController implements Serializable {
         }
         getBillItem();
         bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
-        System.err.println("Rate " + bi.getRate());
 //        bi.setDiscount(calculateBillItemDiscountRate(bi));
         //  //System.err.println("Discount "+bi.getDiscount());
         bi.setNetRate(bi.getRate() - bi.getDiscount());
@@ -1161,7 +1157,6 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         List<Stock> items = getStockFacade().findBySQL(sql, m, 20);
-        System.out.println("items.size() = " + items.size());
 
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
@@ -1182,7 +1177,6 @@ public class PharmacySaleBhtController implements Serializable {
 
         //User Stock Container Save if New Bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        System.out.println("b.getPatientEncounter().getBhtNo() = " + b.getPatientEncounter().getBhtNo());
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
@@ -1196,7 +1190,6 @@ public class PharmacySaleBhtController implements Serializable {
             System.out.println("refundedIssue = " + refundedIssue);
 
             double issuableQty = Math.abs(i.getQtyInUnit()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
-            System.out.println("issuableQty = " + issuableQty);
 
             List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getBillItem().getItem(), issuableQty, getSessionController().getDepartment());
 
@@ -1317,7 +1310,6 @@ public class PharmacySaleBhtController implements Serializable {
         System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
-        System.out.println("1.cal.getTime() = " + cal.getTime());
         cal.add(Calendar.DATE, 31);
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;

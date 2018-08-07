@@ -112,7 +112,6 @@ public class DealorPaymentBillSearch implements Serializable {
         bill.setReferenceBill(newBill);
         billFacade.edit(bill);
 
-        System.out.println("getBill().getBillItems() = " + getBill().getBillItems());
 
         for (BillItem bi : getBillItems()) {
             System.err.println("in");
@@ -127,7 +126,6 @@ public class DealorPaymentBillSearch implements Serializable {
             bi.setReferanceBillItem(newBi);
             billItemFacede.edit(bi);
             System.out.println("bi = " + bi);
-            System.err.println("out");
         }
 
         UtilityController.addSuccessMessage("Succesfully Approved");

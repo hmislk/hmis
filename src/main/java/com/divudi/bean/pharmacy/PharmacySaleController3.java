@@ -1353,7 +1353,6 @@ public class PharmacySaleController3 implements Serializable {
 
         resetAll();
         billPreview = true;
-        System.err.println("3.sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
         
     }
 

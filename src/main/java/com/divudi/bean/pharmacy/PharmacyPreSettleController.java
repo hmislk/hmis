@@ -511,7 +511,6 @@ public class PharmacyPreSettleController implements Serializable {
 
     public void settleBillWithPay2() {
         editingQty = null;
-        System.out.println("getPreBill().getBillType() = " + getPreBill().getBillType());
         if (getPreBill().getBillType() == BillType.PharmacyPre
                 && getPreBill().getBillClassType() != BillClassType.PreBill) {
             JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
@@ -614,7 +613,6 @@ public class PharmacyPreSettleController implements Serializable {
 
     public void settleReturnBillWithPay() {
         editingQty = null;
-        System.out.println("getPreBill().getBillType() = " + getPreBill().getBillType());
         if (getPreBill().getBillType() == BillType.PharmacyPre
                 && getPreBill().getBillClassType() != BillClassType.RefundBill) {
             JsfUtil.addErrorMessage("This Bill isn't Return. Please Try Again.");

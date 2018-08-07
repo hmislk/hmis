@@ -1906,7 +1906,6 @@ public class SearchController implements Serializable {
                 }
             }
             System.out.println("bs.size() = " + bs.size());
-            System.out.println("Before bills.size() = " + bills.size());
             if (bool) {
                 bills = bs;
             } else {
@@ -2316,7 +2315,6 @@ public class SearchController implements Serializable {
         m.put("class", PreBill.class);
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("billItems.size() = " + billItems.size());
 
         dueTotal = 0.0;
         doneTotal = 0.0;
@@ -2342,11 +2340,9 @@ public class SearchController implements Serializable {
             List<Stock> stocks = getStockFacade().findBySQL(sql, m);
             for (Stock s : stocks) {
                 boolean flag = true;
-                System.out.println("s.getId() = " + s.getId());
                 int i = 1;
                 for (BillItem bi : billItems) {
                     if (s.equals(bi.getPharmaceuticalBillItem().getStock())) {
-                        System.out.println("************bi.getItem().getName() = " + bi.getItem().getName());
                         createAdjustmentRow(null, bi, null);
                         flag = false;
                         i++;
@@ -3061,7 +3057,6 @@ public class SearchController implements Serializable {
         temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-        System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
@@ -3129,7 +3124,6 @@ public class SearchController implements Serializable {
         temMap.put("btpc", BillType.CollectingCentreBill);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
@@ -3387,7 +3381,6 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-        System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             temMap = new HashMap();
@@ -3400,7 +3393,6 @@ public class SearchController implements Serializable {
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql, temMap);
 
             if (rbi != null) {
-                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
                 removeingBillFees.add(bf);
             }
         }
@@ -3473,7 +3465,6 @@ public class SearchController implements Serializable {
         //System.out.println("temMap = " + temMap);
         //System.out.println("sql = " + sql);
         billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("billFees.size() = " + billFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             temMap = new HashMap();
@@ -3486,7 +3477,6 @@ public class SearchController implements Serializable {
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql, temMap);
 
             if (rbi != null) {
-                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
                 removeingBillFees.add(bf);
             }
         }
@@ -4224,14 +4214,12 @@ public class SearchController implements Serializable {
 
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
         System.out.println("m = " + m);
-        System.out.println("userPatientInvestigations = " + userPatientInvestigations.size());
 
 //        return "/reports_list";
         if (userPatientInvestigations.size() > 0) {
             if (web) {
                 return "/reports_list_new";
             } else {
-                System.out.println("1.getReportKeyWord().getString() = " + getReportKeyWord().getString());
                 getReportKeyWord().setString("0");
                 getSessionController().setPhoneNo("");
                 getSessionController().setBillNo("");
@@ -4312,11 +4300,11 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         //System.err.println("Sql " + sql);
+        //System.err.println("Sql " + sql);
 
         //System.err.println("Sql " + sql);
         System.out.println("Time 1 = " + new Date());
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("Time 2 = " + new Date());
         checkRefundBillItems(patientInvestigations);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab_search_for_reporting_ondemand.xhtml)");
@@ -4472,7 +4460,6 @@ public class SearchController implements Serializable {
         Date toDate = null;
 
         for (Bill b : getSelectedBills()) {
-            System.out.println("b.getReferenceBill() = " + b.getReferenceBill());
             b = getBillFacade().find(b.getId());
             if (b.getReferenceBill() != null) {
                 JsfUtil.addErrorMessage("This Bill " + b.getDeptId() + " alrady Paid can't add to stock.");
@@ -4664,7 +4651,6 @@ public class SearchController implements Serializable {
         pbs = getBillFacade().findBySQLWithoutCache(sql, temMap2, TemporalType.TIMESTAMP, 50);
 
         System.out.println("pbs = " + pbs);
-        System.out.println("abs = " + abs);
         abs.removeAll(pbs);
         aceptPaymentBills.addAll(abs);
 
@@ -5210,7 +5196,6 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Enter BHT No or Bill No");
             return;
         }
-        System.err.println("****");
         bills = null;
         String sql;
         Map m = new HashMap();
@@ -6901,10 +6886,8 @@ public class SearchController implements Serializable {
         temMap.put("fd", fromDate);
         temMap.put("td", toDate);
 
-        System.out.println("temMap = " + temMap);
         if (getReportKeyWord().getString1().equals("0")) {
             List<Object> objs = getBillFacade().findObjectBySQL(sql, temMap, TemporalType.TIMESTAMP);
-            System.out.println("sql = " + sql);
 
             for (Object o : objs) {
                 String s = (String) o;
@@ -6989,7 +6972,6 @@ public class SearchController implements Serializable {
             while ((read = in.read(bytes)) != -1) {
                 out.write(bytes, 0, read);
             }
-            System.err.println("in 5");
             in.close();
             out.flush();
             out.close();
@@ -7001,7 +6983,6 @@ public class SearchController implements Serializable {
             Sheet sheet = w.getSheet(0);
 
             for (int i = 0; i < sheet.getRows(); i++) {
-                System.out.println("i = " + i);
                 cell = sheet.getCell(1, i);
                 number = cell.getContents();
                 if (number.contains("077") || number.contains("076")
@@ -7139,7 +7120,6 @@ public class SearchController implements Serializable {
                 removeingBillFees.add(bf);
             }
         }
-        System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
         billFees.removeAll(removeingBillFees);
         total = 0.0;
         for (BillFee bf : billFees) {

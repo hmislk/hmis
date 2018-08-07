@@ -185,7 +185,6 @@ public class ChannelSearchController implements Serializable {
             searchedBillSessions = getBillSessionFacade().findBySQL(sql, m);
         }
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
     }
 

@@ -70,7 +70,6 @@ public class SmsManagerEjb {
     }
 
     public String executePost(String targetURL, Map<String, String> parameters) {
-        System.out.println("executePost");
         HttpURLConnection connection = null;
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "?";
@@ -97,6 +96,7 @@ public class SmsManagerEjb {
         try {
             System.out.println("targetURL = " + targetURL);
             //Create connection
+            //Create connection
             System.out.println("1");
             URL url = new URL(targetURL);
             System.out.println("2");
@@ -122,7 +122,6 @@ public class SmsManagerEjb {
             System.out.println("is = " + is);
             System.out.println("9");
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            System.out.println("rd = " + rd);
             StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
             String line;
             while ((line = rd.readLine()) != null) {
@@ -132,7 +131,6 @@ public class SmsManagerEjb {
             rd.close();
             return response.toString();
         } catch (Exception e) {
-            System.out.println("e = " + e.getMessage());
             return null;
         } finally {
             if (connection != null) {
@@ -158,13 +156,9 @@ public class SmsManagerEjb {
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
 //        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
-        System.out.println("res = " + res);
         if (res == null) {
-            System.out.println("Error in sending sms as res is null");
         } else if (res.toUpperCase().contains("200")) {
-            System.out.println("sms sent");
         } else {
-            System.out.println("Error in sending sms as do not contain 200");
         }
 
     }

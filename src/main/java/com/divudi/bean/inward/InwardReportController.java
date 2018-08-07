@@ -227,7 +227,6 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.err.println("Time = " + new Date());
         System.out.println("sql = " + sql);
 //        calTtoal();
         calTtoal(patientEncounters);
@@ -255,7 +254,6 @@ public class InwardReportController implements Serializable {
     }
 
     private void calTtoal(List<PatientEncounter> patientEncounters) {
-        System.err.println("Time = " + new Date());
         if (patientEncounters == null) {
             return;
         }
@@ -376,7 +374,6 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
-            System.out.println("p.getBhtNo() = " + p.getBhtNo());
             if (p.getFinalBill()==null) {
                 continue;
             }
@@ -1035,7 +1032,6 @@ public class InwardReportController implements Serializable {
             temMap.put("cc", institution);
         }
 
-        System.out.println("sql = " + sql);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -1073,7 +1069,6 @@ public class InwardReportController implements Serializable {
             temMap.put("cc", institution);
         }
 
-        System.out.println("sql = " + sql);
 
         return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }

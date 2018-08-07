@@ -113,7 +113,6 @@ public class StaffLoanController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        System.out.println("getCurrent().isCompleted() = " + getCurrent().isCompleted());
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());

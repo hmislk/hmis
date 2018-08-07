@@ -94,7 +94,6 @@ public class ApiInward {
     @Path("/admissions")
     @Produces("application/json")
     public String getAddmissions() {
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Get Addmissions(/admissions)");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
 
@@ -144,7 +143,6 @@ public class ApiInward {
     @Path("/banks")
     @Produces("application/json")
     public String getBanks() {
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Get Banks(/banks)");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -178,7 +176,6 @@ public class ApiInward {
     @Path("/validateAdmission/{bht_no}")
     @Produces("application/json")
     public String getAdmissionIsValidate(@PathParam("bht_no") String bht_no) {
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Get Admission Is Validate(/validateAdmission/{bht_no})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             if (checkAdmissionIsValied(bht_no)) {
@@ -222,7 +219,6 @@ public class ApiInward {
     @Produces("application/json")
     public String getPayment(@PathParam("bht_no") String bht_no, @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref, @PathParam("amount") String amount) {
-        System.err.println("~~~~~~Inward Payment API~~~~~~ Get Payment(/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             PatientEncounter pe = fetchPatientEncounter(bht_no);

@@ -585,7 +585,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
         System.out.println("tm = " + tm);
-        System.out.println("sql = " + sql);
         labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
 
         return labBills;

@@ -107,7 +107,6 @@ public class BhtEditController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
         List<Bill> bills = getBillFacade().findBySQL(sql, hm);
-        System.out.println("bills.size() = " + bills.size());
         if (bills.isEmpty()) {
             return flag;
         } else if (bills.size() == 1) {

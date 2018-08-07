@@ -115,7 +115,6 @@ public class StockHistoryController implements Serializable {
         jpql += " order by s.item.name";
 
         System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         pharmacyStockHistories = facade.findBySQL(jpql, m, TemporalType.TIMESTAMP);
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;

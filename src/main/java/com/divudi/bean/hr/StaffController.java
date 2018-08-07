@@ -371,7 +371,6 @@ public class StaffController implements Serializable {
         System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
-        System.out.println("staffWithCode.size() = " + staffWithCode.size());
         fetchWorkDays(staffWithCode);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Salary Report/Staff payrol(selected staff)(/faces/hr/hr_staff_salary_1.xhtml)");
@@ -428,7 +427,6 @@ public class StaffController implements Serializable {
         System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
-        System.out.println("staffWithCode.size() = " + staffWithCode.size());
         fetchWorkDays(staffWithCode);
     }
 
@@ -445,7 +443,6 @@ public class StaffController implements Serializable {
         hrReportController.getReportKeyWord().setSalaryCycle(staffSalaryController.getSalaryCycle());
         salaryGeneratedStaff = hrReportController.fetchOnlySalaryGeneratedStaff();
         createActiveStaffTable(ssDate);
-        System.out.println("salaryGeneratedStaff.size() = " + salaryGeneratedStaff.size());
         staffWithCode.removeAll(salaryGeneratedStaff);
         fetchWorkDays(staffWithCode);
     }
@@ -509,7 +506,6 @@ public class StaffController implements Serializable {
 
     public void fetchWorkDays(List<Staff> staffs) {
         for (Staff s : staffs) {
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             if (staffSalaryController.getSalaryCycle() != null) {
                 s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
                 s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
@@ -1081,7 +1077,6 @@ public class StaffController implements Serializable {
 
         if (getCurrent().getPerson().getDob() != null && getCurrent().getPerson().getSex() != null) {
             System.out.println("getCurrent().getPerson().getSex() = " + getCurrent().getPerson().getSex());
-            System.out.println("getCurrent().getPerson().getDob() = " + getCurrent().getPerson().getDob());
             Calendar dob = Calendar.getInstance();
             dob.setTime(getCurrent().getPerson().getDob());
             Calendar dor = Calendar.getInstance();
@@ -1095,7 +1090,6 @@ public class StaffController implements Serializable {
             if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
                 System.out.println("dor.get(Calendar.YEAR) = " + dor.get(Calendar.YEAR));
                 System.out.println("dor.getTime = " + dor.getTime());
-                System.out.println("getCurrent().getDateRetired() = " + getCurrent().getDateRetired());
                 if (getCurrent().getDateRetired() != null) {
 //                    if (dor.getTime().after(getCurrent().getDateRetired())) {
 //                        getCurrent().setDateRetired(dor.getTime());
