@@ -80,15 +80,15 @@ public class SmsManagerEjb {
             Map.Entry m = (Map.Entry) it.next();
             String pVal;
             try {
-                pVal = java.net.URLEncoder.encode(m.getValue().toString(),"UTF-8");
+                pVal = java.net.URLEncoder.encode(m.getValue().toString(), "UTF-8");
             } catch (UnsupportedEncodingException ex) {
-                pVal="";
+                pVal = "";
                 Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
             }
             String pPara = (String) m.getKey();
             targetURL += pPara + "=" + pVal.toString() + "&";
         }
-        
+
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "last=true";
         }
@@ -139,7 +139,7 @@ public class SmsManagerEjb {
         }
     }
 
-    public void sendSms(String number, String message, String username, String password, String sendingAlias) {
+    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
         System.out.println("number = " + number);
         System.out.println("message = " + message);
@@ -147,7 +147,7 @@ public class SmsManagerEjb {
         System.out.println("password = " + password);
         System.out.println("sendingAlias = " + sendingAlias);
 
-        Map<String,String> m= new HashMap();
+        Map<String, String> m = new HashMap();
         m.put("userName", username);
         m.put("password", password);
         m.put("userAlias", sendingAlias);
@@ -155,10 +155,12 @@ public class SmsManagerEjb {
         m.put("message", message);
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
-//        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
         if (res == null) {
+            return false;
         } else if (res.toUpperCase().contains("200")) {
+            return true;
         } else {
+            return false;
         }
 
     }

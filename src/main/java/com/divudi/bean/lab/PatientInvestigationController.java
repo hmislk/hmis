@@ -950,7 +950,7 @@ public class PatientInvestigationController implements Serializable {
         s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
         String messageBody = "Dear Sir/Madam, "
-                + "Report bearing number " + bill.getInsId() + " is ready for collection at "
+                + "Reports bearing bill number " + bill.getInsId() + " is ready for collection at "
                 + sessionController.getLoggedUser().getDepartment().getPrintingName() + ".";
 
         s.setSendingMessage(messageBody);
@@ -964,183 +964,26 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
         System.out.println("  s.getInstitution().getSmsSendingPassword() = " + s.getInstitution().getSmsSendingPassword());
         getSmsController();
-        getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
+        boolean sent = getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
                 s.getInstitution().getSmsSendingUsername(),
                 s.getInstitution().getSmsSendingPassword(),
                 s.getInstitution().getSmsSendingAlias());
 
-//        StringBuilder sb = new StringBuilder(sendingNo);
-//        sb.deleteCharAt(3);
-//        sendingNo = sb.toString();
-//
-//        if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-//            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-//            HttpResponse<String> stringResponse;
-//            String pw = "&q=14488825498722";
-////            String messageBody = "Dear Sir/Madam,\n"
-////                    + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-////                    + "\"Ruhunu Hospital Diagnostics your trusted diagnostics partner\"";
-////            
-////            System.out.println("messageBody = " + messageBody.length());
-//            String messageBody2 = "Dear Sir/Madam,\n"
-//                    + "Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-//                    + "\"RHD your trusted diagnostics partner\"\n"
-//                    + "Get your report online http://goo.gl/Ae8p6L";
-//
-//            final StringBuilder request = new StringBuilder(url);
-//            request.append(sendingNo.substring(1, 10));
-//            request.append(pw);
-////            request.append(messageBody);
-////            System.out.println("request.toString().charAt(105) = " + request.toString().charAt(105));
-////            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
-////            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
-//            try {
-//
-//                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-//
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//                return;
-//            }
-//            
-//            sms = new Sms();
-//            sms.setPassword(pw);
-//            sms.setCreatedAt(new Date());
-//            sms.setCreater(getSessionController().getLoggedUser());
-//            sms.setBill(bill);
-//            sms.setSendingUrl(url);
-//            sms.setSmsType(MessageType.LabReport);
-//            sms.setSendingMessage(messageBody2);
-//        } else {
-//            String url = "http://www.textit.biz/sendmsg/index.php";
-//            HttpResponse<String> stringResponse;
-//            String messageBody;
-//            String id = "94715812399";
-//            String pw = "5672";
-//
-//            messageBody = "Reports ready. ";
-//            messageBody = messageBody + bill.getInstitution().getName() + ". ";
-//            messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
-//            messageBody = messageBody + bill.getInstitution().getWeb();
-//
-//            try {
-//
-//                stringResponse = Unirest.post(url)
-//                        .field("id", id)
-//                        .field("pw", pw)
-//                        .field("to", sendingNo)
-//                        .field("text", messageBody)
-//                        .asString();
-//
-//            } catch (Exception ex) {
-//                return;
-//            }
-//            sms = new Sms();
-//            sms.setUserId(id);
-//            sms.setPassword(pw);
-//            sms.setCreatedAt(new Date());
-//            sms.setCreater(getSessionController().getLoggedUser());
-//            sms.setBill(bill);
-//            sms.setSendingUrl(url);
-//            sms.setSendingMessage(messageBody);
-//        }
-        getCurrent().getBillItem().getBill().setSmsed(true);
-        getCurrent().getBillItem().getBill().setSmsedAt(new Date());
-        getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
-        getFacade().edit(current);
-        getCurrent().getBillItem().getBill().getSentSmses().add(s);
-        billFacade.edit(getCurrent().getBillItem().getBill());
-        UtilityController.addSuccessMessage("Sms send");
+        if (sent) {
+            getCurrent().getBillItem().getBill().setSmsed(true);
+            getCurrent().getBillItem().getBill().setSmsedAt(new Date());
+            getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            getCurrent().getBillItem().getBill().getSentSmses().add(s);
+            billFacade.edit(getCurrent().getBillItem().getBill());
+            UtilityController.addSuccessMessage("Sms send");
+        } else {
+            JsfUtil.addErrorMessage("Sending SMS Failed.");
+        }
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
 
-    public void create() throws DocumentException, com.lowagie.text.DocumentException {
-
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
-        String url = "http://localhost:8080/temp/faces/lab/patient_report_print_email_pfd.xhtml";
-
-        url = req.getRequestURL().toString();
-        url = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
-        url += "faces/lab/patient_report_print_email_pfd.xhtml";
-// 
-
-        try {
-
-            final ITextRenderer iTextRenderer = new ITextRenderer();
-
-            iTextRenderer.setDocument(url);
-            iTextRenderer.layout();
-
-            final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("\\tmp\\LabReport.pdf"));
-
-            iTextRenderer.createPDF(fileOutputStream);
-            fileOutputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-//    ...............sendEmail...............................................
-
-    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
-
-        final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
-        final String password = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
-
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-//        Authenticator auth = new SMTPAuthenticator();
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(getCurrent().getBillItem().getBill().getPatient().getPerson().getEmail()));
-            message.setSubject(getCurrent().getInvestigation().getName() + " Results");
-            message.setText("Dear " + getCurrent().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
-                    + ",\n\n Please find the results of your " + getCurrent().getInvestigation().getName() + ".");
-
-            //3) create MimeBodyPart object and set your message text     
-            BodyPart msbp1 = new MimeBodyPart();
-            msbp1.setText("Final Lab report of patient");
-
-            //4) create new MimeBodyPart object and set DataHandler object to this object      
-            MimeBodyPart msbp2 = new MimeBodyPart();
-
-            create();
-
-            DataSource source = new FileDataSource("\\tmp\\LabReport.pdf");
-            msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName("\\tmp\\Labreport.pdf");
-
-            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(msbp1);
-            multipart.addBodyPart(msbp2);
-
-            //6) set the multiplart object to the message object  
-            message.setContent(multipart);
-
-            Transport.send(message);
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
+    
     public void markAsSampled() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to sample");
@@ -2053,5 +1896,4 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
-    
 }

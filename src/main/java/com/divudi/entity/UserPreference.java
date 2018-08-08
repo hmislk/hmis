@@ -570,7 +570,7 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentDailySmsSummeryForReferringDoctors() {
-        if(sentDailySmsSummeryForReferringDoctors==false){
+        if(sentDailySmsSummeryForReferringDoctors==null){
             sentDailySmsSummeryForReferringDoctors=true;
         }
         return sentDailySmsSummeryForReferringDoctors;

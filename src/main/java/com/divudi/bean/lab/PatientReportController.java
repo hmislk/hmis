@@ -19,6 +19,7 @@ import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AppEmail;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -1124,7 +1125,16 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
-        if (getSessionController().getInstitutionPreference().getSentEmailWithInvestigationReportApproval()) {
+        UserPreference pf;
+        
+        if(getSessionController().getInstitutionPreference()!=null){
+            pf=getSessionController().getInstitutionPreference();
+        }else if(getSessionController().getUserPreference()!=null){
+            pf=getSessionController().getUserPreference();
+        }else{
+            pf = null;
+        }
+        if (pf!=null && pf.getSentEmailWithInvestigationReportApproval()) {
             if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e = new AppEmail();
                 e.setCreatedAt(new Date());
@@ -1147,7 +1157,7 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
-        if (getSessionController().getInstitutionPreference().getSentSmsWithInvestigationRequestApproval()) {
+        if (pf!=null && pf.getSentSmsWithInvestigationRequestApproval()) {
             if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
                 Sms e = new Sms();
                 e.setCreatedAt(new Date());

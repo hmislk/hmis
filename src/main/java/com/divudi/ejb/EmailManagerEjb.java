@@ -124,8 +124,10 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
+            System.out.println("e = " + e);
             return false;
         } catch (Exception e) {
+            System.out.println("e = " + e);
             return false;
         }
 
