@@ -92,6 +92,8 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
+    private Boolean canSettleOpdBillWithoutReferringDoctor;
+    private Boolean printBarcodeInOpdBill;
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
@@ -580,4 +582,22 @@ public class UserPreference implements Serializable {
         this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
     }
 
+    public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
+        return canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    public void setCanSettleOpdBillWithoutReferringDoctor(Boolean canSettleOpdBillWithoutReferringDoctor) {
+        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    public Boolean getPrintBarcodeInOpdBill() {
+        return printBarcodeInOpdBill;
+    }
+
+    public void setPrintBarcodeInOpdBill(Boolean printBarcodeInOpdBill) {
+        this.printBarcodeInOpdBill = printBarcodeInOpdBill;
+    }
+
+    
+    
 }

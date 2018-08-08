@@ -1448,7 +1448,7 @@ public class BillController implements Serializable {
             }
         }
 
-        if(!sessionController.getInstitutionPreference().isCanSettleOpdBillWithoutReferringDoctor()){
+        if(!sessionController.getInstitutionPreference().getCanSettleOpdBillWithoutReferringDoctor()){
             if(referredBy==null && referredByInstitution==null){
                 UtilityController.addErrorMessage("Please Select a Referring Doctor or an Institute");
                     return true;
