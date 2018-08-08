@@ -77,6 +77,7 @@ public class UserPreference implements Serializable {
     boolean showOnlyMarkedDoctors=false;
     boolean channelSettleWithoutPatientPhoneNumber=false;
     boolean opdSettleWithoutPatientPhoneNumber=false;
+    boolean canSettleOpdBillWithoutReferringDoctor=false;
     boolean channelBillDouble=false;
     private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
@@ -554,4 +555,14 @@ public class UserPreference implements Serializable {
         this.printBarcodeInOpdBill = printBarcodeInOpdBill;
     }
 
+    public boolean isCanSettleOpdBillWithoutReferringDoctor() {
+        return canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    public void setCanSettleOpdBillWithoutReferringDoctor(boolean canSettleOpdBillWithoutReferringDoctor) {
+        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    
+    
 }
