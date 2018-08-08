@@ -141,7 +141,6 @@ public class PatientReport implements Serializable {
     PatientReportItemValue templateItem;
 
     public PatientReportItemValue getTemplateItem() {
-        System.err.println("getTemplateItem");
         System.out.println("com.divudi.entity.lab.PatientReport.getTemplateItem()");
 
         if (templateItem == null) {

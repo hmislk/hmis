@@ -457,7 +457,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         DayType dtp = phDateController.getHolidayType(ss.getShiftDate());
         ss.setDayType(dtp);
-        System.out.println("2.ss.getDayType() = " + ss.getDayType());
         if (dtp == null) {
             if (ss.getShift() != null) {
                 ss.setDayType(ss.getShift().getDayType());
@@ -717,7 +716,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
         }
 
         checkLeave(ss);
-        System.err.println("3 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
         List<FingerPrintRecord> missedRecords = getHumanResourceBean().fetchMissedFingerFrintRecord(ss);
 
         if (missedRecords != null) {

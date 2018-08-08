@@ -107,7 +107,6 @@ public class Report3DController implements Serializable {
         itemCounts = new ArrayList<>();
 
         for (Item i : fetchSaleItems(getReportKeyWord().getCategory(),null,getReportKeyWord().getDepartment())) {
-            System.out.println("i.getName() = " + i.getName());
             ItemCount row = new ItemCount();
             row.setItem(i);
             row.setStock(fetchCurrentStock(i, getReportKeyWord().getDepartment()));
@@ -190,13 +189,11 @@ public class Report3DController implements Serializable {
 
         List<Object[]> objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("objects(Month).size() = " + objects.size());
         double total = 0.0;
         for (String s : headers2) {
             double c = 0.0;
             for (Object[] ob : objects) {
                 int in = (int) ob[0];
-                System.out.println("in = " + in);
                 double co = (double) ob[1];
 //                Calendar cal = Calendar.getInstance();
 //                cal.set(Calendar.MONTH, in);
@@ -369,7 +366,6 @@ public class Report3DController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat(" yyyy MMM ");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
                 df = new SimpleDateFormat("MM");
                 headers2.add(df.format(fd));
             }

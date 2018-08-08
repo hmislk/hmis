@@ -202,7 +202,6 @@ public class StoreGoodsReturnController implements Serializable {
             return;
         }
 
-        System.err.println("2");
         saveReturnBill();
         saveComponent();
 

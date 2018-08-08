@@ -132,7 +132,6 @@ public class SysMex {
         System.out.println("HCT  checks ok");
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
-        System.out.println("wbc check = " + twbc);
         if (twbc < 1000 || twbc > 50000) {
             return false;
         }
@@ -693,7 +692,6 @@ public class SysMex {
         double w = findValue(wbcStart, wbcEnd, 0);
         String ws = findStringValue(wbcStart, wbcEnd);
         System.out.println("wbcStart = " + wbcStart);
-        System.out.println("wbcEnd = " + wbcEnd);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;

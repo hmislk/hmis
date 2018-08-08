@@ -858,7 +858,6 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         bills = new ArrayList<>();
         for (Stock s : stocks) {
-            System.out.println("s.getCalculated() = " + s.getCalculated());
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
                 saveDeptAdjustmentBill();
@@ -882,7 +881,6 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         bills = new ArrayList<>();
         for (Stock s : stocks) {
-            System.out.println("s.getCalculated() = " + s.getCalculated());
             if (s.getStock() != s.getCalculated()) {
                 deptAdjustmentPreBill = null;
                 saveDeptAdjustmentBill();
@@ -1000,7 +998,6 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         double addQty = 0.0;
         System.out.println("total = " + total);
-        System.out.println("qty = " + qty);
 
         if (total < qty) {
             for (Stock s : stocks) {
@@ -1011,7 +1008,6 @@ public class PharmacyAdjustmentController implements Serializable {
             boolean flag = false;
             for (Stock s : stocks) {
                 System.out.println("1.addQty = " + addQty);
-                System.out.println("s.getStock() = " + s.getStock());
                 addQty += s.getStock();
                 if (flag) {
                     s.setCalculated(0.0);

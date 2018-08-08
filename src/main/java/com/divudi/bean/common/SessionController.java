@@ -611,7 +611,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                     System.out.println("1");
-                    System.out.println("sql = " + sql);
 
                     if (insPre == null) {
 
@@ -620,13 +619,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                         m.put("ins", institution);
                         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
                         System.out.println("2");
-                        System.out.println("sql = " + sql);
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id";
                             insPre = getUserPreferenceFacade().findFirstBySQL(sql);
                             System.out.println("3");
-                            System.out.println("sql = " + sql);
 
                         }
 
@@ -909,7 +906,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("dep", department);
         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
 
-        System.out.println("getDepartment().getName() = " + getDepartment().getName());
 
         if (getDepartment().getDepartmentType() == DepartmentType.Pharmacy) {
             long i = searchController.createInwardBHTForIssueBillCount();

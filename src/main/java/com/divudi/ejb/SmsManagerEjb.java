@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
@@ -20,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -66,7 +69,7 @@ public class SmsManagerEjb {
 
     }
 
-    public String executePost(String targetURL, Map<String, Object> parameters) {
+    public String executePost(String targetURL, Map<String, String> parameters) {
         HttpURLConnection connection = null;
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "?";
@@ -75,30 +78,49 @@ public class SmsManagerEjb {
         Iterator it = s.iterator();
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
-            Object pVal = m.getValue();
+            String pVal;
+            try {
+                pVal = java.net.URLEncoder.encode(m.getValue().toString(),"UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                pVal="";
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
+            }
             String pPara = (String) m.getKey();
             targetURL += pPara + "=" + pVal.toString() + "&";
         }
+        
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "last=true";
         }
-        System.out.println("targetURL = " + targetURL);
-        try {
-            //Create connection
-            URL url = new URL(targetURL);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
 
-            connection.setUseCaches(false);
+        try {
+            System.out.println("targetURL = " + targetURL);
+            //Create connection
+            //Create connection
+            System.out.println("1");
+            URL url = new URL(targetURL);
+            System.out.println("2");
+            connection = (HttpURLConnection) url.openConnection();
+            System.out.println("3");
+            connection.setRequestMethod("GET");
+            System.out.println("4");
             connection.setDoOutput(true);
+            System.out.println("4");
             //Send request
             DataOutputStream wr = new DataOutputStream(
                     connection.getOutputStream());
-//            wr.writeBytes(urlParameters);
+            System.out.println("5");
+            wr.writeBytes(targetURL);
+            System.out.println("6");
+            wr.flush();
+            System.out.println("wr = " + wr);
+            System.out.println("7");
             wr.close();
-
+            System.out.println("8");
             //Get Response  
             InputStream is = connection.getInputStream();
+            System.out.println("is = " + is);
+            System.out.println("9");
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
             StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
             String line;
@@ -125,20 +147,18 @@ public class SmsManagerEjb {
         System.out.println("password = " + password);
         System.out.println("sendingAlias = " + sendingAlias);
 
-        Map m = new HashMap();
+        Map<String,String> m= new HashMap();
         m.put("userName", username);
         m.put("password", password);
         m.put("userAlias", sendingAlias);
         m.put("number", number);
         m.put("message", message);
 
-        String res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
+        String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
+//        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
         if (res == null) {
-            System.out.println("Error in sending sms");
         } else if (res.toUpperCase().contains("200")) {
-            System.out.println("sms sent");
         } else {
-            System.out.println("Error in sending sms");
         }
 
     }

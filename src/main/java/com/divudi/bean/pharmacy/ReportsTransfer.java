@@ -935,7 +935,6 @@ public class ReportsTransfer implements Serializable {
             Double pre = calCount(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyIssue, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyIssue, new RefundBill());
-            System.err.println("PRE " + pre);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -988,7 +987,6 @@ public class ReportsTransfer implements Serializable {
             Double pre = calCountItem(row.getItem(), bt, new PreBill());
             Double preCancel = calCountCanItem(row.getItem(), bt, new PreBill());
             Double returned = calCountReturnItem(row.getItem(), bt, new RefundBill());
-            System.err.println("PRE " + pre);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1026,7 +1024,6 @@ public class ReportsTransfer implements Serializable {
             Double pre = calCount(row.getItemBatch(), BillType.StoreIssue, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreIssue, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreIssue, new RefundBill());
-            System.err.println("PRE " + pre);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1122,7 +1119,6 @@ public class ReportsTransfer implements Serializable {
             Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
-            System.err.println("PRE " + pre);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1169,7 +1165,6 @@ public class ReportsTransfer implements Serializable {
             Double pre = calCount(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
             Double preCancel = calCountCan(row.getItemBatch(), BillType.StoreBhtPre, new PreBill());
             Double returned = calCountReturn(row.getItemBatch(), BillType.StoreBhtPre, new RefundBill());
-            System.err.println("PRE " + pre);
 
             row.setCount(pre - (preCancel + returned));
 
@@ -1491,7 +1486,6 @@ public class ReportsTransfer implements Serializable {
             } catch (Exception e) {
                 qtyBHT = 0.0;
             }
-            System.out.println("qtyBHT = " + qtyBHT);
             double totalBHTValue;
             try {
                 totalBHTValue = (double) objectBHT.get(0)[1];

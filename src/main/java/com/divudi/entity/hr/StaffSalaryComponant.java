@@ -127,7 +127,6 @@ public class StaffSalaryComponant implements Serializable {
     }
 
     public void setComponantValue(double componantValue) {
-        System.out.println("getStaffPaysheetComponent().getPaysheetComponent().getName() = " + getStaffPaysheetComponent().getPaysheetComponent().getName());
         if (getStaffPaysheetComponent() != null
                 && getStaffPaysheetComponent().getPaysheetComponent() != null
                 && getStaffPaysheetComponent().getPaysheetComponent().getComponentType() != null

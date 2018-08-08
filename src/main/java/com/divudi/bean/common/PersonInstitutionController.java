@@ -184,7 +184,6 @@ public class PersonInstitutionController implements Serializable {
                 p.setType(PersonInstitutionType.Channelling);
                 getPersonInstitutionFacade().create(p);
             } else {
-                System.out.println("pi.getInstitution().getName() = " + pi.getInstitution().getName());
                 pi.setRetired(false);
                 getPersonInstitutionFacade().edit(pi);
             }
@@ -263,7 +262,6 @@ public class PersonInstitutionController implements Serializable {
         withOutInstitutionPersonsStaffs.addAll(staffsAll);
         withOutInstitutionPersonsStaffs.removeAll(staffsWithInstitutionPersons);
 
-        System.out.println("staffsAll = " + staffsAll.size());
     }
 
     public PersonInstitution findDeactivatedPersonInstitution(Institution i, Staff s, boolean b) {

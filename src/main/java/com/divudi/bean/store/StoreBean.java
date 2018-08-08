@@ -145,7 +145,6 @@ public class StoreBean {
 
         double netUpdate = updatableQty1 + qty;
 
-        System.err.println("2 Qty " + qty);
 
         if (netUpdate > fetchedStock.getStock()) {
             return false;
@@ -156,7 +155,6 @@ public class StoreBean {
 
     public UserStockContainer saveUserStockContainer(UserStockContainer userStockContainer, WebUser webUser) {
         if (userStockContainer.getId() == null) {
-            System.err.println("1");
             retiredAllUserStockContainer(webUser);
             userStockContainer.setCreater(webUser);
             userStockContainer.setCreatedAt(new Date());

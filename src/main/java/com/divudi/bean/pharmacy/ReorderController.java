@@ -471,7 +471,6 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        System.out.println("j = " + j);
         reordersAvailableForSelection = ejbFacade.findBySQL(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
@@ -493,7 +492,6 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        System.out.println("j = " + j);
         List<Reorder> lst = ejbFacade.findBySQL(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
@@ -588,7 +586,6 @@ public class ReorderController implements Serializable {
 
         m.put("dt", DepartmentType.Pharmacy);
         List<Department> depss = departmentController.getDepartments(sql, m);
-        System.out.println("m = " + m);
 
         for (Department d : depst) {
             ds.put(d.getId(), d);

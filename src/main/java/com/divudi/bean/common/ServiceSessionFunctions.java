@@ -50,7 +50,6 @@ public class ServiceSessionFunctions {
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
-        System.out.println("i.getSessionNumberType() = " + i.getSessionNumberType());
         switch (i.getSessionNumberType()) {
             case ByCategory:
                 //   //System.out.println("by cat");
@@ -152,7 +151,6 @@ public class ServiceSessionFunctions {
             sessDate = CommonFunctions.removeTime(bi.getSessionDate());
             //  sessDate = bi.getSessionDate();
         }
-        System.err.println("Date " + sessDate);
         bi.setSessionDate(sessDate);
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));

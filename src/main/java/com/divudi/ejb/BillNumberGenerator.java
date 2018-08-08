@@ -709,7 +709,6 @@ public class BillNumberGenerator {
                 System.out.println("bill.getDeptId() = " + bill.getDeptId());
                 System.out.println("bill.getCreatedAt() = " + bill.getCreatedAt());
                 String[] parts = bill.getDeptId().split("/");
-                System.out.println("parts = " + parts[0]);
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
                 billNumber.setBillClassType(billClassType);
@@ -856,11 +855,9 @@ public class BillNumberGenerator {
             hm.put("ins", institution);
             Bill bill = billFacade.findFirstBySQL(sql, hm);
             System.out.println("bill.getInsId() = " + bill.getInsId());
-            System.out.println("bill.getDeptId() = " + bill.getDeptId());
 
             if (bill != null) {
                 String[] parts = bill.getInsId().split("/");
-                System.out.println("parts = " + parts[0]);
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
                 billNumber.setBillClassType(billClassType);
@@ -1463,7 +1460,6 @@ public class BillNumberGenerator {
         int y = c.get(Calendar.YEAR);
         c.set(y, 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        System.out.println("fd = " + fd);
         c.set(y + 1, 2, 31, 23, 59, 59);
         Date td = c.getTime();
 

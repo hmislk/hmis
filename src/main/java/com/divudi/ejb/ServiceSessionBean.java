@@ -109,7 +109,6 @@ public class ServiceSessionBean {
             sessDate = CommonFunctions.removeTime(bi.getSessionDate());
             //  sessDate = bi.getSessionDate();
         }
-        System.err.println("Date " + sessDate);
         bi.setSessionDate(sessDate);
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));

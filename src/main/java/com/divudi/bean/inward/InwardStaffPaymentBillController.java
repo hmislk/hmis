@@ -926,7 +926,6 @@ public class InwardStaffPaymentBillController implements Serializable {
         h.put("btp", BillType.InwardBill);
         h.put("btp2", BillType.InwardProfessional);
         dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
-        System.out.println("dueBillFees.size() = " + dueBillFees.size());
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : dueBillFees) {
             h = new HashMap();
@@ -939,7 +938,6 @@ public class InwardStaffPaymentBillController implements Serializable {
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
 
             if (rbi != null) {
-                System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
                 removeingBillFees.add(bf);
             }
 

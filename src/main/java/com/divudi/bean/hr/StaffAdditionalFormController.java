@@ -713,7 +713,6 @@ public class StaffAdditionalFormController implements Serializable {
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
 
     }
 
@@ -912,7 +911,6 @@ public class StaffAdditionalFormController implements Serializable {
             System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
             System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
             System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
-            System.out.println("s.getDayOffPhToDate() = " + s.getDayOffPhToDate());
             Date nowDate = CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
@@ -1102,7 +1100,6 @@ public class StaffAdditionalFormController implements Serializable {
                 || currentAdditionalForm.getStaffShift().getShift().isHalfShift()) {
             dayType = currentAdditionalForm.getStaffShift().getDayType();
             System.out.println("currentAdditionalForm.getStaffShift().getShift().isHalfShift() = " + currentAdditionalForm.getStaffShift().getShift().isHalfShift());
-            System.out.println("currentAdditionalForm.getStaffShift().getShift().getName() = " + currentAdditionalForm.getStaffShift().getShift().getName());
         } else {
             dayType = phDateController.getHolidayType(date);
         }
@@ -1164,7 +1161,6 @@ public class StaffAdditionalFormController implements Serializable {
         System.err.println("staffShiftExtra.getDayType() = " + staffShiftExtra.getDayType());
         System.err.println("dayType = " + dayType);
         staffShiftExtra.setDayType(dayType);
-        System.err.println("staffShiftExtra.getDayType() = " + staffShiftExtra.getDayType());
         staffShiftFacade.edit(staffShiftExtra);
 
         currentAdditionalForm.setStaffShift(staffShiftExtra);
@@ -1285,7 +1281,6 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dtp", dayType);
 
         Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("sh 1 = " + sh);
         if (sh == null) {
             sh = new Shift();
             sh.setCreatedAt(new Date());

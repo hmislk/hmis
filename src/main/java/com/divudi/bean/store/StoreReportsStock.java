@@ -326,7 +326,6 @@ public class StoreReportsStock implements Serializable {
 
         for (PharmaceuticalBillItem b : list) {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
-            System.err.println("History Id " + b.getStockHistory().getId());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
 
@@ -445,7 +444,6 @@ public class StoreReportsStock implements Serializable {
                     System.err.println("Itm " + ph.getBillItem().getItem().getName());
                     System.err.println("Prv History Qty " + preHistoryQty);
                     System.err.println("Prv Qty " + previousPh.getQtyInUnit());
-                    System.err.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {

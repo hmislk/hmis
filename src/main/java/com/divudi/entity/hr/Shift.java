@@ -171,7 +171,6 @@ public class Shift implements Serializable {
         System.err.println("S Time " + startingTime);
         System.err.println("E Time " + endingTime);
 
-        System.err.println("S H " + sHour);
         durationHour = ((getEndingTime().getTime() - getStartingTime().getTime()) / (1000 * 60 * 60));
         if (sHour > eHour) {
             durationHour = (durationHour + 24);

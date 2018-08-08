@@ -310,12 +310,12 @@ public class BillController implements Serializable {
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
         //create bill fee payments
+        //create bill fee payments
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
         reminingCashPaid = opdPaymentCredit;
-        System.out.println("reminingCashPaid = " + reminingCashPaid);
 
         Payment p = createPayment(temp, paymentMethod);
 
@@ -1214,7 +1214,6 @@ public class BillController implements Serializable {
         }
 
         System.out.println("b.getVatPlusNetTotal() = " + b.getVatPlusNetTotal());
-        System.out.println("billItemVatPlusNetValue = " + roundOff(billItemVatPlusNetValue));
 
         return false;
     }
@@ -1622,7 +1621,6 @@ public class BillController implements Serializable {
 
     public void addToBill() {
 
-        System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1660,7 +1658,6 @@ public class BillController implements Serializable {
             //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
 //        New Session
             //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-            System.out.println("to get current bill items");
             lastBillItem = bi;
             BillEntry addingEntry = new BillEntry();
             addingEntry.setBillItem(bi);
@@ -1810,7 +1807,6 @@ public class BillController implements Serializable {
                 }
 
                 if (bf.getBillItem().getItem().isVatable()) {
-                    System.out.println("f.getFee().getFeeType() = " + bf.getFee().getFeeType());
                     if (!(bf.getFee().getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null)) {
                         bf.setFeeVat(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100);
                         bf.setFeeVat(roundOff(bf.getFeeVat()));
@@ -1837,7 +1833,6 @@ public class BillController implements Serializable {
             System.out.println("item gross is = " + bi.getGrossValue());
             System.out.println("item net is = " + bi.getNetValue());
             System.out.println("item dis is = " + bi.getDiscount());
-            System.out.println("item billVat = " + bi.getVat());
 
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
@@ -2008,7 +2003,6 @@ public class BillController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -2048,7 +2042,6 @@ public class BillController implements Serializable {
 
             }
 
-            System.err.println("Bill For Out");
 
         }
 
@@ -2056,10 +2049,8 @@ public class BillController implements Serializable {
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-            System.err.println("BillFee For In");
 
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                System.err.println("IF In");
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -2072,7 +2063,6 @@ public class BillController implements Serializable {
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
-                        System.err.println("out");
                     } else {
                         System.err.println("IN");
                         System.out.println("In E reminingCashPaid = " + reminingCashPaid);
@@ -2081,7 +2071,6 @@ public class BillController implements Serializable {
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
-                        System.err.println("OUT");
                     }
                 }
             } else {

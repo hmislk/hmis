@@ -203,7 +203,6 @@ public class PaymentSchemeController implements Serializable {
             return;
         }
 
-        System.out.println("getCurrent() = " + getCurrent());
         if (getCurrent() != null) {
             if (getCurrent().getId() != null) {
                 getCurrentAllowedPaymentMethod().setPaymentScheme(getCurrent());

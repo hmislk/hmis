@@ -4,6 +4,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
@@ -144,6 +145,8 @@ public class PatientInvestigationController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     private ItemForItemController itemForItemController;
+    @Inject
+    private SmsController smsController;
     /**
      * Class Variables
      */
@@ -280,7 +283,6 @@ public class PatientInvestigationController implements Serializable {
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.QueryMessage) {
             System.out.println("Query Message");
             PatientSample nps = patientSampleFromId(dim.getAnalyzerSampleId());
-            System.out.println("QM nps = " + nps);
 
             dim.setLimsPatientSample(nps);
             if (nps == null) {
@@ -294,7 +296,6 @@ public class PatientInvestigationController implements Serializable {
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
             boolean resultAdded = true;
             for (DimensionTestResult r : dim.getAnalyzerTestResults()) {
-                System.out.println("r.getTestName() = " + r.getTestName());
                 boolean tb = addResultsToReportsForDimension(dim.getAnalyzerSampleId(), r.getTestName(), r.getTestResult(), r.getTestUnit(), r.getErrorCode());
                 if (tb = false) {
                     resultAdded = false;
@@ -325,13 +326,11 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("testStr = " + testStr);
         System.out.println("result = " + result);
         System.out.println("unit = " + unit);
-        System.out.println("error = " + error);
         boolean temFlag = false;
         Long sid;
         try {
             sid = Long.parseLong(sampleId);
         } catch (Exception e) {
-            System.out.println("e = " + e);
             sid = 0l;
         }
         PatientSample ps = getPatientSampleFromId(sid);
@@ -357,13 +356,10 @@ public class PatientInvestigationController implements Serializable {
                 if (tpr == null) {
                     tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
                 }
-                System.out.println("1. tpr = " + tpr);
                 prs.add(tpr);
             }
             for (PatientReport rtpr : prs) {
-                System.out.println("rtpr = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
-                    System.out.println("priv = " + priv);
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
                         String test;
                         test = priv.getInvestigationItem().getResultCode();
@@ -372,7 +368,6 @@ public class PatientInvestigationController implements Serializable {
                             test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
                         }
 
-                        System.out.println("test = " + test);
                         if (test.toLowerCase().equals(testStr.toLowerCase())) {
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
                                 System.out.println("Sample Components are same");
@@ -381,10 +376,8 @@ public class PatientInvestigationController implements Serializable {
                                 try {
                                     dbl = Double.parseDouble(result);
                                 } catch (Exception e) {
-                                    System.out.println("e = " + e);
                                 }
                                 priv.setDoubleValue(dbl);
-                                System.out.println("priv.getStrValue() = " + priv.getStrValue());
                                 temFlag = true;
                             } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
                                 System.out.println("Sample Components are same");
@@ -393,13 +386,10 @@ public class PatientInvestigationController implements Serializable {
                                 try {
                                     dbl = Double.parseDouble(result);
                                 } catch (Exception e) {
-                                    System.out.println("e = " + e);
                                 }
                                 priv.setDoubleValue(dbl);
-                                System.out.println("priv.getStrValue() = " + priv.getStrValue());
                                 temFlag = true;
                             } else {
-                                System.out.println("Sample Components are different");
                             }
                         }
                     }
@@ -419,7 +409,6 @@ public class PatientInvestigationController implements Serializable {
         try {
             pid = Long.parseLong(id);
         } catch (Exception e) {
-            System.out.println("e = " + e);
         }
         return getPatientSampleFacade().find(pid);
     }
@@ -960,8 +949,8 @@ public class PatientInvestigationController implements Serializable {
         s.setPatientInvestigation(current);
         s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
-        String messageBody = "Dear Sir/Madam,\n"
-                + "Report bearing number " + bill.getInsId() + " is ready for collection at\n"
+        String messageBody = "Dear Sir/Madam, "
+                + "Report bearing number " + bill.getInsId() + " is ready for collection at "
                 + sessionController.getLoggedUser().getDepartment().getPrintingName() + ".";
 
         s.setSendingMessage(messageBody);
@@ -973,9 +962,8 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("s.getReceipientNumber() = " + messageBody);
         System.out.println("messageBody = " + s.getReceipientNumber());
         System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
-        System.out.println("  s.getInstitution().getSmsSendingPassword() = " +   s.getInstitution().getSmsSendingPassword());
-        System.out.println("s.getInstitution().getSmsSendingAlias() = " + s.getInstitution().getSmsSendingAlias());
-        
+        System.out.println("  s.getInstitution().getSmsSendingPassword() = " + s.getInstitution().getSmsSendingPassword());
+        getSmsController();
         getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
                 s.getInstitution().getSmsSendingUsername(),
                 s.getInstitution().getSmsSendingPassword(),
@@ -1065,7 +1053,6 @@ public class PatientInvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Sms send");
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-
 
     public void create() throws DocumentException, com.lowagie.text.DocumentException {
 
@@ -2003,6 +1990,10 @@ public class PatientInvestigationController implements Serializable {
         this.smsManagerEjb = smsManagerEjb;
     }
 
+    public SmsController getSmsController() {
+        return smsController;
+    }
+
     /**
      *
      */
@@ -2062,4 +2053,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
 }

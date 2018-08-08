@@ -448,7 +448,6 @@ public class BillSearch implements Serializable {
     public void onEditItem(RowEditEvent event) {
 
         BillItem tmp = (BillItem) event.getObject();
-        System.out.println("tmp.getBill().getDeptId() = " + tmp.getBill().getDeptId());
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
         getBillItemFacade().edit(tmp);
@@ -505,7 +504,6 @@ public class BillSearch implements Serializable {
             BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
 
             if (rbi != null) {
-                System.err.println("rbi = " + rbi.getId());
                 System.err.println("rbi = " + rbi.getId());
                 UtilityController.addErrorMessage("This Bill Item Already Refunded");
                 return false;
@@ -747,7 +745,6 @@ public class BillSearch implements Serializable {
             RefundBill rb = (RefundBill) createRefundBill();
             Payment p = getOpdPreSettleController().createPayment(rb, paymentMethod);
             refundBillItems(rb, p);
-            System.out.println("getOpdPreSettleController().calBillPaidValue(rb) = " + getOpdPreSettleController().calBillPaidValue(rb));
             p.setPaidValue(getOpdPreSettleController().calBillPaidValue(rb));
             paymentFacade.edit(p);
 
@@ -960,9 +957,9 @@ public class BillSearch implements Serializable {
     }
 
     public void refundBillItems(RefundBill rb, Payment p) {
-        for (BillItem bi : refundingItems) {
-            System.out.println("refundingItems = " + refundingItems);
-            //set Bill Item as Refunded //set Bill Item as Refunded
+        for (BillItem bi : refundingItems) { //set Bill Item as Refunded //set Bill Item as Refunded
+            //set Bill Item as Refunded
+                        //set Bill Item as Refunded //set Bill Item as Refunded
                         //set Bill Item as Refunded
 
             BillItem rbi = new BillItem();
@@ -2180,7 +2177,6 @@ public class BillSearch implements Serializable {
         if (getBill().getRefundedBill() != null) {
             System.out.println("getBill().getRefundedBill() = " + getBill().getRefundedBill());
             System.out.println("getBill().getId() = " + getBill().getId());
-            System.out.println("getBill().getRefundedBill().getBilledBill() = " + getBill().getRefundedBill().getBilledBill());
             bills = new ArrayList<>();
             String sql;
             Map m = new HashMap();
@@ -2254,11 +2250,9 @@ public class BillSearch implements Serializable {
                         bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue() + bf.getFeeVat());
 //                        bi.setTransWithOutCCFee(bi.getTransWithOutCCFee() + bf.getFeeValue());add vat for hos fee
                     }
-                    System.out.println("bi.getTransWithOutCCFee() = " + bi.getTransWithOutCCFee());
                 }
                 b.setTransTotalCCFee(b.getTransTotalCCFee() + bi.getTransCCFee());
                 b.setTransTotalWithOutCCFee(b.getTransTotalWithOutCCFee() + bi.getTransWithOutCCFee());
-                System.out.println("b.getTransTotalCCFee() = " + b.getTransTotalCCFee());
             }
             ah = fetchCCHistory(b);
             if (ah != null) {

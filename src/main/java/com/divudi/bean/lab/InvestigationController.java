@@ -389,7 +389,6 @@ public class InvestigationController implements Serializable {
 
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
-        System.err.println("selectedIxs.size() = " + selectedIxs.size());
         for (Investigation ix : selectedIxs) {
             PatientReport pr = patientReportController.getLastPatientReport(ix);
             if (pr != null) {
@@ -1305,7 +1304,6 @@ public class InvestigationController implements Serializable {
         for (Item item : temp) {
             ItemWithFee iwf = new ItemWithFee();
             iwf.setItem(item);
-            System.out.println("iwf.getItem().getName() = " + iwf.getItem().getName());
             sql = "select c from ItemFee c where c.retired = false "
                     + " and type(c.item) =Investigation "
                     + " and c.item.id=" + item.getId() + " order by c.item.name";

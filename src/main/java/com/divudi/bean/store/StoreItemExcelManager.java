@@ -881,7 +881,6 @@ public class StoreItemExcelManager implements Serializable {
                 System.err.println("Grn No" + b.getDeptId());
                 System.err.println("Po No " + b.getReferenceBill().getDeptId());
                 System.err.println("1 " + b.getBillType());
-                System.err.println("2 " + b.getReferenceBill().getBillType());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -1089,7 +1088,6 @@ public class StoreItemExcelManager implements Serializable {
 
         for (PharmaceuticalBillItem b : list) {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
-            System.err.println("History Id " + b.getStockHistory().getId());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             if (sh != null) {

@@ -409,7 +409,6 @@ public class ItemController implements Serializable {
             ni.setDepartment(department);
             ni.setItemFee(null);
             System.out.println("ni.getReportedAs() in master = " + i.getReportedAs());
-            System.out.println("ni.getReportedAs() in created = " + ni.getReportedAs());
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
             //System.out.println("ni = " + ni);
@@ -1261,7 +1260,6 @@ public class ItemController implements Serializable {
 
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
-        System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
             for (ItemFee itf : tmp) {
@@ -1279,7 +1277,6 @@ public class ItemController implements Serializable {
 
     public void createInwardList() {
         itemlist = getInwardItems();
-        System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
             for (ItemFee itf : tmp) {

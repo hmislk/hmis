@@ -519,7 +519,6 @@ public class OpdPreSettleController implements Serializable {
                 System.out.println("bb.getCashPaid = " + bb.getCashPaid());
                 System.out.println("bb.getBalance = " + bb.getBalance());
                 System.out.println("bb.getTotal() = " + bb.getTotal());
-                System.err.println("Bill");
                 getBillFacade().edit(bb);
                 tmp.getForwardReferenceBills().add(bb);
             }
@@ -527,7 +526,6 @@ public class OpdPreSettleController implements Serializable {
             System.out.println("tmp.getCashPaid = " + tmp.getCashPaid());
             System.out.println("tmp.getBalance = " + tmp.getBalance());
             System.out.println("tmp.getTotal() = " + tmp.getTotal());
-            System.err.println("Batch Bill");
             tmp.setBalance(tmp.getNetTotal());
             getBillFacade().edit(tmp);
             //set batch billed bill
@@ -648,7 +646,6 @@ public class OpdPreSettleController implements Serializable {
 
                     if (rbi != null) {
                         System.err.println("rbi = " + rbi.getId());
-                        System.err.println("rbi = " + rbi.getId());
                         UtilityController.addErrorMessage("Some Bill Item Already Refunded");
                         continue;
                     }
@@ -658,7 +655,6 @@ public class OpdPreSettleController implements Serializable {
                     List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
 
                     calculateBillfeePayments(billFees, p);
-                    System.err.println("BillItem For Out");
                 }
             }
 
@@ -667,7 +663,6 @@ public class OpdPreSettleController implements Serializable {
             getBillFacade().edit(b);
             dbl += b.getNetTotal();
             pid += b.getCashPaid();
-            System.err.println("Bill For Out");
         }
 
         getBilledBill().setCashPaid(pid);
@@ -821,7 +816,6 @@ public class OpdPreSettleController implements Serializable {
             System.err.println("BillFee For In");
 
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-                System.err.println("IF In");
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -834,7 +828,6 @@ public class OpdPreSettleController implements Serializable {
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
-                        System.err.println("out");
                     } else {
                         System.err.println("IN");
                         System.out.println("In E reminingCashPaid = " + reminingCashPaid);
@@ -843,7 +836,6 @@ public class OpdPreSettleController implements Serializable {
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
-                        System.err.println("OUT");
                     }
                 }
             } else {
@@ -851,7 +843,6 @@ public class OpdPreSettleController implements Serializable {
                 setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
                 getBillFeeFacade().edit(bf);
             }
-            System.err.println("BillFee For Out");
         }
     }
 
@@ -859,7 +850,6 @@ public class OpdPreSettleController implements Serializable {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
             setBillFeePaymentAndPayment(bf, p);
-            System.err.println("BillFee For Out");
         }
     }
 

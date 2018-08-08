@@ -268,13 +268,11 @@ public class StaffPaymentBillController implements Serializable {
 
                 if (rbi != null) {
                     System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
-                    System.out.println("rbi.getBill().getInsId() = " + rbi.getBill().getInsId());
                     removeingBillFees.add(bf);
                 }
 
             }
             System.out.println("dueBillFees.size() = " + dueBillFees.size());
-            System.out.println("removeingBillFees.size() = " + removeingBillFees.size());
             dueBillFees.removeAll(removeingBillFees);
 
         }
@@ -564,7 +562,6 @@ public class StaffPaymentBillController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }

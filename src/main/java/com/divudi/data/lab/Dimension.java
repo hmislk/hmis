@@ -114,11 +114,9 @@ public class Dimension {
         } else {
             analyzerMessageType = MessageType.EmptyMessage;
         }
-        System.out.println("analyzerMessageType = " + analyzerMessageType);
     }
 
     private void determineValues() {
-        System.out.println("determineValues = " + analyzerMessageType);
         if (analyzerMessageType == MessageType.Poll) {
             instrumentId = requestFields.get(1);
             firstPollValue = getByte(requestFields.get(2));
@@ -141,7 +139,6 @@ public class Dimension {
                 DimensionTestResult tr = new DimensionTestResult();
                 tr.setTestName(requestFields.get(count));
                 tr.setTestResult(requestFields.get(count + 1));
-                System.out.println("requestFields.get(count+1) = " + requestFields.get(count + 1));
                 tr.setTestUnit(requestFields.get(count + 2));
                 tr.setErrorCode(requestFields.get(count + 3));
                 analyzerTestResults.add(tr);
@@ -164,7 +161,6 @@ public class Dimension {
                     analyzerMessageSubtype = MessageSubtype.ConversationalPollBusy;
                 }
             }
-            System.out.println("analyzerMessageSubtype = " + analyzerMessageSubtype);
             return;
         } else if (analyzerMessageType == MessageType.RequestAcceptance) {
             if (requestAcceptanceStatus.equals("A")) {
@@ -173,7 +169,6 @@ public class Dimension {
                 analyzerMessageSubtype = MessageSubtype.RequestAcceptanceFailed;
             }
         }
-        System.out.println("analyzerMessageSubtype = " + analyzerMessageSubtype);
     }
 
     private void createResponseFieldsForPollMessage() {
@@ -195,7 +190,6 @@ public class Dimension {
     }
 
     private void createResponseFieldsForQueryMessage() {
-        System.out.println("createResponseFieldsForQueryMessage = ");
         responseFields = new HashMap<>();
         if (limsHasSamplesToSend) {
             createSampleRequestMessage();
@@ -206,7 +200,6 @@ public class Dimension {
     }
 
     private void createNoSampleRequestMessage() {
-        System.out.println("createNoSampleRequestMessage");
         limsMessageType = MessageType.SampleRequest;
         limsMessageSubtype = MessageSubtype.SampleRequestsNo;
         responseFields.put(0, "N");
@@ -231,7 +224,6 @@ public class Dimension {
         responseFields.put(4, limsPatientId);
         System.out.println("limsPatientId = " + limsPatientId);
         responseFields.put(5, limsSampleId);
-        System.out.println("limsSampleId = " + limsSampleId);
         responseFields.put(6, analyzerSampleType.getFiledValue());
         responseFields.put(7, "");
         responseFields.put(8, analyzerPriority.getValue() + "");
@@ -279,7 +271,6 @@ public class Dimension {
         for (Byte b : temRes) {
             temRs += b + "+";
         }
-        System.out.println("createResponseString = " + temRs);
         responseString = temRs;
     }
 
@@ -310,7 +301,6 @@ public class Dimension {
     }
 
     public boolean isCorrectReport() {
-        System.out.println("Checking wether the report is Correct");
         boolean flag = true;
 
         return true;
@@ -388,7 +378,6 @@ public class Dimension {
     }
 
     private void byteArrayToFields() {
-        System.out.println("byteArrayToFields");
         List<Byte> temBytes = new ArrayList<>();
         requestFields = new HashMap<>();
         for (Byte b : bytes) {
@@ -440,7 +429,6 @@ public class Dimension {
     }
 
     public void prepareResponseForResultMessages() {
-        System.out.println("prepareResponseForPollMessages");
         responseFields = null;
         if (limsFoundPatientInvestigationToEnterResults = true) {
             createResultAcceptanceMessageFields();
@@ -468,7 +456,6 @@ public class Dimension {
     }
 
     public void prepareResponseForPollMessages() {
-        System.out.println("prepareResponseForPollMessages");
         PatientSample temPs = this.limsPatientSample;
         if (temPs == null) {
             setLimsHasSamplesToSend(false);
@@ -484,11 +471,9 @@ public class Dimension {
     }
 
     public void prepareResponseForQueryMessages() {
-        System.out.println("prepareResponseForQueryMessages");
         PatientSample temPs = this.limsPatientSample;
         if (temPs == null) {
             setLimsHasSamplesToSend(false);
-            System.out.println("No Samples");
         } else {
             System.out.println("has samples");
             setLimsHasSamplesToSend(true);
@@ -497,7 +482,6 @@ public class Dimension {
             temName = temName.substring(0, 25);
             setLimsPatientId(temName);
             List<String> temSss = getTestsFromPatientSample();
-            System.out.println("temSss = " + temSss);
             this.setLimsTests(temSss);
         }
         createResponseFieldsForQueryMessage();

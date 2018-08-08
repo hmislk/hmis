@@ -252,7 +252,6 @@ public class BillBhtController implements Serializable {
 
     public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
         System.err.println("1 " + bill);
-        System.err.println("2 " + billItem);
 
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);

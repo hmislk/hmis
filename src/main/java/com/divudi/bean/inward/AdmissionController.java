@@ -636,7 +636,6 @@ public class AdmissionController implements Serializable {
 
     public void updateBHTNo() {
         System.out.println("current.getBhtNo() = " + current.getBhtNo());
-        System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
         if (current.getBhtNo() == null || current.getBhtNo().isEmpty()) {
             UtilityController.addErrorMessage("BHT NO");
             return;

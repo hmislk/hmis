@@ -808,7 +808,6 @@ public class StoreReportsTransfer implements Serializable {
             double count = (double) ob[4];
             System.out.println("count = " + count);
             double unitValue = (double) ob[5];
-            System.out.println("unitValue = " + unitValue);
             double total = (double) ob[6];
             if (lastDepartment == null) {
                 lastDepartment = d;
@@ -963,7 +962,6 @@ public class StoreReportsTransfer implements Serializable {
         cr.getItemRows().add(ir);
         dcr.getCaregoryRows().add(cr);
         departmentCategoryRows.add(dcr);
-        System.out.println("dcr.getD().getName(Add) = " + dcr.getD().getName());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
     }
@@ -994,7 +992,6 @@ public class StoreReportsTransfer implements Serializable {
             double unitValue = (double) ob[4];
 //            System.out.println("unitValue = " + unitValue);
             double total = (double) ob[5];
-            System.out.println("total = " + total);
             if (lastCategory == null) {
                 lastCategory = c;
                 cr.setC(c);
@@ -1170,7 +1167,6 @@ public class StoreReportsTransfer implements Serializable {
 
         objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         return objects;
 
     }

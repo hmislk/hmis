@@ -77,7 +77,6 @@ public class UserPreference implements Serializable {
     boolean showOnlyMarkedDoctors=false;
     boolean channelSettleWithoutPatientPhoneNumber=false;
     boolean opdSettleWithoutPatientPhoneNumber=false;
-    boolean canSettleOpdBillWithoutReferringDoctor=false;
     boolean channelBillDouble=false;
     private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
@@ -93,8 +92,9 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
-    private boolean printBarcodeInOpdBill;
-    
+    private Boolean sentEmailWithInvestigationReportApproval;
+    private Boolean sentSmsWithInvestigationRequestApproval;
+    private Boolean sentDailySmsSummeryForReferringDoctors;
     
     
     
@@ -547,22 +547,37 @@ public class UserPreference implements Serializable {
         this.institutionRestrictedBilling = institutionRestrictedBilling;
     }
 
-    public boolean isPrintBarcodeInOpdBill() {
-        return printBarcodeInOpdBill;
+    public Boolean getSentEmailWithInvestigationReportApproval() {
+        if(sentEmailWithInvestigationReportApproval==null){
+            sentEmailWithInvestigationReportApproval=true;
+        }
+        return sentEmailWithInvestigationReportApproval;
     }
 
-    public void setPrintBarcodeInOpdBill(boolean printBarcodeInOpdBill) {
-        this.printBarcodeInOpdBill = printBarcodeInOpdBill;
+    public void setSentEmailWithInvestigationReportApproval(Boolean sentEmailWithInvestigationReportApproval) {
+        this.sentEmailWithInvestigationReportApproval = sentEmailWithInvestigationReportApproval;
     }
 
-    public boolean isCanSettleOpdBillWithoutReferringDoctor() {
-        return canSettleOpdBillWithoutReferringDoctor;
+    public Boolean getSentSmsWithInvestigationRequestApproval() {
+        if(sentSmsWithInvestigationRequestApproval==null){
+            sentSmsWithInvestigationRequestApproval=true;
+        }
+        return sentSmsWithInvestigationRequestApproval;
     }
 
-    public void setCanSettleOpdBillWithoutReferringDoctor(boolean canSettleOpdBillWithoutReferringDoctor) {
-        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    public void setSentSmsWithInvestigationRequestApproval(Boolean sentSmsWithInvestigationRequestApproval) {
+        this.sentSmsWithInvestigationRequestApproval = sentSmsWithInvestigationRequestApproval;
     }
 
-    
-    
+    public Boolean getSentDailySmsSummeryForReferringDoctors() {
+        if(sentDailySmsSummeryForReferringDoctors==false){
+            sentDailySmsSummeryForReferringDoctors=true;
+        }
+        return sentDailySmsSummeryForReferringDoctors;
+    }
+
+    public void setSentDailySmsSummeryForReferringDoctors(Boolean sentDailySmsSummeryForReferringDoctors) {
+        this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
+    }
+
 }

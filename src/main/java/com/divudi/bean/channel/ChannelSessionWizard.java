@@ -353,7 +353,6 @@ public class ChannelSessionWizard implements Serializable {
 
         String phase = event.getPhaseId().getName();
         System.err.println(event.getNewStep());
-        System.err.println(event.getOldStep());
 
         switch (event.getNewStep()) {
             case "speciality":
