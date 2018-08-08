@@ -225,18 +225,17 @@ public class BillController implements Serializable {
     @Inject
     SearchController searchController;
 
-    public String toAddNewCollectingCentre(){
+    public String toAddNewCollectingCentre() {
         return "/lab/collecting_centre";
     }
-    
-    
-    public List<Bill> validBillsOfBatchBill(Bill batchBill){
+
+    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
         return getFacade().findBySQL(j, m);
     }
-    
+
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -1436,16 +1435,26 @@ public class BillController implements Serializable {
             return true;
         }
 
-//        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
-//            if (getNewPatient().getPerson().getPhone() == null ) {
-//                UtilityController.addErrorMessage("Please Insert a Phone Number");
-//                return true;
-//            }
-//            if (getNewPatient().getPerson().getPhone().trim().equals("") ) {
-//                UtilityController.addErrorMessage("Please Insert a Phone Number");
-//                return true;
-//            }
-//        } alredy chak in lab item settle
+        if (!sessionController.getInstitutionPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+            if (getNewPatient().getPerson() != null) {
+                if (getNewPatient().getPerson().getPhone() == null) {
+                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    return true;
+                }
+                if (getNewPatient().getPerson().getPhone().trim().equals("")) {
+                    UtilityController.addErrorMessage("Please Enter a Phone Number");
+                    return true;
+                }
+            }
+        }
+
+        if(!sessionController.getInstitutionPreference().getCanSettleOpdBillWithoutReferringDoctor()){
+            if(referredBy==null && referredByInstitution==null){
+                UtilityController.addErrorMessage("Please Select a Referring Doctor or an Institute");
+                    return true;
+            }
+        }
+        
         if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem() instanceof Investigation) {
@@ -1516,8 +1525,8 @@ public class BillController implements Serializable {
         }
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
-            if (toStaff == null && creditCompany == null) {
-                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
+            if (toStaff == null && creditCompany == null && collectingCentre == null) {
+                UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company or Collecting centre.");
                 return true;
             }
             if (toStaff != null && creditCompany != null) {
@@ -1536,7 +1545,6 @@ public class BillController implements Serializable {
 //            UtilityController.addErrorMessage("Check Payment method");
 //            return true;
 //        }
-
         if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
 
             if (cashPaid == 0.0) {
@@ -1635,7 +1643,7 @@ public class BillController implements Serializable {
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
-        if(getCurrentBillItem().getItem().getPriority()!=null){
+        if (getCurrentBillItem().getItem().getPriority() != null) {
             getCurrentBillItem().setPriority(getCurrentBillItem().getItem().getPriority());
         }
         if (getCurrentBillItem().getQty() == null) {
@@ -2209,8 +2217,6 @@ public class BillController implements Serializable {
         this.referredBy = referredBy;
     }
 
-    
-    
     public Institution getCreditCompany() {
         return creditCompany;
     }
@@ -2408,7 +2414,6 @@ public class BillController implements Serializable {
     public void setTmpPatient(Patient tmpPatient) {
         this.tmpPatient = tmpPatient;
     }
-
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;

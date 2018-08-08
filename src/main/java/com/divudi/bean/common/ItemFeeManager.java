@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.FeeType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
@@ -60,6 +61,19 @@ public class ItemFeeManager implements Serializable {
     List<Department> departments;
     List<Staff> staffs;
 
+    
+    public void fixIssueToReferralFees(){
+        List<ItemFee> ifs = itemFeeFacade.findAll();
+        for(ItemFee f:ifs){
+            if(f.getFeeType()==FeeType.Issue){
+                f.setFeeType(FeeType.Referral);
+                f.setInstitution(f.getItem().getInstitution());
+                f.setDepartment(f.getItem().getDepartment());
+                itemFeeFacade.edit(f);
+            }
+        }
+    }
+    
     public ItemFee getRemovingFee() {
         return removingFee;
     }

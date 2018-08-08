@@ -111,7 +111,7 @@
                                                     <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
                                                 </p:selectOneMenu>
                                                 <h:outputLabel value=" Full Name"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:capitalize;">
                                                 </p:inputText>
                                                 <h:outputLabel value="Gender"/>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
@@ -201,7 +201,7 @@
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
                                                 <h:outputLabel value="Name"/>
                                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" 
-                                                             style="width: 280px;text-transform:uppercase;">
+                                                             style="width: 280px;text-transform:capitalize;">
                                                 </p:inputText>
 
                                                 <h:outputLabel value="Code"/>

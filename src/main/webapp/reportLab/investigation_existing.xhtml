@@ -78,6 +78,17 @@
                                 <h:outputLabel value="#{c.investigation.name}"  />
 
                             </p:column>
+                             <p:column headerText="Dept" 
+                                      sortBy="#{c.investigation.name}" 
+                                      filterBy="#{c.investigation.name}"
+                                      filterMatchMode="contains">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Test Name"/>
+                                </f:facet>
+
+                                 <h:outputLabel value="#{c.investigation.department.name}"  />
+
+                            </p:column>
                             <p:column headerText="Exist" 
                                       sortBy="#{c.b}" 
                                       filterBy="#{c.b}"

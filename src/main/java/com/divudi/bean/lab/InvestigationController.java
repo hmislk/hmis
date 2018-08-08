@@ -554,6 +554,40 @@ public class InvestigationController implements Serializable {
         return suggestions;
     }
 
+    public List<Investigation> completeInvestigationsOfSelectedInstitution(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+
+        Institution ins;
+        if (institution != null) {
+            sql = "select c from Investigation c "
+                    + " where c.retired=false  "
+                    + " and (upper(c.name) like :n or "
+                    + " upper(c.fullName) like :n or "
+                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+            sql += " and c.institution = :ins ";
+            sql += " order by c.name";
+            m.put("n", "%" + query.toUpperCase() + "%");
+            m.put("ins", institution);
+        } else {
+            sql = "select c from Investigation c "
+                    + " where c.retired=false  "
+                    + " and (upper(c.name) like :n or "
+                    + " upper(c.fullName) like :n or "
+                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+            sql += " and c.institution is null ";
+            sql += " order by c.name";
+            m.put("n", "%" + query.toUpperCase() + "%");
+        }
+
+        suggestions = getFacade().findBySQL(sql, m);
+        return suggestions;
+    }
+
     public List<Investigation> completeInvest(String query) {
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
@@ -1186,7 +1220,7 @@ public class InvestigationController implements Serializable {
         setCurrent(getFacade().find(id));
         return current;
     }
-    
+
     public Investigation getCurrent() {
         if (current == null) {
             current = new Investigation();

@@ -946,7 +946,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         itemsLab = new ArrayList<>();
         countTotal = 0;
         itemValue = 0;
-        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill};
+        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill,billType.OpdBill};
         for (Item w : getInvestigations3(bts)) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInvestigation(w);
@@ -967,7 +967,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         itemsLab = new ArrayList<>();
         countTotal = 0;
         itemValue = 0;
-        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill};
+        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill,BillType.OpdBill};
         for (Institution i : getInstitution(bts)) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInstitution(i);
@@ -1462,6 +1462,34 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
+    
+    
+    
+    public List<Item> getBillItemsFromCollectingCentres(BillType[] bts) {
+        Map temMap = new HashMap();
+        String sql = "select distinct ix from BillItem bi join bi.item ix "
+                + " where type(ix) =:ixtype  "
+                + " and bi.bill.billType in :bTypes "
+                + " and bi.bill.collectingCentre is not null "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (getCreditCompany() != null) {
+            sql += " and (bi.bill.collectingCentre=:col or bi.bill.fromInstitution=:col) ";
+            temMap.put("col", getCreditCompany());
+        } else {
+            sql += " and (bi.bill.collectingCentre is not null or bi.bill.fromInstitution is not null) ";
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ixtype", Investigation.class);
+        temMap.put("bTypes", Arrays.asList(bts));
+
+        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return investigations;
+    }
+    
 
     public List<Item> getInvestigations3(BillType[] bts) {
         Map temMap = new HashMap();

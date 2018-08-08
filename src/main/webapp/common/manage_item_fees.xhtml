@@ -75,11 +75,11 @@
                                             <p:ajax process="@this" update="gpDetail" ></p:ajax>
                                         </p:selectOneMenu>
 
-                                        <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                        <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                             <h:outputLabel value="Institution" ></h:outputLabel>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpAcIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                        <h:panelGroup id="gpAcIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                             <p:autoComplete id="acIns" value="#{itemFeeManager.itemFee.institution}" 
                                                             completeMethod="#{institutionController.completeIns}"
                                                             var="ins" 
@@ -90,10 +90,10 @@
                                             </p:autoComplete>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpLblDep" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                        <h:panelGroup id="gpLblDep" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                             <h:outputLabel value="Department" ></h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'}" >
+                                        <h:panelGroup id="gpSomDepartment" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                             <p:selectOneMenu id="somDepartment" value="#{itemFeeManager.itemFee.department}" >
                                                 <f:selectItems value="#{itemFeeManager.departments}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" ></f:selectItems>
                                             </p:selectOneMenu>
@@ -216,6 +216,9 @@
                                     </ui:repeat>
 
                                 </table>
+                                
+                                
+                                
 
                             </p:panel>
 
@@ -224,6 +227,8 @@
 
                         </p:panelGrid>
 
+                        
+                        <p:commandButton rendered="false" value="Issue to Referral" ajax="false" action="#{itemFeeManager.fixIssueToReferralFees()}" ></p:commandButton>
 
                     </p:panel>
 

@@ -105,7 +105,7 @@
 
                                                     <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Enter the Name of the patient"
                                                                  value="#{billController.newPatient.person.name}" 
-                                                                 style="min-width: 350px;text-transform:uppercase;">
+                                                                 style="min-width: 350px;text-transform:capitalize;">
                                                     </p:inputText>
 
                                                     <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;">
@@ -361,6 +361,21 @@
 
                                 <h:panelGroup id="panelBillReferrals" >
                                     <h:panelGrid columns="3" >
+                                        <p:outputLabel value="Referring Institution" ></p:outputLabel>
+                                        <p:autoComplete id="refIns" forceSelection="true" 
+                                                        value="#{billController.referredByInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ri" 
+                                                        itemLabel="#{ri.name}" 
+                                                        itemValue="#{ri}" 
+                                                        size="30"  
+                                                        style="width: 400px;">
+                                            <f:ajax  event="itemSelect" execute="creditCom"  />
+                                            <p:column>#{ri.institutionCode}</p:column>
+                                            <p:column>#{ri.name}</p:column>
+                                        </p:autoComplete>
+                                        <p:spacer></p:spacer>
+                                            
                                         <p:outputLabel value="Referring Doctor" ></p:outputLabel>
                                         <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.referredBy}" 
                                                         completeMethod="#{doctorController.completeDoctor}" var="ix" 
