@@ -956,6 +956,7 @@ public class ReportItem implements Serializable {
         toRi.name = fromRi.name;
         toRi.tName = fromRi.tName;
         toRi.sName = fromRi.sName;
+        toRi.htmltext = fromRi.htmltext;
         toRi.description = fromRi.description;
         toRi.orderNo = fromRi.orderNo;
         toRi.creater = fromRi.creater;

@@ -38,7 +38,7 @@
 
 
                                         <h:panelGroup >
-                                            
+
                                             <p:selectBooleanCheckbox value="#{commonReportItemController.showBorders}" 
                                                                      label="Show Borders" title="Show Borders" >
                                                 <p:ajax process="@this" update="@form" ></p:ajax>
@@ -48,11 +48,17 @@
 
                                     </h:panelGrid>
 
-                                    <h:commandButton rendered="false" value="Add All" action="#{commonReportItemController.addAllToCat}"/>
 
-                                    <p:panel header="Add New ..." >
-                                        <h:commandButton value="Label" action="#{commonReportItemController.addNewLabel()}"/>
-                                        <h:commandButton value="Value" action="#{commonReportItemController.addNewValue()}"/>
+
+
+                                    <p:panel header="Actions" >
+                                        <p:panelGrid columns="4" >
+                                            <p:commandButton ajax="false" value="Add New Label" action="#{commonReportItemController.addNewLabel()}"/>
+                                            <p:commandButton ajax="false"  value="Add New Value" action="#{commonReportItemController.addNewValue()}"/>
+                                            <p:commandButton ajax="false"  value="Duplicate Report" action="#{commonReportItemController.duplicate()}"/>
+                                            <p:commandButton  ajax="false" rendered="false" value="Add All" action="#{commonReportItemController.addAllToCat}"/>
+
+                                        </p:panelGrid>
 
                                     </p:panel>
 
@@ -60,12 +66,16 @@
                                 </p:panel>
 
                                 <p:panel header="Report Items List" id="pIx">
-                                    <h:selectOneListbox size="1"  id="dtbItem" value="#{commonReportItemController.current}" style="width: 270px;" >
-                                        <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
-                                        <f:ajax event="change" execute="dtbItem" render=":#{p:component('pDetails')} :#{p:component('pPreview')}"/>
-                                    </h:selectOneListbox>
-                                    <h:commandButton action="#{commonReportItemController.duplicateItem()}" value="Duplicate"/>
-                                    <h:commandButton action="#{commonReportItemController.removeItem()}" value="Remove"/>
+                                    <p:panelGrid columns="3" >
+                                        <h:selectOneListbox size="1"  id="dtbItem" value="#{commonReportItemController.current}" style="width: 270px;" >
+                                            <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
+                                            <f:ajax event="change" execute="dtbItem" render=":#{p:component('pDetails')} :#{p:component('pPreview')}"/>
+                                        </h:selectOneListbox>
+                                        <p:commandButton ajax="false" action="#{commonReportItemController.duplicateItem()}" value="Duplicate"/>
+                                        <p:commandButton ajax="false" action="#{commonReportItemController.removeItem()}" value="Remove"/>
+
+                                    </p:panelGrid>
+
                                 </p:panel>
 
                                 <p:panel  id="pDetails" >

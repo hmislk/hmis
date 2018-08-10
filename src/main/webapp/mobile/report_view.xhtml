@@ -296,7 +296,7 @@
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                 <div id="divReport"  class="labReport" >
-                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
@@ -344,7 +344,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                 <div id="divReportM"   class="labReport" >
-                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <div style="position: absolute; top: 28%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 16px; height: 70%; vertical-align: top;" >
                                         <div id="ixName" >

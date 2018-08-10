@@ -38,7 +38,7 @@
                         <div id="divReport" style="position: absolute; height: 26cm; width: 18cm; margin: 0.1cm auto; border: 1px solid gray;">
 
 
-                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                               patientReport="#{patientReportController.currentPatientReport}"/>
 
 
@@ -88,7 +88,7 @@
                     </h:panelGroup>
                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                         <div id="divReportM"   class="labReport" >
-                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                            <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                               patientReport="#{patientReportController.currentPatientReport}"/>
                             <div style="position: absolute; top: 28%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 16px; height: 70%; vertical-align: top;" >
                                 <div id="ixName" >

@@ -14,8 +14,11 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.ReportItemType;
 import com.divudi.entity.Category;
 import com.divudi.entity.lab.CommonReportItem;
+import com.divudi.entity.lab.ReportFormat;
 import com.divudi.entity.lab.ReportItem;
+import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.CommonReportItemFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,11 +43,18 @@ import javax.inject.Named;
 @SessionScoped
 public class CommonReportItemController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+//  EJBs
     @EJB
     private CommonReportItemFacade ejbFacade;
+    @EJB
+    CategoryFacade categoryFacade;
+//  Controllers    
+    @Inject
+    SessionController sessionController;
+    @Inject
+    private ReportFormatController reportFormatController;
+//  Class Variables
+    private static final long serialVersionUID = 1L;
     List<CommonReportItem> selectedItems;
     private CommonReportItem current;
     private List<CommonReportItem> items = null;
@@ -102,20 +112,19 @@ public class CommonReportItemController implements Serializable {
         getItems().remove(getCurrent());
 
     }
-    
-    
+
     public void duplicateItem() {
         CommonReportItem newItem = new CommonReportItem();
-        
+
         ReportItem.copyReportItem(current, newItem);
-        
+
         newItem.setName(current.getName() + " 1");
         newItem.setCreatedAt(new Date());
         newItem.setCreater(getSessionController().getLoggedUser());
-        
+
         getEjbFacade().create(newItem);
         getItems().add(newItem);
-        
+
         current = newItem;
 
     }
@@ -229,6 +238,30 @@ public class CommonReportItemController implements Serializable {
         return ejbFacade;
     }
 
+    public void duplicate() {
+        if (category == null) {
+            JsfUtil.addErrorMessage("Please selet a format");
+            return;
+        }
+        List<CommonReportItem> ris = getItems();
+        ReportFormat c = new ReportFormat();
+        c.setName(category.getName() + "1");
+        c.settName(category.gettName() + "1");
+        c.setsName(category.getsName() + "1");
+        c.setCreatedAt(new Date());
+        c.setCreater(sessionController.getLoggedUser());
+        getCategoryFacade().create(c);
+
+        for (CommonReportItem ri : ris) {
+            CommonReportItem tri = new CommonReportItem();
+            ReportItem.copyReportItem(ri, tri);
+            tri.setCategory(c);
+            getFacade().create(tri);
+        }
+        
+        reportFormatController.setItems(null);
+    }
+
     public void addAllToCat() {
         List<CommonReportItem> is = getFacade().findAll();
         for (CommonReportItem ci : is) {
@@ -262,10 +295,6 @@ public class CommonReportItemController implements Serializable {
         this.showBorders = showBorders;
     }
 
-
-    
-
-
     public List<CommonReportItem> getCategoryItems(Category cat) {
         List<CommonReportItem> cis;
         String temSql;
@@ -279,6 +308,10 @@ public class CommonReportItemController implements Serializable {
             cis = new ArrayList<>();
         }
         return cis;
+    }
+
+    public ReportFormatController getReportFormatController() {
+        return reportFormatController;
     }
 
     /**
@@ -323,4 +356,12 @@ public class CommonReportItemController implements Serializable {
             }
         }
     }
+
+    public CategoryFacade getCategoryFacade() {
+        return categoryFacade;
+    }
+    
+    
+    
+    
 }
