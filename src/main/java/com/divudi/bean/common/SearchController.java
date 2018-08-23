@@ -25,6 +25,7 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
@@ -169,6 +170,7 @@ public class SearchController implements Serializable {
 
     BillSession selectedBillSession;
     UploadedFile file;
+    private Institution creditCompany;
 
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
@@ -524,6 +526,14 @@ public class SearchController implements Serializable {
 
     public void setPatientReportFacade(PatientReportFacade patientReportFacade) {
         this.patientReportFacade = patientReportFacade;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
     public class billsWithbill {
@@ -3975,6 +3985,27 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD billIltem search(/opd_search_billitem_own.xhtml)");
     }
 
+    public String toCreateBillItemListForCreditCompany(){
+        billItems = new ArrayList<>();
+        return "/reportLab/credit_company_bill_item_list";
+    }
+    
+    public void createBillItemListForCreditCompany() {
+        String sql;
+        Map m = new HashMap();
+        m.put("toDate", toDate);
+        m.put("fromDate", fromDate);
+        m.put("bType", BillType.OpdBill);
+        m.put("ins", getCreditCompany());
+        sql = "select bi from BillItem bi where bi.bill.creditCompany=:ins "
+                + " and bi.bill.billType=:bType "
+                + " and bi.createdAt between :fromDate and :toDate ";
+        sql += " order by bi.id ";
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        checkLabReportsApprovedBillItem(billItems);
+//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+    }
+    
     public void createBillItemTableByKeywordAll() {
         Date startTime = new Date();
 
@@ -7767,4 +7798,6 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
+    
+    
 }
