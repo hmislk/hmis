@@ -155,7 +155,6 @@ public class OpdPreBillReportController implements Serializable {
     public void createCashierTableByUserPayment() {
         Date startTime = new Date();
         
-        System.err.println("getWebUser() = " + getWebUser().getWebUserPerson().getName());
         if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
@@ -218,7 +217,6 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public String createCashierTableByUserPaymentForDetail() {
-        System.err.println("getWebUser() = " + getWebUser());
 
         createCashierTableByUserPayment();
 
@@ -422,7 +420,6 @@ public class OpdPreBillReportController implements Serializable {
         m.put("bt", bt);
         m.put("ins", getSessionController().getInstitution());
 
-        System.out.println("paymentMethod = " + paymentMethod);
 
         return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -462,7 +459,6 @@ public class OpdPreBillReportController implements Serializable {
         m.put("ins", getSessionController().getInstitution());
 
         if (getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) != null) {
-            System.out.println("paymentMethod = " + paymentMethod);
         }
 
         return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
@@ -479,7 +475,6 @@ public class OpdPreBillReportController implements Serializable {
                     if (obj[0] != null) {
                         Bill bb = new Bill();
                         bb = (Bill) obj[0];
-                        System.out.println("bb = " + bb);
                         bb.setNetTotal((double) obj[1]);
                         bb.setPaymentMethod(pm);
                         if (bb != null) {
@@ -513,7 +508,6 @@ public class OpdPreBillReportController implements Serializable {
                     if (obj[0] != null) {
                         Bill bb = new Bill();
                         bb = (Bill) obj[0];
-                        System.out.println("bb = " + bb);
                         bb.setNetTotal((double) obj[1]);
                         bb.setPaymentMethod(pm);
                         if (bb != null) {
@@ -594,7 +588,6 @@ public class OpdPreBillReportController implements Serializable {
         List<WebUser> cashiers = new ArrayList<>();
         BillType[] btpArr = getCashFlowBillTypes();
         List<BillType> btpList = Arrays.asList(btpArr);
-        System.out.println("btpList = " + btpList);
         sql = "select us from "
                 + " Payment p"
                 + " join p.bill b "

@@ -609,7 +609,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.err.println("Grn No" + b.getDeptId());
                 System.err.println("Po No " + b.getReferenceBill().getDeptId());
                 System.err.println("1 " + b.getBillType());
-                System.err.println("2 " + b.getReferenceBill().getBillType());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -988,9 +987,10 @@ public class PharmacyItemExcelManager implements Serializable {
             double value = obj.getNetRate() * obj.getPharmaceuticalBillItem().getQty();
             //System.out.println("*************************************");
             //System.out.println("*************************************");
+            //System.out.println("*************************************");
+            //System.out.println("*************************************");
             System.err.println("BillClass " + obj.getBill().getClass());
             System.err.println("QTY " + obj.getPharmaceuticalBillItem().getQty());
-            System.err.println("Net Rate " + obj.getNetRate());
 
             if (obj.getGrossValue() > 0) {
                 obj.setGrossValue(Math.abs(value));
@@ -1166,7 +1166,6 @@ public class PharmacyItemExcelManager implements Serializable {
 
         for (PharmaceuticalBillItem b : list) {
             System.err.println("Item Name " + b.getBillItem().getItem().getName());
-            System.err.println("History Id " + b.getStockHistory().getId());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             if (sh != null) {

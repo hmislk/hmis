@@ -187,7 +187,6 @@ public class StoreBillSearch implements Serializable {
         double tmp = 0;
         for (BillItem b : bill.getBillItems()) {
             System.err.println("id " + b.getPharmaceuticalBillItem().getId());
-            System.err.println("Qty " + b.getPharmaceuticalBillItem().getQtyInUnit());
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             tmp += tmp2;
         }
@@ -1413,7 +1412,6 @@ public class StoreBillSearch implements Serializable {
         //System.err.println("Stock Qty" + stockQty);
         //System.err.println("Ph Qty" + pharmaceuticalBillItem.getQtyInUnit());
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()) > stockQty) {
-            System.err.println("Check Item : " + pharmaceuticalBillItem.getBillItem().getItem());
             return true;
         } else {
             return false;

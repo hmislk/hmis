@@ -80,7 +80,6 @@ public class ServiceSessionLeaveController implements Serializable {
 
         suggestions = getStaffFacade().findBySQL(sql, m);
 
-        System.out.println("m = " + m);
 
         return suggestions;
     }

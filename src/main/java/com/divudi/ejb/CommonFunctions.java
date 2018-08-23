@@ -307,7 +307,6 @@ public class CommonFunctions {
         calendar.setTime(date);
         calendar.add(Calendar.MONTH, 1);
 
-        System.out.println("1.calendar.getTime() = " + calendar.getTime());
         calendar.add(Calendar.DATE, -1);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
@@ -451,7 +450,6 @@ public class CommonFunctions {
         int ageYears = period.getYears();
         System.out.println("ageYears = " + ageYears);
         int ageMonths = period.getMonths();
-        System.out.println("ageMonths = " + ageMonths);
         int ageDays = period.getDays();
         
 //        Years years=Years.yearsBetween(birthDay, now);

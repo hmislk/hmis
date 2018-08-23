@@ -304,7 +304,6 @@ public class BookingPastController implements Serializable {
         Date td=getCommonFunctions().getEndOfDay();
         Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
         System.out.println("fd = " + fd);
-        System.out.println("td = " + td);
         long lng = getCommonFunctions().getDayCount(fd, td);
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
@@ -401,7 +400,6 @@ public class BookingPastController implements Serializable {
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
         System.out.println("hh = " + hh);
-        System.out.println("sql = " + sql);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
 
     }
@@ -535,7 +533,6 @@ public class BookingPastController implements Serializable {
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
-        System.out.println("m = " + m);
         return getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
     }
     
@@ -567,7 +564,6 @@ public class BookingPastController implements Serializable {
                 } else {
                     sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
                 }
-                System.out.println("m = " + m);
                 consultants = getStaffFacade().findBySQL(sql, m);
             }
         } else {
@@ -583,7 +579,6 @@ public class BookingPastController implements Serializable {
 
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
-                    System.out.println("m = " + m);
                     consultants = getStaffFacade().findBySQL(sql, m);
 
                 } else {
@@ -613,7 +608,6 @@ public class BookingPastController implements Serializable {
                                 + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
-                    System.out.println("m = " + m);
                     consultants = getStaffFacade().findBySQL(sql, m);
                 }
             }

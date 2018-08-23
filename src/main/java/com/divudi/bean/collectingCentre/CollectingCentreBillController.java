@@ -311,12 +311,12 @@ public class CollectingCentreBillController implements Serializable {
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
         //create bill fee payments
+        //create bill fee payments
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
         reminingCashPaid = opdPaymentCredit;
-        System.out.println("reminingCashPaid = " + reminingCashPaid);
 
         Payment p = createPayment(temp, getPaymentMethod());
 
@@ -776,7 +776,6 @@ public class CollectingCentreBillController implements Serializable {
         System.out.println("billFeeTotal = " + billFeeTotal);
         System.out.println("b.getDiscount() = " + b.getDiscount());
         System.out.println("billFeeDiscount = " + billFeeDiscount);
-        System.out.println("b.getNetTotal() = " + b.getNetTotal());
 
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
@@ -1121,10 +1120,8 @@ public class CollectingCentreBillController implements Serializable {
         getCurrentBillItem().setSessionDate(sessionDate);
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-        System.out.println("to get current bill items");
         lastBillItem = getCurrentBillItem();
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
@@ -1339,7 +1336,6 @@ public class CollectingCentreBillController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1379,7 +1375,6 @@ public class CollectingCentreBillController implements Serializable {
 
             }
 
-            System.err.println("Bill For Out");
 
         }
 
@@ -1387,10 +1382,8 @@ public class CollectingCentreBillController implements Serializable {
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-            System.err.println("BillFee For In");
 
             if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                System.err.println("IF In");
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -1403,7 +1396,6 @@ public class CollectingCentreBillController implements Serializable {
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
-                        System.err.println("out");
                     } else {
                         System.err.println("IN");
                         System.out.println("In E reminingCashPaid = " + reminingCashPaid);
@@ -1412,7 +1404,6 @@ public class CollectingCentreBillController implements Serializable {
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
-                        System.err.println("OUT");
                     }
                 }
             } else {

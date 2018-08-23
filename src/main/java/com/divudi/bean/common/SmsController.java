@@ -106,7 +106,6 @@ public class SmsController implements Serializable {
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "last=true";
         }
-        System.out.println("targetURL = " + targetURL);
         try {
             //Create connection
             URL url = new URL(targetURL);
@@ -142,7 +141,7 @@ public class SmsController implements Serializable {
         }
     }
 
-    public void sendSms(String number, String message, String username, String password, String sendingAlias) {
+    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
         System.out.println("number = " + number);
         System.out.println("message = " + message);
@@ -158,13 +157,12 @@ public class SmsController implements Serializable {
         m.put("message", message);
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
-        System.out.println("res = " + res);
         if (res == null) {
-            System.out.println("Error in sending sms as res is null");
+            return false;
         } else if (res.toUpperCase().contains("200")) {
-            System.out.println("sms sent");
+            return true;
         } else {
-            System.out.println("Error in sending sms as do not contain 200");
+            return false;
         }
 
     }
@@ -198,7 +196,6 @@ public class SmsController implements Serializable {
             try {
                 System.out.println("pw = " + pw);
                 System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
 
                 stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
 
@@ -255,7 +252,6 @@ public class SmsController implements Serializable {
         m.put("td", getReportKeyWord().getToDate());
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         if (getReportKeyWord().isAdditionalDetails()) {
             List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);

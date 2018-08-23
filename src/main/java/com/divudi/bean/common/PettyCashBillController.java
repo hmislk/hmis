@@ -145,7 +145,6 @@ public class PettyCashBillController implements Serializable {
         h.put("btp", BillType.PettyCash);
         h.put("fd", fd);
         h.put("inv", inv);
-        System.out.println("h = " + h);
         List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
         if (tmp.size() > 0) {
@@ -165,7 +164,6 @@ public class PettyCashBillController implements Serializable {
         int y = c.get(Calendar.YEAR);
         System.out.println("y = " + y);
         int m = c.get(Calendar.MONTH);
-        System.out.println("m = " + m);
         String s1;
         String s2;
         if (m < 3) {
@@ -271,7 +269,6 @@ public class PettyCashBillController implements Serializable {
         getCurrent().setTotal(getCurrent().getNetTotal());
         DecimalFormat df = new DecimalFormat("00000");
         String s=df.format(getCurrent().getIntInvoiceNumber());
-        System.out.println("df = " + s);
         getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
 
         saveBill();

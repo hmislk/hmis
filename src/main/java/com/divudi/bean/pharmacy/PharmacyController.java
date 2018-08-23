@@ -260,7 +260,6 @@ public class PharmacyController implements Serializable {
                     hasWholesale = true;
                 }
                 r.setWholeSaleQty(Math.abs(v.getQuantity()));
-                System.out.println("v.getQuantity() = " + v.getQuantity());
                 r.setWholeSaleVal(Math.abs(v.getValue()));
             }
         }
@@ -1083,7 +1082,6 @@ public class PharmacyController implements Serializable {
                 r.setStock((Double) obj[1]);
                 list.add(r);
 
-                System.out.println("r.getDepartment().getName() = " + r.getDepartment().getName());
 
                 //Total Institution Stock
                 totalStock += r.getStock();
@@ -1601,7 +1599,6 @@ public class PharmacyController implements Serializable {
         createInstitutionTransferIssue();
         System.out.println("Time 6 = " + new Date());
         createInstitutionIssue();
-        System.out.println("Time 7 = " + new Date());
         createInstitutionTransferReceive();
     }
 

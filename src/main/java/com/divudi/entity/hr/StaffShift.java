@@ -623,7 +623,6 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromStartRecordLogged = inSecond;
-                System.out.println("1.inSecond = " + inSecond);
             }
         }
 
@@ -638,7 +637,6 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromEndRecordLogged = inSecond;
-                System.out.println("2.inSecond = " + inSecond);
             }
         }
 
@@ -651,7 +649,6 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromStartRecordVarified = inSecond;
-                System.out.println("3.inSecond = " + inSecond);
             }
         }
 
@@ -663,10 +660,8 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromEndRecordVarified = inSecond;
-                System.out.println("4.inSecond = " + inSecond);
             }
         }
-        System.err.println("Out");
     }
 
     public void calExtraTimeComplete() {

@@ -53,6 +53,13 @@
 
                                 </p:tooltip>
 
+                                <h:panelGrid columns="2" >
+                                    <p:outputLabel value="Report Format" ></p:outputLabel>
+                                    <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
+                                        <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                        <f:ajax event="change" execute="mnuCat" render=":#{p:component('divPrint')}" />
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
                                 <h:panelGrid columns="9" >
                                     <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                      value="Save" 
@@ -342,8 +349,8 @@
                                                  rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
                                     <p:printer target="divPrint" ></p:printer>
                                 </p:commandButton>
-                                
-                               
+
+
                                 <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
                             </h:panelGrid>
@@ -352,20 +359,20 @@
 
                         <p:commandButton value="Unassigned" ajax="false" 
                                          actionListener="#{patientReportController.printPatientReport()}"
-                                                 rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
-                                    <p:printer target="pri1" ></p:printer>
-                                </p:commandButton>
-                        
+                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
+                            <p:printer target="pri1" ></p:printer>
+                        </p:commandButton>
+
                         <h:panelGroup   id="pri1" style="display:none;" >
-                            
+
                         </h:panelGroup  >
-                        
+
 
                         <h:panelGroup  id="divPrint" >
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
                                 <div id="divReport"  class="labReport" >
-                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
                                         <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
@@ -413,7 +420,7 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
                                 <div id="divReportM"   class="labReport" >
-                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                                    <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <div style="position: absolute; top: 28%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 16px; height: 70%; vertical-align: top;" >
                                         <div id="ixName" >

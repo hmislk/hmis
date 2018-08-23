@@ -439,7 +439,6 @@ public class ChannelBean {
 
         for (ServiceSession cs : createdSessions) {
             System.out.println("cs.getId() = " + cs.getId());
-            System.out.println("cs.getName() = " + cs.getName());
         }
 
         return createdSessions;
@@ -453,7 +452,6 @@ public class ChannelBean {
         if (inputSessions == null || inputSessions.isEmpty()) {
             return createdSessions;
         }
-        System.err.println("d = " + d);
         Date nowDate;
         if (d == null) {
             nowDate = Calendar.getInstance().getTime();
@@ -477,13 +475,11 @@ public class ChannelBean {
                     Calendar nDate = Calendar.getInstance();
                     nDate.setTime(nowDate);
                     System.out.println("ss.getId() = " + ss.getId());
-                    System.out.println("(ss.getSessionDate() = " + ss.getSessionDate());
                     if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                         hasSpecificDateSession = true;
                         ServiceSession newSs = new ServiceSession();
                         System.out.println("newSs 1 = " + newSs);
                         newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                        System.out.println("newSs 2 = " + newSs);
                         if (newSs == null) {
                             newSs = createServiceSessionForChannelShedule(ss, nowDate);
                         }
@@ -608,13 +604,11 @@ public class ChannelBean {
                         sessionDate.setTime(ss.getSessionDate());
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
-                        System.err.println("spec Date");
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -676,13 +670,11 @@ public class ChannelBean {
                         sessionDate.setTime(ss.getSessionDate());
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
-                        System.err.println("spec Date");
                         System.out.println("ss.getId() = " + ss.getId());
                         System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -736,7 +728,6 @@ public class ChannelBean {
 
         }
 
-        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBooking(createdSessions, channelBillController.getPaymentMethod());
 
         return createdSessions;

@@ -121,7 +121,6 @@ public class StockHistoryRecorder {
     public void myTimerDaily() {
         Date startTime = new Date();
         for (FeeChange fc : fetchFeeChanges()) {
-            System.err.println("fc.getFee().getName() = " + fc.getFee().getName());
             if (fc.getFee().getStaff() != null) {
             }
             for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName(), fc.getFee().getStaff())) {
@@ -131,7 +130,6 @@ public class StockHistoryRecorder {
                 System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
                 System.out.println("1.f.getFfee() = " + f.getFfee());
                 f.setFfee(f.getFfee() + fc.getFee().getFfee());
-                System.out.println("2.f.getFfee() = " + f.getFfee());
                 getItemFeeFacade().edit(f);
             }
             fc.setDoneAt(new Date());
@@ -181,6 +179,8 @@ public class StockHistoryRecorder {
             System.err.println("Time stage 3.1 = " + new Date());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
             System.err.println("Time stage 3.2 = " + new Date());
             if (tmp.isEmpty()) {
                 return;
@@ -192,7 +192,6 @@ public class StockHistoryRecorder {
             System.err.println("Time stage 5 = " + new Date());
 //            generateSessionEvents(serviceSessions);
 //            generateSessionEvents(serviceSessions);
-            System.err.println("Time stage 6 = " + new Date());
         }
     }
 
@@ -207,7 +206,6 @@ public class StockHistoryRecorder {
         m.put("typ", PersonInstitutionType.Channelling);
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         consultants = staffFacade.findBySQL(sql, m);
 
         return consultants;
@@ -246,11 +244,9 @@ public class StockHistoryRecorder {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         System.out.println("ss.getId() = " + ss.getId());
-                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -305,11 +301,9 @@ public class StockHistoryRecorder {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         System.out.println("ss.getId() = " + ss.getId());
-                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -453,7 +447,6 @@ public class StockHistoryRecorder {
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         return changes;
     }
 

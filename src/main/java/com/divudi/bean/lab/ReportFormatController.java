@@ -138,6 +138,13 @@ public class ReportFormatController implements Serializable {
         }
         return items;
     }
+
+    public void setItems(List<ReportFormat> items) {
+        this.items = items;
+    }
+    
+    
+    
     /**
      *
      */

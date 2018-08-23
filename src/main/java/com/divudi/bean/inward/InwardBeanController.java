@@ -1447,10 +1447,8 @@ public class InwardBeanController implements Serializable {
     }
 
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
-        //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
-
-        System.err.println("Mill " + patientRoom);
-        if (patientRoom == null) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+                if (patientRoom == null) {
             return null;
         }
 
@@ -1857,7 +1855,6 @@ public class InwardBeanController implements Serializable {
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
         double duration = tif.getDurationHours() * 60;
-        System.out.println("duration = " + duration);
         double overShoot = tif.getOverShootHours() * 60;
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
@@ -1879,7 +1876,6 @@ public class InwardBeanController implements Serializable {
                 count = (long) (consumeTime / duration);
             }
             
-            System.out.println("count = " + count);
 
             calculation = (consumeTime - (count * duration));
             if ((overShoot != 0 && overShoot <= calculation)||count==0) {

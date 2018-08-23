@@ -141,7 +141,6 @@ public class QuickBookReportController implements Serializable {
     public void createAllBilledItemReport() {
         items = fetchBilledItem(BillType.OpdBill, fromDate, toDate, true);
         for (Item i : items) {
-            System.out.println("i.getName() = " + i.getName());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -153,7 +152,6 @@ public class QuickBookReportController implements Serializable {
         }
         List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate, false);
         for (Item i : is) {
-            System.out.println("i.getName() = " + i.getName());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -508,7 +506,6 @@ public class QuickBookReportController implements Serializable {
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
-            System.out.println("b.getInsId() = " + b.getInsId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
@@ -704,7 +701,6 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
 
-        System.out.println("bills.size() = " + bills.size());
     }
 
     public void createQBFormatStoreGRNAndPurchaseBills() {
@@ -921,7 +917,6 @@ public class QuickBookReportController implements Serializable {
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
             System.out.println("b.getInsId() = " + b.getInsId());
-            System.out.println("b.getDeptId() = " + b.getDeptId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
@@ -952,7 +947,6 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
 
-        System.out.println("bills.size() = " + bills.size());
 
     }
 
@@ -1016,7 +1010,6 @@ public class QuickBookReportController implements Serializable {
             double sum = (double) lobj[3];
             BillClassType bclass = (BillClassType) lobj[4];
             System.out.println("iName = " + i.getName());
-            System.out.println("i.getClass() = " + i.getClass());
 //            System.out.println("fValue = " + sum);
 //            System.out.println("d = " + d);
             if (itemBefore == null) {
@@ -1092,7 +1085,6 @@ public class QuickBookReportController implements Serializable {
                     }
                     grantTot += sum;
                 } else {
-                    System.out.println("i.getName() = " + i.getName());
                     itemBefore = i;
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -1386,7 +1378,6 @@ public class QuickBookReportController implements Serializable {
         m.put("td", getCommonFunctions().getEndOfDay(td));
         List<Object[]> results = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("results.size() = " + results.size());
         grantTot = 0.0;
         List<QuickBookFormat> qbfs = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
@@ -1400,7 +1391,6 @@ public class QuickBookReportController implements Serializable {
             double sum = (double) lobj[3];
             BillClassType bclass = (BillClassType) lobj[4];
             System.out.println("iName = " + i.getName());
-            System.out.println("i.getClass() = " + i.getClass());
             String s = "";
             if (i.getInwardChargeType() == InwardChargeType.VAT) {
                 s = "VAT Control Account:Output";
@@ -1474,7 +1464,6 @@ public class QuickBookReportController implements Serializable {
                     }
                     grantTot += sum;
                 } else {
-                    System.out.println("i.getName() = " + i.getName());
                     itemBefore = i;
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -1741,7 +1730,6 @@ public class QuickBookReportController implements Serializable {
             String sp = (String) o[0];
             double value = (double) o[1];
             Speciality s = (Speciality) o[2];
-            System.out.println("s.getNmane() = " + s.getName());
             QuickBookFormat qbf;
             if (paymentMethod == PaymentMethod.Credit) {
                 if (pe != null) {
@@ -1985,7 +1973,6 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pms", paymentMethods);
 
         List<Bill> bills = getBillFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("bills.size = " + bills.size());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
@@ -2181,7 +2168,6 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
         System.out.println("jpql = " + jpql);
-        System.out.println("temMap = " + temMap);
 
         creditCompanies = getInstitutionFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
         return creditCompanies;

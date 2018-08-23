@@ -70,7 +70,6 @@ public class SmsManagerEjb {
     }
 
     public String executePost(String targetURL, Map<String, String> parameters) {
-        System.out.println("executePost");
         HttpURLConnection connection = null;
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "?";
@@ -81,21 +80,22 @@ public class SmsManagerEjb {
             Map.Entry m = (Map.Entry) it.next();
             String pVal;
             try {
-                pVal = java.net.URLEncoder.encode(m.getValue().toString(),"UTF-8");
+                pVal = java.net.URLEncoder.encode(m.getValue().toString(), "UTF-8");
             } catch (UnsupportedEncodingException ex) {
-                pVal="";
+                pVal = "";
                 Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, null, ex);
             }
             String pPara = (String) m.getKey();
             targetURL += pPara + "=" + pVal.toString() + "&";
         }
-        
+
         if (parameters != null && !parameters.isEmpty()) {
             targetURL += "last=true";
         }
 
         try {
             System.out.println("targetURL = " + targetURL);
+            //Create connection
             //Create connection
             System.out.println("1");
             URL url = new URL(targetURL);
@@ -122,7 +122,6 @@ public class SmsManagerEjb {
             System.out.println("is = " + is);
             System.out.println("9");
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            System.out.println("rd = " + rd);
             StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
             String line;
             while ((line = rd.readLine()) != null) {
@@ -132,7 +131,6 @@ public class SmsManagerEjb {
             rd.close();
             return response.toString();
         } catch (Exception e) {
-            System.out.println("e = " + e.getMessage());
             return null;
         } finally {
             if (connection != null) {
@@ -141,7 +139,7 @@ public class SmsManagerEjb {
         }
     }
 
-    public void sendSms(String number, String message, String username, String password, String sendingAlias) {
+    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
         System.out.println("number = " + number);
         System.out.println("message = " + message);
@@ -149,7 +147,7 @@ public class SmsManagerEjb {
         System.out.println("password = " + password);
         System.out.println("sendingAlias = " + sendingAlias);
 
-        Map<String,String> m= new HashMap();
+        Map<String, String> m = new HashMap();
         m.put("userName", username);
         m.put("password", password);
         m.put("userAlias", sendingAlias);
@@ -157,14 +155,12 @@ public class SmsManagerEjb {
         m.put("message", message);
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
-//        res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
-        System.out.println("res = " + res);
         if (res == null) {
-            System.out.println("Error in sending sms as res is null");
+            return false;
         } else if (res.toUpperCase().contains("200")) {
-            System.out.println("sms sent");
+            return true;
         } else {
-            System.out.println("Error in sending sms as do not contain 200");
+            return false;
         }
 
     }

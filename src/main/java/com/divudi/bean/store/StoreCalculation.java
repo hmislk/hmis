@@ -288,7 +288,6 @@ public class StoreCalculation {
 
         double netQty = grns - grnReturn;
 
-        System.err.println("GRN " + grns);
 
         return netQty;
     }

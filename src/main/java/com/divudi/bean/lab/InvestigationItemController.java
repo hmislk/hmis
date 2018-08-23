@@ -168,7 +168,6 @@ public class InvestigationItemController implements Serializable {
         }
         for (InvestigationItem tixi : getImportantItems()) {
             if (tixi.getItem() instanceof Investigation) {
-                System.err.println("Is Ix");
 
                 Investigation tix = investigationController.getInvestigationByIdAndSetAsCurrent(tixi.getItem().getId());
                 if (tix.equals(currentInvestigation)) {
@@ -181,7 +180,6 @@ public class InvestigationItemController implements Serializable {
                     System.out.println("tixi.getSample() = " + tixi.getSample());
                     tixi.setMachine(tix.getMachine());
                     System.out.println("tix.getMachine() = " + tix.getMachine());
-                    System.out.println("tixi.getMachine() = " + tixi.getMachine());
                     Item sc = itemController.getFirstInvestigationSampleComponents(tix);
                     tixi.setSampleComponent(sc);
                     getFacade().edit(tixi);
@@ -375,7 +373,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void ajaxIiKeydownListner(InvestigationItem ii) {
-        System.out.println("ii = " + ii);
         if (ii == null) {
             return;
         }
@@ -474,7 +471,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void saveIiOnAjax(InvestigationItem ii) {
-        System.out.println("saving Ii on Ajax");
         if (ii != null) {
             getFacade().edit(ii);
         }
@@ -483,7 +479,6 @@ public class InvestigationItemController implements Serializable {
 
     public void makeThisCurrent(InvestigationItem ii) {
         System.out.println("saving Ii on Ajax");
-        System.out.println("ii = " + ii);
         setCurrent(ii);
     }
 
@@ -819,7 +814,6 @@ public class InvestigationItemController implements Serializable {
                     ri.setRiWidth(40);
                 }
 
-                System.out.println("ri.getName() = " + ri.getName());
 
                 if (ri.getHtmltext() == null || ri.getHtmltext().trim().equals("")) {
                     ri.setHtmltext(ri.getName());
@@ -834,7 +828,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void upload() {
-        System.err.println("upload");
         if (getCurrentInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation");
             return;
@@ -914,9 +907,7 @@ public class InvestigationItemController implements Serializable {
                 }
                 getIxFacade().edit(currentInvestigation);
             } catch (IOException io) {
-                System.err.println("IOException");
             } catch (Exception jdomex) {
-                System.err.println("JDOM Excepton");
             }
 
         }
@@ -1788,7 +1779,6 @@ public class InvestigationItemController implements Serializable {
 
     public void setCurrent(InvestigationItem current) {
         System.out.println("current = " + current);
-        System.out.println("this.current = " + this.current);
         this.current = current;
     }
 

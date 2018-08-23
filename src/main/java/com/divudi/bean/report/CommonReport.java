@@ -2957,7 +2957,6 @@ public class CommonReport implements Serializable {
             return;
         }
         fromDate = fetchDate(fromReciptNo);
-        System.out.println("fromDate = " + fromDate);
         if (fromDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
             return;
@@ -3375,15 +3374,15 @@ public class CommonReport implements Serializable {
         b = getBillFacade().findBySQLWithoutCache(sql, m);
 //        d = getBillFacade().findDateByJpql(sql, m);
 //        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("b = " + b);
         if (b.isEmpty()) {
             sql = "select b from Bill b where b.deptId=:bn ";
 //            d = getBillFacade().findDateByJpql(sql, m);
             b = getBillFacade().findBySQL(sql, m);
             System.err.println("m = " + m);
-            System.err.println("sql = " + sql);
         }
         if (!b.isEmpty()) {
             d = b.get(0).getCreatedAt();
@@ -4240,7 +4239,6 @@ public class CommonReport implements Serializable {
                 + " order by i.name ";
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         items = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -4252,7 +4250,6 @@ public class CommonReport implements Serializable {
         billItems=fetchDirectPurchaseBillItems(new BilledBill());
         System.out.println("billItems.size() = " + billItems.size());
         canBillItems=fetchDirectPurchaseBillItems(new CancelledBill());
-        System.out.println("canBillItems.size() = " + canBillItems.size());
         refBillItems=fetchDirectPurchaseBillItems(new RefundBill());
     }
 
@@ -4743,7 +4740,6 @@ public class CommonReport implements Serializable {
         tmp1.setString("Final Total");
         System.out.println("creditCard = " + creditCard);
         System.out.println("cheque = " + cheque);
-        System.out.println("cash = " + cash);
 //        tmp1.setValue(creditCard + cheque + cash + slip + credit);
         tmp1.setValue(creditCard + cheque + cash + credit);
 

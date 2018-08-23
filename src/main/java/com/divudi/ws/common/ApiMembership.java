@@ -116,7 +116,6 @@ public class ApiMembership {
     @Path("/banks")
     @Produces("application/json")
     public String getBanks() {
-        System.err.println("~~~~~~Membership API~~~~~~ Get Banks(/banks)");
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -162,7 +161,6 @@ public class ApiMembership {
             @PathParam("address") String address,
             @PathParam("phone") String phone,
             @PathParam("nic") String nic) {
-        System.err.println("~~~~~~Membership API~~~~~~ Get Save Patient(/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic})");
         JSONObject jSONObjectOut = new JSONObject();
         String json;
         URLDecoder decoder = new URLDecoder();
@@ -240,7 +238,6 @@ public class ApiMembership {
     @Path("/patient/{patient_id}")
     @Produces("application/json")
     public String getPatient(@PathParam("patient_id") String patient_id) {
-        System.err.println("~~~~~~Membership API~~~~~~ Get Patient(/patient/{patient_id})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             long l = Long.valueOf(patient_id);
@@ -286,7 +283,6 @@ public class ApiMembership {
     @Path("/serviceValue")
     @Produces("application/json")
     public String getServiceValue() {
-        System.err.println("~~~~~~Membership API~~~~~~ Get Service Value(/serviceValue)");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             Item i = getItemFacade().find(17860304l);
@@ -328,7 +324,6 @@ public class ApiMembership {
             @PathParam("bank_id") String bank_id,
             @PathParam("credit_card_ref") String credit_card_ref,
             @PathParam("memo") String memo) {
-        System.err.println("~~~~~~Membership API~~~~~~ Get Pay For Membership(/payForMembership/{patient_id}/{bank_id}/{credit_card_ref}/{memo})");
         JSONObject jSONObjectOut = new JSONObject();
         try {
             fetchErrorsPay(patient_id, bank_id, credit_card_ref, memo);

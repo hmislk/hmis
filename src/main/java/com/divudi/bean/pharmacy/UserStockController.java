@@ -113,7 +113,6 @@ public class UserStockController implements Serializable {
 
     public UserStockContainer saveUserStockContainer(UserStockContainer userStockContainer, WebUser webUser) {
         if (userStockContainer.getId() == null) {
-            System.err.println("1");
             retiredAllUserStockContainer(webUser);
             userStockContainer.setCreater(webUser);
             userStockContainer.setCreatedAt(new Date());

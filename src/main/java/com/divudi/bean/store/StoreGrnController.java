@@ -224,7 +224,6 @@ public class StoreGrnController implements Serializable {
 
         for (BillItem bi : billItems) {
             System.out.println("bi = " + bi.getSearialNo());
-            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
             //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
             //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
             bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
@@ -252,7 +251,6 @@ public class StoreGrnController implements Serializable {
             if (i.getTmpQty() == 0.0) {
                 continue;
             }
-            System.err.println("2.bi = " + i.getSearialNo());
 //            createSerialNumber(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             ph.setDoe(applicationController.getStoresExpiery());
@@ -278,6 +276,8 @@ public class StoreGrnController implements Serializable {
             ItemBatch itemBatch = storeCalculation.saveItemBatch(i);
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
             System.out.println("7");
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
@@ -296,7 +296,6 @@ public class StoreGrnController implements Serializable {
             System.out.println("12");
             for (BillItem bi : getBillItems()) {
                 if (bi.getParentBillItem() != null) {
-                    System.out.println("bi.getParentBillItem().getItem() = " + bi.getParentBillItem().getItem());
                     if (bi.getParentBillItem().getItem().equals(i.getItem()) && bi.getParentBillItem().getSearialNo() == i.getSearialNo()) {
                         bi.setParentBillItem(i);
                     }
@@ -514,7 +513,6 @@ public class StoreGrnController implements Serializable {
 //        b = b + 1;
 //        long b = billNumberBean.inventoryItemSerialNumberGenerater(getSessionController().getLoggedUser().getInstitution(), billItem.getItem());
 //        b = b + 1;
-        System.out.println("b = " + b);
         for (BillItem bi : getBillItems()) {
             if (bi.getItem().equals(billItem.getItem())) {
                 b++;
@@ -565,7 +563,6 @@ public class StoreGrnController implements Serializable {
             }
         }
 
-        System.err.println("2");
         if (billItem.getPharmaceuticalBillItem().getDoe() == null) {
             billItem.getPharmaceuticalBillItem().setDoe(getApplicationController().getStoresExpiery());
         }
@@ -573,9 +570,12 @@ public class StoreGrnController implements Serializable {
         //System.out.println("****Inventory Code****" + billItem.getPharmaceuticalBillItem().getCode());
         billItem.setSearialNo(getBillItems().size());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
+        // billItem.setId(billItem.getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(billItem);
+//
+//        getBillItemController().setItems(getBillItems());
         System.out.println("billItem.getSearialNo() = " + billItem.getSearialNo());
 //      
 //        getBillItemController().setItems(getBillItems());
@@ -1004,11 +1004,9 @@ public class StoreGrnController implements Serializable {
         currentBillItem = new BillItem();
         currentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
         parentBillItem.copy(bi);
-        System.out.println("getParentBillItem().getItem() = " + getParentBillItem().getItem());
     }
 
     public void addDetailItemListener(BillItem bi) {
-        System.err.println("Add Detasils " + bi.getItem().getName());
         parentBillItem = new BillItem();
         currentBillItem = new BillItem();
         currentBillItem.copy(bi);
@@ -1030,9 +1028,7 @@ public class StoreGrnController implements Serializable {
         System.out.println("parentBillItem.getSearialNo() = " + parentBillItem.getSearialNo());
         System.out.println("currentBillItem.getTmpQty() = " + parentBillItem.getTmpQty());
         for (BillItem bi : getBillItems()) {
-            System.out.println("bi = " + bi.getSearialNo());
             if (bi.getSearialNo() == parentBillItem.getSearialNo()) {
-                System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
 //                bi = getCurrentBillItem();
                 bi.getPharmaceuticalBillItem().setMake(getCurrentBillItem().getPharmaceuticalBillItem().getMake());
                 bi.getPharmaceuticalBillItem().setModel(getCurrentBillItem().getPharmaceuticalBillItem().getModel());
@@ -1052,7 +1048,6 @@ public class StoreGrnController implements Serializable {
             }
         }
 
-        System.err.println("******Update*************");
         JsfUtil.addSuccessMessage("Updated.");
 
     }
@@ -1061,11 +1056,9 @@ public class StoreGrnController implements Serializable {
         for (BillItem bi : getBillItems()) {
             System.out.println("bi = " + bi.getSearialNo());
             System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
-            System.out.println("bi.getQty() = " + bi.getQty());
             try {
                 System.out.println("bi.getPharmaceuticalBillItem() = " + bi.getPharmaceuticalBillItem());
                 System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getModel());
             } catch (Exception e) {
             }
         }

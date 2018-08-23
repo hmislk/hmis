@@ -170,7 +170,6 @@ public class StaffImageController implements Serializable {
             return new DefaultStreamedContent();
         } else {
             Staff temImg = getStaffController().getCurrent();
-            System.err.println("getStaffController()  " + getStaffController());
             if (temImg != null) {
                 byte[] imgArr = null;
                 try {

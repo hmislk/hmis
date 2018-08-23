@@ -681,7 +681,6 @@ public class CashierReportController implements Serializable {
             return;
         }
         fromDate = commonReport.fetchDate(fromReciptNo);
-        System.out.println("fromDate = " + fromDate);
         if (fromDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
             return;
@@ -707,7 +706,6 @@ public class CashierReportController implements Serializable {
         webUserBillsTotals = new ArrayList<>();
         for (WebUser webUser : getCashiers()) {
             System.out.println("com.divudi.bean.report.CashierReportController.calculateCashierSummeryTotals()");
-            System.err.println("webUser = " + webUser);
             WebUserBillsTotal tmp = new WebUserBillsTotal();
             tmp.setWebUser(webUser);
             List<BillsTotals> billls = new ArrayList<>();
@@ -729,7 +727,6 @@ public class CashierReportController implements Serializable {
                 uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
                 uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
                 
-                System.err.println("uCash = " + uCash);
 
             }
 
@@ -1035,7 +1032,6 @@ public class CashierReportController implements Serializable {
             return;
         }
         fromDate = commonReport.fetchDate(fromReciptNo);
-        System.out.println("fromDate = " + fromDate);
         if (fromDate == null) {
             JsfUtil.addErrorMessage("Please Enter Correct From Bill No");
             return;

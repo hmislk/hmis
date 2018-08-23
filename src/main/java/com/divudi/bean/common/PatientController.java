@@ -336,7 +336,6 @@ public class PatientController implements Serializable {
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.out.println("getReportKeyWord().isAdditionalDetails() = " + getReportKeyWord().isAdditionalDetails());
         System.out.println("query = " + query);
-        System.err.println("patientList.size() = " + patientList.size());
         commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
         return patientList;
     }
@@ -388,12 +387,10 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
-            System.out.println("1.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
         } else {
             getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
-            System.out.println("2.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
         }
         if (getCurrent().getId() == null) {
             System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
@@ -410,7 +407,6 @@ public class PatientController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            System.out.println("3.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
             if (getCurrent().getPerson().getMembershipScheme() != null) {
@@ -421,12 +417,10 @@ public class PatientController implements Serializable {
             getCurrent().setEditedAt(Calendar.getInstance().getTime());
             getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
-            System.out.println("4.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
         getPersonFacade().flush();
         getFacade().flush();
-        System.out.println("5.getCurrent().getPerson().getTitle() = " + getCurrent().getPerson().getTitle());
     }
     
     public void saveSelectedPatient() {
@@ -493,7 +487,6 @@ public class PatientController implements Serializable {
                     m.put("pm", PaymentMethod.OnlineSettlement);
                     m.put("d", cal.getTime());
                     m.put("p", p.getId());
-                    System.out.println("m = " + m);
                     Bill b = getBillFacade().findFirstBySQL(sql, m);
                     if (b != null) {
                         p.setBill(b);
@@ -622,7 +615,6 @@ public class PatientController implements Serializable {
             getCurrent().setCode(null);
             return;
         }
-        System.out.println("getReportKeyWord().getMembershipScheme().getName() = " + getCurrent().getPerson().getMembershipScheme().getName());
         if (getCurrent().getPerson().getMembershipScheme().getCode() == null
                 || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
             getCurrent().setCode(null);
@@ -662,12 +654,10 @@ public class PatientController implements Serializable {
             long l = Long.parseLong(str.substring(2));
             System.out.println("l = " + l);
             l++;
-            System.out.println("l = " + l);
             st += s;
             st += df.format(l);
             return st;
         } else {
-            System.err.println("P Null");
             st += s;
             st += df.format(1l);
             return st;
@@ -743,7 +733,6 @@ public class PatientController implements Serializable {
                 p = getEjbFacade().findFirstBySQL(sql, m);
                 if (p != null) {
                     JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
-                    System.out.println("p.getCode() = " + p.getCode());
                     return true;
                 } else {
                     return false;
@@ -888,7 +877,6 @@ public class PatientController implements Serializable {
                 key = 0l;
             } else {
                 key = Long.valueOf(value);
-                System.out.println(key);
             }
             return key;
         }

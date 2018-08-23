@@ -131,7 +131,6 @@ public class CreditCompanyDueController implements Serializable {
         Date toDate = null;
 
         makeNull();
-        System.err.println("Fill Items");
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBillsPharmacy(true);
@@ -388,7 +387,6 @@ public class CreditCompanyDueController implements Serializable {
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
             System.err.println("DayCount " + dayCount);
-            System.err.println("NetTotal " + b.getNetTotal());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -414,7 +412,6 @@ public class CreditCompanyDueController implements Serializable {
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
             System.err.println("DayCount " + dayCount);
-            System.err.println("NetTotal " + b.getNetTotal());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -440,7 +437,6 @@ public class CreditCompanyDueController implements Serializable {
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
             System.err.println("DayCount " + dayCount);
-            System.err.println("NetTotal " + b.getNetTotal());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -459,7 +455,6 @@ public class CreditCompanyDueController implements Serializable {
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
         for (PatientEncounter b : lst) {
-            System.out.println("b.getBhtNo() = " + b.getBhtNo());
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
             double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
@@ -837,7 +832,6 @@ public class CreditCompanyDueController implements Serializable {
                 System.out.println("b.getTransPaid() = " + b.getTransPaid());
                 
                 System.out.println("b.getFinalBill().getNetTotal() = " + b.getFinalBill().getNetTotal());
-                System.out.println("b.getCreditPaidAmount() = " + b.getCreditPaidAmount());
                 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));

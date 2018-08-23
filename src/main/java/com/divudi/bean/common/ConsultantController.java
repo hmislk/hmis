@@ -79,7 +79,6 @@ public class ConsultantController implements Serializable {
 
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
-        System.out.println("sql = " + sql);
         selectedItems = getFacade().findBySQL(sql, hm);
 
         return selectedItems;
@@ -121,7 +120,6 @@ public class ConsultantController implements Serializable {
         sql += " order by c.codeInterger , c.person.name ";
 
         System.out.println("sql = " + sql);
-        System.out.println("hm = " + m);
         items = getFacade().findBySQL(sql, m);
         
     }

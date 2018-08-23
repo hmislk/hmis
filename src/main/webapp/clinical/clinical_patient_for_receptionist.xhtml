@@ -173,7 +173,7 @@
                                                 </p:selectOneMenu>
                                                 <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
                                                 <h:outputLabel value="Name"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:capitalize;">
                                                 </p:inputText>
 
                                                 <h:outputLabel value="Comments"/>

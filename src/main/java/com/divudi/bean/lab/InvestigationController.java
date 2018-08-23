@@ -389,7 +389,6 @@ public class InvestigationController implements Serializable {
 
         selectedPatientReports = new ArrayList<>();
         ixWithoutSamples = new ArrayList<>();
-        System.err.println("selectedIxs.size() = " + selectedIxs.size());
         for (Investigation ix : selectedIxs) {
             PatientReport pr = patientReportController.getLastPatientReport(ix);
             if (pr != null) {
@@ -551,6 +550,40 @@ public class InvestigationController implements Serializable {
             ins = getSessionController().getLoggedUser().getInstitution();
         }
         m.put("ins", ins);
+        suggestions = getFacade().findBySQL(sql, m);
+        return suggestions;
+    }
+
+    public List<Investigation> completeInvestigationsOfSelectedInstitution(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String sql;
+        Map m = new HashMap();
+
+        Institution ins;
+        if (institution != null) {
+            sql = "select c from Investigation c "
+                    + " where c.retired=false  "
+                    + " and (upper(c.name) like :n or "
+                    + " upper(c.fullName) like :n or "
+                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+            sql += " and c.institution = :ins ";
+            sql += " order by c.name";
+            m.put("n", "%" + query.toUpperCase() + "%");
+            m.put("ins", institution);
+        } else {
+            sql = "select c from Investigation c "
+                    + " where c.retired=false  "
+                    + " and (upper(c.name) like :n or "
+                    + " upper(c.fullName) like :n or "
+                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+            sql += " and c.institution is null ";
+            sql += " order by c.name";
+            m.put("n", "%" + query.toUpperCase() + "%");
+        }
+
         suggestions = getFacade().findBySQL(sql, m);
         return suggestions;
     }
@@ -1187,7 +1220,7 @@ public class InvestigationController implements Serializable {
         setCurrent(getFacade().find(id));
         return current;
     }
-    
+
     public Investigation getCurrent() {
         if (current == null) {
             current = new Investigation();
@@ -1271,7 +1304,6 @@ public class InvestigationController implements Serializable {
         for (Item item : temp) {
             ItemWithFee iwf = new ItemWithFee();
             iwf.setItem(item);
-            System.out.println("iwf.getItem().getName() = " + iwf.getItem().getName());
             sql = "select c from ItemFee c where c.retired = false "
                     + " and type(c.item) =Investigation "
                     + " and c.item.id=" + item.getId() + " order by c.item.name";

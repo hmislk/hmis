@@ -192,7 +192,6 @@ public class CashRecieveBillController implements Serializable {
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         System.out.println("neTotal = " + neTotal);
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        System.err.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
         System.out.println("paidAmt = " + paidAmt);
         refBallance = neTotal - (paidAmt + refAmount);
@@ -323,11 +322,9 @@ public class CashRecieveBillController implements Serializable {
         n = 0.0;
         index = 0;
         for (BillItem b : selectedBillItems) {
-            System.err.println("b.getSearialNo() = " + b.getSearialNo());
             b.setSearialNo(index++);
             n += b.getNetValue();
         }
-        System.out.println("billItems.size() = " + billItems.size());
         getCurrent().setNetTotal(n);
         // ////System.out.println("AAA : " + n);
     }
@@ -679,13 +676,12 @@ public class CashRecieveBillController implements Serializable {
         for (BillItem b : selectedBillItems) {
             System.out.println("getBillItems().size() = " + getBillItems().size());
             System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-            System.out.println("R.A - b.getSearialNo() = " + b.getSearialNo());
             tmp.add(getBillItems().get(b.getSearialNo()));
         }
         billItems.removeAll(tmp);
         for (BillItem b : billItems) {
-            System.out.println("b.getSearialNo() = " + b.getSearialNo());
 //            getBillItems().remove(b.getSearialNo());
+            
         }
         calTotalWithResetingIndex();
 
@@ -693,7 +689,6 @@ public class CashRecieveBillController implements Serializable {
         System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
         selectedBillItems = new ArrayList<>();
         selectedBillItems.addAll(billItems);
-        System.out.println("getBillItems().size() = " + getBillItems().size());
     }
 
     private void saveBhtBillItem(Bill b) {
@@ -706,7 +701,6 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItem() {
-        System.out.println("getBillItems().size() = " + getBillItems().size());
         for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());

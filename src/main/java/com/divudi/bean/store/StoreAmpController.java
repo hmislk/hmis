@@ -202,7 +202,6 @@ public class StoreAmpController implements Serializable {
 
         Amp amp = getFacade().findFirstBySQL(sql, m);
 
-        System.out.println("amp.getCode() = " + amp.getCode());
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {
@@ -214,7 +213,6 @@ public class StoreAmpController implements Serializable {
             int i = Integer.valueOf(s);
             System.out.println("i = " + i);
             i++;
-            System.out.println("getCurrent().getCode() = " + getCurrent().getCode());
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
                 if (!getCurrent().getCategory().equals(selectedAmp.getCategory())) {
