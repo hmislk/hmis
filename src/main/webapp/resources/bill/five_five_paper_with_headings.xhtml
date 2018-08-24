@@ -142,8 +142,19 @@
                             <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patient.person.nameWithTitle}"  rendered="#{cc.attrs.bill.patient.person.nameWithTitle ne null}">
                             </h:outputLabel>
                         </td>
-
-
+                    </tr>
+                    
+                    <tr>
+                        <td style="text-align: left;" >
+                            <h:outputLabel class="billDetailsFiveFive" value="Age" rendered="#{cc.attrs.bill.patient.age ne null}"></h:outputLabel>
+                        </td>
+                        <td></td>
+                        <td><h:outputLabel value=":" rendered="#{cc.attrs.bill.patient.age ne null}"/></td>
+                        <td></td>
+                        <td colspan="5">                            
+                            <h:outputLabel class="billDetailsFiveFive" value="#{cc.attrs.bill.patient.age}"  rendered="#{cc.attrs.bill.patient.age ne null}">
+                            </h:outputLabel>
+                        </td>
                     </tr>
 
                     <tr>

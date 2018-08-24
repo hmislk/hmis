@@ -326,36 +326,7 @@
 
                             <h:panelGrid columns="1" >
 
-                                <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
-                                    <h:panelGrid columns="2" style="margin-bottom:10px">  
-                                        <h:outputText id="lblNameD" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
-                                        <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
-                                        <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
-                                        <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
-                                        <h:outputText id="lblAddressD" value="Address" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
-                                        <h:outputText value="Code"></h:outputText>   
-                                        <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
-                                        <h:outputText value="Speciality" ></h:outputText>
-                                        <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
-                                            <f:selectItem itemLabel="Please select a speciality"/>
-                                            <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
-                                        </h:selectOneListbox>
-                                        <h:outputText id="lblRegD" value="Registration" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
-                                        <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
-                                        </p:commandButton>
-
-                                    </h:panelGrid>  
-
-                                </p:dialog>  
 
 
                                 <h:panelGroup id="panelBillReferrals" >
@@ -371,8 +342,39 @@
                                                     <h:outputLabel value="#{ix.code}" ></h:outputLabel>
                                                 </p:column>
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            <p:commandButton id="btnAddNewDoc" value="Add New Doctor" onclick="PF('dlg').show();" 
+                                                             actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" 
+                                                             update=":#{p:component('panDoc')}"/>  
+                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
+                                                <h:panelGrid columns="2" style="margin-bottom:10px">  
+                                                    <h:outputText id="lblNameD" value="Name" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtNameD"  value="#{doctorController.current.person.name}"  ></h:inputText>
+                                                    <h:outputText id="lblPhoneD" value="Phone" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtPhoneD" value="#{doctorController.current.person.phone}"  ></h:inputText>
+                                                    <h:outputText id="lblFaxD" value="Fax" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtFaxD" value="#{doctorController.current.person.fax}"  ></h:inputText>
+                                                    <h:outputText id="lblMobileD" value="Mobile" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtMobileD" value="#{doctorController.current.person.mobile}"  ></h:inputText>
+                                                    <h:outputText id="lblAddressD" value="Address" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtAddressD" value="#{doctorController.current.person.address}"  ></h:inputText>
+                                                    <h:outputText value="Code"></h:outputText>   
+                                                    <h:inputText autocomplete="off" id="txtCodeD" value="#{doctorController.current.code}"  ></h:inputText>
+                                                    <h:outputText value="Speciality" ></h:outputText>
+                                                    <h:selectOneListbox id="cmbSpecialityD" size="1" value="#{doctorController.current.speciality}" >
+                                                        <f:selectItem itemLabel="Please select a speciality"/>
+                                                        <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                    </h:selectOneListbox>
+                                                    <h:outputText id="lblRegD" value="Registration" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtRegD" value="#{doctorController.current.registration}"  ></h:inputText>                 
+                                                    <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
+                                                    <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
+                                                    <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                    </p:commandButton>
+
+                                                </h:panelGrid>  
+
+                                            </p:dialog>  
                                         </p:tab>
                                         <p:tab title="Credit" >
                                             <p:panelGrid columns="2">
@@ -667,6 +669,7 @@
                             <h:panelGroup id="fiveFivePaperWithHeadings">
 
                                 <ui:repeat value="#{billController.bills}" var="b">
+                                    
                                     <bi:five_five_paper_with_headings bill="#{b}"/>                        
                                 </ui:repeat>
                             </h:panelGroup>

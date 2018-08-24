@@ -1390,10 +1390,10 @@ public class BillController implements Serializable {
                 return true;
             }
 
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
-                return true;
-            }
+//            if (getNewPatient().getPerson().getPhone().length() < 1) {
+//                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+//                return true;
+//            }
 
         }
 
@@ -1432,16 +1432,16 @@ public class BillController implements Serializable {
 //                return true;
 //            }
 //        } alredy chak in lab item settle
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            for (BillEntry be : getLstBillEntries()) {
-                System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
-                if (be.getBillItem().getItem() instanceof Investigation) {
-                    if (referredBy == null) {
-                        UtilityController.addErrorMessage("Please Select Refering Doctor.Refering Doctor is Requierd for Investigations.");
-                        return true;
-                    }
-                }
-            }
+//        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+//            for (BillEntry be : getLstBillEntries()) {
+//                System.out.println("be.getBillItem().getItem().getName() = " + be.getBillItem().getItem().getName());
+//                if (be.getBillItem().getItem() instanceof Investigation) {
+//                    if (referredBy == null) {
+//                        UtilityController.addErrorMessage("Please Select Refering Doctor.Refering Doctor is Requierd for Investigations.");
+//                        return true;
+//                    }
+//                }
+//            }
 //            if (getStrTenderedValue() == null) {
 //                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
 //                return true;
@@ -1450,7 +1450,7 @@ public class BillController implements Serializable {
 //                UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
 //                return true;
 //            }
-        }
+//        }
         if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
             if (referralId == null || referralId.trim().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter Referrance Number");
