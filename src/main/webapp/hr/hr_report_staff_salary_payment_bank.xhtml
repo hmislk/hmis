@@ -126,11 +126,11 @@
 
                                         <h:outputLabel value="Emp Name"/>
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
-                                                            or sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
+                                                            or sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                     </p:outputLabel>
-                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.hold) 
-                                                                                                 or(sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
+                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.hold) 
+                                                                                                 or(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column rendered="#{hrReportController.hold}" >

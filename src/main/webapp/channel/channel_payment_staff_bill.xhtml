@@ -193,15 +193,15 @@
                         </p:commandButton>
                         <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                            <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha}">
                                 <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                             </h:panelGroup>
                         </h:panelGroup>
 
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha}" > 
                                 <bi:paymentReciptPosDouble controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                             </h:panelGroup>
                         </h:panelGroup>

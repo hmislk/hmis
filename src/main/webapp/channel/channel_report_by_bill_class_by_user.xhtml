@@ -43,8 +43,8 @@
                             <p:column>#{vt.institutionCode}</p:column>
                             <p:column>#{vt.name}</p:column>
                         </p:autoComplete>
-                        <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
-                        <p:selectOneMenu id="cmbChanType" value="#{channelReportController.reportKeyWord.billType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                        <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>

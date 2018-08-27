@@ -520,7 +520,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (!getSessionController().getInstitutionPreference().isInwardAddServiceBillTimeCheck()) {
+        if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
                     UtilityController.addErrorMessage("Please set Time To This Investigation");

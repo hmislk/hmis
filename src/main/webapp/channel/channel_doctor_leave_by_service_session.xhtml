@@ -106,7 +106,7 @@
                                              selectionMode="single" rowStyleClass="#{ses.deactivated ? 'redText':''}"
                                              selection="#{serviceSessionLeaveController.selectedServiceSession}" scrollable="true" scrollHeight="275">
 
-                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                                         <h:outputText value="* " rendered="#{ses.deactivated}" />
                                         <h:outputText value="#{ses.sessionDate}" >
                                             <f:convertDateTime pattern="E"/>
@@ -143,32 +143,32 @@
                                         <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
                                     </p:column>
 
-                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
                                         <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                                     </p:column>
-                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Max" style="width: 20px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Booked" style="width: 20px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.displayCount}">
                                             <f:convertNumber pattern="00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.sessionDate}">
                                             <f:convertDateTime pattern="dd MMM"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.startingTime}">
                                             <f:convertDateTime pattern="hh:mm"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                                    <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.totalFee}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>                                                            

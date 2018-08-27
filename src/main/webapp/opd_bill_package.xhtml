@@ -359,11 +359,11 @@
                                                                             <div>
                                                                                 <ui:repeat value="#{billPackageController.bills}" var="bill" >
                                 
-                                                                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                                                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
                                                                                         <bi:opdPackegePosBill  bill="#{bill}" />   
                                                                                     </h:panelGroup>
                                 
-                                                                                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
                                 
                                 
                                                                                         <div style="page-break-after: always; page-break-inside: avoid; min-width: 5cm; min-height: 5cm;">

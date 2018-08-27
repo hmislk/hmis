@@ -166,10 +166,11 @@
 
                                 <p:submenu styleClass="rightBordrOnly" label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
                                     <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
-                                        <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="OPD Bill" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
                                         <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/inward/inward_bill_service" value="In-patient Bill" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
+                                        <p:separator/>
+                                        <p:menuitem ajax="false" action="/inward/inward_bill_service" value="In-patient Billing" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
                                         <p:menuitem ajax="false" action="/lab/inward_search_service" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                                     </p:submenu>
                                     <p:submenu label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('LabCollectingCentreBilling') and false}">
@@ -184,7 +185,7 @@
                                                     value="CC Bill Search" 
                                                     rendered="#{webUserController.hasPrivilege('LabCCBillingSearch')}" >
                                         </p:menuitem>
-                                        <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna' and false}">
+                                        <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna' and false}">
                                             <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                             <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                                         </p:submenu>
@@ -202,7 +203,7 @@
                                 <p:submenu styleClass="rightBordrOnly" label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
-                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale') and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
+                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale') and sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                                                               
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier"  
                                                      value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_bill"  
@@ -228,7 +229,7 @@
                                         <p:menuitem ajax="false" action="//pharmacy/pharmacy_search_return_bill_pre" actionListener="#{searchController.makeListNull}"  value="Search Return Bill (Item)" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid" actionListener="#{searchController.makeListNull}"   value="Add To Stock" rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
-                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
+                                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
                                     </p:submenu>
 
                                     <p:submenu label="Wholesale" rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"> 
@@ -934,7 +935,7 @@
             </div>
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
-                <p:outputLabel rendered="true" value="#{sessionController.institutionPreference.id}" ></p:outputLabel>
+                <p:outputLabel rendered="true" value="#{sessionController.loggedPreference.id}" ></p:outputLabel>
                 <p:spacer width="10" height="1" rendered="true" ></p:spacer>
                 <p:outputLabel rendered="true" value="#{sessionController.userPreference.id}" ></p:outputLabel>
             </div>

@@ -1127,8 +1127,8 @@ public class PatientReportController implements Serializable {
 
         UserPreference pf;
         
-        if(getSessionController().getInstitutionPreference()!=null){
-            pf=getSessionController().getInstitutionPreference();
+        if(getSessionController().getLoggedPreference()!=null){
+            pf=getSessionController().getLoggedPreference();
         }else if(getSessionController().getUserPreference()!=null){
             pf=getSessionController().getUserPreference();
         }else{

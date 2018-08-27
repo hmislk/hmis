@@ -695,7 +695,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean isListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -706,7 +706,7 @@ public class InvestigationController implements Serializable {
 
     public Boolean getListMasterItemsOnly() {
         if (listMasterItemsOnly == null) {
-            if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+            if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
                 listMasterItemsOnly = true;
             } else {
                 listMasterItemsOnly = false;
@@ -779,7 +779,7 @@ public class InvestigationController implements Serializable {
             sql += " and upper(c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
-        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
             if (institution != null) {
                 sql += " and c.institution=:ins ";
                 m.put("ins", institution);
@@ -932,7 +932,7 @@ public class InvestigationController implements Serializable {
 //        }
 //    }
     public List<Investigation> completeDepartmentItem(String qry) {
-        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
             String sql;
             Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");

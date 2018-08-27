@@ -556,7 +556,7 @@ public class OpdPreSettleController implements Serializable {
     }
 
     public boolean errorCheck() {
-        if (cashPaid == 0.0 && getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (cashPaid == 0.0 && getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             JsfUtil.addErrorMessage("Please Enter Correct Amount");
             return true;
         }
@@ -637,7 +637,7 @@ public class OpdPreSettleController implements Serializable {
                 continue;
             }
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 for (BillItem bi : b.getBillItems()) {
                     System.err.println("BillItem For In");
 
@@ -733,7 +733,7 @@ public class OpdPreSettleController implements Serializable {
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(paymentMethod);
 
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
             if (cashPaid < getBilledBill().getBalance()) {
                 p.setPaidValue(cashPaid);
             } else {
@@ -815,7 +815,7 @@ public class OpdPreSettleController implements Serializable {
         for (BillFee bf : billFees) {
             System.err.println("BillFee For In");
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");

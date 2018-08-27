@@ -65,11 +65,11 @@
 <!--                        <pharmacy:transferIssue bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
 
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                             <pharmacy:transferIssue bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                             <pharmacy:transferIssue_detailed bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>

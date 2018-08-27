@@ -56,10 +56,10 @@
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
                             </p:column>    
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
                             <p:column headerText="Billed For"  >                                
@@ -159,10 +159,10 @@
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
                             </p:column>    
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
                             <p:column headerText="Billed For"  >                                
@@ -262,10 +262,10 @@
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
                                 <h:outputLabel   value="#{bill.insId}"/>
                             </p:column>    
-                            <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                            <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
                             <p:column headerText="Billed For"  >                                

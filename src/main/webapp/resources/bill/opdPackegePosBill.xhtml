@@ -382,10 +382,10 @@
             <div class="footer">
                 <br/>
                 THANK YOU.
-                <h:panelGroup  rendered="#{sessionController.institutionPreference.pharmacyBillFooter ne null}">
+                <h:panelGroup  rendered="#{sessionController.loggedPreference.pharmacyBillFooter ne null}">
                     <br/>
                 </h:panelGroup>
-                <h:outputLabel value="#{sessionController.institutionPreference.pharmacyBillFooter}" ></h:outputLabel>
+                <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
             </div>
         </div>
     </cc:implementation>
