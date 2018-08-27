@@ -165,15 +165,12 @@
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Lab"  rendered="#{webUserController.hasPrivilege('Lab')}">
-                                    <p:submenu label="Lab Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
-                                        <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="Bill" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Search Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
-                                    </p:submenu>
-                                    <p:submenu label="Inward Billing" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}">
-                                        <p:menuitem ajax="false" action="/inward/inward_bill_service" value="Bill" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
-                                        <p:menuitem ajax="false" action="/inward/inward_bill_service" value="Add Inward Services" actionListener="#{billBhtController.makeNull}" rendered="#{!webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/lab/inward_search_service" value="Search Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
+                                    <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
+                                        <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="OPD Bill" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
+                                        <p:menuitem ajax="false" action="/inward/inward_bill_service" value="In-patient Bill" actionListener="#{billBhtController.makeNull}" rendered="#{webUserController.hasPrivilege('LabInwardBilling')}" ></p:menuitem>                                            
+                                        <p:menuitem ajax="false" action="/lab/inward_search_service" value="Search In-patient Bills" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" ></p:menuitem>  
                                     </p:submenu>
                                     <p:submenu label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('LabCollectingCentreBilling') and false}">
                                         <p:menuitem ajax="false" action="/collecting_centre/bill"  
@@ -187,11 +184,12 @@
                                                     value="CC Bill Search" 
                                                     rendered="#{webUserController.hasPrivilege('LabCCBillingSearch')}" >
                                         </p:menuitem>
+                                        <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna' and false}">
+                                            <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                            <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                                        </p:submenu>
                                     </p:submenu>
-                                    <p:submenu label="Collecting Centre Billing" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna' and false}">
-                                        <p:menuitem ajax="false" action="/lab_bill_collecting_centre" value="Bill" actionListener="#{labBillCollectingController.prepareNewBill}"  rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                                        <p:menuitem ajax="false" action="/lab_collecting_bill_search_all" value="Search Bills" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
-                                    </p:submenu>
+
                                     <p:menuitem ajax="false" action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:menuitem>
