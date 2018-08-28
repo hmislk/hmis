@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.hr.EmployeeLeavingStatus;
 import com.divudi.data.hr.EmployeeStatus;
 import com.divudi.data.hr.SalaryPaymentFrequency;
@@ -39,7 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Entity
 @XmlRootElement
-public class Staff implements Serializable {
+public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne
     Roster roster;
@@ -142,6 +143,9 @@ public class Staff implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     Date dateWithOutNotice;
     
+    
+    @Transient
+    private String name;
     
     public double getTransDblValue() {
         return transDblValue;
@@ -696,4 +700,14 @@ public class Staff implements Serializable {
     public void setDateWithOutNotice(Date dateWithOutNotice) {
         this.dateWithOutNotice = dateWithOutNotice;
     }
+
+    public String getName() {
+        if(getPerson()!=null){
+            name = getPerson().getNameWithTitle();
+        }
+        return name;
+    }
+
+
+    
 }
