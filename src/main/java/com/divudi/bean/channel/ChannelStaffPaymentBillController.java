@@ -214,7 +214,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Map m = new HashMap();
 
         if (getSpeciality() != null) {
-            if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                 sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                         + " and pi.type=:typ "

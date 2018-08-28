@@ -68,11 +68,11 @@
                         </p:commandButton>
 <!--                        <pharmacy:grnReturn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                             <pharmacy:grnReturnCancel bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                             <pharmacy:grn_detail bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>

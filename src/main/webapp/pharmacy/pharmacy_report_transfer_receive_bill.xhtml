@@ -100,10 +100,10 @@
                                         </p:column>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{-reportsTransfer.netTotalValues}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                                <h:outputLabel value="#{-reportsTransfer.netTotalValues}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
-                                                <h:outputLabel value="#{reportsTransfer.netTotalValues}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}" >
+                                                <h:outputLabel value="#{reportsTransfer.netTotalValues}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>

@@ -221,11 +221,11 @@
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   style="border: none;">
                     
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:grn bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
                     
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" >
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                         <ph:grn_detail bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
                     

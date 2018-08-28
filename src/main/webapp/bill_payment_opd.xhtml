@@ -150,7 +150,7 @@
                     <h:panelGroup  rendered="#{billController.printPreview}">
 
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
                             <div id="centrewrapper">
                                 <div id="centrecell">
                                     <div class="centrecontent">
@@ -314,7 +314,7 @@
                             </div>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
 
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >

@@ -141,7 +141,7 @@ public class SmsController implements Serializable {
         }
     }
 
-    public void sendSms(String number, String message, String username, String password, String sendingAlias) {
+    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
         System.out.println("number = " + number);
         System.out.println("message = " + message);
@@ -158,8 +158,11 @@ public class SmsController implements Serializable {
 
         String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
         if (res == null) {
+            return false;
         } else if (res.toUpperCase().contains("200")) {
+            return true;
         } else {
+            return false;
         }
 
     }

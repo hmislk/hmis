@@ -186,7 +186,7 @@ public class SheduleController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
@@ -437,7 +437,7 @@ public class SheduleController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 && current.getForBillType() == null) {
             UtilityController.addErrorMessage("Plaese Select Channel Type");
             return true;

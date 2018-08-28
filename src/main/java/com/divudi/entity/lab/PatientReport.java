@@ -168,7 +168,7 @@ public class PatientReport implements Serializable {
     }
 
     public Investigation getTransInvestigation() {
-        if (item instanceof Investigation) {
+        if (item!=null && item instanceof Investigation) {
             transInvestigation = (Investigation) item;
         } else {
             transInvestigation = null;
@@ -692,7 +692,7 @@ public class PatientReport implements Serializable {
     public Category getReportFormat() {
         if(reportFormat==null){
             if(getTransInvestigation()!=null){
-                reportFormat = getTransInvestigation().getCategory();
+                reportFormat = getTransInvestigation().getReportFormat();
             }
         }
         return reportFormat;

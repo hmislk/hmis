@@ -1452,7 +1452,7 @@ public class InwardBeanController implements Serializable {
             return null;
         }
 
-        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1494,7 +1494,7 @@ public class InwardBeanController implements Serializable {
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
         
-        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1624,7 +1624,7 @@ public class InwardBeanController implements Serializable {
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
 
-        if (getSessionController().getInstitutionPreference().isBhtNumberWithYear()) {
+        if (getSessionController().getLoggedPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
 
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
