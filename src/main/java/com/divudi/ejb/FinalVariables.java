@@ -75,7 +75,7 @@ public class FinalVariables {
 //                System.out.println("maxRowNumber = " + maxRowNumber);
             }
         }
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             if (maxRowNumber != 0) {
                 return maxRowNumber;
             } else {
@@ -129,12 +129,12 @@ public class FinalVariables {
 
     public double getVATPercentage() {
         //VAT 15% Only Vat Value
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 0.152;
              return 0.15;
 //            return 0;
-        } else if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+        } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
             return 0.15;
 //            return 0;
         } else {
@@ -144,12 +144,12 @@ public class FinalVariables {
 
     public double getVATPercentageWithAmount() {
         //VAT 15% With Total
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 1.152;
              return 1.15;
 //            return 1;
-        } else if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                || sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+        } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
             return 1.15;
 //            return 1;
         } else {

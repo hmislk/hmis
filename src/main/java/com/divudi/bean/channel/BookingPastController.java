@@ -550,7 +550,7 @@ public class BookingPastController implements Serializable {
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
@@ -569,7 +569,7 @@ public class BookingPastController implements Serializable {
         } else {
             if (selectTextConsultant.length() > 4) {
                 doctorSpecialityController.setSelectText("");
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
@@ -591,7 +591,7 @@ public class BookingPastController implements Serializable {
             } else {
                 m.put("sp", getSpeciality());
                 if (getSpeciality() != null) {
-                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                    if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                         sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                                 + " and pi.type=:typ "

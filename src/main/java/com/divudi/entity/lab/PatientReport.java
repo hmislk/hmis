@@ -6,6 +6,7 @@ package com.divudi.entity.lab;
 
 //import ch.lambdaj.Lambda;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -140,6 +141,12 @@ public class PatientReport implements Serializable {
     @Transient
     PatientReportItemValue templateItem;
 
+    @ManyToOne
+    private Category reportFormat;
+    
+    
+    
+    
     public PatientReportItemValue getTemplateItem() {
         System.out.println("com.divudi.entity.lab.PatientReport.getTemplateItem()");
 
@@ -161,7 +168,7 @@ public class PatientReport implements Serializable {
     }
 
     public Investigation getTransInvestigation() {
-        if (item instanceof Investigation) {
+        if (item!=null && item instanceof Investigation) {
             transInvestigation = (Investigation) item;
         } else {
             transInvestigation = null;
@@ -680,6 +687,19 @@ public class PatientReport implements Serializable {
 
     public void setTransHasAbst(Boolean transHasAbst) {
         this.transHasAbst = transHasAbst;
+    }
+
+    public Category getReportFormat() {
+        if(reportFormat==null){
+            if(getTransInvestigation()!=null){
+                reportFormat = getTransInvestigation().getReportFormat();
+            }
+        }
+        return reportFormat;
+    }
+
+    public void setReportFormat(Category reportFormat) {
+        this.reportFormat = reportFormat;
     }
 
     static class PatientReportItemValueComparator implements Comparator<PatientReportItemValue> {

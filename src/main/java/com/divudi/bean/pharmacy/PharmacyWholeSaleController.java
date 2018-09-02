@@ -1174,7 +1174,7 @@ public class PharmacyWholeSaleController implements Serializable {
     public void settleBillWithPay() {
         editingQty = null;
 
-        if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 UtilityController.addErrorMessage("Please select Payment Scheme");
                 return;

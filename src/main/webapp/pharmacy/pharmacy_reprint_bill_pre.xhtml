@@ -34,14 +34,14 @@
 
                     <h:panelGroup id="gpBillPreview" >
                         <div>
-                            <h:panelGroup id="gpBillPreview1"  rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq false}" >
+                            <h:panelGroup id="gpBillPreview1"  rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
                                 <ph:saleBill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                             </h:panelGroup>
                         </div>
                         
 
                         <div >
-                            <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}"> 
+                            <h:panelGroup   id="gpBillPreviewPrabodha"   rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
                                 <ph:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_prabodha>
                             </h:panelGroup>
                         </div>

@@ -100,11 +100,11 @@
                             <p:panel header="Channel" style="width: 400px;margin: auto;" collapsed="true" toggleable="true">
                                 <h:panelGrid columns="1">
                                     <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Active Vat For All Channel Sessions" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" 
+                                                     value="Active Vat For All Channel Sessions" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
                                                      action="#{dataAdministrationController.createAllSessionAsVatable()}" 
                                                      onclick="onSubmitButton();" />
                                     <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Mark All Channel Sessions as Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" 
+                                                     value="Mark All Channel Sessions as Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
                                                      action="#{dataAdministrationController.createAllSessionAsChannel()}" 
                                                      onclick="onSubmitButton();" />
                                 </h:panelGrid>

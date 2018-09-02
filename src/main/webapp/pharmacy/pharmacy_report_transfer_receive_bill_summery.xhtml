@@ -72,17 +72,17 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Total"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.value1}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                    <h:outputLabel value="#{-i.value1}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                    <h:outputLabel value="#{i.value1}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"  >
+                                    <h:outputLabel value="#{i.value1}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"  >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                         <h:outputLabel value="#{reportsTransfer.netTotalValues}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}" >
+                                         <h:outputLabel value="#{reportsTransfer.netTotalValues}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>

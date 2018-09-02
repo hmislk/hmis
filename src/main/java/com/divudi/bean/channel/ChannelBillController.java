@@ -194,7 +194,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             updateChangedBill();
         }
 
@@ -612,10 +612,10 @@ public class ChannelBillController implements Serializable {
         System.out.println("billSession = " + billSession);
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
-            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
+            if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
                 bf.setTmpChangedValue(bf.getFeeValue());
             }
-            if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
                 bf.setTmpSettleChangedValue(bf.getFeeValue());
             }
         }
@@ -1132,7 +1132,7 @@ public class ChannelBillController implements Serializable {
                 bf.setFeeVatPlusValue(0.0);
             } else {
                 bf.setFeeValue(bf.getTmpSettleChangedValue());
-                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+                if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
                     if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable() && bf.getFee().getFeeType() == FeeType.Staff) {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
@@ -1399,7 +1399,7 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Can't Settle Without Patient.");
                 return true;
             }
-            if ((getNewPatient().getPerson().getPhone() == null || getNewPatient().getPerson().getPhone().trim().equals("")) && !getSessionController().getInstitutionPreference().isChannelSettleWithoutPatientPhoneNumber()) {
+            if ((getNewPatient().getPerson().getPhone() == null || getNewPatient().getPerson().getPhone().trim().equals("")) && !getSessionController().getLoggedPreference().isChannelSettleWithoutPatientPhoneNumber()) {
                 errorText = "Can not bill without Patient Contact Number.";
                 UtilityController.addErrorMessage("Can't Settle Without Patient Contact Number.");
                 return true;
@@ -1436,19 +1436,19 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
                 return true;
             }
-            if (!getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
-                if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            if (!getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumber(getAgentRefNo()) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "Invaild Reference Number.";
                     UtilityController.addErrorMessage("Invaild Reference Number.");
                     return true;
                 }
-                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumberAlredyExsist(getAgentRefNo(), institution, BillType.ChannelAgent, PaymentMethod.Agent) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "This Reference Number( " + getAgentRefNo() + " ) is alredy Given.";
                     UtilityController.addErrorMessage("This Reference Number is alredy Given.");
                     setAgentRefNo("");
                     return true;
                 }
-                if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+                if (getAgentReferenceBookController().checkAgentReferenceNumber(institution, getAgentRefNo()) && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                     errorText = "This Reference Number is Blocked Or This channel Book is Not Issued.";
                     UtilityController.addErrorMessage("This Reference Number is Blocked Or This channel Book is Not Issued.");
                     return true;
@@ -1464,7 +1464,7 @@ public class ChannelBillController implements Serializable {
         }
         //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
-            if (getAgentRefNo().trim().isEmpty() && !getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber()) {
+            if (getAgentRefNo().trim().isEmpty() && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "Please Enter Agent Ref No";
                 UtilityController.addErrorMessage("Please Enter Agent Ref No.");
                 return true;
@@ -1477,7 +1477,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             if (paymentMethod == PaymentMethod.OnCall) {
                 if (institutionOnCallAgency != null) {
                     if (institutionOnCallAgency.getBallance() != 0.0
@@ -1670,7 +1670,7 @@ public class ChannelBillController implements Serializable {
             return;
         }
         //********************retier bill,billitem,billsession***********************************************
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
         settleSucessFully = true;
@@ -1800,7 +1800,7 @@ public class ChannelBillController implements Serializable {
 
     public void clearBillValues() {
         patientSearchTab = 0;
-        paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+        paymentMethod = sessionController.getLoggedPreference().getChannellingPaymentMethod();
     }
 
     public void addOnCall() {
@@ -1938,9 +1938,9 @@ public class ChannelBillController implements Serializable {
             // set vat for all bill fees
 
             //only vat for doctor fee
-            if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                    || getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
-                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+                    || getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+                if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
                     if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable() && f.getFeeType() == FeeType.Staff) {
                         bf.setFeeGrossValue(bf.getFeeValue());
                         bf.setFeeVat(bf.getFeeValue() * finalVariables.getVATPercentage());
@@ -1952,7 +1952,7 @@ public class ChannelBillController implements Serializable {
                     }
                 }
                 //or arogya add vat for full bill,is not forign,and vatable marked
-                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+                if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
                     if (getbookingController().getSelectedServiceSession().getOriginatingSession().isVatable()
                             && !isForiegn()
                             && f.getFeeType() == FeeType.Staff) {
@@ -2625,14 +2625,14 @@ public class ChannelBillController implements Serializable {
 
     public PaymentMethod getPaymentMethod() {
         if (paymentMethod == null) {
-            if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+            if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
                 if (sessionController.getBill() != null) {
                     paymentMethod = sessionController.getBill().getPaymentMethod();
                 } else {
-                    paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+                    paymentMethod = sessionController.getLoggedPreference().getChannellingPaymentMethod();
                 }
             } else {
-                paymentMethod = sessionController.getInstitutionPreference().getChannellingPaymentMethod();
+                paymentMethod = sessionController.getLoggedPreference().getChannellingPaymentMethod();
             }
         }
         return paymentMethod;

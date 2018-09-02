@@ -18,7 +18,7 @@
                 <p:panel>
                     <h:panelGrid columns="2" >
                         <p:selectOneRadio value="#{channelReportController.reportKeyWord.string}" 
-                                          rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                          rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                             <f:selectItem itemValue="0" itemLabel="All" />
                             <f:selectItem itemValue="1" itemLabel="Morning(Till 11.59 am)" />
                             <f:selectItem itemValue="2" itemLabel="Evening(After 12 noon)" />
@@ -26,11 +26,11 @@
                     </h:panelGrid>
                     <h:panelGrid columns="3" >
                        
-                        <p:outputLabel value="With Agency" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
-                        <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
+                        <p:outputLabel value="With Agency" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.agncy}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" styleClass="noPrintButton"/>
                         <p:commandButton value="Process" action="#{channelReportController.createTotalDoctor()}" styleClass="noPrintButton" ajax="false">
                         </p:commandButton>
-                        <p:commandButton value="Process(Scan)" action="#{channelReportController.createTotalDoctorScan()}" styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
+                        <p:commandButton value="Process(Scan)" action="#{channelReportController.createTotalDoctorScan()}" styleClass="noPrintButton" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" ajax="false">
                         </p:commandButton>
                         <p:commandButton value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />

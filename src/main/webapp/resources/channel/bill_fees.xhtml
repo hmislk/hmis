@@ -35,7 +35,7 @@
                     <f:convertNumber pattern="#,###0.00"  />
                 </p:outputLabel> 
             </p:column>
-            <p:column headerText="Change Value" styleClass="numberCol" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+            <p:column headerText="Change Value" styleClass="numberCol" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                 <p:inputText value="#{bi.tmpSettleChangedValue}" disabled="#{!(!bookingController.selectedServiceSession.originatingSession.vatable and cc.attrs.bill.paymentMethod eq 'OnCall')}">
                     <f:ajax execute="@this" render="col1 col2 col3" event="keyup" listener="#{channelBillController.calSettleTotal()}"/>
                 </p:inputText>

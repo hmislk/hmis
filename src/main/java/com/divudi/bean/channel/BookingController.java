@@ -356,7 +356,7 @@ public class BookingController implements Serializable {
         Map m = new HashMap();
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
-            if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                 sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                         + " and pi.type=:typ "
@@ -389,13 +389,13 @@ public class BookingController implements Serializable {
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
                             + " and pi.staff.speciality=:sp ";
-                    if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                    if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
                         sql += " order by pi.staff.codeInterger , pi.staff.person.name ";
                     } else {
                         sql += " order by pi.staff.person.name ";
@@ -413,7 +413,7 @@ public class BookingController implements Serializable {
         } else {
             if (selectTextConsultant.length() > 4) {
                 doctorSpecialityController.setSelectText("");
-                if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
@@ -437,7 +437,7 @@ public class BookingController implements Serializable {
             } else {
                 m.put("sp", getSpeciality());
                 if (getSpeciality() != null) {
-                    if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+                    if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                         sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                                 + " and pi.type=:typ "
@@ -681,7 +681,7 @@ public class BookingController implements Serializable {
         }
         double d = 0.0;
         // who wat to get vat for selected sessions add institution institution to this methord and settle methord
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             if (item.isVatable()) {
                 d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
             } else {
@@ -838,7 +838,7 @@ public class BookingController implements Serializable {
         }
         double d = 0.0;
         // who wat to get vat for selected sessions add institution institution to this methord and settle methord
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             if (item.isVatable()) {
                 d = obj + (obj2 * finalVariables.getVATPercentageWithAmount());
             } else {
@@ -991,7 +991,7 @@ public class BookingController implements Serializable {
             ss.getOriginatingSession().setTaxFee(dbl[0]);
             ss.getOriginatingSession().setTaxFfee(dbl[1]);
             //For Settle bill
-            if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
+            if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
                 ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
                 ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), paymentMethod));
                 ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), paymentMethod));
@@ -1355,7 +1355,7 @@ public class BookingController implements Serializable {
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
             //
-            if (getSessionController().getInstitutionPreference().isChannelDoctorArivalMsgSend()) {
+            if (getSessionController().getLoggedPreference().isChannelDoctorArivalMsgSend()) {
                 sendSmsDoctorArived(selectedServiceSession);
             }
         }
@@ -1508,7 +1508,7 @@ public class BookingController implements Serializable {
     public void listnerBillSessionListForRowSelectNew() {
         fillBillSessions();
         listnerClearSelectedBillSession();
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 && getSelectedServiceSession().getOriginatingSession().getForBillType() == BillType.XrayScan) {
             getSelectedServiceSession().getOriginatingSession().setItemFees(fetchFee(getSelectedServiceSession().getOriginatingSession()));
         }

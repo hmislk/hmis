@@ -6999,17 +6999,17 @@ public class SearchController implements Serializable {
 
     public void sendSms() {
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
             JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
             return;
         }
 
-        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+        smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getLoggedPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
 
     }
 
     public void sendSmsAll() {
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
             JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
             return;
         }
@@ -7027,7 +7027,7 @@ public class SearchController implements Serializable {
         }
         for (String stn : selectedTelephoneNumbers) {
 
-            smsController.sendSmsToNumberList(stn, getSessionController().getInstitutionPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
+            smsController.sendSmsToNumberList(stn, getSessionController().getLoggedPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
             JsfUtil.addSuccessMessage("Done.");
         }
 

@@ -26,7 +26,7 @@
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="text-align: center;">
-                        <p:graphicImage style="width: 3cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
+                        <p:graphicImage style="width: 3cm!important;" rendered="#{sessionController.loggedPreference.logoName ne null}" library="image" name="#{sessionController.loggedPreference.logoName}" ></p:graphicImage>
                     </div>
                     <div style="text-align: center; font-size: 15px!important;">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>
@@ -349,7 +349,7 @@
 
                 <div class="posbill" style="text-align: left!important; page-break-after: always;">
                     <div style="text-align: center;">
-                        <p:graphicImage style="width: 3cm!important;" rendered="#{sessionController.institutionPreference.logoName ne null}" library="image" name="#{sessionController.institutionPreference.logoName}" ></p:graphicImage>
+                        <p:graphicImage style="width: 3cm!important;" rendered="#{sessionController.loggedPreference.logoName ne null}" library="image" name="#{sessionController.loggedPreference.logoName}" ></p:graphicImage>
                     </div>
                     <div style="text-align: center; font-size: 15px!important;">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" style="text-align: center; font-size: 15px!important;"></h:outputLabel>

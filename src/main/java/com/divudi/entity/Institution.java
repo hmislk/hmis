@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
 import java.io.Serializable;
@@ -32,7 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @XmlRootElement
-public class Institution implements Serializable {
+public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;
@@ -46,6 +47,7 @@ public class Institution implements Serializable {
     Long id;
     String institutionCode;
     String name;
+    private String code;
     String address;
     String fax;
     String email;
@@ -606,4 +608,15 @@ public class Institution implements Serializable {
         this.smsSendingAlias = smsSendingAlias;
     }
 
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    
+    
 }

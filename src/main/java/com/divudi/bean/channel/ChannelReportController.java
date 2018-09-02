@@ -4638,7 +4638,7 @@ public class ChannelReportController implements Serializable {
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
 
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.Channel);
         }
@@ -4647,7 +4647,7 @@ public class ChannelReportController implements Serializable {
 
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
             if (getReportKeyWord().getString().equals("0")) {
 
@@ -4712,7 +4712,7 @@ public class ChannelReportController implements Serializable {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
                             || (b.getBillType() == BillType.ChannelAgent
-                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            && sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
                             || (b.getBillType() == BillType.ChannelAgent
                             && agncy)) {
                         if (b instanceof BilledBill) {
@@ -4750,7 +4750,7 @@ public class ChannelReportController implements Serializable {
                 + " and bs.retired=false "
                 + " and bs.sessionDate= :ssDate ";
 
-        if (sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
+        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
             sql += " and bs.bill.singleBillSession.serviceSession.originatingSession.forBillType=:bt ";
             m.put("bt", BillType.XrayScan);
         }
@@ -4776,7 +4776,7 @@ public class ChannelReportController implements Serializable {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
                             || (b.getBillType() == BillType.ChannelAgent
-                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            && sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
                             || (b.getBillType() == BillType.ChannelAgent
                             && agncy)) {
                         if (b instanceof BilledBill) {
@@ -4829,7 +4829,7 @@ public class ChannelReportController implements Serializable {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
                             || (b.getBillType() == BillType.ChannelAgent
-                            && sessionController.getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
+                            && sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna)
                             || (b.getBillType() == BillType.ChannelAgent
                             && agncy)) {
                         if (b instanceof BilledBill) {

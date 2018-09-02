@@ -21,7 +21,7 @@
 
 
 
-                        <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                        <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                           patientReport="#{patientReportController.currentPatientReport}"/>
 
                         <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
@@ -86,7 +86,7 @@
                     <div id="divReportM"  style="min-width:800px;min-height: 1100px; position: relative; ">
 
 
-                        <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.transInvestigation.reportFormat}"
+                        <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                           patientReport="#{patientReportController.currentPatientReport}"/>
 
 

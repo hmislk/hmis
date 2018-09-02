@@ -63,7 +63,7 @@ public class ServiceSessionLeaveController implements Serializable {
         Map m = new HashMap();
 
         m.put("sp", getSpeciality());
-        if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+        if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
             sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                     + " and pi.type=:typ "

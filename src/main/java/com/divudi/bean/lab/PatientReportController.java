@@ -1127,8 +1127,8 @@ public class PatientReportController implements Serializable {
 
         UserPreference pf;
         
-        if(getSessionController().getInstitutionPreference()!=null){
-            pf=getSessionController().getInstitutionPreference();
+        if(getSessionController().getLoggedPreference()!=null){
+            pf=getSessionController().getLoggedPreference();
         }else if(getSessionController().getUserPreference()!=null){
             pf=getSessionController().getUserPreference();
         }else{
@@ -1399,6 +1399,9 @@ public class PatientReportController implements Serializable {
             r.setItem(ix);
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
+            if(r.getTransInvestigation()!=null){
+                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+            }
             getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addPatientReportItemValuesForReport(r);
@@ -1419,6 +1422,9 @@ public class PatientReportController implements Serializable {
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
+            if(r.getTransInvestigation()!=null){
+                r.setReportFormat(r.getTransInvestigation().getReportFormat());
+            }
             getFacade().create(r);
             r.setPatientInvestigation(pi);
             getPrBean().addMicrobiologyReportItemValuesForReport(r);
