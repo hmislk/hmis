@@ -57,6 +57,20 @@
                                         <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                        <p:separator/>
+                                        <p:separator/>
+                                        <h:outputLabel value="Credit Company :" ></h:outputLabel>
+                                        <p:autoComplete value="#{billSearch.bill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
+                                                        itemValue="#{i}" rendered="false"></p:autoComplete>
+                                        <h:outputLabel value="#{billSearch.bill.creditCompany.name}" rendered="true"></h:outputLabel>
+                                        <h:outputLabel value="Referred By :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                                        <h:outputLabel value="Referring Institution :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.referenceInstitution.name}" ></h:outputLabel>
+                                        
+                                        <h:outputLabel value="ID :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.id}" ></h:outputLabel>
+                                        
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
