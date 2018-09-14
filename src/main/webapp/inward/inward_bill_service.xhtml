@@ -268,7 +268,7 @@
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
 
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
 
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -283,19 +283,19 @@
 
                         <h:panelGroup id="gpBillPreview">
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                                 <ui:repeat value="#{billBhtController.bills}" var="bill">
                                     <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false and sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <ui:repeat value="#{billBhtController.bills}" var="bill">
                                     <bi:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq true}">
                                 <ui:repeat value="#{billBhtController.bills}" var="b">
                                     <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  

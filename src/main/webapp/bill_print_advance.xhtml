@@ -21,8 +21,8 @@
 
 
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false}">
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" 
                                                  process="@this" 
@@ -44,7 +44,7 @@
                                 </ui:repeat>
                             </h:panelGroup>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq true}">
 
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
@@ -67,8 +67,8 @@
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                        <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq false}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpPosBill" ></p:printer>
@@ -96,7 +96,7 @@
 
 
 
-                        <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
+                        <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq true}">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpPosBillWithoutLogo" ></p:printer>

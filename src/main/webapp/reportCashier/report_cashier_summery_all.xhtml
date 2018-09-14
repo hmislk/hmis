@@ -19,17 +19,17 @@
 
                         <p:commandButton id="btnRefresh" ajax="false" 
                                          value="Process" 
-                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
+                                         styleClass="noPrintButton" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
                                          style="float: right;" 
                                          actionListener="#{cashierReportController.calCashierData()}" />  
                         <p:commandButton id="btnRefresh1" ajax="false" 
                                          value="Channel" 
-                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         styleClass="noPrintButton" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
                                          style="float: right;" 
                                          actionListener="#{cashierReportController.calCashierDataChannel()}" />  
                         <p:commandButton id="btnRefresh2" ajax="false" 
                                          value="Cashier" 
-                                         styleClass="noPrintButton" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                                         styleClass="noPrintButton" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
                                          style="float: right;" 
                                          actionListener="#{cashierReportController.calCashierDataCashier()}" />  
                         <p:defaultCommand target="btnRefresh"/>

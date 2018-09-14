@@ -265,7 +265,7 @@
             <h:panelGroup rendered="#{labBillCollectingController.printPreview}" >
                 
                 
-                <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq true}">
                         
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -286,7 +286,7 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
-                <p:panelGrid rendered="#{sessionContinstitutionPreferenceference.printLabelForOPdBill eq false}">
+                <p:panelGrid rendered="#{sessionContloggedPreferenceference.printLabelForOPdBill eq false}">
                 <div class="nonPrintBlock" >
                     <p:commandButton value="Print" ajax="false" action="#">
                         <p:printer target="gpBillPreview" ></p:printer>

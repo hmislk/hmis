@@ -320,7 +320,7 @@ public class ChannelBean {
             boolean hasSpecificDateSession = false;
 //            System.err.println("SESSSION");
             if (checkLeaveDate(nowDate, inputSessions.get(0).getStaff())) {
-                if (getSessionController().getInstitutionPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
+                if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
                     createDocLeaveSession(createdSessions, nowDate, rowIndex);
                     rowIndex++;
                 }

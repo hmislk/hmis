@@ -69,10 +69,10 @@
                                     
                                 </f:facet>
 
-                                <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType ne 'PosPaper'}">                                
+                                <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType ne 'PosPaper'}">                                
                                     <h:outputLabel   value="#{bill.insId}"/>
                                 </p:column>    
-                                <p:column headerText="Bill No" rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}" >                                
+                                <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}" >                                
                                     <h:outputLabel   value="#{bill.deptId}"/>
                                 </p:column> 
                                 <p:column headerText="Customer"  >                                

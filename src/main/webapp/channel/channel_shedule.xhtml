@@ -129,11 +129,11 @@
                                     </p:autoComplete>
                                     <p:outputLabel value="Refundable"/>
                                     <p:selectBooleanCheckbox value="#{sheduleController.current.refundable}"/>
-                                    <p:outputLabel value="Vatable" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative' or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}" />
-                                    <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'or sessionController.institutionPreference.applicationInstitution eq 'Arogya'}"/>
+                                    <p:outputLabel value="Vatable" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}" />
+                                    <p:selectBooleanCheckbox value="#{sheduleController.current.vatable}" disabled="#{!webUserController.hasPrivilege('ChannelActiveVat')}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'or sessionController.loggedPreference.applicationInstitution eq 'Arogya'}"/>
 
-                                    <p:outputLabel value="Channel Type" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" />
-                                    <p:selectOneMenu id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
+                                    <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
+                                    <p:selectOneMenu id="cmbChanType" value="#{sheduleController.current.forBillType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                                         <f:selectItem itemLabel="Please Select a Type"/>
                                         <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                                     </p:selectOneMenu>

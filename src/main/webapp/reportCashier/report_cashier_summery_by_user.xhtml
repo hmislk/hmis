@@ -35,15 +35,15 @@
                             <br/>
                             <h:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} " />
                             
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}"
+                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
                                              action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                            <p:commandButton id="btnRefresh1" ajax="false" value="Only Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
                                              action="#{commonReport.createCashierTableByUserOnlyChannel()}" />  
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}"
+                            <p:commandButton id="btnRefresh2" ajax="false" value="Only Cashier" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}"
                                              styleClass="noPrintButton" style="float: right;"
                                              action="#{commonReport.createCashierTableByUser()}" />  
                             <p:defaultCommand target="btnRefresh"/>

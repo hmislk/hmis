@@ -18,7 +18,7 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="Manage Investigations" styleClass="alignTop" ></h:outputLabel>
                                 <p:spacer width="100" height="1" ></p:spacer>
-                                <p:selectOneMenu id="somInstitution" value="#{investigationController.institution}" rendered="#{sessionController.institutionPreference.institutionSpecificItems}" >
+                                <p:selectOneMenu id="somInstitution" value="#{investigationController.institution}" rendered="#{sessionController.loggedPreference.institutionSpecificItems}" >
                                     <f:selectItem itemLabel="Master Items"  ></f:selectItem>
                                     <f:selectItems value="#{institutionController.companies}" var="c" itemValue="#{c}" itemLabel="#{c.name}" ></f:selectItems>
                                     <p:ajax event="change"   update="gpVeda" process="@this" >

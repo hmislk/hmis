@@ -2821,7 +2821,7 @@ public class CommonReport implements Serializable {
         getInwardRefunds().setCredit(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Credit, getWebUser(), getDepartment()));
         getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
-        if (getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
+        if (getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
             //channell bills
             BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
             List<BillType> btys = Arrays.asList(bty);

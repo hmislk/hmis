@@ -78,7 +78,7 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
-                                    <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                    <h:panelGroup id="gpBillPreview" rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                                         <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill">
                                             <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                         </ui:repeat>
