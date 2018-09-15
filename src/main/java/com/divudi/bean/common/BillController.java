@@ -1477,17 +1477,17 @@ public class BillController implements Serializable {
 //                UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
 //                return true;
 //            }
-        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
-            if (referralId == null || referralId.trim().equals("")) {
-                JsfUtil.addErrorMessage("Please Enter Referrance Number");
-                return true;
-            } else if (institutionReferranceNumberExist()) {
-
-                JsfUtil.addErrorMessage("Alredy Entered");
-                return true;
-            }
-
-        }
+//        if (referredByInstitution != null && referredByInstitution.getInstitutionType() != InstitutionType.CollectingCentre) {
+//            if (referralId == null || referralId.trim().equals("")) {
+//                JsfUtil.addErrorMessage("Please Enter Referrance Number");
+//                return true;
+//            } else if (institutionReferranceNumberExist()) {
+//
+//                JsfUtil.addErrorMessage("Alredy Entered");
+//                return true;
+//            }
+//
+//        }
 
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
