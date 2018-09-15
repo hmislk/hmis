@@ -153,7 +153,7 @@
                             </h:panelGroup>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.insselectedPreferencedBillPaperType eq 'FiveFivePrintedPaper'}" >
+                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
 
 
                             <div class="nonPrintBlock">
@@ -178,7 +178,7 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.insselectedPreferenceplicationInstitution eq 'Rmh' }">
+                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.currentPreference.opdBillPaperType eq 'Rmh' }">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreviewRmh" ></p:printer>
@@ -188,7 +188,7 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGroup rendered="#{sessionController.institselectedPreferencesBillWithoutLogo eq 'false'}">
+                            <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'false'}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpPosBill" ></p:printer>
@@ -213,7 +213,7 @@
                             </h:panelGroup>
 
 
-                            <h:panelGroup rendered="#{sessionController.institselectedPreferencesBillWithoutLogo eq 'true'}">
+                            <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'true'}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpPosBillWithoutLogo" ></p:printer>
@@ -237,10 +237,10 @@
                     </p:panel>
 
                     <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                        <h:panelGroup rendered="#{sessionController.institselectedPreferencellPaperType eq 'FiveFivePaper'}" >
-                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.insselectedPreferenceintLabelForOPdBill eq false
-                                                                           and sessionController.insselectedPreferenceplicationInstitution eq 'Ruhuna'
-                                                                           and sessionController.insselectedPreferenceveFivePaperWithHeadings eq false}">
+                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.currentPreference.opdBillPaperType eq false
+                                                                           and sessionController.currentPreference.opdBillPaperType eq 'Ruhuna'
+                                                                           and sessionController.currentPreference.opdBillPaperType eq false}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpBillPreviewCC" ></p:printer>
@@ -257,9 +257,9 @@
                                                         </h:panelGroup>-->
 
                             </h:panelGroup>
-                            <h:panelGroup id="gpBillPreviewCC2" rendered="#{sessionController.loggedPreferenceselectedPreference eq false
-                                                                            and sessionController.loggedPreferenceselectedPreferenceon eq 'Ruhuna'
-                                                                            and sessionController.loggedPreferenceselectedPreferencedings eq false}">
+                            <h:panelGroup id="gpBillPreviewCC2" rendered="#{sessionController.currentPreference.opdBillPaperType eq false
+                                                                            and sessionController.currentPreference.opdBillPaperType eq 'Ruhuna'
+                                                                            and sessionController.currentPreference.opdBillPaperType eq false}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print Patient" ajax="false" action="#"  >
                                         <p:printer target="gpBillPreviewCC2" ></p:printer>
