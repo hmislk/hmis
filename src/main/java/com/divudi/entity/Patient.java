@@ -85,7 +85,7 @@ public class Patient implements Serializable {
     Date toDate;
     @Size(max = 10)
     String phn;
-    
+
     @Transient
     Bill bill;
 
@@ -97,19 +97,15 @@ public class Patient implements Serializable {
         this.createdInstitution = createdInstitution;
     }
 
-    
-    
-    
     public String getPhn() {
-        
+
         return phn;
     }
 
     public void setPhn(String phn) {
-        
+
         this.phn = phn;
     }
-    
 
     public Date getFromDate() {
         return fromDate;
@@ -158,9 +154,17 @@ public class Patient implements Serializable {
         if (ageYears > 12) {
             age = period.getYears() + " years.";
         } else if (ageYears > 0) {
-            age = period.getYears() + " years and " + period.getMonths() + " months.";
+            if (period.getMonths() > 0) {
+                age = period.getYears() + " years and " + period.getMonths() + " months.";
+            } else {
+                age = period.getYears() + " years.";
+            }
         } else {
-            age = period.getMonths() + " months and " + period.getDays() + " days.";
+            if (period.getDays() > 0) {
+                age = period.getMonths() + " months and " + period.getDays() + " days.";
+            } else {
+                age = period.getMonths() + " months.";
+            }
         }
         period = new Period(dob, date, PeriodType.days());
         ageInDays = (long) period.getDays();

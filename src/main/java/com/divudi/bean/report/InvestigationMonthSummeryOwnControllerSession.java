@@ -166,7 +166,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         investigations = new ArrayList<>();
 
         investigations.addAll(investigationController.getInvestigationItems());
-        System.out.println("investigations = " + investigations);
 
         if (investigations.isEmpty()) {
             UtilityController.addErrorMessage("No Investigations");
@@ -181,7 +180,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
             temp.setB(checkAvailabilityOfReport(i));
 
             if (temp.getInvestigation() != null) {
-                System.out.println("Adding");
                 items.add(temp);
             }
 
@@ -202,7 +200,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         if (reportItemFacade.findFirstBySQL(sql, hm) != null) {
             exist = true;
         }
-        System.out.println("reportItemFacade.findFirstBySQL(sql, hm)" + reportItemFacade.findFirstBySQL(sql, hm));
 
         return exist;
     }
@@ -359,8 +356,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("fd", fromDate);
         m.put("td", toDate);
         pis = patientInvestigationFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
     }
 
     public void createInvestigationTurnoverTime() {
@@ -397,18 +392,14 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 null,
                 true,
                 null);
-        System.out.println("pis.size() = " + temPis.size());
         for (PatientInvestigation pi : temPis) {
 
             if (pi.getApproveAt() != null && pi.getSampledAt() != null) {
-                System.out.println("pi.getPrintingAt().getTime() = " + pi.getApproveAt().getTime());
-                System.out.println("pi.getSampledAt().getTime() = " + pi.getSampledAt().getTime());
                 averateMins = (pi.getApproveAt().getTime() - pi.getSampledAt().getTime()) / (1000 * 60);
                 totalMins += averateMins;
                 averageCount++;
             }
         }
-        System.out.println("totalMins = " + totalMins);
         totalCount = (long) (totalMins / averageCount);
         progressStarted = false;
     }
@@ -468,7 +459,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         map.put("toDate", getToDate());
 
         billList = billFacade.findBySQL(sql, map, TemporalType.TIMESTAMP);
-        System.out.println(billList);
         return billList;
 
     }
@@ -549,30 +539,22 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         if (summeryType.equals("3")) {
             bills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
             for (Bill b : bills) {
                 grantTotal += b.getNetTotal();
             }
-            System.err.println("bills.size() = " + bills.size());
         }
         if (!summeryType.equals("3")) {
             List<Object[]> objects = billFacade.findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
-            System.out.println("objects.size() = " + objects.size());
             if (!objects.isEmpty()) {
                 for (Object[] ob : objects) {
                     IncomeSummeryRow row = new IncomeSummeryRow();
                     System.out.println("summeryType = " + summeryType);
-                    System.out.println("totalType = " + totalType);
-                    System.out.println("ob = " + ob);
                     if (summeryType.equals("1")) {
 
                         System.out.println("item = " + ob[0]);
-                        System.out.println("count = " + ob[1]);
-                        System.out.println("total = " + ob[2]);
 
                         long count = (long) ob[1];
                         if (count == 0) {
@@ -606,7 +588,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                     }
 
                 }
-                System.out.println("incomeSummeryRows.size() = " + incomeSummeryRows.size());
             }
 
         }
@@ -965,7 +946,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         itemsLab = new ArrayList<>();
         countTotal = 0;
         itemValue = 0;
-        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill};
+        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill,billType.OpdBill};
         for (Item w : getInvestigations3(bts)) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInvestigation(w);
@@ -986,7 +967,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         itemsLab = new ArrayList<>();
         countTotal = 0;
         itemValue = 0;
-        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill};
+        BillType[] bts = {BillType.LabBill, BillType.CollectingCentreBill,BillType.OpdBill};
         for (Institution i : getInstitution(bts)) {
             InvestigationSummeryData temp = new InvestigationSummeryData();
             temp.setInstitution(i);
@@ -1312,9 +1293,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, true, null);
         System.out.println("billed = " + billed);
         long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, true, null, true, null, true, null, true, null);
-        System.out.println("cancelled = " + cancelled);
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, true, null);
-        System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);
         return is;
@@ -1326,9 +1305,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, false, i, true, null, true, null, true, null);
         System.out.println("billed = " + billed);
         long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, false, i, true, null, true, null, true, null);
-        System.out.println("cancelled = " + cancelled);
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, false, i, true, null, true, null, true, null);
-        System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);
         return is;
@@ -1340,9 +1317,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, false, i, true, null);
         System.out.println("billed = " + billed);
         long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, true, null, true, null, false, i, true, null);
-        System.out.println("cancelled = " + cancelled);
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, true, null, true, null, false, i, true, null);
-        System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);
         return is;
@@ -1354,9 +1329,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, false, d, true, null, true, null);
         System.out.println("billed = " + billed);
         long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, true, null, false, d, true, null, true, null);
-        System.out.println("cancelled = " + cancelled);
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, true, null, false, d, true, null, true, null);
-        System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);
         return is;
@@ -1368,9 +1341,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         long billed = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{BilledBill.class}, true, null, true, null, true, null, false, d);
         System.out.println("billed = " + billed);
         long cancelled = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{CancelledBill.class}, true, null, true, null, true, null, false, d);
-        System.out.println("cancelled = " + cancelled);
         long refunded = billEjb.getBillItemCount(w, fromDate, toDate, new BillType[]{BillType.InwardBill, BillType.LabBill, BillType.OpdBill, BillType.CollectingCentreBill}, new Class[]{RefundBill.class}, true, null, true, null, true, null, false, d);
-        System.out.println("refunded = " + refunded);
         long net = billed - (cancelled + refunded);
         is.setCount(net);
         return is;
@@ -1491,6 +1462,34 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         return investigations;
     }
+    
+    
+    
+    public List<Item> getBillItemsFromCollectingCentres(BillType[] bts) {
+        Map temMap = new HashMap();
+        String sql = "select distinct ix from BillItem bi join bi.item ix "
+                + " where type(ix) =:ixtype  "
+                + " and bi.bill.billType in :bTypes "
+                + " and bi.bill.collectingCentre is not null "
+                + " and bi.bill.createdAt between :fromDate and :toDate ";
+
+        if (getCreditCompany() != null) {
+            sql += " and (bi.bill.collectingCentre=:col or bi.bill.fromInstitution=:col) ";
+            temMap.put("col", getCreditCompany());
+        } else {
+            sql += " and (bi.bill.collectingCentre is not null or bi.bill.fromInstitution is not null) ";
+        }
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("ixtype", Investigation.class);
+        temMap.put("bTypes", Arrays.asList(bts));
+
+        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+        return investigations;
+    }
+    
 
     public List<Item> getInvestigations3(BillType[] bts) {
         Map temMap = new HashMap();
@@ -1545,8 +1544,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         for (Institution i : institutionsTemp) {
             for (Institution in : institutions) {
                 if (i.equals(in)) {
-                    System.out.println("i.getName() = " + i.getName());
-                    System.out.println("in.getName() = " + in.getName());
                     institutionsRemove.add(i);
                     break;
                 }
@@ -1554,9 +1551,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
         System.out.println("institutionsRemove.size() = " + institutionsRemove.size());
         institutionsTemp.removeAll(institutionsRemove);
-        System.out.println("institutionsTemp.size() = " + institutionsTemp.size());
         institutions.addAll(institutionsTemp);
-        System.out.println("institutions.size() = " + institutions.size());
         return institutions;
     }
 
@@ -1958,7 +1953,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
         }
 
         public double getNetTotal() {
-            System.out.println("this is tot = " + this);
             return netTotal;
         }
 
@@ -2011,7 +2005,6 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
     }
 
     public BillListTotal getBilllistTotal() {
-        System.out.println("this = " + this);
         return billlistTotal;
     }
 

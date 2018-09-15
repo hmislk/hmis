@@ -471,8 +471,6 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        System.out.println("j = " + j);
-        System.out.println("m = " + m);
         reordersAvailableForSelection = ejbFacade.findBySQL(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
@@ -494,15 +492,12 @@ public class ReorderController implements Serializable {
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
-        System.out.println("j = " + j);
-        System.out.println("m = " + m);
         List<Reorder> lst = ejbFacade.findBySQL(j, m);
         userSelectedItems = new ArrayList<>();
         selectableItems = new ArrayList<>();
         for (Reorder r : lst) {
 
             double s = pharmacyBean.getStockQty(r.getItem(), department);
-            System.out.println("s = " + s);
             if (r.getRol() >= s) {
                 r.setTransientStock(s);
                 reordersAvailableForSelection.add(r);
@@ -591,8 +586,6 @@ public class ReorderController implements Serializable {
 
         m.put("dt", DepartmentType.Pharmacy);
         List<Department> depss = departmentController.getDepartments(sql, m);
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         for (Department d : depst) {
             ds.put(d.getId(), d);
@@ -654,7 +647,6 @@ public class ReorderController implements Serializable {
 
     public void generateUserSelectedItemsFromUserSelectedReorders() {
         userSelectedItems = new ArrayList<>();
-        System.out.println("userSelectedItems.size() = " + userSelectedItems.size());
         for (Reorder r : userSelectedReorders) {
             userSelectedItems.add(r.getItem());
         }
@@ -662,7 +654,6 @@ public class ReorderController implements Serializable {
 
     private void generateReorders(boolean overWrite, boolean requiredItemsOnly, DepartmentListMethod departmentListMethod) {
         List<Item> iss = null;
-        System.out.println("generateReorders");
 
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
             itemController.setInstituion(institution);

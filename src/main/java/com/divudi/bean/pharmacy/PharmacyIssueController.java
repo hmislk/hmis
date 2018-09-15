@@ -826,7 +826,6 @@ public class PharmacyIssueController implements Serializable {
         } else {
             tdp = 0;
         }
-        System.err.println("tdp = " + tdp);
         double dr;
         dr = (tr * tdp) / 100;
 
@@ -864,9 +863,7 @@ public class PharmacyIssueController implements Serializable {
         System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
-        System.out.println("1.cal.getTime() = " + cal.getTime());
         cal.add(Calendar.DATE, 31);
-        System.out.println("2.cal.getTime() = " + cal.getTime());
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;
         } else {

@@ -195,7 +195,6 @@ public class AgentReferenceBookController implements Serializable {
             return;
         }
         for (AgentReferenceBook rb : selectedList) {
-            System.out.println("rb = " + rb.getBookNumber());
             rb.setRetired(true);
             rb.setRetireComments("Bulk Delete");
             rb.setDeactivate(true);

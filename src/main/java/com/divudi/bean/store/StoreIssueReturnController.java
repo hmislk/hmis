@@ -321,7 +321,6 @@ public class StoreIssueReturnController implements Serializable {
 
             double rFund = storeCalculation.getTotalQty(i.getBillItem(), BillType.StoreIssue);
 
-            System.err.println("Refund " + rFund);
             double tmpQty = (Math.abs(i.getQtyInUnit())) - Math.abs(rFund);
 
             if (tmpQty <= 0) {

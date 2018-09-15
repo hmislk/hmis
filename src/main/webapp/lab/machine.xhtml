@@ -18,7 +18,7 @@
 
 
 
-                <p:panel header="Manage Pharmaceutical Item Categories" styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel header="Manage Analyzer Details" styleClass="verticalAndHorizontalCenteringLarge">
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
                         <h:panelGrid id="gpSelect" columns="1"  >
@@ -45,9 +45,18 @@
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{machineController.current.name}"  ></h:inputText>
+                                    <p:outputLabel id="lblName" value="Name" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" id="txtName" value="#{machineController.current.name}"  ></p:inputText>
 
+                                    <p:outputLabel value="Code" ></p:outputLabel>
+                                    <p:inputText autocomplete="off" id="txtCode" value="#{machineController.current.code}"  ></p:inputText>
+
+                                    
+                                    <p:outputLabel  value="Description" ></p:outputLabel>
+                                    <p:inputTextarea id="txtDes" value="#{machineController.current.description}"  ></p:inputTextarea>
+
+                                    <p:outputLabel id="lblIns" value="Institution" ></p:outputLabel>
+                                    <p:autoComplete rendered="#{machineController.current ne null}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}" itemValue="#{i}" value="#{machineController.current.institution}" ></p:autoComplete>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{machineController.saveSelected()}" styleClass="buttons">

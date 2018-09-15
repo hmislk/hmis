@@ -337,8 +337,6 @@ public class PharmacyCalculation implements Serializable {
 
         double netQty = grns - grnReturn;
 
-        System.err.println("GRN " + grns);
-        System.err.println("GRN Return " + grnReturn);
 
         return netQty;
     }
@@ -355,8 +353,6 @@ public class PharmacyCalculation implements Serializable {
 
         double returnBill = getTotalQty(bil, BillType.PharmacyPre, new RefundBill());
 
-        System.err.println("RETURN " + returnBill);
-        System.err.println("bil.getQty() = " + bil.getQty());
         return bil.getQty() - returnBill;
     }
 
@@ -364,7 +360,6 @@ public class PharmacyCalculation implements Serializable {
 
         double returnBill = getTotalQty(bil, BillType.PharmacyBhtPre, new RefundBill());
 
-        System.err.println("RETURN " + returnBill);
         return bil.getQty() - returnBill;
     }
 
@@ -535,7 +530,6 @@ public class PharmacyCalculation implements Serializable {
         double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
         double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
         double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
-        System.err.println("Puchase :  " + purchase);
         //System.out.println("wholesale = " + wholesale);
         itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
         itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
@@ -725,13 +719,10 @@ public class PharmacyCalculation implements Serializable {
         for (BillItem i : b.getBillItems()) {
             System.out.println("i = " + i);
             System.out.println("sale = " + sale);
-            System.out.println("free = " + free);
             sale += (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty()) * i.getPharmaceuticalBillItem().getRetailRate();
             free += i.getPharmaceuticalBillItem().getFreeQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
-            System.out.println("sale = " + sale);
         }
         System.out.println("b.getBillType() = " + b.getBillType());
-        System.out.println("b.getClass() = " + b.getClass());
         if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) || b.getClass().equals(RefundBill.class)) {
             b.setSaleValue(0.0 - Math.abs(sale));
             b.setFreeValue(0.0 - Math.abs(free));
@@ -739,7 +730,6 @@ public class PharmacyCalculation implements Serializable {
             b.setSaleValue(Math.abs(sale));
             b.setFreeValue(Math.abs(free));
         }
-        System.out.println("b.getSaleValue() = " + b.getSaleValue());
     }
 
     public boolean checkItemBatch(List<BillItem> list) {
@@ -792,8 +782,6 @@ public class PharmacyCalculation implements Serializable {
         List<Bill> bills = getBillFacade().findBySQL(sql, m, 100);
         for (Bill b : bills) {
             System.out.println("b.getSaleValue() = " + b.getSaleValue());
-            System.out.println("b.getBillType() = " + b.getBillType());
-            System.out.println("b.getBillClassType() = " + b.getBillClassType());
             calculateRetailSaleValueAndFreeValueAtPurchaseRate(b);
             getBillFacade().edit(b);
         }

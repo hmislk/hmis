@@ -5,7 +5,7 @@
  */
 package com.divudi.entity;
 
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import java.io.Serializable;
@@ -26,15 +26,16 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class Sms implements Serializable {
-    @ManyToOne
-    private PatientInvestigation patientInvestigation;
-    @ManyToOne
-    private Bill bill;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
+    @ManyToOne
+    private PatientInvestigation patientInvestigation;
+    @ManyToOne
+    private Bill bill;
     @ManyToOne
     PatientReport patientReport;
     @Lob
@@ -44,10 +45,14 @@ public class Sms implements Serializable {
     String userId;
     String password;
     String sendingUrl;
+    private String receipientNumber;
     @Enumerated(EnumType.STRING)
-    private SmsType smsType;    
-    
-        //Created Properties
+    private MessageType smsType;
+    //Sending Properties
+    private Boolean sentSuccessfully;
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date sentAt;
+    //Created Properties
     @ManyToOne
     private WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -60,7 +65,16 @@ public class Sms implements Serializable {
     private Date retiredAt;
     private String retireComments;
     //DataEntry
+    @ManyToOne
+    private Institution institution;
+    @ManyToOne
+    private Department department;
 
+
+    
+    
+    
+    
     public Bill getBill() {
         return bill;
     }
@@ -69,8 +83,6 @@ public class Sms implements Serializable {
         this.bill = bill;
     }
 
-    
-    
     public PatientInvestigation getPatientInvestigation() {
         return patientInvestigation;
     }
@@ -79,8 +91,6 @@ public class Sms implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
-    
-    
     public PatientReport getPatientReport() {
         return patientReport;
     }
@@ -177,8 +187,6 @@ public class Sms implements Serializable {
         this.retireComments = retireComments;
     }
 
-    
-
     public Long getId() {
         return id;
     }
@@ -212,12 +220,52 @@ public class Sms implements Serializable {
         return "com.divudi.entity.Sms[ id=" + id + " ]";
     }
 
-    public SmsType getSmsType() {
+    public MessageType getSmsType() {
         return smsType;
     }
 
-    public void setSmsType(SmsType smsType) {
+    public void setSmsType(MessageType smsType) {
         this.smsType = smsType;
     }
-    
+
+    public Boolean getSentSuccessfully() {
+        return sentSuccessfully;
+    }
+
+    public void setSentSuccessfully(Boolean sentSuccessfully) {
+        this.sentSuccessfully = sentSuccessfully;
+    }
+
+    public Date getSentAt() {
+        return sentAt;
+    }
+
+    public void setSentAt(Date sentAt) {
+        this.sentAt = sentAt;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getReceipientNumber() {
+        return receipientNumber;
+    }
+
+    public void setReceipientNumber(String receipientNumber) {
+        this.receipientNumber = receipientNumber;
+    }
+
 }

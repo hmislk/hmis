@@ -99,11 +99,11 @@
 
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq false}" class="noBorder">
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
                         <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.institutionPreference.grnBillDetailed eq true}" class="noBorder">
+                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
                         <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
 

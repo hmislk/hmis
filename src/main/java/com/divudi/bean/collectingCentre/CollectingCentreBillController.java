@@ -310,13 +310,13 @@ public class CollectingCentreBillController implements Serializable {
         temp.setCreatedAt(new Date());
         temp.setCreater(getSessionController().getLoggedUser());
         getFacade().create(temp);
+        //create bill fee payments
+        //create bill fee payments
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
         System.out.println("opdPaymentCredit = " + opdPaymentCredit);
         reminingCashPaid = opdPaymentCredit;
-        System.out.println("reminingCashPaid = " + reminingCashPaid);
-        System.out.println("opdPaymentCredit = " + opdPaymentCredit);
 
         Payment p = createPayment(temp, getPaymentMethod());
 
@@ -776,8 +776,6 @@ public class CollectingCentreBillController implements Serializable {
         System.out.println("billFeeTotal = " + billFeeTotal);
         System.out.println("b.getDiscount() = " + b.getDiscount());
         System.out.println("billFeeDiscount = " + billFeeDiscount);
-        System.out.println("b.getNetTotal() = " + b.getNetTotal());
-        System.out.println("billFeeNetTotal = " + billFeeNetTotal);
 
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
@@ -817,7 +815,7 @@ public class CollectingCentreBillController implements Serializable {
             b.setBackwardReferenceBill(tmp);
             dbl += b.getNetTotal();
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 b.setCashPaid(reminingCashPaid);
 
                 if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -1092,44 +1090,38 @@ public class CollectingCentreBillController implements Serializable {
     public void addToBill() {
         System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
-            System.out.println("noting to add");
             UtilityController.addErrorMessage("Nothing to add");
             return;
         }
         if (getCurrentBillItem().getItem() == null) {
-            System.out.println("an item ?");
             UtilityController.addErrorMessage("Please select an Item");
             return;
         }
         if (getCurrentBillItem().getItem().getTotal() == 0.0) {
-            System.out.println("fee ?");
             UtilityController.addErrorMessage("Please corect item fee");
             return;
         }
 
         if (getCurrentBillItem().getItem().getDepartment() == null) {
-            System.out.println("dept?");
             UtilityController.addErrorMessage("Please set Department to Item");
             return;
         }
 
         if (getCurrentBillItem().getItem().getCategory() == null) {
-            System.out.println("cat ?");
             UtilityController.addErrorMessage("Please set Category to Item");
             return;
         }
 
         if (collectingCentre == null) {
-            System.out.println("Collecting Center ?");
             UtilityController.addErrorMessage("Please Select Collecting Center");
             return;
         }
 
         getCurrentBillItem().setSessionDate(sessionDate);
-
 //        New Session
         //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
-        System.out.println("to get current bill items");
+//        New Session
+        //   getCurrentBillItem().setBillSession(getServiceSessionBean().createBillSession(getCurrentBillItem()));
         lastBillItem = getCurrentBillItem();
         BillEntry addingEntry = new BillEntry();
         addingEntry.setBillItem(getCurrentBillItem());
@@ -1140,8 +1132,6 @@ public class CollectingCentreBillController implements Serializable {
         getCurrentBillItem().setRate(getBillBean().billItemRate(addingEntry));
         getCurrentBillItem().setQty(1.0);
         getCurrentBillItem().setNetValue(getCurrentBillItem().getRate() * getCurrentBillItem().getQty()); // Price == Rate as Qty is 1 here
-
-        System.out.println("to cal totals");
         calTotals();
 
         if (getCurrentBillItem().getNetValue() == 0.0) {
@@ -1257,7 +1247,6 @@ public class CollectingCentreBillController implements Serializable {
         setNetTotal(billNet);
         setVat(billVat);
         setVatPlusNetTotal(billVat + billNet);
-        System.out.println("bill tot is " + billGross);
     }
 
     public void feeChanged() {
@@ -1347,8 +1336,6 @@ public class CollectingCentreBillController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-        System.out.println("bill.getBalance() = " + bill.getBalance());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1381,15 +1368,13 @@ public class CollectingCentreBillController implements Serializable {
 
             System.err.println("Bill For In");
             System.out.println("dbl = " + dbl);
-            System.out.println("reminingCashPaid = " + reminingCashPaid);
 
-            if ((reminingCashPaid != 0.0) || !getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
+            if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
                 calculateBillfeePayments(be.getLstBillFees(), p);
 
             }
 
-            System.err.println("Bill For Out");
 
         }
 
@@ -1397,10 +1382,8 @@ public class CollectingCentreBillController implements Serializable {
 
     public void calculateBillfeePayments(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-            System.err.println("BillFee For In");
 
-            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
-                System.err.println("IF In");
+            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
                         System.err.println("in");
@@ -1413,8 +1396,6 @@ public class CollectingCentreBillController implements Serializable {
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
-                        System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.err.println("out");
                     } else {
                         System.err.println("IN");
                         System.out.println("In E reminingCashPaid = " + reminingCashPaid);
@@ -1423,18 +1404,13 @@ public class CollectingCentreBillController implements Serializable {
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid = 0.0;
-                        System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
-                        System.err.println("OUT");
                     }
                 }
-                System.err.println("IF Out");
             } else {
-                System.err.println("Else In");
                 bf.setSettleValue(bf.getFeeValue());
                 setBillFeePaymentAndPayment(bf.getFeeValue(), bf, p);
                 getBillFeeFacade().edit(bf);
             }
-            System.err.println("BillFee For Out");
         }
     }
 
@@ -1515,7 +1491,6 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void changeListener() {
-        System.err.println("Change Listen 1 ");
         calTotals();
     }
 

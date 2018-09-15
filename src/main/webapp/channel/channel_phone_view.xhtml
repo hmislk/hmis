@@ -32,10 +32,10 @@
                     </f:facet>
                     <p:column headerText="No">#{bs.serialNo}</p:column>
                     <p:column headerText="Booking Id">
-                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null and sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
-                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null and sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}"/>
-                        <p:outputLabel value="#{bs.bill.insId}" rendered="#{bs.bill.paidBill eq null and sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
-                        <p:outputLabel value="#{bs.bill.paidBill.insId}" rendered="#{bs.bill.paidBill ne null and sessionController.institutionPreference.applicationInstitution ne 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null and sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null and sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.insId}" rendered="#{bs.bill.paidBill eq null and sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"/>
+                        <p:outputLabel value="#{bs.bill.paidBill.insId}" rendered="#{bs.bill.paidBill ne null and sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"/>
                     </p:column>
                     <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                     <p:column headerText="Phone No">#{bs.bill.patient.person.phone}</p:column>

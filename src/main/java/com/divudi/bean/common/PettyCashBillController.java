@@ -145,12 +145,9 @@ public class PettyCashBillController implements Serializable {
         h.put("btp", BillType.PettyCash);
         h.put("fd", fd);
         h.put("inv", inv);
-        System.out.println("h = " + h);
-        System.out.println("sql = " + sql);
         List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
 
         if (tmp.size() > 0) {
-            System.out.println("tmp.get(0).getInsId() =" + tmp.get(0).getInsId());
             return true;
         }
 
@@ -158,7 +155,6 @@ public class PettyCashBillController implements Serializable {
     }
 
     public void checkInvoiceNumber() {
-        System.out.println("createInvoiceNumberSuffix() = " + createInvoiceNumberSuffix());
     }
 
     private String createInvoiceNumberSuffix() {
@@ -168,7 +164,6 @@ public class PettyCashBillController implements Serializable {
         int y = c.get(Calendar.YEAR);
         System.out.println("y = " + y);
         int m = c.get(Calendar.MONTH);
-        System.out.println("m = " + m);
         String s1;
         String s2;
         if (m < 3) {
@@ -181,7 +176,6 @@ public class PettyCashBillController implements Serializable {
 
         }
         String s = s1.substring(2, 4) + s2.substring(2, 4) + "-";
-        System.out.println("s = " + s);
 
         return s;
     }
@@ -275,7 +269,6 @@ public class PettyCashBillController implements Serializable {
         getCurrent().setTotal(getCurrent().getNetTotal());
         DecimalFormat df = new DecimalFormat("00000");
         String s=df.format(getCurrent().getIntInvoiceNumber());
-        System.out.println("df = " + s);
         getCurrent().setInvoiceNumber(createInvoiceNumberSuffix() + s);
 
         saveBill();
@@ -285,7 +278,6 @@ public class PettyCashBillController implements Serializable {
         getSessionController().setLoggedUser(wb);
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
-        System.out.println("getCurrent().getInvoiceNumber() = " + getCurrent().getInvoiceNumber());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/OPD/Petty Cash/ Petty Cash payment(/faces/petty_cash_bill.xhtml)");
 

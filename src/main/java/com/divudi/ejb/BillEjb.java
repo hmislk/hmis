@@ -175,7 +175,6 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
-        System.out.println("temMap = " + temMap);
         return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -233,7 +232,6 @@ public class BillEjb implements Serializable {
             sql += " and type(bi.item) in :ics ";
             temMap.put("ics", ics);
         }
-        System.out.println("temMap = " + temMap);
         return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -332,12 +330,10 @@ public class BillEjb implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         //System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
         //System.out.println("r = " + r);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("bills.size() = " + bills.size());
         //System.out.println("r = " + r);
         r.setBills(bills);
 

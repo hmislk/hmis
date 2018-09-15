@@ -74,7 +74,7 @@
                                                         <td  >
                                                             <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Name"
                                                                          value="#{collectingCentreBillController.newPatient.person.name}" 
-                                                                         style="width: 350px;text-transform:uppercase;">
+                                                                         style="width: 350px;text-transform:capitalize;">
                                                             </p:inputText>
                                                         </td>
                                                     </tr>
@@ -533,11 +533,11 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{collectingCentreBillController.printPreview}" >
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false 
-                                                      and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'
-                                                      and sessionController.institutionPreference.fiveFivePaperWithHeadings eq false}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false 
+                                                      and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
+                                                      and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" 
                                                      process="@this" 
@@ -572,7 +572,7 @@
                                 </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq true}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq true}">
 
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
@@ -593,7 +593,7 @@
                                 </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.fiveFivePaperWithHeadings eq true}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.fiveFivePaperWithHeadings eq true}">
 
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
@@ -614,7 +614,7 @@
                                 </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Rmh'}">
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Rmh'}">
 
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
@@ -637,8 +637,8 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.institutionPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq false}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                            <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq false}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpPosBill" ></p:printer>
@@ -669,7 +669,7 @@
 
 
 
-                            <h:panelGrid rendered="#{sessionController.institutionPreference.opdPosBillWithoutLogo eq true}">
+                            <h:panelGrid rendered="#{sessionController.loggedPreference.opdPosBillWithoutLogo eq true}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpPosBillWithoutLogo" ></p:printer>

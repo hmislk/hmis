@@ -503,7 +503,7 @@ public class AdmissionController implements Serializable {
             return true;
         }
 
-        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
                 JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
                 return true;
@@ -552,7 +552,7 @@ public class AdmissionController implements Serializable {
             }
         }
         
-        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getInstitutionPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
+        if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments()==null || getCurrent().getComments().isEmpty()) {
                 UtilityController.addErrorMessage("Please Add Reference No");
                 return true;
@@ -636,8 +636,6 @@ public class AdmissionController implements Serializable {
 
     public void updateBHTNo() {
         System.out.println("current.getBhtNo() = " + current.getBhtNo());
-        System.out.println("current.getCurrentPatientRoom() = " + patientRoom.getRoomFacilityCharge());
-        System.out.println("current.getAdmissionType() = " + current.getAdmissionType());
         if (current.getBhtNo() == null || current.getBhtNo().isEmpty()) {
             UtilityController.addErrorMessage("BHT NO");
             return;

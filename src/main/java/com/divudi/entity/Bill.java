@@ -6,6 +6,7 @@ package com.divudi.entity;
 
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.entity.cashTransaction.CashTransaction;
@@ -43,7 +44,8 @@ import javax.persistence.Transient;
 @Entity
 @Table(name = "bill")
 @NamedQueries({
-    @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b"),
+    @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
+    ,
     @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
 public class Bill implements Serializable {
 
@@ -311,8 +313,7 @@ public class Bill implements Serializable {
 //    private WebUser printedUser;
 //    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
 //    private Date printedAt;
-    
-    
+
     @Transient
     double transTotalCCFee;
     @Transient
@@ -327,9 +328,12 @@ public class Bill implements Serializable {
     double vatPlusStaffFee;
     @Transient
     double vatPlusHosFee;
-    
+
     @Transient
-    private boolean approvedAnyTest=false;
+    private boolean approvedAnyTest = false;
+
+    @Transient
+    private IdentifiableWithNameOrCode referredInstituteOrDoctor;
 
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
@@ -439,7 +443,7 @@ public class Bill implements Serializable {
         billerFee = 0 - bill.getBillerFee();
         discount = 0 - bill.getDiscount();
         vat = 0 - bill.getVat();
-        vatPlusNetTotal =0-bill.getVatPlusNetTotal();
+        vatPlusNetTotal = 0 - bill.getVatPlusNetTotal();
         netTotal = 0 - bill.getNetTotal();
         total = 0 - bill.getTotal();
         discountPercent = 0 - bill.getDiscountPercent();
@@ -866,6 +870,11 @@ public class Bill implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getIdStr() {
+        String formatted = String.format("%07d", id);
+        return formatted;
     }
 
     @Override
@@ -1770,13 +1779,21 @@ public class Bill implements Serializable {
 //    public void setPrintedAt(Date printedAt) {
 //        this.printedAt = printedAt;
 //    }
-
     public boolean isApprovedAnyTest() {
         return approvedAnyTest;
     }
 
     public void setApprovedAnyTest(boolean approvedAnyTest) {
         this.approvedAnyTest = approvedAnyTest;
+    }
+
+    public IdentifiableWithNameOrCode getReferredInstituteOrDoctor() {
+        if (referenceInstitution != null) {
+            referredInstituteOrDoctor = referenceInstitution;
+        } else {
+            referredInstituteOrDoctor = referredBy;
+        }
+        return referredInstituteOrDoctor;
     }
 
 }

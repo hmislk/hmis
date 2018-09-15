@@ -113,13 +113,11 @@ public class StaffLoanController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        System.out.println("getCurrent().isCompleted() = " + getCurrent().isCompleted());
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             if(!getCurrent().isCompleted()){
                 getCurrent().setCompletedAt(null);
-                System.out.println("1.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             
             getStaffPaysheetComponentFacade().create(getCurrent());
@@ -127,16 +125,13 @@ public class StaffLoanController implements Serializable {
         } else {
             if (getCurrent().isCompleted()) {
                 getCurrent().setCompleter(getSessionController().getLoggedUser());
-                System.out.println("2.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             if(!getCurrent().isCompleted()){
                 getCurrent().setCompletedAt(null);
-                System.out.println("3.getCurrent().isCompleted() = " + getCurrent().isCompleted());
             }
             getStaffPaysheetComponentFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated");
         }
-        System.out.println("getCurrent().getCompletedAt() = " + getCurrent().getCompletedAt());
         PaysheetComponent pc=getCurrent().getPaysheetComponent();
         Date fd=getCurrent().getFromDate();
         Date td=getCurrent().getToDate();

@@ -75,7 +75,7 @@
                                                     <f:selectItem itemLabel="Other" itemValue="Other"/>
                                                 </p:selectOneMenu>
                                                 <h:outputLabel value="Name"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{billController.newPatient.person.name}" style="width: 200px;text-transform:uppercase;">
+                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{billController.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
                                                 </p:inputText>
                                                 <h:outputLabel value="Sex"/>
                                                 <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 200px;">
@@ -367,7 +367,7 @@
                                                             </h:outputLabel>
 
                                                             <h:outputLabel value="#{bill.patient.person.nameWithTitle}"
-                                                                           style="position:absolute;left:4.5cm; top:2.0cm; text-transform: uppercase; "  >
+                                                                           style="position:absolute;left:4.5cm; top:2.0cm; text-transform: capitalize; "  >
                                                             </h:outputLabel>
 
                                                             <h:outputLabel value="#{bill.patient.person.phone}"

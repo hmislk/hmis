@@ -2,6 +2,8 @@ package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.ItemType;
+import com.divudi.data.SymanticType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
@@ -17,6 +19,7 @@ import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.ItemForItem;
+import com.divudi.entity.lab.Machine;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.Vmp;
@@ -31,6 +34,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -43,6 +47,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  *
@@ -81,6 +86,7 @@ public class ItemController implements Serializable {
      * Properties
      */
     private Item current;
+    private Item sampleComponent;
     private List<Item> items = null;
     private List<Item> investigationsAndServices = null;
     private List<Item> itemlist;
@@ -92,13 +98,218 @@ public class ItemController implements Serializable {
     Department department;
     FeeType feeType;
     List<Department> departments;
+    private Machine machine;
+    private List<Item> machineTests;
+    private List<Item> investigationSampleComponents;
 
     ReportKeyWord reportKeyWord;
+
+    public void fillInvestigationSampleComponents() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return;
+        }
+        if (current instanceof Investigation) {
+            investigationSampleComponents = findInvestigationSampleComponents((Investigation) current);
+            if (investigationSampleComponents != null && investigationSampleComponents.size() > 1) {
+                current.setHasMoreThanOneComponant(true);
+                getFacade().edit(current);
+            }
+        } else {
+            investigationSampleComponents = null;
+        }
+    }
+
+    public List<Item> getInvestigationSampleComponents(Item ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        if (ix instanceof Investigation) {
+            return findInvestigationSampleComponents((Investigation) ix);
+        }
+        return null;
+    }
+
+    public Item getFirstInvestigationSampleComponents(Item ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        if (ix instanceof Investigation) {
+            List<Item> is = findInvestigationSampleComponents((Investigation) ix);
+            if (is != null && !is.isEmpty()) {
+                return is.get(0);
+            } else {
+                Item sc = new Item();
+                sc.setParentItem(ix);
+                sc.setItemType(ItemType.SampleComponent);
+                sc.setCreatedAt(new Date());
+                sc.setCreater(sessionController.getLoggedUser());
+                sc.setName(ix.getName());
+                getFacade().create(sc);
+                return sc;
+            }
+        }
+        return null;
+    }
+
+    public List<Item> findInvestigationSampleComponents(Investigation ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.name";
+        Map m = new HashMap();
+        m.put("t", ItemType.SampleComponent);
+        m.put("r", false);
+        m.put("m", ix);
+        return getFacade().findBySQL(j, m);
+    }
+
+    public void removeSampleComponent() {
+        if (sampleComponent == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        sampleComponent.setRetired(true);
+        sampleComponent.setRetirer(sessionController.getLoggedUser());
+        sampleComponent.setRetiredAt(new Date());
+        getFacade().edit(sampleComponent);
+        fillInvestigationSampleComponents();
+        JsfUtil.addSuccessMessage("Removed");
+    }
+
+    public void toCreateSampleComponent() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return;
+        }
+        sampleComponent = new Item();
+        sampleComponent.setParentItem(current);
+        sampleComponent.setItemType(ItemType.SampleComponent);
+        sampleComponent.setCreatedAt(new Date());
+        sampleComponent.setCreater(sessionController.getLoggedUser());
+    }
+
+    public void createOrUpdateSampleComponent() {
+        if (sampleComponent == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        sampleComponent.setParentItem(current);
+        sampleComponent.setItemType(ItemType.SampleComponent);
+
+        if (sampleComponent.getId() == null) {
+            getFacade().create(sampleComponent);
+            JsfUtil.addSuccessMessage("Added");
+        } else {
+            getFacade().edit(sampleComponent);
+            JsfUtil.addSuccessMessage("Updated");
+        }
+        fillInvestigationSampleComponents();
+    }
+
+    public void addSampleComponentsForAllInvestigationsWithoutSampleComponents() {
+        String j = "select ix from Investigation ix ";
+        List<Item> ixs = getFacade().findBySQL(j);
+        for (Item ix : ixs) {
+            if (ix instanceof Investigation) {
+                Investigation tix = (Investigation) ix;
+                List<Item> scs = findInvestigationSampleComponents(tix);
+                if (scs == null || scs.isEmpty()) {
+                    sampleComponent = new Item();
+                    sampleComponent.setName(tix.getName());
+                    sampleComponent.setParentItem(tix);
+                    sampleComponent.setItemType(ItemType.SampleComponent);
+                    sampleComponent.setCreatedAt(new Date());
+                    sampleComponent.setCreater(sessionController.getLoggedUser());
+                    getFacade().create(sampleComponent);
+                } else {
+                    if (scs.size() > 1) {
+                        tix.setHasMoreThanOneComponant(true);
+                        getFacade().edit(tix);
+                    } else {
+                        tix.setHasMoreThanOneComponant(false);
+                        getFacade().edit(tix);
+                    }
+                }
+            }
+        }
+        JsfUtil.addSuccessMessage("Added");
+    }
+
+    public void fillMachineTests() {
+        if (machine == null) {
+            JsfUtil.addErrorMessage("Select a machine");
+            return;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.machine=:m and i.retired=:r order by i.code";
+        Map m = new HashMap();
+        m.put("t", ItemType.AnalyzerTest);
+        m.put("m", machine);
+        m.put("r", false);
+        machineTests = getFacade().findBySQL(j, m);
+    }
+
+    public List<Item> completeMachineTests(String qry) {
+        List<Item> ts;
+        String j = "select i from Item i where i.itemType=:t and (lower(i.name) like :m or lower(i.name) like :m ) and i.retired=:r order by i.code";
+        Map m = new HashMap();
+        m.put("t", ItemType.AnalyzerTest);
+        m.put("m", "%" + qry.toLowerCase() + "%");
+        m.put("r", false);
+        ts = getFacade().findBySQL(j, m);
+        return ts;
+    }
+
+    public void removeTest() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        current.setRetired(true);
+        current.setRetirer(sessionController.getLoggedUser());
+        current.setRetiredAt(new Date());
+        getFacade().edit(current);
+        fillMachineTests();
+        JsfUtil.addSuccessMessage("Removed");
+    }
+
+    public void toCreateNewTest() {
+        if (machine == null) {
+            JsfUtil.addErrorMessage("Select a machine");
+            return;
+        }
+        current = new Item();
+        current.setItemType(ItemType.AnalyzerTest);
+        current.setCreatedAt(new Date());
+        current.setCreater(sessionController.getLoggedUser());
+    }
+
+    public void createOrUpdateTest() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to delete");
+            return;
+        }
+        current.setMachine(machine);
+        current.setInstitution(machine.getInstitution());
+        current.setItemType(ItemType.AnalyzerTest);
+
+        if (current.getId() == null) {
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Added");
+        } else {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Updated");
+        }
+        fillMachineTests();
+    }
 
     public void refreshInvestigationsAndServices() {
         investigationsAndServices = null;
         getInvestigationsAndServices();
-        for(Item i:getInvestigationsAndServices()){
+        for (Item i : getInvestigationsAndServices()) {
             i.getItemFeesAuto();
         }
     }
@@ -136,13 +347,13 @@ public class ItemController implements Serializable {
                 for (ItemFee itf : i.getItemFeesAuto()) {
                     getItemFeeFacade().edit(itf);
                     t += itf.getFee();
-                    
+
                 }
                 i.setTotal(t);
                 getFacade().edit(i);
             }
         }
-        investigationsAndServices=null;
+        investigationsAndServices = null;
         getInvestigationsAndServices();
     }
 
@@ -198,7 +409,6 @@ public class ItemController implements Serializable {
             ni.setDepartment(department);
             ni.setItemFee(null);
             System.out.println("ni.getReportedAs() in master = " + i.getReportedAs());
-            System.out.println("ni.getReportedAs() in created = " + ni.getReportedAs());
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
             //System.out.println("ni = " + ni);
@@ -227,10 +437,8 @@ public class ItemController implements Serializable {
             }
             getFacade().edit(ni);
             List<Item> ifis = itemForItemController.getItemsForParentItem(i);
-            System.out.println("ifis = " + ifis);
             if (ifis != null) {
                 for (Item ifi : ifis) {
-                    System.out.println("ifi = " + ifi);
                     ItemForItem ifin = new ItemForItem();
                     ifin.setParentItem(ni);
                     ifin.setChildItem(ifi);
@@ -658,8 +866,25 @@ public class ItemController implements Serializable {
 
     }
 
+    public List<Item> completeLoggedInstitutionInvestigation(String query) {
+        List<Item> lst;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Item c "
+                + " where c.retired=false "
+                + " and type(c)=:cls "
+                + " and upper(c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("cls", Investigation.class);
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("ins", sessionController.getLoggedUser().getInstitution());
+        lst = getFacade().findBySQL(sql, hm, 20);
+        return lst;
+    }
+
     public List<Item> completeServiceWithoutProfessional(String query) {
-        List<Item> suggestions;
+        List<Item> lst;
         String sql;
         HashMap hm = new HashMap();
 
@@ -671,10 +896,8 @@ public class ItemController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
-
-        return suggestions;
-
+        lst = getFacade().findBySQL(sql, hm, 20);
+        return lst;
     }
 
     public List<Item> completeMedicalPackage(String query) {
@@ -861,7 +1084,7 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeOpdItemsByNamesAndCode(String query) {
-        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+        if (sessionController.getLoggedPreference().isInstitutionRestrictedBilling()) {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, true);
         } else {
             return completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(query, false);
@@ -948,7 +1171,6 @@ public class ItemController implements Serializable {
 
     public void makeSelectedAsMasterItems() {
         for (Item i : selectedList) {
-            System.err.println("********");
             //System.out.println("i = " + i.getInstitution());
             if (i.getInstitution() != null) {
                 //System.out.println("i = " + i.getInstitution().getName());
@@ -1038,10 +1260,8 @@ public class ItemController implements Serializable {
 
     public void createOpdSeviceInvestgationList() {
         itemlist = getItems();
-        System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
-            System.out.println("tmp.size() = " + tmp.size());
             for (ItemFee itf : tmp) {
                 i.setItemFee(itf);
                 if (itf.getFeeType() == FeeType.OwnInstitution) {
@@ -1053,15 +1273,12 @@ public class ItemController implements Serializable {
                 }
             }
         }
-        System.out.println("itemlist.size() = " + itemlist.size());
     }
 
     public void createInwardList() {
         itemlist = getInwardItems();
-        System.out.println("itemlist.size() = " + itemlist.size());
         for (Item i : itemlist) {
             List<ItemFee> tmp = serviceController.getFees(i);
-            System.out.println("tmp.size() = " + tmp.size());
             for (ItemFee itf : tmp) {
                 i.setItemFee(itf);
                 if (itf.getFeeType() == FeeType.OwnInstitution) {
@@ -1073,7 +1290,6 @@ public class ItemController implements Serializable {
                 }
             }
         }
-        System.out.println("itemlist.size() = " + itemlist.size());
     }
 
     /**
@@ -1357,6 +1573,38 @@ public class ItemController implements Serializable {
 
     public void setInvestigationsAndServices(List<Item> investigationsAndServices) {
         this.investigationsAndServices = investigationsAndServices;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public List<Item> getMachineTests() {
+        return machineTests;
+    }
+
+    public void setMachineTests(List<Item> machineTests) {
+        this.machineTests = machineTests;
+    }
+
+    public List<Item> getInvestigationSampleComponents() {
+        return investigationSampleComponents;
+    }
+
+    public void setInvestigationSampleComponents(List<Item> investigationSampleComponents) {
+        this.investigationSampleComponents = investigationSampleComponents;
+    }
+
+    public Item getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponent(Item sampleComponent) {
+        this.sampleComponent = sampleComponent;
     }
 
     @FacesConverter(forClass = Item.class)

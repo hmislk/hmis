@@ -141,7 +141,7 @@
                                                         <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value=" Full Name"/>
-                                                    <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                                                    <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:capitalize;">
                                                     </p:inputText>
                                                     <h:outputLabel value="Gender"/>
                                                     <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
@@ -286,7 +286,7 @@
                             <p:panelGrid columns="2" id="panGrid2">
 
                                 <h:outputLabel value=" Full Name"/>
-                                <p:inputText autocomplete="off"  style="width: 200px;text-transform:uppercase;" value="#{patientController.familyMember.fullName}"  requiredMessage="please enter full name">
+                                <p:inputText autocomplete="off"  style="width: 200px;text-transform:capitalize;" value="#{patientController.familyMember.fullName}"  requiredMessage="please enter full name">
                                 </p:inputText>
                                 <h:outputLabel value="Gender"/>
                                 <p:selectOneMenu value="#{patientController.familyMember.sex}" style="width: 200px;"  requiredMessage="please select gender">

@@ -7,21 +7,30 @@ package com.divudi.entity;
 
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.ItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.data.lab.Priority;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
+import com.divudi.entity.pharmacy.Amp;
+import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.entity.pharmacy.Vtm;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -33,6 +42,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -49,7 +59,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
-    
+
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<ItemFee> itemFeesAuto;
 
@@ -102,7 +112,7 @@ public class Item implements Serializable, Comparable<Item> {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
-   //Editer Properties
+    //Editer Properties
     @ManyToOne
     WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -129,7 +139,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean requestForQuentity;
     boolean marginNotAllowed;
     @Column(name = "active")
-    boolean inactive=false;
+    boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
     @ManyToOne
@@ -160,17 +170,26 @@ public class Item implements Serializable, Comparable<Item> {
     //Matara Phrmacy Sale Autocomplete
     @ManyToOne
     private Vmp vmp;
-    
+
     @ManyToOne
     private Machine machine;
-    
+
     String creditNumbers;
     String cashNumbers;
     String agencyNumbers;
     String reserveName;
     String reserveNumbers;
     int maxTableRows;
-    
+    @Enumerated(EnumType.STRING)
+    private ItemType itemType;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+
+    private boolean hasMoreThanOneComponant;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private ReportItem reportItem;
+
     @Transient
     double channelStaffFee;
     @Transient
@@ -179,13 +198,13 @@ public class Item implements Serializable, Comparable<Item> {
     double channelAgentFee;
     @Transient
     double channelOnCallFee;
-    
+
     @Transient
     String transName;
 
     public double getVatPercentage() {
-        if(vatable && vatPercentage==0.0){
-            vatPercentage=15;
+        if (vatable && vatPercentage == 0.0) {
+            vatPercentage = 15;
         }
         return vatPercentage;
     }
@@ -194,8 +213,6 @@ public class Item implements Serializable, Comparable<Item> {
         this.vatPercentage = vatPercentage;
     }
 
-    
-    
     public String getCreditNumbers() {
         return creditNumbers;
     }
@@ -212,7 +229,7 @@ public class Item implements Serializable, Comparable<Item> {
         this.cashNumbers = cashNumbers;
     }
 
-        public String getAgencyNumbers() {
+    public String getAgencyNumbers() {
         return agencyNumbers;
     }
 
@@ -270,7 +287,10 @@ public class Item implements Serializable, Comparable<Item> {
 
     public List<WorksheetItem> getWorksheetItems() {
         if (worksheetItems != null) {
-            Collections.sort(worksheetItems, new ReportItemComparator());
+            try {
+                Collections.sort(worksheetItems, new ReportItemComparator());
+            } catch (Exception e) {
+            }
         } else {
             worksheetItems = new ArrayList<>();
         }
@@ -287,7 +307,11 @@ public class Item implements Serializable, Comparable<Item> {
 
     public List<InvestigationItem> getReportItems() {
         if (reportItems != null) {
-            Collections.sort(reportItems, new ReportItemComparator());
+            try {
+                Collections.sort(reportItems, new ReportItemComparator());
+            } catch (Exception e) {
+            }
+
         } else {
             reportItems = new ArrayList<>();
         }
@@ -316,7 +340,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.Item[ id=" + id + " ]";
+        return name;
     }
 
     @Transient
@@ -816,9 +840,6 @@ public class Item implements Serializable, Comparable<Item> {
         this.vatable = vatable;
     }
 
-
-    
-    
     public double getTransBillItemCount() {
         return transBillItemCount;
     }
@@ -933,10 +954,10 @@ public class Item implements Serializable, Comparable<Item> {
 
     public double getChannelStaffFee() {
         if (!itemFeesAuto.isEmpty()) {
-            channelStaffFee=0.0;
+            channelStaffFee = 0.0;
             for (ItemFee i : itemFeesAuto) {
                 if (i.getName().equals("Doctor Fee")) {
-                    channelStaffFee+=i.fee;
+                    channelStaffFee += i.fee;
                 }
             }
         }
@@ -949,10 +970,10 @@ public class Item implements Serializable, Comparable<Item> {
 
     public double getChannelHosFee() {
         if (!itemFeesAuto.isEmpty()) {
-            channelHosFee=0.0;
+            channelHosFee = 0.0;
             for (ItemFee i : itemFeesAuto) {
-                if (i.getName().equals("Hospital Fee")||i.getName().equals("Scan Fee")) {
-                    channelHosFee+=i.fee;
+                if (i.getName().equals("Hospital Fee") || i.getName().equals("Scan Fee")) {
+                    channelHosFee += i.fee;
                 }
             }
         }
@@ -965,10 +986,10 @@ public class Item implements Serializable, Comparable<Item> {
 
     public double getChannelAgentFee() {
         if (!itemFeesAuto.isEmpty()) {
-            channelAgentFee=0.0;
+            channelAgentFee = 0.0;
             for (ItemFee i : itemFeesAuto) {
                 if (i.getName().equals("Agency Fee")) {
-                    channelAgentFee+=i.fee;
+                    channelAgentFee += i.fee;
                 }
             }
         }
@@ -981,10 +1002,10 @@ public class Item implements Serializable, Comparable<Item> {
 
     public double getChannelOnCallFee() {
         if (!itemFeesAuto.isEmpty()) {
-            channelOnCallFee=0.0;
+            channelOnCallFee = 0.0;
             for (ItemFee i : itemFeesAuto) {
                 if (i.getName().equals("On-Call Fee")) {
-                    channelOnCallFee+=i.fee;
+                    channelOnCallFee += i.fee;
                 }
             }
         }
@@ -997,27 +1018,91 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Override
     public int compareTo(Item o) {
-        if(o==null){
+        if (o == null) {
             return 0;
         }
-        
-        if(o.getName()==null){
+
+        if (o.getName() == null) {
             return 0;
         }
-        
-        if(this==null){
+
+        if (this == null) {
             return 0;
         }
-        
-        if(this.getName()==null){
+
+        if (this.getName() == null) {
             return 0;
         }
-        
+
         return this.name.compareTo(o.name);
     }
 
-   
+    public ItemType getItemType() {
+        if (itemType == null) {
+            if (this instanceof Amp) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Ampp) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Atm) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Vmp) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Vmpp) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Vtm) {
+                itemType = ItemType.Medicine;
+            }
+            if (this instanceof Service) {
+                itemType = ItemType.Service;
+            }
+            if (this instanceof Investigation) {
+                itemType = ItemType.Investigation;
+            }
+            if (this instanceof Atm) {
+                itemType = ItemType.Medicine;
+            }
+        }
+        return itemType;
+    }
 
+    public void setItemType(ItemType itemType) {
+        this.itemType = itemType;
+    }
+
+    public boolean isHasMoreThanOneComponant() {
+        return hasMoreThanOneComponant;
+    }
+
+    public void setHasMoreThanOneComponant(boolean hasMoreThanOneComponant) {
+        this.hasMoreThanOneComponant = hasMoreThanOneComponant;
+    }
+
+    public ReportItem getReportItem() {
+        if (reportItem == null) {
+            reportItem = new ReportItem();
+        }
+        return reportItem;
+    }
+
+    public void setReportItem(ReportItem reportItem) {
+        this.reportItem = reportItem;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    
+    
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override
@@ -1025,16 +1110,26 @@ public class Item implements Serializable, Comparable<Item> {
             if (o1 == null) {
                 return 1;
             }
+            if (o1.getRiTop() == 0) {
+                return 1;
+            }
             if (o2 == null) {
                 return -1;
             }
-            if (o1.getCssTop() == null) {
+            if (o2.getRiTop() == 0) {
                 return 1;
             }
-            if (o2.getCssTop() == null) {
+            if (o1.getRiTop() == o2.getRiTop()) {
+                if (o1.getId() > o2.getId()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            } else if (o1.getRiTop() > o2.getRiTop()) {
+                return 1;
+            } else {
                 return -1;
             }
-            return o1.getCssTop().compareTo(o2.getCssTop());  //To change body of generated methods, choose Tools | Templates.
         }
     }
 

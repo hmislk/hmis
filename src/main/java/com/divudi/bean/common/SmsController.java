@@ -6,7 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.SmsType;
+import com.divudi.data.MessageType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -14,14 +14,28 @@ import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.prefs.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
+
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -53,7 +67,107 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, SmsType smsType) {
+    private void sendSmsAwaitingToSendInDatabase() {
+        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
+        List<Sms> smses = getSmsFacade().findBySQL(j);
+//        if (false) {
+//            Sms e = new Sms();
+//            e.getSentSuccessfully();
+//            e.getInstitution();
+//        }
+        for (Sms e : smses) {
+            e.setSentSuccessfully(Boolean.TRUE);
+            getSmsFacade().edit(e);
+
+            sendSms(e.getReceipientNumber(), e.getSendingMessage(),
+                    e.getInstitution().getSmsSendingUsername(),
+                    e.getInstitution().getSmsSendingPassword(),
+                    e.getInstitution().getSmsSendingAlias());
+            e.setSentSuccessfully(true);
+            e.setSentAt(new Date());
+            getSmsFacade().edit(e);
+        }
+
+    }
+
+    public static String executePost(String targetURL, Map<String, Object> parameters) {
+        HttpURLConnection connection = null;
+        if (parameters != null && !parameters.isEmpty()) {
+            targetURL += "?";
+        }
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            targetURL += pPara + "=" + pVal.toString() + "&";
+        }
+        if (parameters != null && !parameters.isEmpty()) {
+            targetURL += "last=true";
+        }
+        try {
+            //Create connection
+            URL url = new URL(targetURL);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            connection.setUseCaches(false);
+            connection.setDoOutput(true);
+            //Send request
+            DataOutputStream wr = new DataOutputStream(
+                    connection.getOutputStream());
+            wr.writeBytes(targetURL);
+            wr.flush();
+            wr.close();
+
+            //Get Response  
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
+            String line;
+            while ((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append('\r');
+            }
+            rd.close();
+            return response.toString();
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
+
+        System.out.println("number = " + number);
+        System.out.println("message = " + message);
+        System.out.println("username = " + username);
+        System.out.println("password = " + password);
+        System.out.println("sendingAlias = " + sendingAlias);
+
+        Map m = new HashMap();
+        m.put("userName", username);
+        m.put("password", password);
+        m.put("userAlias", sendingAlias);
+        m.put("number", number);
+        m.put("message", message);
+
+        String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
+        if (res == null) {
+            return false;
+        } else if (res.toUpperCase().contains("200")) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, MessageType smsType) {
 
         if (sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071") || sendingNo.contains("070")
@@ -75,8 +189,6 @@ public class SmsController implements Serializable {
 
             String messageBody2 = msg;
 
-            System.out.println("messageBody2 = " + messageBody2.length());
-
             final StringBuilder request = new StringBuilder(url);
             request.append(sendingNo.substring(1, 10));
             request.append(pw);
@@ -84,8 +196,6 @@ public class SmsController implements Serializable {
             try {
                 System.out.println("pw = " + pw);
                 System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
 
                 stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
 
@@ -142,15 +252,13 @@ public class SmsController implements Serializable {
         m.put("td", getReportKeyWord().getToDate());
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        System.out.println("smses.size() = " + smses.size());
 
         if (getReportKeyWord().isAdditionalDetails()) {
             List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
             long l = 0l;
             for (Object[] ob : objects) {
                 SmsSummeryRow row = new SmsSummeryRow();
-                SmsType smsType = (SmsType) ob[0];
+                MessageType smsType = (MessageType) ob[0];
                 long count = (long) ob[1];
                 row.setSmsType(smsType);
                 row.setCount(count);
@@ -185,14 +293,14 @@ public class SmsController implements Serializable {
 
     public class SmsSummeryRow {
 
-        SmsType smsType;
+        MessageType smsType;
         long count;
 
-        public SmsType getSmsType() {
+        public MessageType getSmsType() {
             return smsType;
         }
 
-        public void setSmsType(SmsType smsType) {
+        public void setSmsType(MessageType smsType) {
             this.smsType = smsType;
         }
 

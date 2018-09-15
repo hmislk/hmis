@@ -120,12 +120,8 @@ public class StockHistoryRecorder {
     @Schedule(hour = "00", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mid Night", persistent = false)
     public void myTimerDaily() {
         Date startTime = new Date();
-        System.out.println("Start writing stock history: " + startTime);
         for (FeeChange fc : fetchFeeChanges()) {
-            System.err.println("fc.getFee().getName() = " + fc.getFee().getName());
-            System.err.println("fc.getFee().getFeeType() = " + fc.getFee().getFeeType());
             if (fc.getFee().getStaff() != null) {
-                System.out.println("fc.getFee().getStaff().getPerson().getName() = " + fc.getFee().getStaff().getPerson().getName());
             }
             for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName(), fc.getFee().getStaff())) {
                 System.out.println("1.f.getFee() = " + f.getFee());
@@ -134,8 +130,6 @@ public class StockHistoryRecorder {
                 System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
                 System.out.println("1.f.getFfee() = " + f.getFfee());
                 f.setFfee(f.getFfee() + fc.getFee().getFfee());
-                System.out.println("2.f.getFfee() = " + f.getFfee());
-                System.out.println("fc.getFee().getFfee() = " + fc.getFee().getFfee());
                 getItemFeeFacade().edit(f);
             }
             fc.setDoneAt(new Date());
@@ -167,7 +161,6 @@ public class StockHistoryRecorder {
         Map m = new HashMap();
         m.put("staff", staff);
         m.put("class", ServiceSession.class);
-        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
             sql = "Select s.id From ServiceSession s "
                     + " where s.retired=false "
@@ -177,7 +170,6 @@ public class StockHistoryRecorder {
                     + " order by s.sessionWeekday,s.startingTime ";
             System.out.println("Consultant = " + staff.getPerson().getName());
             System.out.println("m = " + m);
-            System.out.println("sql = " + sql);
             List<Long> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
             tmp = serviceSessionFacade.findLongList(sql, m);
@@ -185,6 +177,9 @@ public class StockHistoryRecorder {
 
             System.err.println("Fetch Original Sessions = " + tmp.size());
             System.err.println("Time stage 3.1 = " + new Date());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
             System.err.println("Time stage 3.2 = " + new Date());
             if (tmp.isEmpty()) {
@@ -196,7 +191,7 @@ public class StockHistoryRecorder {
 
             System.err.println("Time stage 5 = " + new Date());
 //            generateSessionEvents(serviceSessions);
-            System.err.println("Time stage 6 = " + new Date());
+//            generateSessionEvents(serviceSessions);
         }
     }
 
@@ -211,9 +206,7 @@ public class StockHistoryRecorder {
         m.put("typ", PersonInstitutionType.Channelling);
 
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         consultants = staffFacade.findBySQL(sql, m);
-        System.out.println("consultants.size() = " + consultants.size());
 
         return consultants;
     }
@@ -238,7 +231,6 @@ public class StockHistoryRecorder {
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Time 1 = " + new Date());
         List<ServiceSession> sessions = new ArrayList<>();
         int finalSessionDayCount = finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
         while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
@@ -252,16 +244,12 @@ public class StockHistoryRecorder {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         System.out.println("ss.getId() = " + ss.getId());
-                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
-                        System.out.println("ss.getName() = " + ss.getName());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
-                            System.out.println("newSs 2 = " + newSs);
                             //Temprory
 //                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
 //                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -313,16 +301,12 @@ public class StockHistoryRecorder {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         System.out.println("ss.getId() = " + ss.getId());
-                        System.out.println("ss.getSessionDate() = " + ss.getSessionDate());
-                        System.out.println("ss.getName() = " + ss.getName());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE)&&sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH)&&sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
-                            System.out.println("newSs 1 = " + newSs);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
-                            System.out.println("newSs 2 = " + newSs);
                             //Temprory
 //                            newSs.setDisplayCount(channelBean.getBillSessionsCount(ss, nowDate));
 //                            newSs.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, nowDate));
@@ -463,8 +447,6 @@ public class StockHistoryRecorder {
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        System.out.println("changes.size() = " + changes.size());
         return changes;
     }
 
@@ -492,7 +474,6 @@ public class StockHistoryRecorder {
         m.put("ft", ft);
         m.put("a", s);
         List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
-        System.out.println("itemFees.size() = " + itemFees.size());
         return itemFees;
     }
 

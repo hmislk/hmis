@@ -44,7 +44,7 @@
                             <p:column>
                                 #{apt.department.name}
                             </p:column>
-                            
+
                         </p:autoComplete> 
                         <h:outputLabel value="Department"/>
                         <au:department value="#{investigationMonthSummeryOwnControllerSession.department}" />
@@ -57,19 +57,23 @@
                         <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                       <h:outputLabel value=""/>
-                        <p:commandButton ajax="false"  value="Process"  
-                                         action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTime}"
-                                         styleClass="noPrintButton" style="float: left;" />
+                        <h:outputLabel value=""/>
+                        <h:panelGroup>
+                            <p:commandButton ajax="false"  value="Process"  
+                                             action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTime}"
+                                             styleClass="noPrintButton" style="float: left;" />
 
+                            <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
+                            </p:commandButton> 
+                        </h:panelGroup>
                     </h:panelGrid>
 
                     <p:panel style="width: 500px; margin-top: 20px;">
-                        
+
                         <h:outputLabel style="font-size: 15pt!important; color: red;" value="Average Turn Around Time for #{investigationMonthSummeryOwnControllerSession.item.name} is " ></h:outputLabel>
-                            <h:outputLabel style="font-size: 15pt!important; color: red;" value="#{investigationMonthSummeryOwnControllerSession.totalCount}" ></h:outputLabel>
-                            <h:outputLabel style="font-size: 15pt!important; color: red;" value=" minutes." ></h:outputLabel>
-                       
+                        <h:outputLabel style="font-size: 15pt!important; color: red;" value="#{investigationMonthSummeryOwnControllerSession.totalCount}" ></h:outputLabel>
+                        <h:outputLabel style="font-size: 15pt!important; color: red;" value=" minutes." ></h:outputLabel>
+
                     </p:panel>
 
 

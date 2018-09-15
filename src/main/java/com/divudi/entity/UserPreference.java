@@ -54,6 +54,7 @@ public class UserPreference implements Serializable {
     @ManyToOne
     Institution institution;
     boolean institutionSpecificItems=false;
+    private boolean institutionRestrictedBilling=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean partialPaymentOfOpdPreBillsAllowed;
@@ -91,6 +92,14 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
+    private Boolean canSettleOpdBillWithoutReferringDoctor;
+    private Boolean printBarcodeInOpdBill;
+    private Boolean sentEmailWithInvestigationReportApproval;
+    private Boolean sentSmsWithInvestigationRequestApproval;
+    private Boolean sentDailySmsSummeryForReferringDoctors;
+    
+    
+    
     public ApplicationInstitution getApplicationInstitution() {
         if(applicationInstitution==null){
             applicationInstitution = ApplicationInstitution.Ruhuna;
@@ -532,4 +541,63 @@ public class UserPreference implements Serializable {
         return "com.divudi.entity.UserPreference[ id=" + id + " ]";
     }
 
+    public boolean isInstitutionRestrictedBilling() {
+        return institutionRestrictedBilling;
+    }
+
+    public void setInstitutionRestrictedBilling(boolean institutionRestrictedBilling) {
+        this.institutionRestrictedBilling = institutionRestrictedBilling;
+    }
+
+    public Boolean getSentEmailWithInvestigationReportApproval() {
+        if(sentEmailWithInvestigationReportApproval==null){
+            sentEmailWithInvestigationReportApproval=true;
+        }
+        return sentEmailWithInvestigationReportApproval;
+    }
+
+    public void setSentEmailWithInvestigationReportApproval(Boolean sentEmailWithInvestigationReportApproval) {
+        this.sentEmailWithInvestigationReportApproval = sentEmailWithInvestigationReportApproval;
+    }
+
+    public Boolean getSentSmsWithInvestigationRequestApproval() {
+        if(sentSmsWithInvestigationRequestApproval==null){
+            sentSmsWithInvestigationRequestApproval=true;
+        }
+        return sentSmsWithInvestigationRequestApproval;
+    }
+
+    public void setSentSmsWithInvestigationRequestApproval(Boolean sentSmsWithInvestigationRequestApproval) {
+        this.sentSmsWithInvestigationRequestApproval = sentSmsWithInvestigationRequestApproval;
+    }
+
+    public Boolean getSentDailySmsSummeryForReferringDoctors() {
+        if(sentDailySmsSummeryForReferringDoctors==null){
+            sentDailySmsSummeryForReferringDoctors=true;
+        }
+        return sentDailySmsSummeryForReferringDoctors;
+    }
+
+    public void setSentDailySmsSummeryForReferringDoctors(Boolean sentDailySmsSummeryForReferringDoctors) {
+        this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
+    }
+
+    public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
+        return canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    public void setCanSettleOpdBillWithoutReferringDoctor(Boolean canSettleOpdBillWithoutReferringDoctor) {
+        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    }
+
+    public Boolean getPrintBarcodeInOpdBill() {
+        return printBarcodeInOpdBill;
+    }
+
+    public void setPrintBarcodeInOpdBill(Boolean printBarcodeInOpdBill) {
+        this.printBarcodeInOpdBill = printBarcodeInOpdBill;
+    }
+
+    
+    
 }

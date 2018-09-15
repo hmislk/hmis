@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.Sample;
@@ -16,19 +17,21 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class SampleController implements Serializable {
+public class SampleController implements Serializable {
 
     @Inject
     SessionController sessionController;
@@ -38,14 +41,17 @@ public  class SampleController implements Serializable {
     private Sample current;
     private List<Sample> items = null;
     String selectText = "";
+  
 
     public List<Sample> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from Sample c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
- public void prepareAdd() {
+
+    public void prepareAdd() {
         current = new Sample();
     }
+
     public void setSelectedItems(List<Sample> selectedItems) {
         this.selectedItems = selectedItems;
     }
@@ -53,7 +59,7 @@ public  class SampleController implements Serializable {
     public String getSelectText() {
         return selectText;
     }
-    
+
     private void recreateModel() {
         items = null;
     }
@@ -103,8 +109,8 @@ public  class SampleController implements Serializable {
     public void setCurrent(Sample current) {
         this.current = current;
     }
-    
-     public void delete() {
+
+    public void delete() {
 
         if (current != null) {
             current.setRetired(true);
@@ -120,7 +126,6 @@ public  class SampleController implements Serializable {
         current = null;
         getCurrent();
     }
-
 
     private SampleFacade getFacade() {
         return ejbFacade;

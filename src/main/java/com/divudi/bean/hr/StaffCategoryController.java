@@ -52,15 +52,12 @@ public class StaffCategoryController implements Serializable {
 
     public List<StaffCategory> completeStaffCategory(String qry) {
         List<StaffCategory> a = null;
-        System.out.println("qry = " + qry);
         if (qry != null) {
             a = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-            System.out.println("a = " + a.size());
         }
         if (a == null) {
             a = new ArrayList<StaffCategory>();
         }
-        System.out.println("a = " + a.size());
         return a;
     }
 

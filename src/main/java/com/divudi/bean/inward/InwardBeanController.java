@@ -1447,15 +1447,12 @@ public class InwardBeanController implements Serializable {
     }
 
     public PatientRoom savePatientRoom(PatientRoom patientRoom, PatientRoom previousRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
-        //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
-
-        System.err.println("Mill " + patientRoom);
-        System.err.println("Pre " + previousRoom);
-        if (patientRoom == null) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+                if (patientRoom == null) {
             return null;
         }
 
-        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1488,18 +1485,16 @@ public class InwardBeanController implements Serializable {
     }
 
     public PatientRoom savePatientRoom(PatientRoom patientRoom, RoomFacilityCharge newRoomFacilityCharge, PatientEncounter patientEncounter, Date admittedAt, WebUser webUser) {
-        //     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
 
-        System.err.println("Mill " + patientRoom);
-
-        if (patientRoom == null) {
+//     patientRoom.setCurrentLinenCharge(patientRoom.getRoomFacilityCharge().getLinenCharge());
+                if (patientRoom == null) {
             return null;
         }
 
         patientRoom.setCurrentMaintananceCharge(newRoomFacilityCharge.getMaintananceCharge());
         patientRoom.setCurrentMoCharge(newRoomFacilityCharge.getMoCharge());
         
-        if (sessionController.getInstitutionPreference().isInwardMoChargeCalculateInitialTime()) {
+        if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             patientRoom.setCurrentMoChargeForAfterDuration(newRoomFacilityCharge.getMoChargeForAfterDuration());
         }
 
@@ -1629,7 +1624,7 @@ public class InwardBeanController implements Serializable {
 
         bhtText = admissionType.getCode().trim() + Long.toString(temp);
 
-        if (getSessionController().getInstitutionPreference().isBhtNumberWithYear()) {
+        if (getSessionController().getLoggedPreference().isBhtNumberWithYear()) {
             Calendar c = Calendar.getInstance();
 
             bhtText = bhtText + "/" + c.get(Calendar.YEAR);
@@ -1860,9 +1855,7 @@ public class InwardBeanController implements Serializable {
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
 
         double duration = tif.getDurationHours() * 60;
-        System.out.println("duration = " + duration);
         double overShoot = tif.getOverShootHours() * 60;
-        System.out.println("overShoot = " + overShoot);
         //  double tempFee = tif.getFee();
         double consumeTime = 0;
 
@@ -1883,12 +1876,9 @@ public class InwardBeanController implements Serializable {
                 count = (long) (consumeTime / duration);
             }
             
-            System.out.println("count = " + count);
 
             calculation = (consumeTime - (count * duration));
-            System.out.println("calculation = " + calculation);
             if ((overShoot != 0 && overShoot <= calculation)||count==0) {
-                System.err.println("count = " + count);
                 count++;
             }
         }

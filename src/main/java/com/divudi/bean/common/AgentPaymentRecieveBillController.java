@@ -109,9 +109,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
             UtilityController.addErrorMessage("Select Agency");
             return true;
         }
-        System.out.println("getAmount() = " + getAmount());
         if (getAmount() < 0.0) {
-            System.out.println("getAmount() = " + getAmount());
             UtilityController.addErrorMessage("Please Enter Correct Value");
             return true;
         }
@@ -235,7 +233,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
         addToBill();
         if (!billType.equals(BillType.AgentDebitNoteBill) && !billType.equals(BillType.AgentCreditNoteBill)
                 && !billType.equals(BillType.CollectingCentreCreditNoteBill) && !billType.equals(BillType.CollectingCentreDebitNoteBill)) {
-            System.out.println("billType = " + billType);
             if (errorCheck()) {
                 return;
             }
@@ -291,8 +288,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
         System.out.println("updating agency balance");
         System.out.println("ins.getName() = " + ins.getName());
-        System.out.println("ins.getBallance() before " + ins.getBallance());
-        System.out.println("transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());

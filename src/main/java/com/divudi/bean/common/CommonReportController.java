@@ -45,11 +45,7 @@ public class CommonReportController {
         return availableClasses;
     }
 
-    public void setAvailableClasses(List<Class<?>> availableClasses) {
-        this.availableClasses = availableClasses;
-    }
-
-    public Date getFromDate() {
+        public Date getFromDate() {
         return fromDate;
     }
 

@@ -17,7 +17,7 @@
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;" >
 
                             <h:panelGrid columns="1">
-                                <p:panel header="1) Cashier" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
+                                <p:panel header="1) Cashier Reports" style="width: 400px;margin:auto;" collapsed="true" toggleable="true"   >
                                     <p:commandButton styleClass="linkButton" ajax="false" value="1) Cashier Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" value="2) Cashier Summary" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" value="3) All Cashier Report" action="/reportCashier/report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>

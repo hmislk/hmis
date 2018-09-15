@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:metadata >
+        <f:viewParam name="username" value="#{sessionController.userName}" ></f:viewParam>
+        <f:viewParam name="password" value="#{sessionController.passord}" ></f:viewParam>
+        <f:viewAction action="#{sessionController.loginForRequestsForDoctors()}" ></f:viewAction>
+    </f:metadata>
+    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css"></link>
+    <h:head>
+    </h:head>
+    <h:body>
+        <h:outputStylesheet library="css" name="home/theme.css" />
+        <p:panel header="Arogya Hospital" style="width: 100vw; margin: auto; height: 100vh; border: none; " >
+            <f:facet name="header">
+                <h:outputText value="Arogya Hospital"  style="margin:0px; padding: 0px; border: none;"/>
+            </f:facet>
+
+            <h:panelGroup rendered="#{!sessionController.logged}" >
+                <h1>Login Failure</h1>
+                <h2>Please go back to the App Settings and Enter Correct Username &amp; Password.</h2>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{sessionController.logged}" >
+                <ui:insert name="mcontent" >
+                    <h:form>
+                        <p:panelGrid columns="1" style="width: 98%; margin: auto; height: 98%; text-align: center;" >
+                            <p:commandButton value="Search Patients" action="#{patientReportController.searchRecentReportsOrderedByMyself}" style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="View Recent Investigations" action="#{patientReportController.searchRecentReportsOrderedByMyself()}" ajax="false" style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="Order Investigations"  style="width: 95%;margin: auto;"></p:commandButton>
+                            <p:commandButton value="Income"  style="width: 95%;margin: auto;"></p:commandButton>
+                        </p:panelGrid>
+                    </h:form>
+                </ui:insert>
+            </h:panelGroup>
+
+
+
+            <f:facet name="footer">
+                <p:commandLink value="&copy; Sunila Software Solutions" style="margin:auto; padding: 0px; border: none;">
+                </p:commandLink>
+
+            </f:facet>
+
+        </p:panel>
+    </h:body>
+</html>
+

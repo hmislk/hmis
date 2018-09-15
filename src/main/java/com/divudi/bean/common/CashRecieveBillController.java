@@ -77,13 +77,11 @@ public class CashRecieveBillController implements Serializable {
         Institution ins = institution;
         makeNull();
 
-        System.err.println("Select Listener");
         List<Bill> list = getBillController().getCreditBills(ins);
         for (Bill b : list) {
             getCurrentBillItem().setReferenceBill(b);
             selectBillListener();
             if (getCurrentBillItem().getNetValue() == 0.0) {
-                System.err.println("quit");
                 continue;
             }
             addToBill();
@@ -98,7 +96,6 @@ public class CashRecieveBillController implements Serializable {
         Institution ins = institution;
         makeNull();
 
-        System.err.println("Select Listener");
         List<Bill> list = getBillController().getCreditBillsPharmacy(ins);
         for (Bill b : list) {
             getCurrentBillItem().setReferenceBill(b);
@@ -126,7 +123,6 @@ public class CashRecieveBillController implements Serializable {
         Institution ins = institution;
         makeNull();
 
-        System.err.println("Select Listener");
         List<Admission> list = getAdmissionController().getCreditBillsBht(ins);
         for (PatientEncounter b : list) {
             getCurrentBillItem().setPatientEncounter(b);
@@ -164,7 +160,6 @@ public class CashRecieveBillController implements Serializable {
         double refBallance = getReferenceBallance(tmp);
         double netValue = Math.abs(tmp.getNetValue());
 
-        System.err.println("RefBallance " + refBallance);
 
         if (refBallance >= netValue) {
             return true;
@@ -181,7 +176,6 @@ public class CashRecieveBillController implements Serializable {
         double refBallance = getReferenceBhtBallance(tmp);
         double netValue = Math.abs(tmp.getNetValue());
 
-        System.err.println("RefBallance " + refBallance);
 
         if (refBallance >= netValue) {
             return true;
@@ -198,11 +192,9 @@ public class CashRecieveBillController implements Serializable {
         double neTotal = Math.abs(billItem.getReferenceBill().getNetTotal() + billItem.getReferenceBill().getVat());
         System.out.println("neTotal = " + neTotal);
         double refAmount = Math.abs(getCreditBean().getRefundAmount(billItem.getReferenceBill()));
-        System.err.println("refAmount = " + refAmount);
         double paidAmt = Math.abs(getCreditBean().getPaidAmount(billItem.getReferenceBill(), BillType.CashRecieveBill));
         System.out.println("paidAmt = " + paidAmt);
         refBallance = neTotal - (paidAmt + refAmount);
-        System.out.println("refBallance = " + refBallance);
         return refBallance;
     }
 
@@ -324,20 +316,15 @@ public class CashRecieveBillController implements Serializable {
         System.out.println("billItems.size() = " + billItems.size());
         System.out.println("selectedBillItems.size() = " + selectedBillItems.size());
         for (BillItem b : billItems) {
-            System.out.println("b.getSearialNo() = " + b.getSearialNo());
             b.setSearialNo(index++);
             n += b.getNetValue();
         }
         n = 0.0;
         index = 0;
         for (BillItem b : selectedBillItems) {
-            System.err.println("b.getSearialNo() = " + b.getSearialNo());
             b.setSearialNo(index++);
-            System.err.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
-        System.out.println("billItems.size() = " + billItems.size());
-        System.out.println("selectedBillItems.size() = " + selectedBillItems.size());
         getCurrent().setNetTotal(n);
         // ////System.out.println("AAA : " + n);
     }
@@ -689,15 +676,12 @@ public class CashRecieveBillController implements Serializable {
         for (BillItem b : selectedBillItems) {
             System.out.println("getBillItems().size() = " + getBillItems().size());
             System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-            System.out.println("R.A - b.getSearialNo() = " + b.getSearialNo());
-            System.out.println("b.getNetValue() = " + b.getNetValue());
             tmp.add(getBillItems().get(b.getSearialNo()));
         }
         billItems.removeAll(tmp);
         for (BillItem b : billItems) {
-            System.out.println("b.getSearialNo() = " + b.getSearialNo());
-            System.out.println("b.getNetValue() = " + b.getNetValue());
 //            getBillItems().remove(b.getSearialNo());
+            
         }
         calTotalWithResetingIndex();
 
@@ -705,8 +689,6 @@ public class CashRecieveBillController implements Serializable {
         System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
         selectedBillItems = new ArrayList<>();
         selectedBillItems.addAll(billItems);
-        System.out.println("getBillItems().size() = " + getBillItems().size());
-        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
     }
 
     private void saveBhtBillItem(Bill b) {
@@ -719,8 +701,6 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItem() {
-        System.out.println("getBillItems().size() = " + getBillItems().size());
-        System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
         for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());

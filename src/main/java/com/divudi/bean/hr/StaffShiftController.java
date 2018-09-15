@@ -171,13 +171,10 @@ public class StaffShiftController implements Serializable {
 
         String sql = "Select s from StaffShift s where s.roster is null and s.staff.roster is not null order by s.id desc";
         List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql);
-        System.out.println("lststaffShifts.size() = " + lststaffShifts.size());
         for (StaffShift ss : lststaffShifts) {
             if (ss.getRoster() == null) {
                 if (ss.getStaff().getRoster() != null) {
                     System.out.println("ss = " + ss);
-                    System.out.println("ss.getId()" + ss.getId());
-                    System.out.println("ss.getStaff().getPerson().getName() = " + ss.getStaff().getPerson().getName());
                     ss.setRoster(ss.getStaff().getRoster());
                     ejbFacade.edit(ss);
                 } else {

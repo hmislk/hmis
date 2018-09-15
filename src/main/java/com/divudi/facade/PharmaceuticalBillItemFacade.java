@@ -38,7 +38,6 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
         HashMap hm = new HashMap();
         hm.put("b", bill);
         List<PharmaceuticalBillItem> btm = findBySQL(sql, hm);
-        System.err.println("btm.size() = " + btm.size());
         return btm;
     }
 

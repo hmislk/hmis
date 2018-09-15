@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
@@ -20,10 +21,13 @@ import com.divudi.facade.TestFlagFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -96,7 +100,7 @@ public class TestFlagController implements Serializable {
             return;
         }
         getFacade().remove(removingFlag);
-        items=null;
+        items = null;
         UtilityController.addSuccessMessage("Removed");
     }
 
@@ -182,7 +186,7 @@ public class TestFlagController implements Serializable {
         } else {
             f.setFromAge(fromAge * 365);
         }
-        
+
         if (getToAgeUnit().equalsIgnoreCase("Days")) {
             f.setToAge(toAge);
         } else if (getToAgeUnit().equalsIgnoreCase("Months")) {
@@ -216,7 +220,7 @@ public class TestFlagController implements Serializable {
         highMessage = "";
         fromValue = 0.0;
         toValue = 0.0;
-        items=null;
+        items = null;
     }
 
     public String getToAgeUnit() {
@@ -406,6 +410,20 @@ public class TestFlagController implements Serializable {
             f = new ArrayList<>();
         }
         return f;
+    }
+
+    public List<String> getIxItemFlagsString(InvestigationItem ix) {
+        List<TestFlag> fs = getIxItemFlags(ix);
+        Set<String> tfss = new HashSet();
+        for (TestFlag f : fs) {
+            tfss.add(f.getNormalMessage());
+            tfss.add(f.getHighMessage());
+            tfss.add(f.getLowMessage());
+
+        }
+        List<String> sortedList = new ArrayList(tfss);
+        Collections.sort(sortedList);
+        return sortedList;
     }
 
     /**

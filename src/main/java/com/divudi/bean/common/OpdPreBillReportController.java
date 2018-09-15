@@ -155,8 +155,6 @@ public class OpdPreBillReportController implements Serializable {
     public void createCashierTableByUserPayment() {
         Date startTime = new Date();
         
-        System.err.println("getWebUser() = " + getWebUser().getWebUserPerson().getName());
-        System.err.println("Date F = " + getFromDate());
         if (getWebUser() == null) {
             JsfUtil.addErrorMessage("Please Select A User");
             return;
@@ -219,8 +217,6 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public String createCashierTableByUserPaymentForDetail() {
-        System.err.println("getWebUser() = " + getWebUser());
-        System.err.println("Date F = " + getFromDate());
 
         createCashierTableByUserPayment();
 
@@ -243,7 +239,6 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void createCashierTableByAllUserPayment(boolean detail) {
-        System.err.println("in");
         webUserBillsTotals = new ArrayList<>();
 
         finalCashTot = 0.0;
@@ -262,7 +257,6 @@ public class OpdPreBillReportController implements Serializable {
             double uCredit = 0;
             double uSlip = 0;
             for (BillType btp : getCashFlowBillTypes()) {
-                System.out.println("btp = " + btp);
                 for (Bill b : getBillClassTypes) {
                     BillsTotals billsTotals = createTotalsPayment(b, btp, wu, getDepartment());
                     if (billsTotals.getCard() != 0
@@ -382,7 +376,6 @@ public class OpdPreBillReportController implements Serializable {
         m.put("ins", getSessionController().getInstitution());
 
         if (getPaymentFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) > 0) {
-            System.out.println("m = " + m);
         }
 
         return getPaymentFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -427,8 +420,6 @@ public class OpdPreBillReportController implements Serializable {
         m.put("bt", bt);
         m.put("ins", getSessionController().getInstitution());
 
-        System.out.println("paymentMethod = " + paymentMethod);
-        System.out.println("sql = " + sql);
 
         return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -468,8 +459,6 @@ public class OpdPreBillReportController implements Serializable {
         m.put("ins", getSessionController().getInstitution());
 
         if (getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP) != null) {
-            System.out.println("paymentMethod = " + paymentMethod);
-            System.out.println("sql = " + sql);
         }
 
         return getPaymentFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
@@ -486,9 +475,7 @@ public class OpdPreBillReportController implements Serializable {
                     if (obj[0] != null) {
                         Bill bb = new Bill();
                         bb = (Bill) obj[0];
-                        System.out.println("bb = " + bb);
                         bb.setNetTotal((double) obj[1]);
-                        System.out.println("bb = " + bb.getNetTotal());
                         bb.setPaymentMethod(pm);
                         if (bb != null) {
                             bs.add(bb);
@@ -521,9 +508,7 @@ public class OpdPreBillReportController implements Serializable {
                     if (obj[0] != null) {
                         Bill bb = new Bill();
                         bb = (Bill) obj[0];
-                        System.out.println("bb = " + bb);
                         bb.setNetTotal((double) obj[1]);
-                        System.out.println("bb = " + bb.getNetTotal());
                         bb.setPaymentMethod(pm);
                         if (bb != null) {
                             bs.add(bb);
@@ -554,7 +539,6 @@ public class OpdPreBillReportController implements Serializable {
                     break;
             }
         }
-        System.err.println("billsTotals = " + billsTotals.getBills().size());
         return billsTotals;
     }
 
@@ -604,7 +588,6 @@ public class OpdPreBillReportController implements Serializable {
         List<WebUser> cashiers = new ArrayList<>();
         BillType[] btpArr = getCashFlowBillTypes();
         List<BillType> btpList = Arrays.asList(btpArr);
-        System.out.println("btpList = " + btpList);
         sql = "select us from "
                 + " Payment p"
                 + " join p.bill b "
@@ -618,7 +601,6 @@ public class OpdPreBillReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        System.out.println("sql = " + sql);
         cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
@@ -650,7 +632,6 @@ public class OpdPreBillReportController implements Serializable {
     }
 
     public void calTotals(List<BillsTotals> bts) {
-        System.out.println("bts.size() = " + bts.size());
         double cash=0.0;
         double credit=0.0;
         double card=0.0;

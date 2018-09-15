@@ -13,6 +13,7 @@ import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ReportItemType;
+import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
@@ -136,12 +137,35 @@ public class ReportItem implements Serializable {
     private ReportItem testLabel;
     @ManyToOne
     private ReportItem valueValue;
+    @ManyToOne
+    private ReportItem flagValue;
     @OneToOne
     private ReportItem unitLabel;
     @OneToOne
     private ReportItem referenceLabel;
     @ManyToOne
     private ReportItem commentLabel;
+    @ManyToOne
+    private InvestigationComponent investigationComponent;
+    @Enumerated(EnumType.STRING)
+    private DataEntryMethod dataEntryMethod;
+    
+    private boolean automated;
+    @ManyToOne
+    private Machine machine;
+    @ManyToOne
+    private Item test;
+    @ManyToOne
+    private Sample sample;
+    @ManyToOne
+    private Item sampleComponent;
+    @ManyToOne
+    private InvestigationTube tube;
+    private String resultCode;
+    
+    
+    
+    
 
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
@@ -151,10 +175,7 @@ public class ReportItem implements Serializable {
         this.cssTextDecoration = cssTextDecoration;
     }
 
-    
-    
-    
-    public ReportItem getUnitLabel() {    
+    public ReportItem getUnitLabel() {
         return unitLabel;
     }
 
@@ -178,15 +199,15 @@ public class ReportItem implements Serializable {
      *
      *
      *
-    InvestigationItem testHeader = new InvestigationItem();
-    InvestigationItem valueHeader = new InvestigationItem();
-    InvestigationItem unitHeader = new InvestigationItem();
-    InvestigationItem referenceHeader = new InvestigationItem();
-    InvestigationItem testLabel = new InvestigationItem();
-    InvestigationItem valueValue = new InvestigationItem();
-    InvestigationItem unitValue = new InvestigationItem();
-    InvestigationItem referenceHeader = new InvestigationItem();
-    InvestigationItem testComments = new InvestigationItem();
+     * InvestigationItem testHeader = new InvestigationItem(); InvestigationItem
+     * valueHeader = new InvestigationItem(); InvestigationItem unitHeader = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testLabel = new
+     * InvestigationItem(); InvestigationItem valueValue = new
+     * InvestigationItem(); InvestigationItem unitValue = new
+     * InvestigationItem(); InvestigationItem referenceHeader = new
+     * InvestigationItem(); InvestigationItem testComments = new
+     * InvestigationItem();
      *
      *
      *
@@ -198,8 +219,8 @@ public class ReportItem implements Serializable {
     }
 
     public String getHtmltext() {
-        if(htmltext==null){
-            htmltext= "";
+        if (htmltext == null) {
+            htmltext = "";
         }
         return htmltext;
     }
@@ -935,6 +956,7 @@ public class ReportItem implements Serializable {
         toRi.name = fromRi.name;
         toRi.tName = fromRi.tName;
         toRi.sName = fromRi.sName;
+        toRi.htmltext = fromRi.htmltext;
         toRi.description = fromRi.description;
         toRi.orderNo = fromRi.orderNo;
         toRi.creater = fromRi.creater;
@@ -993,4 +1015,86 @@ public class ReportItem implements Serializable {
 
     }
 
+    public InvestigationComponent getInvestigationComponent() {
+        return investigationComponent;
+    }
+
+    public void setInvestigationComponent(InvestigationComponent investigationComponent) {
+        this.investigationComponent = investigationComponent;
+    }
+
+    public DataEntryMethod getDataEntryMethod() {
+        return dataEntryMethod;
+    }
+
+    public void setDataEntryMethod(DataEntryMethod dataEntryMethod) {
+        this.dataEntryMethod = dataEntryMethod;
+    }
+
+    public ReportItem getFlagValue() {
+        return flagValue;
+    }
+
+    public void setFlagValue(ReportItem flagValue) {
+        this.flagValue = flagValue;
+    }
+
+    public boolean isAutomated() {
+        return automated;
+    }
+
+    public void setAutomated(boolean automated) {
+        this.automated = automated;
+    }
+
+    public Machine getMachine() {
+        return machine;
+    }
+
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Item getTest() {
+        return test;
+    }
+
+    public void setTest(Item test) {
+        this.test = test;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public void setSample(Sample sample) {
+        this.sample = sample;
+    }
+
+    public Item getSampleComponent() {
+        return sampleComponent;
+    }
+
+    public void setSampleComponent(Item sampleComponent) {
+        this.sampleComponent = sampleComponent;
+    }
+
+    public InvestigationTube getTube() {
+        return tube;
+    }
+
+    public void setTube(InvestigationTube tube) {
+        this.tube = tube;
+    }
+
+    public String getResultCode() {
+        return resultCode;
+    }
+
+    public void setResultCode(String resultCode) {
+        this.resultCode = resultCode;
+    }
+
+    
+    
 }

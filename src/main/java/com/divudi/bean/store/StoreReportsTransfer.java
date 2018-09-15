@@ -495,9 +495,8 @@ public class StoreReportsTransfer implements Serializable {
         DepartmentBillRow dbr = null;
         CategoryBillRow cbr = null;
         ItemBillRow ibr = null;
-
         //System.out.println("transferItems = " + transferItems);
-        System.out.println("transferItems.size() = " + transferItems.size());
+
         for (BillItem ts : transferItems) {
             purchaseValue += ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQty();
             saleValue += ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQty();
@@ -617,9 +616,8 @@ public class StoreReportsTransfer implements Serializable {
         DepartmentBillRow dbr = null;
         CategoryBillRow cbr = null;
         ItemBillRow ibr = null;
-
         //System.out.println("transferItems = " + transferItems);
-        System.out.println("transferItems.size() = " + transferItems.size());
+
         for (BillItem ts : transferItems) {
             purchaseValue += ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQty();
             saleValue += ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQty();
@@ -685,9 +683,7 @@ public class StoreReportsTransfer implements Serializable {
             cbr.getBill().setNetTotal(cbr.getBill().getNetTotal() + ts.getNetValue());
 
             dbr.getBill().setNetTotal(dbr.getBill().getNetTotal() + ts.getNetValue());
-            System.out.println("ts.getBill().getBillClass() = " + ts.getBill().getBillClass());
             if (ts.getBill() instanceof RefundBill) {
-                System.out.println("**************ts.getBill().getBillClass() = " + ts.getBill().getBillClass());
                 ibr.getBill().setGrantTotal(ibr.getBill().getGrantTotal() - ts.getQty());
                 cbr.getBill().setGrantTotal(cbr.getBill().getGrantTotal() - ts.getQty());
                 dbr.getBill().setGrantTotal(dbr.getBill().getGrantTotal() - ts.getQty());
@@ -812,9 +808,7 @@ public class StoreReportsTransfer implements Serializable {
             double count = (double) ob[4];
             System.out.println("count = " + count);
             double unitValue = (double) ob[5];
-            System.out.println("unitValue = " + unitValue);
             double total = (double) ob[6];
-            System.out.println("total = " + total);
             if (lastDepartment == null) {
                 lastDepartment = d;
                 dcr.setD(d);
@@ -920,7 +914,6 @@ public class StoreReportsTransfer implements Serializable {
                     cr.getItemRows().add(ir);
                     dcr.getCaregoryRows().add(cr);
                     departmentCategoryRows.add(dcr);
-                    System.out.println("dcr.getD().getName(Add) = " + dcr.getD().getName());
                     cr = new CaregoryRow();
                     dcr = new DepartmentCategoryRow();
                     dcr.setD(d);
@@ -969,8 +962,6 @@ public class StoreReportsTransfer implements Serializable {
         cr.getItemRows().add(ir);
         dcr.getCaregoryRows().add(cr);
         departmentCategoryRows.add(dcr);
-        System.out.println("dcr.getD().getName(Add) = " + dcr.getD().getName());
-        System.out.println("departmentCategoryRows.size() = " + departmentCategoryRows.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Departmet unit issue bybill(/faces/store/store_report_unit_issue_bill.xhtml)");
     }
@@ -1001,7 +992,6 @@ public class StoreReportsTransfer implements Serializable {
             double unitValue = (double) ob[4];
 //            System.out.println("unitValue = " + unitValue);
             double total = (double) ob[5];
-            System.out.println("total = " + total);
             if (lastCategory == null) {
                 lastCategory = c;
                 cr.setC(c);
@@ -1072,13 +1062,11 @@ public class StoreReportsTransfer implements Serializable {
                     }
                 }
             }
-            System.out.println("cr.getTotal() = " + cr.getTotal());
         }
         cr.getItemRows().add(ir);
         cr.setTotal(cr.getTotal() + ir.getValue());
         saleValue += cr.getTotal();
         caregoryRows.add(cr);
-        System.out.println("departmentCategoryRows.size() = " + caregoryRows.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Summery/Issue Report/Unit Issue Category Wise Summery(/faces/store/store_report_unit_issue_bill_1.xhtml)");
     }
@@ -1137,7 +1125,6 @@ public class StoreReportsTransfer implements Serializable {
         m.put("bt", bt);
 
         objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("objects.size() = " + objects.size());
         return objects;
 
     }
@@ -1180,8 +1167,6 @@ public class StoreReportsTransfer implements Serializable {
 
         objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        System.out.println("objects.size() = " + objects.size());
         return objects;
 
     }

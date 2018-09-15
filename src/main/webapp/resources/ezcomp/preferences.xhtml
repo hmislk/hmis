@@ -19,170 +19,210 @@
     <cc:implementation>
         <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="Program Preferences" ></h:outputLabel>
-                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                <h:panelGroup rendered="#{cc.attrs.institution eq null and cc.attrs.department eq null}" >
+                    <p:outputLabel value="Application Preferances" ></p:outputLabel>
+                </h:panelGroup>
                 <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
-                    <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
+                    <p:outputLabel value="Institution Preferances of #{cc.attrs.institution.name}" ></p:outputLabel>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{cc.attrs.department ne null}" >
-                    <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
+                    <p:outputLabel value="Department Preferances of #{cc.attrs.department.name}" ></p:outputLabel>
                 </h:panelGroup>
             </f:facet>
+
+            <p:panelGrid  >
+                <p:row >
+                    <p:column colspan="2" >
+                        <h:panelGroup >
+                            <h:panelGroup rendered="#{sessionController.currentPreference.institution eq null and sessionController.currentPreference.department eq null }" >
+                                <p:outputLabel value="You Are Running on Application Preferences on this login. No Institution or Department Preferences have been created for your logged Institution and Department." ></p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.currentPreference.institution ne null}" >
+                                <p:outputLabel value="You Are Running on Institution Preferences of #{sessionController.currentPreference.institution}." ></p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.currentPreference.department ne null }" >
+                                <p:outputLabel value="You Are Running on Department Preferences of #{sessionController.currentPreference.department}." ></p:outputLabel>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+                <p:row >
+                    <p:column >
+                        <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                    </p:column>
+                    <p:column >
+                        <h:panelGroup>
+                            <h:panelGroup rendered="#{cc.attrs.institution ne null}" >
+                                <p:commandButton id="btnRemoveIns" ajax="false" value="Remove Institution Preferences" action="#{sessionController.removeInstitutionUserPreferences()}" ></p:commandButton>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{cc.attrs.department ne null}" >
+                                <p:commandButton id="btnRemoveDep" ajax="false" value="Remove Department Preferences" action="#{sessionController.removeDepartmentUserPreferences()}" ></p:commandButton>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:column>
+                </p:row>
+
+
+            </p:panelGrid>
+
+            <p:tabView orientation="left" >
+                <p:tab title="Pharmacy" >
+                    <p:panel header="Pharmacy" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
+                            <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillFooter}" />
+                            <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="GRN Detaied" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.grnBillDetailed}" />
+
+                            <h:outputLabel value="Bill Number Generate From To Department" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.depNumGenFromToDepartment}" />
+
+                            <h:outputLabel value="Transfer NetTotal by retailRate"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.tranferNetTotalbyRetailRate}" />
+                            <h:outputLabel value="Pharmacy Purchase With Last Rate"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmayPurchaseWithLastRate}"/>
+                            <h:outputLabel value="Pharmacy Bill without Item List"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillWithOutItem}" />
+
+                        </h:panelGrid>
+
+
+                    </p:panel>
+                </p:tab>
+                <p:tab title="OPD" >
+                    <p:panel header="OPD" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Institution Specific Items" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionSpecificItems}" ></h:selectBooleanCheckbox>
+                            <h:outputLabel value="Institution Restricted Billing" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></h:selectBooleanCheckbox>
+
+                            <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
+                            <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.opdBillPaperType}" >
+                                <f:selectItem itemLabel="Please Select Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.partialPaymentOfOpdBillsAllowed}" />
+                            <h:outputLabel value="Partial Payment of OPD For Cashier Bills" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.partialPaymentOfOpdPreBillsAllowed}" />
+                            <h:outputLabel value="Allow to Change Payment Method During Settle"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
+
+                            <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
+
+                            <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
+
+                            <h:outputLabel value="OPD Settle Without Patient Phone Number"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
+
+                        </h:panelGrid>
+
+                    </p:panel>
+                </p:tab>
+                <p:tab title="In-ward" >
+                    <p:panel header="Inward" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
+
+                            <h:outputLabel value="Inward Add Service Bill Time With Out Check"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
+
+                            <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
+
+                            <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
+
+                            <h:outputLabel value="Change Admission Fee in Intrim Bill"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
+
+                        </h:panelGrid>
+
+                    </p:panel>
+                </p:tab>
+                <p:tab title="Channel" >
+                    <p:panel header="Channel" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+
+
+                            <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
+                                <f:selectItem itemLabel="Paper Type" />
+                                <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Channel Bill Double"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelBillDouble}"/>
+                            <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
+                            <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
+                            <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
+                            <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
+                            <h:outputLabel value="Default Payment Method"></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
+                                <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                            </p:selectOneMenu>
+
+
+                        </h:panelGrid>
+
+                    </p:panel>
+                </p:tab>
+                <p:tab title="Lab" >
+                    <p:panel header="Lab" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Automatically Send an Email with each Report Approval"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.sentEmailWithInvestigationReportApproval}"/>
+                            
+                            <h:outputLabel value="Automatically Send a SMS with each Report Approval"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.sentSmsWithInvestigationRequestApproval}"/>
+                            
+                            <h:outputLabel value="Daily Send Referral Value Details"></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.sentDailySmsSummeryForReferringDoctors}"/>
+                            
+                            
+                            <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
+                            <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
+                            <p:watermark for="fontName" value="Eg- Courier New" />
+
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+                <p:tab title="Miscellaneous" >
+                    <p:panel header="Miscellaneous" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Institution" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
+                                <f:selectItem itemLabel="Select Institution" />
+                                <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Logo Name"></h:outputLabel>
+                            <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
+                            <p:watermark for="imgName" value="Eg- /abc.jpg" />
+                            <h:outputLabel value="Bill Proboda" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
+                            <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+            </p:tabView>
+
+
         </p:panel>
-
-
-        <h:outputLabel  value="#{sessionController.currentPreference.id}"/>
-
-        <h:panelGrid columns="3" styleClass="alignTop" >
-
-
-
-            <p:panel header="Institution" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-                    <h:outputLabel value="Institution" ></h:outputLabel>
-                    <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
-                        <f:selectItem itemLabel="Select Institution" />
-                        <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
-                    </p:selectOneMenu>
-                    <h:outputLabel value="Logo Name"></h:outputLabel>
-                    <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
-                    <p:watermark for="imgName" value="Eg- /abc.jpg" />
-                </h:panelGrid>
-            </p:panel>
-            <p:panel header="Pharmacy" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-                    <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
-                    <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillFooter}" />
-                    <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
-                    <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
-                        <f:selectItem itemLabel="Please Select Paper Type" />
-                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
-                    </p:selectOneMenu>
-                    <h:outputLabel value="GRN Detaied" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.grnBillDetailed}" />
-
-                    <h:outputLabel value="Bill Number Generate From To Department" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.depNumGenFromToDepartment}" />
-
-                    <h:outputLabel value="Transfer NetTotal by retailRate"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.tranferNetTotalbyRetailRate}" />
-                    <h:outputLabel value="Pharmacy Purchase With Last Rate"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmayPurchaseWithLastRate}"/>
-                    <h:outputLabel value="Pharmacy Bill without Item List"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillWithOutItem}" />
-
-                </h:panelGrid>
-
-
-            </p:panel>
-            <p:panel header="OPD" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-                    <h:outputLabel value="Institution Specific Items" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionSpecificItems}" ></h:selectBooleanCheckbox>
-
-                    <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
-                    <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
-                    <p:selectOneMenu value="#{sessionController.currentPreference.opdBillPaperType}" >
-                        <f:selectItem itemLabel="Please Select Paper Type" />
-                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
-                    </p:selectOneMenu>
-                    <h:outputLabel value="Partial Payment of OPD Bills allowed" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.partialPaymentOfOpdBillsAllowed}" />
-                    <h:outputLabel value="Partial Payment of OPD For Cashier Bills" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.partialPaymentOfOpdPreBillsAllowed}" />
-                    <h:outputLabel value="Allow to Change Payment Method During Settle"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
-
-                    <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
-
-                    <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
-                    
-                    <h:outputLabel value="OPD Settle Without Patient Phone Number"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
-
-                </h:panelGrid>
-
-            </p:panel>
-            <p:panel header="Inward" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-                    <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
-
-                    <h:outputLabel value="Inward Add Service Bill Time With Out Check"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardAddServiceBillTimeCheck}"/>
-
-                    <h:outputLabel value="Inward Add Bht Number With Year"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.bhtNumberWithYear}"/>
-
-                    <h:outputLabel value="Inward Mo Charge Calculate Initial Time"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardMoChargeCalculateInitialTime}"/>
-
-                    <h:outputLabel value="Change Admission Fee in Intrim Bill"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
-
-                </h:panelGrid>
-
-            </p:panel>
-            <p:panel header="Channel" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-
-
-                    <h:outputLabel value="Channel Bill Paper Type" ></h:outputLabel>
-                    <p:selectOneMenu value="#{sessionController.currentPreference.channelBillPaperType}" >
-                        <f:selectItem itemLabel="Paper Type" />
-                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
-                    </p:selectOneMenu>
-                    <h:outputLabel value="Channel Bill Double"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelBillDouble}"/>
-                    <h:outputLabel value="Channel With Out Agent Reference Number"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelWithOutReferenceNumber}"/>
-                    <h:outputLabel value="Show Only Mark Doctors"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.showOnlyMarkedDoctors}"/>
-                    <h:outputLabel value="Channel Settle Without Patient Phone Number"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelSettleWithoutPatientPhoneNumber}"/>
-                    <h:outputLabel value="Channel Dcoctor Arival Message Send" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
-                    <h:outputLabel value="Default Payment Method"></h:outputLabel>
-                    <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
-                        <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
-                    </p:selectOneMenu>
-
-
-                </h:panelGrid>
-
-            </p:panel>
-            <p:panel header="Other" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-
-                    <h:outputLabel value="Bill Proboda" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
-                    <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
-                    <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
-
-
-
-                </h:panelGrid>
-
-            </p:panel>
-
-            <p:panel header="Lab" >
-                <h:panelGrid columns="2" styleClass="alignTop" >
-                    <h:outputLabel value="Lab Micro-Biology Font" ></h:outputLabel>
-                    <h:inputText id="fontName" value="#{sessionController.currentPreference.microBiologyFont}"/>
-                    <p:watermark for="fontName" value="Eg- Courier New" />
-
-                </h:panelGrid>
-            </p:panel>
-
-
-
-        </h:panelGrid>
-
-        <h:outputLabel value="#{sessionController.currentPreference.id}" ></h:outputLabel>
-
 
 
     </cc:implementation>

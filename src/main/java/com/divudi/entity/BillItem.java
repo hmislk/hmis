@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.inward.InwardChargeType;
+import com.divudi.data.lab.Priority;
 import com.divudi.entity.pharmacy.Ampp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.UserStock;
@@ -118,6 +119,8 @@ public class BillItem implements Serializable {
     String agentRefNo;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date billTime;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 
 //    @Transient
     int searialNo;
@@ -794,4 +797,14 @@ public class BillItem implements Serializable {
         this.vatPlusNetValue = vatPlusNetValue;
     }
 
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    
+    
 }

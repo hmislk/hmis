@@ -409,7 +409,6 @@ public class StaffShift implements Serializable {
     }
 
     public void calLeaveTime() {
-        System.out.println("leaveType = " + leaveType);
         if (leaveType == null) {
             return;
         }
@@ -611,7 +610,6 @@ public class StaffShift implements Serializable {
         System.err.println("In");
         System.out.println("getShiftStartTime() = " + getShiftStartTime());
         System.out.println("getShiftEndTime() = " + getShiftEndTime());
-        System.out.println("getStartRecord() = " + getStartRecord());
 
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;
@@ -625,8 +623,6 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromStartRecordLogged = inSecond;
-                System.out.println("1.inSecond = " + inSecond);
-                System.out.println("getStartRecord().getLoggedRecord().getRecordTimeStamp() = " + getStartRecord().getLoggedRecord().getRecordTimeStamp());
             }
         }
 
@@ -641,40 +637,31 @@ public class StaffShift implements Serializable {
                 toCalendar.setTime(getEndRecord().getLoggedRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromEndRecordLogged = inSecond;
-                System.out.println("2.inSecond = " + inSecond);
-                System.out.println("getShiftEndTime() = " + getShiftEndTime());
             }
         }
 
         //Over Time From Start Record Varified 
         extraTimeFromStartRecordVarified = 0;
         if (getStartRecord().isAllowedExtraDuty() && getStartRecord().getRecordTimeStamp() != null) {
-            System.out.println("3.getStartRecord().getRecordTimeStamp() = " + getStartRecord().getRecordTimeStamp());
             if (getShiftStartTime() != null
                     && getStartRecord().getRecordTimeStamp().before(getShiftStartTime())) {
                 fromCalendar.setTime(getStartRecord().getRecordTimeStamp());
                 toCalendar.setTime(getShiftStartTime());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromStartRecordVarified = inSecond;
-                System.out.println("3.inSecond = " + inSecond);
-                System.out.println("getStartRecord().getRecordTimeStamp() = " + getStartRecord().getRecordTimeStamp());
             }
         }
 
         //Over Time From End Record Varified
         extraTimeFromEndRecordVarified = 0;
         if (getEndRecord().isAllowedExtraDuty() && getEndRecord().getRecordTimeStamp() != null) {
-            System.out.println("4.getShiftEndTime() = " + getShiftEndTime());
             if (getShiftEndTime() != null && getShiftEndTime().before(getEndRecord().getRecordTimeStamp())) {
                 fromCalendar.setTime(getShiftEndTime());
                 toCalendar.setTime(getEndRecord().getRecordTimeStamp());
                 inSecond = (toCalendar.getTimeInMillis() - fromCalendar.getTimeInMillis()) / (1000);
                 extraTimeFromEndRecordVarified = inSecond;
-                System.out.println("4.inSecond = " + inSecond);
-                System.out.println("getShiftEndTime() = " + getShiftEndTime());
             }
         }
-        System.err.println("Out");
     }
 
     public void calExtraTimeComplete() {

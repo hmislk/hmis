@@ -639,7 +639,7 @@ public class OpdPreBillController implements Serializable {
     }
 
     public boolean checkBillValues(Bill b) {
-        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             return false;
         }
 
@@ -1376,7 +1376,6 @@ public class OpdPreBillController implements Serializable {
     }
 
     public void changeListener() {
-        System.err.println("Change Listen 1 ");
         calTotals();
     }
 

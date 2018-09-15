@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
 import java.io.Serializable;
@@ -32,7 +33,7 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @XmlRootElement
-public class Institution implements Serializable {
+public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne(fetch = FetchType.LAZY)
     Institution institution;
@@ -46,6 +47,7 @@ public class Institution implements Serializable {
     Long id;
     String institutionCode;
     String name;
+    private String code;
     String address;
     String fax;
     String email;
@@ -113,6 +115,12 @@ public class Institution implements Serializable {
     
     String emailSendingUsername;
     String emailSendingPassword;
+    
+    private String smsSendingUsername;
+    private String smsSendingPassword;
+    private String smsSendingAlias;
+    
+    
     
     //Inactive Status
     private boolean inactive;
@@ -576,4 +584,39 @@ public class Institution implements Serializable {
         this.transAddress7 = transAddress7;
     }
 
+    public String getSmsSendingUsername() {
+        return smsSendingUsername;
+    }
+
+    public void setSmsSendingUsername(String smsSendingUsername) {
+        this.smsSendingUsername = smsSendingUsername;
+    }
+
+    public String getSmsSendingPassword() {
+        return smsSendingPassword;
+    }
+
+    public void setSmsSendingPassword(String smsSendingPassword) {
+        this.smsSendingPassword = smsSendingPassword;
+    }
+
+    public String getSmsSendingAlias() {
+        return smsSendingAlias;
+    }
+
+    public void setSmsSendingAlias(String smsSendingAlias) {
+        this.smsSendingAlias = smsSendingAlias;
+    }
+
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    
+    
 }

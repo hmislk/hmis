@@ -738,9 +738,10 @@ public class ServiceSummery implements Serializable {
 
         billFees = getBillFeeFacade().findBySQL(sql, m);
 //        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
-        System.out.println("billFees.size() = " + billFees.size());
 
         for (BillFee bf : billFees) {
 
@@ -748,14 +749,10 @@ public class ServiceSummery implements Serializable {
             System.out.println("bf.getBillItem().getBill().getInsId() = " + bf.getBillItem().getBill().getInsId());
             System.out.println("bf.getFee().getFeeType() = " + bf.getFee().getFeeType());
             System.out.println("bf.getFee().getId() = " + bf.getFee().getId());
-            System.out.println("bf.getBillItem().getItem().getName() = " + bf.getBillItem().getItem().getName());
-            System.err.println("**");
             sql = "Select f from ItemFee f where f.id = " + bf.getFee().getId();
             ItemFee itemFee = itemFeeFacade.findFirstBySQL(sql);
 
             if (itemFee != null) {
-                System.err.println("**");
-                System.out.println("itemFee.getFeeType() = " + itemFee.getFeeType());
                 System.err.println("**");
             }
             bf.getFee().setFeeType(FeeType.OwnInstitution);
@@ -1227,8 +1224,6 @@ public class ServiceSummery implements Serializable {
                 } else {
                     name += " ," + bf.getStaff().getPerson().getName();
                 }
-                System.out.println("bf.getStaff().getPerson().getName() = " + bf.getStaff().getPerson().getName());
-                System.out.println("name = " + name);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1390,16 +1385,11 @@ public class ServiceSummery implements Serializable {
         temMap.put("cat", InvestigationCategory.class);
 
         List<BillFee> bfs = getBillFeeFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("bfs = " + bfs.size());
         for (BillFee bf : bfs) {
             System.err.println("*****");
             System.out.println("bf.getDepartment() = " + bf.getDepartment().getName());
-            System.out.println("Bill.getDepartment() = " + bf.getBill().getToDepartment().getName());
             if (!bf.getDepartment().equals(bf.getBill().getToDepartment())) {
-                System.out.println("bf.getBill().getDeptId() = " + bf.getBill().getDeptId());
-                System.out.println("bf.getBillItem().getItem().getName() = " + bf.getBillItem().getItem().getName());
             }
-            System.err.println("*****");
         }
 
         billItemWithFees = new ArrayList<>();
@@ -1591,7 +1581,6 @@ public class ServiceSummery implements Serializable {
         }
 
         if (getCategory() instanceof ServiceCategory) {
-            System.out.println("ServiceCategory");
             getServiceSubCategoryController().setParentCategory(getCategory());
             List<ServiceSubCategory> subCategorys = getServiceSubCategoryController().getItems();
             if (subCategorys.isEmpty()) {
@@ -1601,7 +1590,6 @@ public class ServiceSummery implements Serializable {
                 for (ServiceSubCategory ssc : subCategorys) {
                     setBillItem.addAll(getBillItemByCategory(ssc, billType, discharged));
                 }
-                System.out.println("setBillItem = " + setBillItem);
                 List<BillItem> tmpBillItems = new ArrayList<>();
                 tmpBillItems.addAll(setBillItem);
                 return tmpBillItems;

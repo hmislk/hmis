@@ -54,14 +54,14 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        if (sessionController.getInstitutionPreference()!=null && sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (sessionController.getLoggedPreference()!=null && sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
 
         if (inwardPriceAdjustment == null && category != null) {
-            if (sessionController.getInstitutionPreference().isPaymentMethodAllowedInInwardMatrix()) {
+            if (sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
             } else {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
@@ -288,8 +288,6 @@ public class PriceMatrixController implements Serializable {
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
         System.err.println(paymentMethod);
-        System.err.println(membershipScheme);
-        System.err.println(department);
         //Get Discount From Category    
         opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
 
@@ -352,8 +350,7 @@ public class PriceMatrixController implements Serializable {
 
         System.err.println(paymentMethod);
         // System.err.println(paymentScheme);
-        System.err.println(department);
-        System.err.println(category);
+        // System.err.println(paymentScheme);
 
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, item);

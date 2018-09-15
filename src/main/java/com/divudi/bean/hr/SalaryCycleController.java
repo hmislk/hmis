@@ -979,11 +979,8 @@ public class SalaryCycleController implements Serializable {
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
-                System.out.println("p.getComponantValue() = " + p.getComponantValue());
-                System.out.println("p.getComponantValue() = " + p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
-                    System.err.println("s.getBasicVal() = " + s.getBasicVal());
                 }
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.MerchantileAllowance) {
                     s.setMerchantileVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
@@ -1000,7 +997,6 @@ public class SalaryCycleController implements Serializable {
                 if (p.getStaffPaysheetComponentPercentage() != null) {
                     if (p.getStaffPaysheetComponentPercentage().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowancePercentage) {
                         s.setPerPercentage(p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
-                        System.out.println("p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue() = " + p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
                     }
                 }
             }
@@ -1040,9 +1036,7 @@ public class SalaryCycleController implements Serializable {
                         extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
-                    System.out.println("New Come extraDays = " + extraDays);
                     extraDays -= (int) (extraDays / 7);
-                    System.out.println("New Come extraDays(After) = " + extraDays);
                     s.setWorkingDaysAditional(extraDays);
                 } else {
                     s.setWorkingDaysAditional(0.0);
@@ -1136,8 +1130,6 @@ public class SalaryCycleController implements Serializable {
         }
 
         jpql += " order by spc.staff.codeInterger,spc.salaryCycle.id desc ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
 
         if (staffSalarys == null) {
@@ -1170,11 +1162,8 @@ public class SalaryCycleController implements Serializable {
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
-                System.out.println("p.getComponantValue() = " + p.getComponantValue());
-                System.out.println("p.getComponantValue() = " + p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
-                    System.err.println("s.getBasicVal() = " + s.getBasicVal());
                 }
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.MerchantileAllowance) {
                     s.setMerchantileVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
@@ -1191,7 +1180,6 @@ public class SalaryCycleController implements Serializable {
                 if (p.getStaffPaysheetComponentPercentage() != null) {
                     if (p.getStaffPaysheetComponentPercentage().getPaysheetComponent().getComponentType() == PaysheetComponentType.PerformanceAllowancePercentage) {
                         s.setPerPercentage(p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
-                        System.out.println("p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue() = " + p.getStaffPaysheetComponentPercentage().getStaffPaySheetComponentValue());
                     }
                 }
             }
@@ -1231,9 +1219,7 @@ public class SalaryCycleController implements Serializable {
                         extraDays = (commonFunctions.getEndOfDay(s.getSalaryCycle().getSalaryToDate()).getTime()
                                 - s.getSalaryCycle().getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
                     }
-                    System.out.println("New Come extraDays = " + extraDays);
                     extraDays -= (int) (extraDays / 7);
-                    System.out.println("New Come extraDays(After) = " + extraDays);
                     s.setWorkingDaysAditional(extraDays);
                 } else {
                     s.setWorkingDaysAditional(0.0);
@@ -1302,8 +1288,6 @@ public class SalaryCycleController implements Serializable {
         jpql += " order by spc.staff.codeInterger ";
         m.put("sc", staffSalaryController.getSalaryCycle());
         m.put("ssids", ssids); // Can you please check ok sir
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
 
         if (staffSalarys == null) {
@@ -1397,7 +1381,6 @@ public class SalaryCycleController implements Serializable {
             m.put("sc", current);
 
             staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
-            System.out.println("staffSalarys.size() = " + staffSalarys.size());
 
             if (staffSalarys == null || staffSalarys.isEmpty()) {
                 continue;
@@ -1408,7 +1391,6 @@ public class SalaryCycleController implements Serializable {
             } else {
                 ss.setDepartmentString("No Department");
             }
-            System.out.println("ss.getDepartmentString() = " + ss.getDepartmentString());
             for (StaffSalary s : staffSalarys) {
                 ss.setBasicValue(ss.getBasicValue() + s.getBasicValue());
                 ss.setMerchantileAllowanceValue(ss.getMerchantileAllowanceValue() + s.getMerchantileAllowanceValue());
@@ -1512,7 +1494,6 @@ public class SalaryCycleController implements Serializable {
             m.put("sc", current);
 
             staffSalarys = staffSalaryFacade.findBySQL(jpql, m);
-            System.out.println("staffSalarys.size() = " + staffSalarys.size());
 
             if (staffSalarys == null || staffSalarys.isEmpty()) {
                 continue;
@@ -1523,7 +1504,6 @@ public class SalaryCycleController implements Serializable {
             } else {
                 ss.setRosterString("No Roster");
             }
-            System.out.println("ss.getRosterString() = " + ss.getRosterString());
             for (StaffSalary s : staffSalarys) {
                 ss.setBasicValue(ss.getBasicValue() + s.getBasicValue());
                 ss.setMerchantileAllowanceValue(ss.getMerchantileAllowanceValue() + s.getMerchantileAllowanceValue());
@@ -1771,7 +1751,6 @@ public class SalaryCycleController implements Serializable {
         m.put("sc", current);
         deps = departmentFacade.findBySQL(sql, m);
         deps.add(null);
-        System.out.println("deps = " + deps);
         return deps;
     }
 
@@ -2097,9 +2076,10 @@ public class SalaryCycleController implements Serializable {
             return false;
         }
 //#311
+//#311
+//#311
+//#311
         System.out.println("getCurrent().getSalaryFromDate() = " + getCurrent().getSalaryFromDate());
-        System.out.println("getCurrent().getSalaryToDate() = " + getCurrent().getSalaryToDate());
-        System.out.println("date = " + date);
         if ((getCurrent().getSalaryFromDate().getTime() <= date.getTime()
                 && getCurrent().getSalaryToDate().getTime() >= date.getTime())) {
 
@@ -2115,9 +2095,10 @@ public class SalaryCycleController implements Serializable {
             return false;
         }
 //#311
+//#311
+//#311
+//#311
         System.out.println("getCurrent().getSalaryFromDate() = " + cycle.getSalaryFromDate());
-        System.out.println("getCurrent().getSalaryToDate() = " + cycle.getSalaryToDate());
-        System.out.println("date = " + date);
         if ((cycle.getSalaryFromDate().getTime() <= date.getTime()
                 && cycle.getSalaryToDate().getTime() >= date.getTime())) {
 

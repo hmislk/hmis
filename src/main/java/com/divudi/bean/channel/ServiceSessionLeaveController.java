@@ -63,7 +63,7 @@ public class ServiceSessionLeaveController implements Serializable {
         Map m = new HashMap();
 
         m.put("sp", getSpeciality());
-        if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+        if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
             sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                     + " and pi.type=:typ "
@@ -80,8 +80,6 @@ public class ServiceSessionLeaveController implements Serializable {
 
         suggestions = getStaffFacade().findBySQL(sql, m);
 
-        System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         return suggestions;
     }
@@ -222,7 +220,6 @@ public class ServiceSessionLeaveController implements Serializable {
         //deactive Service Session
         getSelectedServiceSession().setDeactivated(true);
         getServiceSessionFacade().edit(selectedServiceSession);
-        System.out.println("selectedServiceSession = " + selectedServiceSession);
 
         //create servicesession Leave
         getCurrent().setCreatedAt(new Date());
@@ -255,7 +252,6 @@ public class ServiceSessionLeaveController implements Serializable {
             //deactive Service Session
             s.setDeactivated(true);
             getServiceSessionFacade().edit(s);
-            System.out.println("s = " + s);
 
             //create servicesession Leave
             ServiceSessionLeave ss = new ServiceSessionLeave();

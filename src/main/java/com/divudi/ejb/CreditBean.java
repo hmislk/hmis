@@ -416,7 +416,6 @@ public class CreditBean {
         hm.put("refBill", refBill);
 //        hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        System.out.println("hm = " + hm);
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.DATE);
     }
 

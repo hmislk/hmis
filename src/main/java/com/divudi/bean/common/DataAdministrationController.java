@@ -301,7 +301,6 @@ public class DataAdministrationController {
             if (a instanceof Amp) {
                 Amp amp = (Amp) a;
                 if (amp.getDepartmentType() == null) {
-                    System.out.println("amp.getName() = " + amp.getName());
                     amp.setDepartmentType(DepartmentType.Pharmacy);
                     itemFacade.edit(amp);
                 }
@@ -329,8 +328,6 @@ public class DataAdministrationController {
         bills = billFacade.findBySQL(s, m, 10);
         for (Bill cb : bills) {
             System.out.println("cb = " + cb);
-            System.out.println("cb.insId() = " + cb.getInsId());
-            System.out.println("cb.deptId() = " + cb.getDeptId());
             for (BillItem bi : cb.getBillItems()) {
                 System.err.println("**************");
                 System.out.println("bi = " + bi);
@@ -347,17 +344,13 @@ public class DataAdministrationController {
                 if (bi.getReferenceBill() != null) {
                 }
                 System.out.println("bi.getReferenceBill().getDepartment().getName() = " + bi.getReferenceBill().getDepartment().getName());
-                System.out.println("bi.getBill().getInstitution().getName() = " + bi.getBill().getInstitution().getName());
-                System.err.println("**************");
                 String sql;
                 sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
                 List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
                 if (tmp.size() > 0) {
-                    System.err.println("Bill Fee Alreday Created");
                 } else {
                     sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
                     BillItem billItem = getBillItemFacade().findFirstBySQL(sql);
-                    System.out.println("billItem = " + billItem);
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
                     tmp = getBillFeeFacade().findBySQL(sql);
                     if (tmp.size() > 0) {
@@ -387,7 +380,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findBySQL(sql, m);
 
-        System.out.println("items.size() = " + items.size());
         int j = 1;
         for (Item i : items) {
             i.setVatable(true);
@@ -396,8 +388,6 @@ public class DataAdministrationController {
             System.err.println("**** " + j + " ****");
             System.out.println("i.getName() = " + i.getName());
             System.out.println("i.getVatPercentage() = " + i.getVatPercentage());
-            System.out.println("i.isVatable() = " + i.isVatable());
-            System.err.println("*******");
             j++;
         }
 
@@ -531,7 +521,6 @@ public class DataAdministrationController {
         for (Bill b : selectedBills) {
             b.setPaymentMethod(null);
             getBillFacade().edit(b);
-            System.err.println("canged");
         }
         createInwardServiceBillWithPaymentmethord();
     }
@@ -565,37 +554,28 @@ public class DataAdministrationController {
             }
         }
         for (Institution a : selectedInstitutions) {
-            System.out.println("a.getName() = " + a.getName());
             if (bool1) {
                 if (val1 != 0.0) {
                     System.out.println("a.getStandardCreditLimit() = " + a.getStandardCreditLimit());
-                    System.out.println("val1 = " + val1);
                     a.setStandardCreditLimit(val1);
-                    System.out.println("a.getStandardCreditLimit() = " + a.getStandardCreditLimit());
                 }
             }
             if (bool2) {
                 if (val2 != 0.0) {
                     System.out.println("a.getAllowedCredit() = " + a.getAllowedCredit());
-                    System.out.println("val2 = " + val2);
                     a.setAllowedCredit(val2);
-                    System.out.println("a.getAllowedCredit() = " + a.getAllowedCredit());
                 }
             }
             if (bool3) {
                 if (val3 != 0.0) {
                     System.out.println("a.getMaxCreditLimit() = " + a.getMaxCreditLimit());
-                    System.out.println("val3 = " + val3);
                     a.setMaxCreditLimit(val3);
-                    System.out.println("a.getMaxCreditLimit() = " + a.getMaxCreditLimit());
                 }
             }
             if (bool4) {
                 if (val4 != 0.0) {
                     System.out.println("a.getBallance() = " + a.getBallance());
-                    System.out.println("val4 = " + val4);
                     a.setBallance(val4);
-                    System.out.println("a.getBallance() = " + a.getBallance());
                 }
             }
             institutionFacade.edit(a);
@@ -643,21 +623,16 @@ public class DataAdministrationController {
         m.put("ins", reportKeyWord.getInstitution());
 
         staffs = getStaffFacade().findBySQL(sql, m);
-        System.out.println("staffs.size() = " + staffs.size());
         for (Staff s : staffs) {
             s.getPerson().setZoneCode(reportKeyWord.getString());
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
-            System.out.println("1.s.getPerson().getNic() = " + s.getPerson().getNic());
             if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
-                System.out.println("s.getPerson().getNic().length() = " + s.getPerson().getNic().length());
                 if (s.getPerson().getNic().length() >= 9) {
                     String s1 = s.getPerson().getNic().substring(0, 9);
-                    System.out.println("s1 = " + s1);
                     s.getPerson().setNic(s1 + "V");
                 }
 
             }
-            System.out.println("2.s.getPerson().getNic() = " + s.getPerson().getNic());
             getPersonFacade().edit(s.getPerson());
         }
         JsfUtil.addSuccessMessage("Successfully Updated...");
@@ -703,9 +678,7 @@ public class DataAdministrationController {
         }
         sql += " order by i.name ";
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         items = itemFacade.findBySQL(sql, m);
-        System.out.println("items.size() = " + items.size());
 
     }
 
@@ -720,7 +693,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(true);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
             }
             JsfUtil.addSuccessMessage("Succesfully Edited VAT For " + selectedItems.size() + " records with vat status ");
         } else {
@@ -729,7 +701,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(false);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
 
             }
             JsfUtil.addSuccessMessage("Succesfully Edited VAT For " + selectedItems.size() + " records and items as without vat items");
@@ -747,7 +718,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(true);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
             }
             JsfUtil.addSuccessMessage("Succesfully Added VAT For " + selectedItems.size() + " records with vat status ");
         } else {
@@ -756,7 +726,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(false);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
 
             }
             JsfUtil.addSuccessMessage("Succesfully Added VAT For " + selectedItems.size() + " records and items as without vat items");
@@ -777,7 +746,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(true);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
             }
             JsfUtil.addSuccessMessage("Succesfully Removed VAT For " + selectedItems.size() + " records with vat status ");
         } else {
@@ -786,7 +754,6 @@ public class DataAdministrationController {
                 i.setVatPercentage(vatPrecentage);
                 i.setVatable(false);
                 itemFacade.edit(i);
-                System.out.println("vatPrecentage = " + vatPrecentage);
 
             }
             JsfUtil.addSuccessMessage("Succesfully Removed VAT For " + selectedItems.size() + " records and items as without vat");
@@ -849,7 +816,6 @@ public class DataAdministrationController {
         System.out.println("sql = " + sql);
 
         sessions = serviceSessionFacade.findBySQL(sql, m);
-        System.out.println("sessions.size() = " + sessions.size());
 
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.originatingSession is not null "
@@ -858,7 +824,6 @@ public class DataAdministrationController {
         m.put("cd", new Date());
 
         sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
-        System.out.println("sessions.size() = " + sessions.size());
 
         return sessions;
     }
@@ -887,7 +852,6 @@ public class DataAdministrationController {
         System.err.println("Time 2 = " + new Date());
         for (Object ob : objects) {
             BillType bt = (BillType) ob;
-            System.out.println("bt = " + bt);
             System.err.println("Time l1 = " + new Date());
             Bill b = fetchBill(bt, true);
             System.err.println("Time l2 = " + new Date());
@@ -896,13 +860,10 @@ public class DataAdministrationController {
             }
             System.err.println("Time l3 = " + new Date());
             b = fetchBill(bt, false);
-            System.err.println("Time l4 = " + new Date());
             if (b != null) {
                 bills.add(b);
             }
         }
-        System.err.println("Time 3 = " + new Date());
-        System.out.println("bills.size() = " + bills.size());
     }
 
     public void createDuplicateBillTableByBillType() {
@@ -918,8 +879,6 @@ public class DataAdministrationController {
                     if (b.getInsId().equals(bb.getInsId()) && !b.getId().equals(bb.getId())) {
                         System.err.println("********");
                         System.out.println("b.getInsId() = " + b.getInsId());
-                        System.out.println("bb.getInsId() = " + bb.getInsId());
-                        System.err.println("********");
                         bills.add(b);
                     }
                 } catch (Exception e) {
@@ -927,8 +886,6 @@ public class DataAdministrationController {
             }
 //            System.err.println("Time For Out = " + new Date());
         }
-        System.err.println("Time 3 = " + new Date());
-        System.out.println("bills.size() = " + bills.size());
 
     }
 
@@ -941,8 +898,6 @@ public class DataAdministrationController {
         for (Bill b : totals.getBills()) {
             bills.add(b);
         }
-        System.err.println("Time 3 = " + new Date());
-        System.out.println("bills.size() = " + bills.size());
 
     }
 
@@ -956,7 +911,6 @@ public class DataAdministrationController {
 
         objects = getBillFacade().findObjectBySQL(sql);
 
-        System.out.println("objects.size() = " + objects.size());
         return objects;
     }
 
@@ -974,7 +928,6 @@ public class DataAdministrationController {
         }
         m.put("bt", bt);
         b = getBillFacade().findFirstBySQL(sql, m);
-        System.out.println("b = " + b);
         return b;
     }
 
@@ -1000,19 +953,15 @@ public class DataAdministrationController {
 
         items = itemFacade.findBySQL(sql, m);
 
-        System.out.println("itemCategory.getName() = " + itemCategory.getName());
-        System.out.println("items.size() = " + items.size());
 
         int j = 1;
 
         for (Item i : items) {
             System.out.println("i.getName() = " + i.getName());
             DecimalFormat df = new DecimalFormat("0000");
-            System.out.println("df = " + df.format(j));
 //            df=new DecimalFormat("####");
 //            System.out.println("df = " + df.format(j));
             i.setCode(itemCategory.getDescription() + df.format(j));
-            System.out.println("i.getCode() = " + i.getCode());
             itemFacade.edit(i);
             j++;
         }
@@ -1034,7 +983,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findBySQL(sql, m);
 
-        System.out.println("items.size() = " + items.size());
 
         int j = 1;
 
@@ -1066,19 +1014,15 @@ public class DataAdministrationController {
 
         items = itemFacade.findBySQL(sql, m);
 
-        System.out.println("itemCategory.getName() = " + itemCategory.getName());
-        System.out.println("items.size() = " + items.size());
 
         int j = 1;
 
         for (Item i : items) {
             System.out.println("i.getName() = " + i.getName());
             DecimalFormat df = new DecimalFormat("0000");
-            System.out.println("df = " + df.format(j));
 //            df=new DecimalFormat("####");
 //            System.out.println("df = " + df.format(j));
             i.setCode(itemCategory.getCode() + df.format(j));
-            System.out.println("i.getCode() = " + i.getCode());
             itemFacade.edit(i);
             j++;
         }
@@ -1098,7 +1042,6 @@ public class DataAdministrationController {
 
         items = itemFacade.findBySQL(sql, m);
 
-        System.out.println("items.size() = " + items.size());
 
         for (Item i : items) {
 //            System.out.println("i.getName() = " + i.getName());

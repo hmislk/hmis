@@ -1,37 +1,52 @@
-/*
- * MSc(Biomedical Informatics) Project
- *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
- */
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.SmsController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.SmsType;
+import com.divudi.data.InvestigationItemType;
+import com.divudi.data.ItemType;
+import com.divudi.data.MessageType;
+import com.divudi.data.lab.Dimension;
+import com.divudi.data.lab.DimensionTestResult;
+import com.divudi.data.lab.Priority;
+import com.divudi.data.lab.SampleRequestType;
+import com.divudi.data.lab.SysMex;
+import com.divudi.data.lab.SysMexAdf1;
+import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Department;
+import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
+import com.divudi.entity.lab.PatientReportItemValue;
+import com.divudi.entity.lab.PatientSample;
+import com.divudi.entity.lab.PatientSampleComponant;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
+import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
+import com.divudi.facade.PatientSampleComponantFacade;
+import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.SmsFacade;
+import com.divudi.facade.util.JsfUtil;
 import com.itextpdf.text.DocumentException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -44,9 +59,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
@@ -91,14 +108,6 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigationFacade ejbFacade;
     @EJB
     PatientReportFacade prFacade;
-    
-    
-    
-    
-    /**
-     * Controllers
-     */
-    
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -111,23 +120,40 @@ public class PatientInvestigationController implements Serializable {
     BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    private PatientSampleFacade patientSampleFacade;
+    @EJB
+    private PatientSampleComponantFacade patientSampleComponantFacade;
+    @EJB
+    private ItemFacade itemFacade;
+    @EJB
+    private SmsManagerEjb smsManagerEjb;
+    /*
+     * Controllers
+     */
     @Inject
     private InstitutionLabSumeryController labReportSearchByInstitutionController;
     @Inject
     SessionController sessionController;
     @Inject
     CommonController commonController;
-    
-    
-    
-    
+    @Inject
+    private InvestigationItemController investigationItemController;
+    @Inject
+    private BillController billController;
+    @Inject
+    private PatientReportController patientReportController;
+    @Inject
+    private ItemForItemController itemForItemController;
+    @Inject
+    private SmsController smsController;
     /**
      * Class Variables
      */
-    
     List<PatientInvestigation> selectedItems;
     private PatientInvestigation current;
     Investigation currentInvestigation;
+    private PatientSample currentPatientSample;
     List<InvestigationItem> currentInvestigationItems;
     private List<PatientInvestigation> items = null;
     private List<PatientInvestigation> lstToSamle = null;
@@ -152,6 +178,395 @@ public class PatientInvestigationController implements Serializable {
     List<PatientInvestigation> selectedToReceive;
 
     Sms sms;
+    private Set<PatientSample> patientSamplesSet;
+    private List<PatientSample> patientSamples;
+
+    private String samplingRequestResponse;
+
+    private String inputBillId;
+    private String username;
+    private String password;
+
+    private String msg;
+    private String machine;
+    private String shift;
+    private String shift1;
+    private String shift2;
+
+    private String apiResponse = "#{success=false|msg=No Requests}";
+
+    public void sentRequestToAnalyzer() {
+        if (currentPatientSample == null) {
+            JsfUtil.addErrorMessage("Nothing to Add");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(true);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.A);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+
+    public void stopSendingRequestToAnalyzer() {
+        if (currentPatientSample == null) {
+            JsfUtil.addErrorMessage("Nothing to Add");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(false);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.A);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+
+    public void sentRequestToDeleteToAnalyzer() {
+        if (currentPatientSample == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
+        }
+        currentPatientSample.setReadyTosentToAnalyzer(true);
+        currentPatientSample.setSentToAnalyzer(false);
+        currentPatientSample.setSampleRequestType(SampleRequestType.D);
+        getPatientSampleFacade().edit(currentPatientSample);
+    }
+
+    public void msgFromMiddleware() {
+        apiResponse = "";
+        if (username == null || username.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Username}";
+            return;
+        }
+        if (password == null || password.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Password}";
+            return;
+        }
+        if (machine == null || machine.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Machine Specified}";
+            return;
+        }
+        if (msg == null || msg.trim().equals("")) {
+            apiResponse += "#{success=false|msg=No Request From Analyzer}";
+            return;
+        }
+        if (!sessionController.loginForRequests(username, password)) {
+            apiResponse += "#{success=false|msg=Wrong username/password}";
+            return;
+        }
+        if (machine.trim().equals("SysMex")) {
+            apiResponse = msgFromSysmex();
+            return;
+        } else if (machine.trim().equals("Dimension")) {
+            apiResponse = msgFromDimension();
+            return;
+        }
+    }
+
+    private String msgFromDimension() {
+        String temMsgs = "";
+        Dimension dim = new Dimension();
+        dim.setInputStringBytesSpaceSeperated(msg);
+        dim.analyzeReceivedMessage();
+
+        if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.Poll) {
+            PatientSample nps = nextPatientSampleToSendToDimension();
+            dim.setLimsPatientSample(nps);
+            if (nps == null) {
+                dim.setLimsFoundPatientInvestigationToEnterResults(false);
+            } else {
+                if (nps.getSampleRequestType() == null || nps.getSampleRequestType() == SampleRequestType.D) {
+                    dim.setToDeleteSampleRequest(true);
+                } else {
+                    dim.setToDeleteSampleRequest(false);
+                }
+                dim.setLimsFoundPatientInvestigationToEnterResults(true);
+                dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
+            }
+            dim.prepareResponseForPollMessages();
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.QueryMessage) {
+            System.out.println("Query Message");
+            PatientSample nps = patientSampleFromId(dim.getAnalyzerSampleId());
+
+            dim.setLimsPatientSample(nps);
+            if (nps == null) {
+                dim.setLimsFoundPatientInvestigationToEnterResults(false);
+            } else {
+                dim.setToDeleteSampleRequest(false);
+                dim.setLimsFoundPatientInvestigationToEnterResults(true);
+                dim.setLimsPatientSampleComponants(getPatientSampleComponents(nps));
+            }
+            dim.prepareResponseForQueryMessages();
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.ResultMessage) {
+            boolean resultAdded = true;
+            for (DimensionTestResult r : dim.getAnalyzerTestResults()) {
+                boolean tb = addResultsToReportsForDimension(dim.getAnalyzerSampleId(), r.getTestName(), r.getTestResult(), r.getTestUnit(), r.getErrorCode());
+                if (tb = false) {
+                    resultAdded = false;
+                }
+            }
+            temMsgs = "Results Added " + resultAdded;
+            dim.setLimsFoundPatientInvestigationToEnterResults(resultAdded);
+            dim.prepareResponseForResultMessages();
+
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.CaliberationResultMessage) {
+            dim.prepareResponseForCaliberationResultMessages();
+        } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.RequestAcceptance) {
+            temMsgs = "#{success=true|}";
+            return temMsgs;
+        } else {
+            temMsgs = "#{success=true|}";
+            return temMsgs;
+        }
+
+        dim.createResponseString();
+        temMsgs = dim.getResponseString();
+        temMsgs = "#{success=true|toAnalyzer=" + temMsgs + "}";
+        return temMsgs;
+    }
+
+    public boolean addResultsToReportsForDimension(String sampleId, String testStr, String result, String unit, String error) {
+        System.out.println("sampleId = " + sampleId);
+        System.out.println("testStr = " + testStr);
+        System.out.println("result = " + result);
+        System.out.println("unit = " + unit);
+        boolean temFlag = false;
+        Long sid;
+        try {
+            sid = Long.parseLong(sampleId);
+        } catch (Exception e) {
+            sid = 0l;
+        }
+        PatientSample ps = getPatientSampleFromId(sid);
+
+        if (ps == null) {
+            return temFlag;
+        }
+
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+
+        if (pscs == null) {
+            return temFlag;
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return temFlag;
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("dim")) {
+                PatientReport tpr;
+                tpr = patientReportController.getUnapprovedPatientReport(pi);
+                if (tpr == null) {
+                    tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
+                }
+                prs.add(tpr);
+            }
+            for (PatientReport rtpr : prs) {
+                for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        String test;
+                        test = priv.getInvestigationItem().getResultCode();
+
+                        if (test == null || test.trim().equals("")) {
+                            test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        }
+
+                        if (test.toLowerCase().equals(testStr.toLowerCase())) {
+                            if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
+                                System.out.println("Sample Components are same");
+                                priv.setStrValue(result);
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                temFlag = true;
+                            } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                System.out.println("Sample Components are same");
+                                priv.setStrValue(result);
+                                Double dbl = 0d;
+                                try {
+                                    dbl = Double.parseDouble(result);
+                                } catch (Exception e) {
+                                }
+                                priv.setDoubleValue(dbl);
+                                temFlag = true;
+                            } else {
+                            }
+                        }
+                    }
+                }
+                rtpr.setDataEntered(true);
+                rtpr.setDataEntryAt(new Date());
+                rtpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                getPrFacade().edit(rtpr);
+            }
+        }
+
+        return temFlag;
+    }
+
+    public PatientSample patientSampleFromId(String id) {
+        Long pid = 0l;
+        try {
+            pid = Long.parseLong(id);
+        } catch (Exception e) {
+        }
+        return getPatientSampleFacade().find(pid);
+    }
+
+    public PatientSample nextPatientSampleToSendToDimension() {
+        String j = "select ps from PatientSample ps "
+                + "where ps.readyTosentToAnalyzer=true "
+                + " and ps.sentToAnalyzer=false "
+                + " and lower(ps.machine.name) like :ma ";
+
+        Map m = new HashMap();
+        m.put("ma", "%dimension%");
+        PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
+        if (ps != null) {
+            ps.setReadyTosentToAnalyzer(false);
+            ps.setSentToAnalyzer(true);
+            getPatientSampleFacade().edit(ps);
+        }
+        return ps;
+    }
+
+    private String msgFromSysmex() {
+        String temMsgs = "";
+        SysMex sysMex = new SysMex();
+        sysMex.setInputStringBytesSpaceSeperated(msg);
+
+        if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
+            SysMexAdf1 m1 = new SysMexAdf1();
+            m1.setInputStringBytesSpaceSeperated(msg);
+            if (m1.isCorrectReport()) {
+                return "#{success=true|msg=Received Result Format 1 for sample ID " + m1.getSampleId() + "}";
+            }
+        } else if (sysMex.getBytes().size() > 253 && sysMex.getBytes().size() < 258) {
+            SysMexAdf2 m2 = new SysMexAdf2();
+            m2.setInputStringBytesSpaceSeperated(msg);
+            if (m2.isCorrectReport()) {
+                return "#{success=true|msg=Received Result Format 2 for sample ID " + m2.getSampleId() + "}";
+            } else {
+                return extractDataFromSysMexAdf2(m2);
+            }
+        }
+        return "#{success=false|msg=Wrong Data Communication}";
+    }
+
+    public String extractDataFromSysMexAdf2(SysMexAdf2 adf2) {
+        String temMsgs = "";
+        Long sampleId = adf2.getSampleId();
+        PatientSample ps = getPatientSampleFromId(adf2.getSampleId());
+        if (ps == null) {
+            return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
+        }
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
+                PatientReport tpr = patientReportController.createNewPatientReport(pi, pi.getInvestigation());
+                prs.add(tpr);
+            }
+            List<Item> temItems = itemForItemController.getItemsForParentItem(pi.getInvestigation());
+            for (Item ti : temItems) {
+                if (ti instanceof Investigation) {
+                    Investigation tix = (Investigation) ti;
+                    if (tix.getMachine() != null && tix.getMachine().getName().toLowerCase().contains("sysmex")) {
+                        PatientReport tpr = patientReportController.createNewPatientReport(pi, tix);
+                        prs.add(tpr);
+                    }
+                }
+            }
+            for (PatientReport tpr : prs) {
+
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        switch (test) {
+                            case "WBC":
+                                priv.setStrValue(adf2.getWbc());
+                                break;
+                            case "NEUT%":
+                                priv.setStrValue(adf2.getNeutPercentage());
+                                break;
+                            case "LYMPH%":
+                                priv.setStrValue(adf2.getLymphPercentage());
+                                break;
+                            case "BASO%":
+                                priv.setStrValue(adf2.getBasoPercentage());
+                                break;
+                            case "MONO%":
+                                priv.setStrValue(adf2.getMonoPercentage());
+                                break;
+                            case "EO%":
+                                priv.setStrValue(adf2.getEoPercentage());
+                                break;
+                            case "RBC":
+                                priv.setStrValue(adf2.getRbc());
+                                break;
+                            case "HGB":
+                                priv.setStrValue(adf2.getHgb());
+                                break;
+                            case "HCT":
+                                priv.setStrValue(adf2.getHct());
+                                break;
+                            case "MCV":
+                                priv.setStrValue(adf2.getMcv());
+                                break;
+                            case "MCH":
+                                priv.setStrValue(adf2.getMch());
+                                break;
+                            case "MCHC":
+                                priv.setStrValue(adf2.getMchc());
+                                break;
+                            case "PLT":
+                                priv.setStrValue(adf2.getPlt());
+                                break;
+
+                        }
+                    }
+                }
+                tpr.setDataEntered(true);
+                tpr.setDataEntryAt(new Date());
+                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
+                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
+                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
+                getPrFacade().edit(tpr);
+            }
+        }
+        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
+    }
+
+    private PatientSample getPatientSampleFromId(Long id) {
+        String j = "select ps from PatientSample ps where ps.id = :id";
+        Map m = new HashMap();
+        m.put("id", id);
+        return getPatientSampleFacade().findFirstBySQL(j, m);
+    }
+
+    public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
+        Map m = new HashMap();
+        m.put("ps", ps);
+        return patientSampleComponantFacade.findBySQL(j, m);
+    }
+
+    private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
+        Set<PatientInvestigation> ptixhs = new HashSet<>();
+        for (PatientSampleComponant psc : pscs) {
+            ptixhs.add(psc.getPatientInvestigation());
+        }
+        List<PatientInvestigation> ptixs = new ArrayList<>(ptixhs);
+        return ptixs;
+    }
 
     public void resetLists() {
         items = null;
@@ -511,232 +926,64 @@ public class PatientInvestigationController implements Serializable {
             UtilityController.addErrorMessage("Nothing to send sms");
             return;
         }
-
         Bill bill = current.getBillItem().getBill();
-
-        System.out.println("running the sending sms.");
-        if (bill == null) {
-        }
-
         if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
+            JsfUtil.addErrorMessage("System Error");
             return;
         }
-
         String sendingNo = bill.getPatient().getPerson().getPhone();
-        if (sendingNo.contains("077") || sendingNo.contains("076")
+        if (sendingNo.contains("077") || sendingNo.contains("076") || sendingNo.contains("070")
                 || sendingNo.contains("071") || sendingNo.contains("072")
                 || sendingNo.contains("075") || sendingNo.contains("078")) {
         } else {
+            JsfUtil.addErrorMessage("Wrong Telephone Number");
             return;
         }
 
-        StringBuilder sb = new StringBuilder(sendingNo);
-        sb.deleteCharAt(3);
-        sendingNo = sb.toString();
+        Sms s = new Sms();
+        s.setBill(bill);
+        s.setCreatedAt(new Date());
+        s.setCreater(sessionController.getLoggedUser());
+        s.setDepartment(sessionController.getLoggedUser().getDepartment());
+        s.setInstitution(sessionController.getLoggedUser().getInstitution());
+        s.setPatientInvestigation(current);
+        s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
-        if (getSessionController().getUserPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-            HttpResponse<String> stringResponse;
-            String pw = "&q=14488825498722";
-//            String messageBody = "Dear Sir/Madam,\n"
-//                    + "Thank you for using RHD services. Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-//                    + "\"Ruhunu Hospital Diagnostics your trusted diagnostics partner\"";
-//            
-//            System.out.println("messageBody = " + messageBody.length());
-            String messageBody2 = "Dear Sir/Madam,\n"
-                    + "Report bearing number " + bill.getInsId() + " is ready for collection.\n"
-                    + "\"RHD your trusted diagnostics partner\"\n"
-                    + "Get your report online http://goo.gl/Ae8p6L";
+        String messageBody = "Dear Sir/Madam, "
+                + "Reports bearing bill number " + bill.getInsId() + " is ready for collection at "
+                + sessionController.getLoggedUser().getDepartment().getPrintingName() + ".";
 
-            System.out.println("messageBody2 = " + messageBody2.length());
+        s.setSendingMessage(messageBody);
+        s.setSentSuccessfully(true);
+        s.setSmsType(MessageType.LabReport);
+        getSmsFacade().create(s);
 
-            final StringBuilder request = new StringBuilder(url);
-            request.append(sendingNo.substring(1, 10));
-            request.append(pw);
-//            request.append(messageBody);
-//            System.out.println("request.toString().charAt(105) = " + request.toString().charAt(105));
-//            System.out.println("request.toString().charAt(106) = " + request.toString().charAt(106));
-//            System.out.println("request.toString().charAt(107) = " + request.toString().charAt(107));
-            try {
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("sendingNo.substring(1, 10) = " + sendingNo.substring(1, 10));
-                System.out.println("text = " + messageBody2);
+        System.out.println("getSmsManagerEjb() = " + getSmsManagerEjb());
+        System.out.println("s.getReceipientNumber() = " + messageBody);
+        System.out.println("messageBody = " + s.getReceipientNumber());
+        System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
+        System.out.println("  s.getInstitution().getSmsSendingPassword() = " + s.getInstitution().getSmsSendingPassword());
+        getSmsController();
+        boolean sent = getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
+                s.getInstitution().getSmsSendingUsername(),
+                s.getInstitution().getSmsSendingPassword(),
+                s.getInstitution().getSmsSendingAlias());
 
-                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
-            sms = new Sms();
-//            sms.setUserId(id);
-            sms.setPassword(pw);
-            sms.setCreatedAt(new Date());
-            sms.setCreater(getSessionController().getLoggedUser());
-            sms.setBill(bill);
-            sms.setSendingUrl(url);
-            sms.setSmsType(SmsType.LabReport);
-            sms.setSendingMessage(messageBody2);
+        if (sent) {
+            getCurrent().getBillItem().getBill().setSmsed(true);
+            getCurrent().getBillItem().getBill().setSmsedAt(new Date());
+            getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            getCurrent().getBillItem().getBill().getSentSmses().add(s);
+            billFacade.edit(getCurrent().getBillItem().getBill());
+            UtilityController.addSuccessMessage("Sms send");
         } else {
-            String url = "http://www.textit.biz/sendmsg/index.php";
-            HttpResponse<String> stringResponse;
-            String messageBody;
-            String id = "94715812399";
-            String pw = "5672";
-
-            messageBody = "Reports ready. ";
-            messageBody = messageBody + bill.getInstitution().getName() + ". ";
-            messageBody = messageBody + bill.getDepartment().getAddress() + ". ";
-            messageBody = messageBody + bill.getInstitution().getWeb();
-
-            try {
-                System.out.println("id = " + id);
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-                System.out.println("text = " + messageBody);
-
-                stringResponse = Unirest.post(url)
-                        .field("id", id)
-                        .field("pw", pw)
-                        .field("to", sendingNo)
-                        .field("text", messageBody)
-                        .asString();
-
-                System.out.println("stringResponse = " + stringResponse);
-
-            } catch (Exception ex) {
-                return;
-            }
-            sms = new Sms();
-            sms.setUserId(id);
-            sms.setPassword(pw);
-            sms.setCreatedAt(new Date());
-            sms.setCreater(getSessionController().getLoggedUser());
-            sms.setBill(bill);
-            sms.setSendingUrl(url);
-            sms.setSendingMessage(messageBody);
+            JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
-
-        System.out.println("Updating current PtIx = " + getCurrent());
-
-        System.out.println("SMS status before updating " + getCurrent().getBillItem().getBill().getSmsed());
-
-        getCurrent().getBillItem().getBill().setSmsed(true);
-        getCurrent().getBillItem().getBill().setSmsedAt(new Date());
-        getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
-        getFacade().edit(current);
-        getCurrent().getBillItem().getBill().getSentSmses().add(sms);
-
-        System.out.println("SMS status aftr updating " + getCurrent().getBillItem().getBill().getSmsed());
-
-        billFacade.edit(getCurrent().getBillItem().getBill());
-
-        System.out.println("sms before saving = " + sms);
-        getSmsFacade().create(sms);
-        System.out.println("sms after saving " + sms);
-
-        UtilityController.addSuccessMessage("Sms send");
-
         getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
-//    ...............Create PDF.... Jasper.........
 
-    public void create() throws DocumentException, com.lowagie.text.DocumentException {
-
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
-        String url = "http://localhost:8080/temp/faces/lab/patient_report_print_email_pfd.xhtml";
-
-        url = req.getRequestURL().toString();
-        System.err.println("1" + url);
-        url = url.substring(0, url.length() - req.getRequestURI().length()) + req.getContextPath() + "/";
-        System.err.println("2" + url);
-        url += "faces/lab/patient_report_print_email_pfd.xhtml";
-        System.err.println("3" + url);
-// 
-
-        try {
-
-            final ITextRenderer iTextRenderer = new ITextRenderer();
-
-            iTextRenderer.setDocument(url);
-            iTextRenderer.layout();
-
-            final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("\\tmp\\LabReport.pdf"));
-
-            iTextRenderer.createPDF(fileOutputStream);
-            fileOutputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-//    ...............sendEmail...............................................
-
-    public void sendEmail() throws IOException, DocumentException, com.lowagie.text.DocumentException, Exception {
-
-        System.out.println("" + getCurrent());
-        System.out.println("" + getCurrent());
-
-        final String username = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername();
-        final String password = getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingPassword();
-
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-//        Authenticator auth = new SMTPAuthenticator();
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(getCurrent().getBillItem().getBill().getToDepartment().getInstitution().getEmailSendingUsername()));
-            message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(getCurrent().getBillItem().getBill().getPatient().getPerson().getEmail()));
-            message.setSubject(getCurrent().getInvestigation().getName() + " Results");
-            message.setText("Dear " + getCurrent().getBillItem().getBill().getPatient().getPerson().getNameWithTitle()
-                    + ",\n\n Please find the results of your " + getCurrent().getInvestigation().getName() + ".");
-
-            //3) create MimeBodyPart object and set your message text     
-            BodyPart msbp1 = new MimeBodyPart();
-            msbp1.setText("Final Lab report of patient");
-
-            //4) create new MimeBodyPart object and set DataHandler object to this object      
-            MimeBodyPart msbp2 = new MimeBodyPart();
-
-            create();
-
-            DataSource source = new FileDataSource("\\tmp\\LabReport.pdf");
-            msbp2.setDataHandler(new DataHandler(source));
-            msbp2.setFileName("\\tmp\\Labreport.pdf");
-
-            //5) create Multipart object and add Mimdler(soeBodyPart objects to this object      
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(msbp1);
-            multipart.addBodyPart(msbp2);
-
-            //6) set the multiplart object to the message object  
-            message.setContent(multipart);
-
-            Transport.send(message);
-
-            System.out.println("Send Successfully");
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
+    
     public void markAsSampled() {
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to sample");
@@ -856,7 +1103,307 @@ public class PatientInvestigationController implements Serializable {
         lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
-    
+
+    public void listPatientSamples() {
+        String jpql = "select ps from PatientSample ps"
+                + " where ps.sampleInstitution=:ins "
+                + " and ps.sampledAt between :fd and :td "
+                + " order by ps.id";
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ins", sessionController.getLoggedUser().getInstitution());
+        patientSamples = getPatientSampleFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        /**
+         *
+         * ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+         * ps.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+         * ps.setSampledAt(ps.getCreatedAt());
+         * ps.setSampleCollecter(ps.getCreater());
+         */
+
+    }
+
+    public void prepareSampleCollectionByRequest() {
+        samplingRequestResponse = "#{";
+        if (inputBillId == null || inputBillId.trim().equals("")) {
+            samplingRequestResponse += "Login=0|Message=Bill Number not entered.}#";
+            return;
+        }
+        if (!getSessionController().loginForRequests(username, password)) {
+            samplingRequestResponse += "Login=0|Message=Username or password error.}#";
+            return;
+        }
+        prepareSampleCollection();
+        if (getPatientSamples() == null || getPatientSamples().isEmpty()) {
+            samplingRequestResponse += "Login=0|";
+            samplingRequestResponse += "Bill Not Found. Pease reenter}";
+            return;
+        }
+
+        samplingRequestResponse += "Login=1";
+        String zplTemplate = "^XA\r\n"
+                + "^LH40,10\r\n"
+                + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
+                + "^LH40,30\r\n"
+                + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
+                + "^LH40,155\r\n"
+                + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
+                + "^XZ\r\n";
+        String ptLabel = "";
+        Bill tb;
+        tb = patientSamples.get(0).getBill();
+        String tbis = "";
+
+        samplingRequestResponse += "|message=";
+
+        if (patientSamplesSet.isEmpty()) {
+            ptLabel = zplTemplate;
+            ptLabel = ptLabel.replace("#{header}", commonController.shortDate(patientSamples.get(0).getBill().getBillDate())
+                    + " "
+                    + patientSamples.get(0).getBill().getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{barcode}", "" + patientSamples.get(0).getBill().getIdStr());
+            List<BillItem> tpiics = patientSamples.get(0).getBill().getBillItems();
+            tbis = "";
+            for (BillItem i : tpiics) {
+                tbis += i.getItem().getName() + ", ";
+            }
+            tbis = tbis.substring(0, tbis.length() - 2);
+            ptLabel = ptLabel.replace("#{footer}", tbis);
+            samplingRequestResponse += ptLabel;
+        } else {
+            for (PatientSample ps : patientSamplesSet) {
+                ptLabel = zplTemplate;
+                ptLabel = ptLabel.replace("#{header}", commonController.shortDate(ps.getBill().getBillDate())
+                        + " "
+                        + ps.getPatient().getPerson().getName());
+                ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
+                List<Item> tpiics = testComponantsForPatientSample(ps);
+                tbis = "";
+                for (Item i : tpiics) {
+                    tbis += i.getName() + ", ";
+                }
+                if (tbis.length() > 2) {
+                    tbis = tbis.substring(0, tbis.length() - 2);
+                    ptLabel = ptLabel.replace("#{footer}", tbis);
+                    samplingRequestResponse += ptLabel;
+                }
+            }
+        }
+        samplingRequestResponse += "}#";
+    }
+
+    public void prepareSampleCollection() {
+        Long billId = stringToLong(inputBillId);
+        List<Bill> temBills;
+        if (billId != null) {
+            temBills = prepareSampleCollectionByBillId(billId);
+        } else {
+            temBills = prepareSampleCollectionByBillNumber(inputBillId);
+        }
+        prepareSampleCollectionByBills(temBills);
+    }
+
+    public Long stringToLong(String input) {
+        try {
+            return Long.parseLong(input);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public List<Bill> prepareSampleCollectionByBillId(Long bill) {
+        Bill b = getBillFacade().find(bill);
+        List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
+        if (bs == null || bs.isEmpty()) {
+            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+            return null;
+        }
+        return bs;
+    }
+
+    public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
+        String j = "Select b from Bill b where b.insId=:id";
+        Map m = new HashMap();
+        m.put("id", insId);
+        Bill b = getBillFacade().findFirstBySQL(j, m);
+        List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
+        if (bs == null || bs.isEmpty()) {
+            JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
+            return null;
+        }
+        return bs;
+    }
+
+    public void temUpdatePatientSamplesToMatchCurrentDepartmentAndInstitution() {
+        List<PatientSample> pss = getPatientSampleFacade().findAll();
+        for (PatientSample ps : pss) {
+            ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+            ps.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+            ps.setSampledAt(ps.getCreatedAt());
+            ps.setSampleCollecter(ps.getCreater());
+            getPatientSampleFacade().edit(ps);
+        }
+    }
+
+    public void prepareSampleCollectionByBills(List<Bill> bills) {
+        String j = "";
+        Map m;
+        patientSamplesSet = new HashSet<>();
+        patientSamples = null;
+        for (Bill b : bills) {
+            m = new HashMap();
+            m.put("can", false);
+            m.put("bill", b);
+            j = "Select pi from PatientInvestigation pi "
+                    + " where pi.cancelled=:can "
+                    + " and pi.billItem.bill=:bill";
+            List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
+            for (PatientInvestigation ptix : pis) {
+                Investigation ix = ptix.getInvestigation();
+
+                ptix.setCollected(true);
+                ptix.setSampleCollecter(getSessionController().getLoggedUser());
+                ptix.setSampleDepartment(getSessionController().getLoggedUser().getDepartment());
+                ptix.setSampleInstitution(getSessionController().getLoggedUser().getInstitution());
+                ptix.setSampledAt(new Date());
+                getFacade().edit(ptix);
+
+                List<InvestigationItem> ixis = investigationItemController.getItems(ix);
+                for (InvestigationItem ixi : ixis) {
+                    if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template) {
+                        j = "select ps from PatientSample ps "
+                                + " where ps.tube=:tube "
+                                + " and ps.sample=:sample "
+                                + " and ps.machine=:machine "
+                                + " and ps.patient=:pt "
+                                + " and ps.bill=:bill "
+                                + " and ps.collected=:ca";
+                        m = new HashMap();
+                        m.put("tube", ixi.getTube());
+                        m.put("sample", ixi.getSample());
+                        m.put("machine", ixi.getMachine());
+                        m.put("pt", b.getPatient());
+                        m.put("bill", b);
+                        m.put("ca", false);
+                        if (ix.isHasMoreThanOneComponant()) {
+                            j += " and ps.investigationComponant=:sc ";
+                            m.put("sc", ixi.getSampleComponent());
+                        }
+
+                        PatientSample pts = getPatientSampleFacade().findFirstBySQL(j, m);
+                        if (pts == null) {
+                            pts = new PatientSample();
+                            pts.setTube(ixi.getTube());
+                            pts.setSample(ixi.getSample());
+                            if (ix.isHasMoreThanOneComponant()) {
+                                pts.setInvestigationComponant(ixi.getSampleComponent());
+                            }
+                            pts.setMachine(ixi.getMachine());
+                            pts.setPatient(b.getPatient());
+                            pts.setBill(b);
+                            pts.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
+                            pts.setSampleInstitution(sessionController.getLoggedUser().getInstitution());
+                            pts.setSampleCollecter(sessionController.getLoggedUser());
+                            pts.setSampledAt(new Date());
+                            pts.setCreatedAt(new Date());
+                            pts.setCreater(sessionController.getLoggedUser());
+                            pts.setCollected(false);
+                            pts.setReadyTosentToAnalyzer(false);
+                            pts.setSentToAnalyzer(false);
+                            getPatientSampleFacade().create(pts);
+                        }
+                        patientSamplesSet.add(pts);
+
+                        PatientSampleComponant ptsc;
+                        j = "select ps from PatientSampleComponant ps "
+                                + " where ps.patientSample=:pts "
+                                + " and ps.bill=:bill "
+                                + " and ps.patient=:pt "
+                                + " and ps.patientInvestigation=:ptix "
+                                + " and ps.investigationComponant=:ixc";
+                        m = new HashMap();
+                        m.put("pts", pts);
+                        m.put("bill", b);
+                        m.put("pt", b.getPatient());
+                        m.put("ptix", ptix);
+                        m.put("ixc", ixi.getSampleComponent());
+                        ptsc = getPatientSampleComponantFacade().findFirstBySQL(j, m);
+                        if (ptsc == null) {
+                            ptsc = new PatientSampleComponant();
+                            ptsc.setPatientSample(pts);
+                            ptsc.setBill(b);
+                            ptsc.setPatient(b.getPatient());
+                            ptsc.setPatientInvestigation(ptix);
+                            ptsc.setInvestigationComponant(ixi.getSampleComponent());
+                            ptsc.setCreatedAt(new Date());
+                            ptsc.setCreater(sessionController.getLoggedUser());
+                            getPatientSampleComponantFacade().create(ptsc);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public List<Item> testComponantsForPatientSample(PatientSample ps) {
+        if (ps == null) {
+            return new ArrayList<>();
+        }
+        List<Item> ts = new ArrayList<>();
+        Map m = new HashMap();
+        String j = "select ps.investigationComponant from PatientSampleComponant ps "
+                + " where ps.patientSample=:pts "
+                + " group by ps.investigationComponant";
+        m = new HashMap();
+        m.put("pts", ps);
+
+        ts = getItemFacade().findBySQL(j, m);
+        return ts;
+    }
+
+    public List<Item> getCurrentReportComponants(Investigation ix) {
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Select an investigation");
+            return null;
+        }
+        String j = "select i from Item i where i.itemType=:t and i.parentItem=:m and i.retired=:r order by i.name";
+        Map m = new HashMap();
+        m.put("t", ItemType.SampleComponent);
+        m.put("r", false);
+        m.put("m", ix);
+        return getItemFacade().findBySQL(j, m);
+    }
+
+    private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
+        for (PatientInvestigation pi : bcs) {
+            if (pi.getBillComponent() == bc) {
+                return pi;
+            }
+        }
+        return null;
+    }
+
+    private List<BillComponent> billItemComponents(BillItem bi, Set<BillComponent> bcs) {
+        List<BillComponent> bs = new ArrayList<>();
+        for (BillComponent b : bcs) {
+            if (b.getBillItem() == bi) {
+                bs.add(b);
+            }
+        }
+        return bs;
+    }
+
+    private List<Bill> patientBills(Patient pt, Set<Bill> bills) {
+        List<Bill> bs = new ArrayList<>();
+        for (Bill b : bills) {
+            if (b.getPatient() == pt) {
+                bs.add(b);
+            }
+        }
+        return bs;
+    }
+
     public void prepareSampled() {
         String temSql;
         Map temMap = new HashMap();
@@ -880,7 +1427,6 @@ public class PatientInvestigationController implements Serializable {
                 + " where bi.referanceBillItem.id=:bi ";
         m.put("bi", pi.getBillItem().getId());
         List<BillItem> bis = billItemFacade.findBySQL(sql, m);
-        System.out.println("bis.size() = " + bis.size());
         if (bis.isEmpty()) {
             pi.getBillItem().setTransRefund(false);
         } else {
@@ -1117,6 +1663,180 @@ public class PatientInvestigationController implements Serializable {
         this.sms = sms;
     }
 
+    public InvestigationItemController getInvestigationItemController() {
+        return investigationItemController;
+    }
+
+    public PatientSampleFacade getPatientSampleFacade() {
+        return patientSampleFacade;
+    }
+
+    public BillController getBillController() {
+        return billController;
+    }
+
+    public void setBillController(BillController billController) {
+        this.billController = billController;
+    }
+
+    public String getInputBillId() {
+        return inputBillId;
+    }
+
+    public void setInputBillId(String inputBillId) {
+        this.inputBillId = inputBillId;
+    }
+
+    public Set<PatientSample> getPatientSamplesSet() {
+        return patientSamplesSet;
+    }
+
+    public void setPatientSamplesSet(Set<PatientSample> patientSamplesSet) {
+        this.patientSamplesSet = patientSamplesSet;
+    }
+
+    public List<PatientSample> getPatientSamples() {
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+            if (patientSamplesSet != null && !patientSamplesSet.isEmpty()) {
+                patientSamples.addAll(patientSamplesSet);
+            }
+        }
+        return patientSamples;
+    }
+
+    public void setPatientSamples(List<PatientSample> patientSamples) {
+        this.patientSamples = patientSamples;
+    }
+
+    public String getSamplingRequestResponse() {
+        return samplingRequestResponse;
+    }
+
+    public void setSamplingRequestResponse(String samplingRequestResponse) {
+        this.samplingRequestResponse = samplingRequestResponse;
+    }
+
+    public void setPatientSampleComponantFacade(PatientSampleComponantFacade patientSampleComponantFacade) {
+        this.patientSampleComponantFacade = patientSampleComponantFacade;
+    }
+
+    public void setPatientSampleFacade(PatientSampleFacade patientSampleFacade) {
+        this.patientSampleFacade = patientSampleFacade;
+    }
+
+    public void setInvestigationItemController(InvestigationItemController investigationItemController) {
+        this.investigationItemController = investigationItemController;
+    }
+
+    public PatientSampleComponantFacade getPatientSampleComponantFacade() {
+        return patientSampleComponantFacade;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getMachine() {
+        return machine;
+    }
+
+    public void setMachine(String machine) {
+        this.machine = machine;
+    }
+
+    public String getApiResponse() {
+        return apiResponse;
+    }
+
+    public void setApiResponse(String apiResponse) {
+        this.apiResponse = apiResponse;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public void setPatientReportController(PatientReportController patientReportController) {
+        this.patientReportController = patientReportController;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    public void setItemForItemController(ItemForItemController itemForItemController) {
+        this.itemForItemController = itemForItemController;
+    }
+
+    public String getShift() {
+        return shift;
+    }
+
+    public void setShift(String shift) {
+        this.shift = shift;
+    }
+
+    public String getShift1() {
+        return shift1;
+    }
+
+    public void setShift1(String shift1) {
+        this.shift1 = shift1;
+    }
+
+    public String getShift2() {
+        return shift2;
+    }
+
+    public void setShift2(String shift2) {
+        this.shift2 = shift2;
+    }
+
+    public PatientSample getCurrentPatientSample() {
+        return currentPatientSample;
+    }
+
+    public void setCurrentPatientSample(PatientSample currentPatientSample) {
+        this.currentPatientSample = currentPatientSample;
+    }
+
+    public SmsManagerEjb getSmsManagerEjb() {
+        return smsManagerEjb;
+    }
+
+    public void setSmsManagerEjb(SmsManagerEjb smsManagerEjb) {
+        this.smsManagerEjb = smsManagerEjb;
+    }
+
+    public SmsController getSmsController() {
+        return smsController;
+    }
+
     /**
      *
      */
@@ -1166,6 +1886,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public BillItemFacade getBillItemFacade() {
+        return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
     }
 
 }

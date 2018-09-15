@@ -328,12 +328,10 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
-        System.err.println("Value " + value);
         if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
             return value;
         } else {
             double dbl = (value / finalVariables.getWorkingDaysPerMonth());
-            System.err.println("DBL 1 " + dbl);
             dbl = dbl * workedDays;
 
             return dbl;
@@ -348,12 +346,10 @@ public class StaffSalaryAdvanceController implements Serializable {
         }
 
         double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getSalaryAdvanceFromDate(), salaryCycle.getSalaryAdvanceToDate(), getCurrent().getStaff());
-        System.err.println("Value " + value);
         if (workedDays >= finalVariables.getWorkingDaysPerMonth()) {
             return value * (percentage / 100);
         } else {
             double dbl = (value / finalVariables.getWorkingDaysPerMonth());
-            System.err.println("DBL 1 " + dbl);
             dbl = dbl * workedDays * (percentage / 100);
 
             return dbl;

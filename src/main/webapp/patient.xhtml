@@ -24,7 +24,7 @@
                                                itemLabel="#{i.label}" itemValue="#{i}"/>
                             </p:selectOneMenu>
                             <h:outputLabel value="Name"/>
-                            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:uppercase;">
+                            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:capitalize;">
                             </p:inputText>
                             <h:outputLabel value="Sex"/>
                             <p:selectOneMenu id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 200px;">
@@ -58,15 +58,15 @@
                             </h:panelGrid>
 
                             <h:outputLabel value="Phone"/>
-                            <p:inputText autocomplete="off"  id="txtPhone" value="#{patientController.current.person.phone}" style="width: 200px;text-transform:uppercase;">
+                            <p:inputText autocomplete="off"  id="txtPhone" value="#{patientController.current.person.phone}" style="width: 200px;text-transform:capitalize;">
                             </p:inputText>
 
                             <h:outputLabel value="Email"/>
-                            <p:inputText autocomplete="off"  id="txtEmail" value="#{patientController.current.person.email}" style="width: 200px;text-transform:uppercase;">
+                            <p:inputText autocomplete="off"  id="txtEmail" value="#{patientController.current.person.email}" style="width: 200px;">
                             </p:inputText>
 
                             <h:outputLabel value="NIC"/>
-                            <p:inputText autocomplete="off"  id="txtNic" value="#{patientController.current.person.nic}" style="width: 200px;text-transform:uppercase;">
+                            <p:inputText autocomplete="off"  id="txtNic" value="#{patientController.current.person.nic}" style="width: 200px;text-transform:capitalize;">
                             </p:inputText>
 
                             <h:outputLabel value="Area"/>
@@ -79,12 +79,12 @@
 
                             <h:outputLabel value="Address"/>
                             <p:inputText autocomplete="off"  id="txtAddress" 
-                                         value="#{patientController.current.person.address}" style="width: 400px;text-transform:uppercase;">
+                                         value="#{patientController.current.person.address}" style="width: 400px;text-transform:capitalize;">
                             </p:inputText>
                             
                             
                             <h:outputLabel value="PHN No"/>
-                            <p:inputText autocomplete="off"  id="txtNewPtName1" value="#{patientController.current.phn}" style="width: 200px;text-transform:uppercase;">
+                            <p:inputText autocomplete="off"  id="txtNewPtName1" value="#{patientController.current.phn}" style="width: 200px;text-transform:capitalize;">
                             </p:inputText>
                            
 

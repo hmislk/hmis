@@ -613,6 +613,12 @@ body {
     width : 400px;
 }
 
+
+.mediumAutocomplete.ui-autocomplete-input.ui-inputfield { 
+    width : 200px;
+}
+
+
 .labPanel .ui-panel-titlebar {
     color: #FF1493;
     border-color: #FF1493;
@@ -1059,3 +1065,6 @@ table.standardTable td {
 .noBorderGrid1.ui-panelgrid .ui-panelgrid-cell {
     border: none;
 }
+
+
+

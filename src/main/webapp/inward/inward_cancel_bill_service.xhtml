@@ -78,7 +78,7 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
-                                    <h:panelGroup id="gpBillPreview" rendered="#{sessionController.institutionPreference.printLabelForOPdBill eq false and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}">
+                                    <h:panelGroup id="gpBillPreview" rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
                                         <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill">
                                             <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                         </ui:repeat>
@@ -100,7 +100,7 @@
                                                                                         <f:convertDateTime pattern="hh mm ss a"/>
                                                                                     </h:outputLabel>
                                     
-                                                                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" style="position:absolute;left:4.5cm; top:2.5cm; text-transform: uppercase; "  />
+                                                                                    <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" style="position:absolute;left:4.5cm; top:2.5cm; text-transform: capitalize; "  />
                                     
                                                                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" style="position: absolute;left:4.5cm; top:3.0cm;"  />
                                     

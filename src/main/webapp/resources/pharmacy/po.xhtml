@@ -83,14 +83,14 @@
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
+                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                         <f:facet name="header">
                             <h:outputLabel value="P.Rate"/>
                         </f:facet>
@@ -100,7 +100,7 @@
                     </p:column>
                     
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha eq true}">
+                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
                         <f:facet name="header">
                             <h:outputLabel value="Free QTY"/>
                         </f:facet>

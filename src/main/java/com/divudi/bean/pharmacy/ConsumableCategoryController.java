@@ -153,7 +153,6 @@ public class ConsumableCategoryController implements Serializable {
 
     private boolean errorCheck() {
         if (getSelected() != null) {
-            System.out.println("getSelected().getCode() = " + getSelected().getCode());
             if (getSelected().getCode() == null || getSelected().getCode().isEmpty()) {
                 return false;
             } else {
@@ -166,7 +165,6 @@ public class ConsumableCategoryController implements Serializable {
 
                 m.put("code", getSelected().getCode());
                 List<ConsumableCategory> list = getFacade().findBySQL(sql, m);
-                System.out.println("list.size() = " + list.size());
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getSelected().getCode() + " is alredy exsist.");
                     getSelected().setCode("");

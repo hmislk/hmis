@@ -54,102 +54,95 @@
                                     <p:commandButton ajax="false"  value="Process"  
                                                      action="#{investigationMonthSummeryOwnControllerSession.createInvestigationMonthEndSummeryCounts}"
                                                      styleClass="noPrintButton" style="float: right;" />
-<!--                                    <p:commandButton value="Print" actionListener="#{investigationMonthSummeryOwnControllerSession.prepareForPrint()}" 
-                                                     oncomplete="$('#frm\\:print').click()"
-                                                     update=":frm:tbl"/>
-                                    <p:commandButton id="print" value="Actual print" style="display: none">
-                                        <p:ajax event="click" listener="#{investigationMonthSummeryOwnControllerSession.prepareForView()}" update=":frm:tbl"/>
-                                        <p:printer target=":frm:tbl" />
-                                    </p:commandButton>-->
                                     <p:commandButton id="print" value="Print">
-                                        <p:printer target="panelPrint" />
+                                        <p:printer target="tbl" />
                                     </p:commandButton>
-
-
                                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
                                         <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
                                                      facetBackground="#008000" facetFontSize="15" 
                                                      facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                                      fontName="Courier New"  />
                                     </p:commandButton> 
-
-                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/lab/summeries_index" >
+                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
                                     </p:commandButton> 
-
-
                                 </h:panelGrid>
                             </td>
                         </tr>
                     </table>
 
-                    <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
 
-                        <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c"
-                                     rowIndexVar="i">
-                            <f:facet name="header" >
-                                <h:outputLabel value="Investigation Counts"/>
-                                <br></br>
-                                <h:outputLabel value="From  "/>                     
-                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
-                                </h:outputLabel>
-                                <h:outputLabel value="- To "/>                       
-                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+
+                    <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c"
+                                 rowIndexVar="i">
+                        <f:facet name="header" >
+                            <h:outputLabel value="Investigation Counts"/>
+                            <br></br>
+                            <h:outputLabel value="From  "/>                     
+                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.fromDate}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </h:outputLabel>
+                            <h:outputLabel value="- To "/>                       
+                            <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.toDate}" >
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </h:outputLabel>
+                        </f:facet>
+                        <p:column width="30">
+                            <f:facet name="header">
+                                <h:outputLabel value="No"/>
+                            </f:facet>
+                            <h:outputLabel value="#{i+1}"  />
+                        </p:column>
+                        <p:column headerText="Test ID" rendered="#{webUserController.hasPrivilege('Developers')}"
+                                  sortBy="#{c.investigation.id}" width="40"
+                                  filterBy="#{c.investigation.id}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Test ID"/>
+                            </f:facet>
+                            <p:commandLink value="#{c.investigation.id}" ajax="false" action="/lab/investigation" >
+                                <f:setPropertyActionListener value="#{c.investigation}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                            </p:commandLink>
+                            <h:outputLabel value="#{c.investigation.id}"  />
+                        </p:column>
+                        <p:column headerText="Test" 
+                                  sortBy="#{c.investigation.name}" 
+                                  filterBy="#{c.investigation.name}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Test"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.investigation.name}"  />
+                            <f:facet name="footer">
+                                <h:outputLabel value="Total">
                                 </h:outputLabel>
                             </f:facet>
-                            <p:column >
-                                <f:facet name="header">
-                                    <h:outputLabel value="No"/>
-                                </f:facet>
-                                <h:outputLabel value="#{i+1}"  />
-                            </p:column>
-                            <p:column headerText="Test ID" rendered="#{webUserController.hasPrivilege('Developers')}"
-                                      sortBy="#{c.investigation.id}" 
-                                      filterBy="#{c.investigation.id}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Test ID"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.investigation.id}"  />
-                            </p:column>
-                            <p:column headerText="Test Name" 
-                                      sortBy="#{c.investigation.name}" 
-                                      filterBy="#{c.investigation.name}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Test Name"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.investigation.name}"  />
-                                <f:facet name="footer">
-                                    <h:outputLabel value="Total">
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Machine Name" rendered="#{webUserController.hasPrivilege('Developers')}"
-                                      sortBy="#{c.investigation.machine.name}" 
-                                      filterBy="#{c.investigation.machine.name}"
-                                      filterMatchMode="contains">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Machine Name"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.investigation.machine.name}"  />
-                            </p:column>
-                            <p:column headerText="Count" style="text-align:right" 
-                                      sortBy="#{c.count}">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Count"/>
-                                </f:facet>
-                                <h:outputLabel value="#{c.count}" />
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                        </p:column>
+                        <p:column headerText="Analyzer" rendered="#{webUserController.hasPrivilege('Developers')}"
+                                  sortBy="#{c.investigation.machine.name}" 
+                                  filterBy="#{c.investigation.machine.name}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Analyzer"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.investigation.machine.name}"  />
+                        </p:column>
+                        <p:column headerText="Count" style="text-align:right" 
+                                  sortBy="#{c.count}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Count"/>
+                            </f:facet>
+                            <h:outputLabel value="#{c.count}" />
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{investigationMonthSummeryOwnControllerSession.totalCount}">
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
 
 
-                        </p:dataTable>
-                    </p:panel>
+                    </p:dataTable>
+
+
+
                 </p:panel>        
             </h:form>
         </h:panelGroup>

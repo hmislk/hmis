@@ -1251,7 +1251,7 @@ public class PharmacySaleController implements Serializable {
 
         editingQty = null;
 
-        if (sessionController.getInstitutionPreference().isCheckPaymentSchemeValidation()) {
+        if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 UtilityController.addErrorMessage("Please select Payment Scheme");
                 return;
@@ -1347,7 +1347,6 @@ public class PharmacySaleController implements Serializable {
 //    checked
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
-            System.err.println("List Item " + bItem.getPharmaceuticalBillItem().getStock());
             if (bItem.getPharmaceuticalBillItem().getStock().equals(getBillItem().getPharmaceuticalBillItem().getStock())) {
                 return true;
             }
@@ -1619,7 +1618,6 @@ public class PharmacySaleController implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
             return dr;
@@ -1635,7 +1633,6 @@ public class PharmacySaleController implements Serializable {
                 tdp = priceMatrix.getDiscountPercent();
             }
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 
@@ -1647,7 +1644,6 @@ public class PharmacySaleController implements Serializable {
         if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
             tdp = toInstitution.getPharmacyDiscount();
 
-            System.err.println("tdp = " + tdp);
             double dr;
             dr = (tr * tdp) / 100;
 
@@ -1682,7 +1678,6 @@ public class PharmacySaleController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -1753,9 +1748,7 @@ public class PharmacySaleController implements Serializable {
         System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
-        System.out.println("1.cal.getTime() = " + cal.getTime());
         cal.add(Calendar.DATE, 31);
-        System.out.println("2.cal.getTime() = " + cal.getTime());
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;
         } else {

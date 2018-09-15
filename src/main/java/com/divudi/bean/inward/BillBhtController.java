@@ -238,7 +238,6 @@ public class BillBhtController implements Serializable {
                 if (e.getBillItem().getItem().getDepartment().equals(d)) {
                     BillItem bi = saveBillItems(myBill, e.getBillItem(), e, e.getLstBillFees(), getSessionController().getLoggedUser(), matrixDepartment);
                     bi.setSearialNo(tmpBis.size());
-                    System.out.println("tmpBis.size() = " + tmpBis.size());
                     //getBillBean().calculateBillItem(myBill, e);
                     tmpBis.add(bi);
                     tmp.add(e);
@@ -253,8 +252,6 @@ public class BillBhtController implements Serializable {
 
     public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
         System.err.println("1 " + bill);
-        System.err.println("2 " + billItem);
-        System.err.println("3 " + billEntry);
 
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
@@ -293,7 +290,6 @@ public class BillBhtController implements Serializable {
 
             BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
             billItem.setSearialNo(list.size());
-            System.out.println("list.size() = " + list.size());
             for (BillFee bf : billItem.getBillFees()) {
                 PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix);
@@ -524,7 +520,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (!getSessionController().getInstitutionPreference().isInwardAddServiceBillTimeCheck()) {
+        if (!getSessionController().getLoggedPreference().isInwardAddServiceBillTimeCheck()) {
             if (getCurrentBillItem().getItem().getClass() == Investigation.class) {
                 if (getCurrentBillItem().getBillTime() == null) {
                     UtilityController.addErrorMessage("Please set Time To This Investigation");

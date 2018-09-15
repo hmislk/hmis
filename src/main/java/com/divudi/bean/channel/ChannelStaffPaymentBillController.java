@@ -214,7 +214,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         Map m = new HashMap();
 
         if (getSpeciality() != null) {
-            if (getSessionController().getInstitutionPreference().isShowOnlyMarkedDoctors()) {
+            if (getSessionController().getLoggedPreference().isShowOnlyMarkedDoctors()) {
 
                 sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                         + " and pi.type=:typ "
@@ -389,9 +389,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         nonRefundableBillFees=billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("nonRefundableBillFees.size() = " + nonRefundableBillFees.size());
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         dueBillFees.addAll(nonRefundableBillFees);
-        System.out.println("dueBillFees.size() = " + dueBillFees.size());
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
 
@@ -532,7 +530,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void fillSessions() {
-        System.out.println("Inside");
         String sql;
         Map m = new HashMap();
         sql = "Select s From ServiceSession s "
@@ -543,7 +540,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime";
         m.put("doc", currentStaff);
         m.put("class", ServiceSession.class);
-        System.out.println("currentStaff = " + currentStaff);
         serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
     }
 
@@ -688,8 +684,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
             saveBillItemForPaymentBill(b, bf);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
             bf.setPaidValue(bf.getFeeValue());
-            System.out.println("bf.getBill().getInsId() = " + bf.getBill().getInsId());
-            System.out.println("bf.getBill().getDeptId() = " + bf.getBill().getDeptId());
             getBillFeeFacade().edit(bf);
             ////System.out.println("marking as paid");
         }

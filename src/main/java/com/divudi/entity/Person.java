@@ -183,7 +183,7 @@ public class Person implements Serializable {
         } else {
             temT = "";
         }
-        nameWithTitle = temT + getName();
+        nameWithTitle = temT + " " + getName();
         return nameWithTitle;
     }
 

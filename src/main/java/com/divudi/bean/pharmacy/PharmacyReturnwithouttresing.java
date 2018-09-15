@@ -824,7 +824,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
         } else {
             tdp = 0;
         }
-        System.err.println("tdp = " + tdp);
         double dr;
         dr = (tr * tdp) / 100;
 
