@@ -909,6 +909,11 @@
                                 </h:panelGroup>
                             </h:panelGrid>
                         </p:panel>
+                        
+                        <h:form>
+                            <p:commandButton rendered="true" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
+                        </h:form>
+                        
                     </ui:insert>
                 </h:panelGroup>
 
