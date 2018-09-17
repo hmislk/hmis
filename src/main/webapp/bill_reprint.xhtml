@@ -153,7 +153,8 @@
                             </h:panelGroup>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.insselectedPreferencedBillPaperType eq 'FiveFivePrintedPaper'}" >
+                       
+                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
 
 
                             <div class="nonPrintBlock">
@@ -178,7 +179,7 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.insselectedPreferenceplicationInstitution eq 'Rmh' }">
+                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.currentPreference.institution eq 'Rmh' }">
                             <div class="nonPrintBlock">
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreviewRmh" ></p:printer>
@@ -237,10 +238,10 @@
                     </p:panel>
 
                     <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                        <h:panelGroup rendered="#{sessionController.institselectedPreferencellPaperType eq 'FiveFivePaper'}" >
-                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.insselectedPreferenceintLabelForOPdBill eq false
-                                                                           and sessionController.insselectedPreferenceplicationInstitution eq 'Ruhuna'
-                                                                           and sessionController.insselectedPreferenceveFivePaperWithHeadings eq false}">
+                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false
+                                                                           and sessionController.currentPreference.institution eq 'Ruhuna'
+                                                                           and sessionController.currentPreference.fiveFivePaperWithHeadings  eq false}">
                                 <div class="nonPrintBlock">
                                     <p:commandButton value="Print" ajax="false" action="#"  >
                                         <p:printer target="gpBillPreviewCC" ></p:printer>
