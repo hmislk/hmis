@@ -10,7 +10,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Lab Administration" styleClass="verticalAndHorizontalCenteringLarge" >
+                    <p:panel header="Lab Administration" >
                         <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">
                             <h:panelGrid columns="1">
                                 <p:panel header="Manage Items" rendered="#{webUserController.hasPrivilege('LabItems')}" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
