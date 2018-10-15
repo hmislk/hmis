@@ -10,5 +10,5 @@
         <property name="URL" value="jdbc:mysql://localhost:3306/suwasarana?zeroDateTimeBehavior=convertToNull"/>
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
     </jdbc-connection-pool>
-    <jdbc-resource enabled="true" jndi-name="java:app/dsAA" object-type="user" pool-name="mysql_suwasarana_rootPool"/>
+    <jdbc-resource enabled="true" jndi-name="java:app/dsSsh" object-type="user" pool-name="mysql_suwasarana_rootPool"/>
 </resources>

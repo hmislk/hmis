@@ -71,8 +71,8 @@
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
                             <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}" 
-                                          showDelay="0" hideDelay="0" 
-                                           ></p:tooltip>
+                                       showDelay="0" hideDelay="0" 
+                                       ></p:tooltip>
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
@@ -914,7 +914,7 @@
 
                             <div style="width: 780px!important;height: 330px!important;overflow:scroll!important;" >
                                 <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
-                                <!--#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}-->
+                                    #{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
 
                                     <div>
                                         <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
@@ -960,6 +960,11 @@
                                                 <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
                                             </h:panelGroup>
 
+                                        </h:panelGroup>
+                                    </div>
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'A4Paper'}">
+                                            <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                         </h:panelGroup>
                                     </div>
                                 </h:panelGroup>
