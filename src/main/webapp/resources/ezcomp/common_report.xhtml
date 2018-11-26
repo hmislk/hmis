@@ -50,10 +50,16 @@
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
-                <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    value="#{staffImageController.signatureById}" style="width: #{myCli.cssWidth}; max-height: 50px!important;"  >
-                    <f:param name="id" value="#{cc.attrs.patientReport.approveUser.staff.id}" />
+                
+                <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    
+                                value="#{staffImageController.signatureFromPatientReport}" 
+                                style="width: #{myCli.wtPix};" 
+                                cache="false"     
+                                height="#{myCli.htPix}" 
+                                width="#{myCli.wtPix}">
                 </p:graphicImage>
-
+                
+                
             </div>
         </ui:repeat>
 

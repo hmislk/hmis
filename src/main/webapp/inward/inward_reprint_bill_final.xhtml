@@ -22,7 +22,7 @@
                                 <h:panelGrid columns="3">
 
                                     <p:panel header="Bill Reprints"
-                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
+                                             rendered="true">                            
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy2" ></p:printer>
@@ -44,7 +44,7 @@
                                             <p:commandButton value="Print Patient Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
                                             </p:commandButton>   
-                                            <p:commandButton value="Print Patient Copy(VAT Invoice)" ajax="false"  rendered="false" >
+                                            <p:commandButton value="Print Patient Copy(Invoice)" ajax="false"  rendered="false" >
                                                 <p:printer target="claimablePatientCopy2" ></p:printer>
                                             </p:commandButton>   
                                             <p:commandButton value="Print Patient Detailed Copy" ajax="false"   >

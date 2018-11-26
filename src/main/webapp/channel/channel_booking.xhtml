@@ -592,45 +592,9 @@
                         </p:outputLabel>
 
 
-                        <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}" >
-
-
-                            <div>
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">
-                                    <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.printingBill}" dup="false"/>
-                                </h:panelGroup>
-                            </div>
-                            <div>
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" hos="true"/>
-                                    <ch:channelRecipt_ruhunu_new bill="#{channelBillController.printingBill}" dup="false" doc="true"/>
-                                    <!--<ch:channelRecipt_ruhunu bill="#{channelBillController.printingBill}" dup="false"/>-->
-                                </h:panelGroup>
-                            </div>
+                        <h:panelGroup id="panelAddedBillPrint"  rendered="#{channelBillController.settleSucessFully}" >
                             <div >
-
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" >
-                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>
-<!--                                        <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="false"/>-->
-                                    </h:panelGroup>
-                                </h:panelGroup>
-                            </div>
-                            <div >
-                                <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                        <ch:channelReciptPosDouble bill="#{channelBillController.printingBill}" dup="false"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
-                                        <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                        <ch:channelReciptPos_coop bill="#{channelBillController.printingBill}" dup="false"/>
-                                    </h:panelGroup>
-
-                                </h:panelGroup>
+                                <ch:channelReciptA4WithoutHeadings bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                             </div>
 
                         </h:panelGroup>
@@ -897,76 +861,22 @@
                         </p:tab>
 
                         <p:tab title="Reprint" id="rePrint"
-                               rendered="#{webUserController.hasPrivilege('ChannelBookingReprint') || sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-
+                               rendered="#{webUserController.hasPrivilege('ChannelBookingReprint')}">
                             <h:commandButton value="Print" actionListener="#{channelBillController.updatePrintStatus}"
-                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}"
-                                             rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Ruhuna' and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}">
+                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                 <f:ajax execute="@this" />
                                 <p:printer target="panelAddedBillPrintRe" />
-                                <!--<f:ajax event="click" execute="@this" listener="#{channelBillController.updatePrintStatus}" />-->
                             </h:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" 
-                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}"
-                                             rendered="#{sessionController.institutionPreference.applicationInstitution ne 'Ruhuna' or (channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna')}">
+                                             disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
                                 <p:printer target="panelAddedBillPrintRe" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton value="Refresh" ajax="false" action="#" >
                             </p:commandButton>
 
                             <div style="width: 780px!important;height: 330px!important;overflow:scroll!important;" >
-                                <h:panelGroup id="panelAddedBillPrintRe" styleClass="noBorder" >
-                                    #{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
-
-                                    <div>
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'Paper24_2x9_3'}">#{sessionController.institutionPreference}-#{sessionController.institutionPreference.channelBillPaperType}-#{sessionController.institutionPreference.applicationInstitution}
-                                            <ch:channelRecipt_24_2x9_3 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>                                        
-                                        </h:panelGroup>
-                                    </div>
-                                    <div>
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution eq 'Ruhuna'}" >
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed eq true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed eq true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="false" hos="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed ne true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="false" doc="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.printed ne true and channelBillController.billSession.billItem.bill.paymentMethod eq 'Agent'}"/>
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" hos="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"/>
-                                            <ch:channelRecipt_ruhunu_new bill="#{channelBillController.billSession.billItem.bill}" dup="true" doc="true" 
-                                                                         rendered="#{channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"/>
-                                            <!--<ch:channelRecipt_ruhunu_1 bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
-                                        </h:panelGroup>
-                                    </div>
-                                    <div >
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'FiveFivePaper' and sessionController.institutionPreference.applicationInstitution ne 'Ruhuna'}">
-                                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                                <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-    <!--                                            <ch:channelRecipt bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>-->
-                                            </h:panelGroup>
-                                        </h:panelGroup>
-                                    </div>
-                                    <div >
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'PosPaper'}">
-                                            <h:panelGroup rendered="#{sessionController.institutionPreference.pharmacyBillPrabodha}" > 
-                                                <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup rendered="#{!sessionController.institutionPreference.pharmacyBillPrabodha and !(sessionController.institutionPreference.applicationInstitution eq 'Cooperative')}" >
-                                                <ch:channelReciptPos bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                            </h:panelGroup>
-
-                                            <h:panelGroup rendered="#{sessionController.institutionPreference.applicationInstitution eq 'Cooperative'}" >
-                                                <ch:channelReciptPos_coop bill="#{channelBillController.billSession.billItem.bill}" dup="false"/>
-                                            </h:panelGroup>
-
-                                        </h:panelGroup>
-                                    </div>
-                                    <div >
-                                        <h:panelGroup rendered="#{sessionController.institutionPreference.channelBillPaperType eq 'A4Paper'}">
-                                            <ch:channelReciptPosDouble bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
-                                        </h:panelGroup>
-                                    </div>
+                                <h:panelGroup id="panelAddedBillPrintRe"  >
+                                    <ch:channelReciptA4WithoutHeadings bill="#{channelBillController.billSession.billItem.bill}" dup="true"/>
                                 </h:panelGroup>
                             </div>
                         </p:tab>

@@ -9,6 +9,7 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.UtilityController;
+import com.divudi.bean.lab.PatientReportController;
 import com.divudi.entity.Staff;
 import com.divudi.facade.StaffFacade;
 import java.io.ByteArrayInputStream;
@@ -41,6 +42,8 @@ public class StaffImageController implements Serializable {
     private UploadedFile file;
     @EJB
     StaffFacade staffFacade;
+    @Inject
+    private PatientReportController patientReportController;
 
     private static final long serialVersionUID = 1L;
 
@@ -113,6 +116,41 @@ public class StaffImageController implements Serializable {
             return "";
         }
 
+    }
+
+    public StreamedContent getSignatureFromPatientReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            //System.err.println("Contex Response");
+            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
+            return new DefaultStreamedContent();
+        } else {
+            if (patientReportController == null) {
+            }
+            if (patientReportController.getCurrentPatientReport() == null) {
+            }
+            if (patientReportController.getCurrentPatientReport().getApproveUser() == null) {
+            }
+            if (patientReportController.getCurrentPatientReport().getApproveUser().getStaff() == null) {
+            }
+            Staff temImg = patientReportController.getCurrentPatientReport().getApproveUser().getStaff();
+
+            if (temImg != null) {
+
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    return new DefaultStreamedContent();
+                }
+
+                StreamedContent str = new DefaultStreamedContent(new ByteArrayInputStream(imgArr), temImg.getFileType());
+
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
     }
 
     public void removeSignature() {
