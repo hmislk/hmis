@@ -473,7 +473,7 @@
 
                                             <h:outputText value="Result Code"/>
                                             <p:inputText value="#{investigationItemController.current.resultCode}" ></p:inputText>
-                                            
+
                                             <p:outputLabel value="Sample" ></p:outputLabel>
                                             <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
                                                 <f:selectItem itemLabel="Please select a sample"/>
@@ -489,8 +489,32 @@
                                         </h:panelGrid>
                                     </p:tab>
 
-                                    <p:tab title="Format" >
+                                    <p:tab title="Value" >
                                         <h:panelGrid  columns="2">
+                                            <h:outputText value="Absolute Low Value"/>
+                                            <p:inputText value="#{investigationItemController.current.absoluteLowValue}" ></p:inputText>
+
+                                            <h:outputText value="Absolute High Value"/>
+                                            <p:inputText value="#{investigationItemController.current.absoluteHighValue}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is Empty"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsEmpty}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if Empty"/>
+                                            <p:inputText value="#{investigationItemController.current.emptyValueWarning}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is below the absolute low value"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsBelowAbsoluteLowValue}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if below the absolute low value"/>
+                                            <p:inputText value="#{investigationItemController.current.belowAbsoluteWarning}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is above the absolute high value"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsAboveAbsoluteHighValue}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if above the absolute high value"/>
+                                            <p:inputText value="#{investigationItemController.current.aboveAbsoluteWarning}" ></p:inputText>
+
                                             <h:outputText value="Format String"/>
                                             <p:inputText autocomplete="off" id="txtFormat" value="#{investigationItemController.current.formatString}"/>
 

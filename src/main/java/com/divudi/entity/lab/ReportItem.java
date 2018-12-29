@@ -163,8 +163,16 @@ public class ReportItem implements Serializable {
     private InvestigationTube tube;
     private String resultCode;
     
+    private boolean canNotApproveIfValueIsEmpty;
+    private boolean canNotApproveIfValueIsBelowAbsoluteLowValue;
+    private boolean canNotApproveIfValueIsAboveAbsoluteHighValue;
     
+    private String emptyValueWarning;
+    private String belowAbsoluteWarning;
+    private String aboveAbsoluteWarning;
     
+    private double absoluteLowValue;
+    private double absoluteHighValue;
     
 
     public CssTextDecoration getCssTextDecoration() {
@@ -1093,6 +1101,70 @@ public class ReportItem implements Serializable {
 
     public void setResultCode(String resultCode) {
         this.resultCode = resultCode;
+    }
+
+    public boolean isCanNotApproveIfValueIsEmpty() {
+        return canNotApproveIfValueIsEmpty;
+    }
+
+    public void setCanNotApproveIfValueIsEmpty(boolean canNotApproveIfValueIsEmpty) {
+        this.canNotApproveIfValueIsEmpty = canNotApproveIfValueIsEmpty;
+    }
+
+    public boolean isCanNotApproveIfValueIsBelowAbsoluteLowValue() {
+        return canNotApproveIfValueIsBelowAbsoluteLowValue;
+    }
+
+    public void setCanNotApproveIfValueIsBelowAbsoluteLowValue(boolean canNotApproveIfValueIsBelowAbsoluteLowValue) {
+        this.canNotApproveIfValueIsBelowAbsoluteLowValue = canNotApproveIfValueIsBelowAbsoluteLowValue;
+    }
+
+    public boolean isCanNotApproveIfValueIsAboveAbsoluteHighValue() {
+        return canNotApproveIfValueIsAboveAbsoluteHighValue;
+    }
+
+    public void setCanNotApproveIfValueIsAboveAbsoluteHighValue(boolean canNotApproveIfValueIsAboveAbsoluteHighValue) {
+        this.canNotApproveIfValueIsAboveAbsoluteHighValue = canNotApproveIfValueIsAboveAbsoluteHighValue;
+    }
+
+    public double getAbsoluteLowValue() {
+        return absoluteLowValue;
+    }
+
+    public void setAbsoluteLowValue(double absoluteLowValue) {
+        this.absoluteLowValue = absoluteLowValue;
+    }
+
+    public double getAbsoluteHighValue() {
+        return absoluteHighValue;
+    }
+
+    public void setAbsoluteHighValue(double absoluteHighValue) {
+        this.absoluteHighValue = absoluteHighValue;
+    }
+
+    public String getEmptyValueWarning() {
+        return emptyValueWarning;
+    }
+
+    public void setEmptyValueWarning(String emptyValueWarning) {
+        this.emptyValueWarning = emptyValueWarning;
+    }
+
+    public String getBelowAbsoluteWarning() {
+        return belowAbsoluteWarning;
+    }
+
+    public void setBelowAbsoluteWarning(String belowAbsoluteWarning) {
+        this.belowAbsoluteWarning = belowAbsoluteWarning;
+    }
+
+    public String getAboveAbsoluteWarning() {
+        return aboveAbsoluteWarning;
+    }
+
+    public void setAboveAbsoluteWarning(String aboveAbsoluteWarning) {
+        this.aboveAbsoluteWarning = aboveAbsoluteWarning;
     }
 
     
