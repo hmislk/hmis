@@ -22,6 +22,7 @@ import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.AppEmail;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -42,6 +43,7 @@ import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
+import com.divudi.facade.EmailFacade;
 import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
@@ -106,6 +108,8 @@ public class BillSearch implements Serializable {
     private WebUserFacade webUserFacade;
     @EJB
     CashTransactionBean cashTransactionBean;
+    @EJB
+    private EmailFacade emailFacade;
     /**
      * Controllers
      */
@@ -1175,6 +1179,43 @@ public class BillSearch implements Serializable {
                 return;
             }
 
+            try {
+            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail() )) {
+                AppEmail e = new AppEmail();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+
+                e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
+                e.setMessageSubject("A Bill is Cancelled");
+                String tb = "";
+                tb += "Bill No : " + getBill().getInsId();
+                tb += "Bill Date : " + getBill().getBillDate();
+                tb += "Bill Value : " + getBill().getNetTotal();
+                tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle();
+                tb += "Cancelled Date : " + new Date();
+                tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle();
+                
+                e.setMessageBody((tb));
+                
+
+                e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
+                e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
+                e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
+
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+                e.setSentSuccessfully(false);
+
+                getEmailFacade().create(e);
+            }
+
+        } catch (Exception e) {
+            System.out.println("e = " + e);
+        }
+            
+            
+            
             CancelledBill cb = createCancelBill();
             Calendar now = Calendar.getInstance();
             now.setTime(new Date());
@@ -2391,5 +2432,11 @@ public class BillSearch implements Serializable {
     public void setBillClassType(BillClassType billClassType) {
         this.billClassType = billClassType;
     }
+
+    public EmailFacade getEmailFacade() {
+        return emailFacade;
+    }
+    
+    
 
 }
