@@ -229,39 +229,50 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void msgFromMiddleware() {
+        System.out.println("msgFromMiddleware");
         apiResponse = "";
         if (username == null || username.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Username}";
+            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (password == null || password.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Password}";
+            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (machine == null || machine.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Machine Specified}";
+            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (msg == null || msg.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Request From Analyzer}";
+            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (!sessionController.loginForRequests(username, password)) {
             apiResponse += "#{success=false|msg=Wrong username/password}";
+            System.out.println("apiResponse = " + apiResponse);
             return;
         }
+        System.out.println("machine = " + machine);
         if (machine.trim().equals("SysMex")) {
             apiResponse = msgFromSysmex();
+            System.out.println("SYSMEX:apiResponse = " + apiResponse);
             return;
         } else if (machine.trim().equals("Dimension")) {
             apiResponse = msgFromDimension();
+            System.out.println("DIM:apiResponse = " + apiResponse);
             return;
         }
     }
 
     private String msgFromDimension() {
+        System.out.println("msgFromDimension" );
         String temMsgs = "";
         Dimension dim = new Dimension();
+        System.out.println("msg = " + msg);
         dim.setInputStringBytesSpaceSeperated(msg);
         dim.analyzeReceivedMessage();
 
@@ -431,6 +442,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
+        System.out.println("msgFromSysmex" );
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);

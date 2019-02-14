@@ -322,6 +322,7 @@ public class Dimension {
     }
 
     private void textToByteArraySeperatedBySpace() {
+        System.out.println("textToByteArraySeperatedBySpace" );
         bytes = new ArrayList<>();
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");
