@@ -529,7 +529,8 @@
                                     <p:tab title="Developer" >
                                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                                         </p:dialog>
-
+                                        <p:outputLabel value="ID : " ></p:outputLabel>
+                                        <p:inputText value="#{investigationItemController.current.id}"/>
 
                                         <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
                                             <p:fileDownload value="#{investigationItemController.downloadingFile}" />
