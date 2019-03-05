@@ -2,28 +2,36 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
 
-    <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
 
+    <f:metadata >
+        <f:viewParam name="id" value="#{billSearch.encryptedPatientReportId}" ></f:viewParam>
+        <f:viewParam name="user" value="#{billSearch.encryptedExpiary}" ></f:viewParam>
+        <f:viewAction action="#{billSearch.preparePatientReportByIdForRequests()}" ></f:viewAction>
+    </f:metadata>
+    <head>
+
+    </head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template_contents_only.xhtml">
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+
+                <h:panelGroup rendered="#{billSearch.bill eq null}"  >
+                    <div style="text-align: center; top: 10%;">
+                        <h1>No Such Bill Found</h1>
+                        <h2>The Report Link may have expired.</h2>
+                    </div>
+                </h:panelGroup>
+
                 <h:form>
                     <p:panel header="Reprint" >
-
-                        <p:panelGrid columns="7" >
-                            <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" onclick="onSubmitButton();">                           
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" onclick="onSubmitButton();">                          
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" style="float: right;"
-                                             onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                         return false;"/>
-                        </p:panelGrid>
-
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <p:panel header="Bill" >
                                 <p:panelGrid columns="1" >
@@ -262,9 +270,8 @@
 
 
                 </h:form>
+
             </ui:define>
-
-
 
         </ui:composition>
 

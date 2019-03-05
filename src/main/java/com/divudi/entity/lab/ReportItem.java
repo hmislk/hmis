@@ -402,6 +402,9 @@ public class ReportItem implements Serializable {
     }
 
     public InvestigationItemType getIxItemType() {
+        if(ixItemType==null){
+            ixItemType = InvestigationItemType.Label;
+        }
         return ixItemType;
     }
 

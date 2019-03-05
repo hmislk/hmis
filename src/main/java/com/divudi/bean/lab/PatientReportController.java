@@ -1090,7 +1090,7 @@ public class PatientReportController implements Serializable {
         b += "<p>The Following Report's approval was cancelled. </p><br/>";
         b += "<p>Patient Name : " + r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "</p><br/>";
         b += "<p>Investigation Name : " + r.getPatientInvestigation().getInvestigation().getName() + " </p><br/>";
-        b += "<p>Bill Number : " + r.getPatientInvestigation().getBillItem().getInsId() + "</p><br/>";
+        b += "<p>Bill Number : " + r.getPatientInvestigation().getBillItem().getBill().getInsId() + "</p><br/>";
         b += "<p>Approved User : " + r.getPatientInvestigation().getApproveUser().getWebUserPerson().getNameWithTitle() + " </p><br/>";
         b += "<p>Approved at : " + r.getPatientInvestigation().getApproveAt() + "</p><br/>";
         b += "<p>Approval Reversing User : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + " </p><br/>";

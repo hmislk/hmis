@@ -373,21 +373,12 @@
                                 </p:commandButton>
 
 
-                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
+                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDFAndSaveAsaFile()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
                             </h:panelGrid>
 
                         </div>
 
-                        <p:commandButton value="Unassigned" ajax="false" 
-                                         actionListener="#{patientReportController.printPatientReport()}"
-                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
-                            <p:printer target="pri1" ></p:printer>
-                        </p:commandButton>
-
-                        <h:panelGroup   id="pri1" style="display:none;" >
-
-                        </h:panelGroup  >
 
 
                         <h:panelGroup  id="divPrint" >

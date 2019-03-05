@@ -37,6 +37,7 @@ import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -49,7 +50,11 @@ import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -131,6 +136,8 @@ public class BillSearch implements Serializable {
     private BillController billController;
     @Inject
     private BillBeanController billBean;
+    @Inject
+    private SecurityController securityController;
     /**
      * Class Variables
      */
@@ -177,6 +184,44 @@ public class BillSearch implements Serializable {
     private double refundMargin = 0;
     private double refundVat = 0;
     private double refundVatPlusTotal = 0;
+    String encryptedPatientReportId;
+    String encryptedExpiary;
+
+    public void preparePatientReportByIdForRequests() {
+        bill = null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+        if (encryptedExpiary != null) {
+            Date expiaryDate;
+            try {
+                String ed = encryptedExpiary;
+                System.err.println("1 " + encryptedExpiary);
+                ed = securityController.decrypt(ed);
+                if (ed == null) {
+                    return;
+                }
+                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
+            } catch (ParseException ex) {
+                return;
+            }
+            if (expiaryDate.before(new Date())) {
+                return;
+            }
+        }
+        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        Long id = 0l;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (Exception e) {
+            return;
+        }
+        Bill pr = getBillFacade().find(id);
+        if (pr == null) {
+            return;
+        }
+        bill = pr;
+    }
 
     public void fillBillTypeSummery() {
         Map m = new HashMap();
@@ -963,8 +1008,8 @@ public class BillSearch implements Serializable {
     public void refundBillItems(RefundBill rb, Payment p) {
         for (BillItem bi : refundingItems) { //set Bill Item as Refunded //set Bill Item as Refunded
             //set Bill Item as Refunded
-                        //set Bill Item as Refunded //set Bill Item as Refunded
-                        //set Bill Item as Refunded
+            //set Bill Item as Refunded //set Bill Item as Refunded
+            //set Bill Item as Refunded
 
             BillItem rbi = new BillItem();
             rbi.copy(bi);
@@ -1180,42 +1225,80 @@ public class BillSearch implements Serializable {
             }
 
             try {
-            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail() )) {
-                AppEmail e = new AppEmail();
-                e.setCreatedAt(new Date());
-                e.setCreater(sessionController.getLoggedUser());
+                if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
+                    AppEmail e = new AppEmail();
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
 
-                e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
-                e.setMessageSubject("A Bill is Cancelled");
-                String tb = "";
-                tb += "Bill No : " + getBill().getInsId();
-                tb += "Bill Date : " + getBill().getBillDate();
-                tb += "Bill Value : " + getBill().getNetTotal();
-                tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle();
-                tb += "Cancelled Date : " + new Date();
-                tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle();
-                
-                e.setMessageBody((tb));
-                
+                    e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
+                    e.setMessageSubject("A Bill is Cancelled");
+                    String tb = "";
 
-                e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
-                e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
-                e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
+                    tb = "<!DOCTYPE html>"
+                            + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                            + "<head>"
+                            + "<title>"
+                            + "Cancellation of Bill Number "
+                            + getBill().getInsId()
+                            + "</title>"
+                            + "</head>"
+                            + "<body>";
+                    tb += "<p>";
+                    tb += "Bill No : " + getBill().getInsId() + "<br/>";
+                    tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
+                    tb += "Bill Value : " + getBill().getNetTotal() + "<br/>";
+                    tb += "Billed By : " + getBill().getCreater().getWebUserPerson().getNameWithTitle() + "<br/>";
+                    tb += "Cancelled Date : " + new Date() + "<br/>";
+                    tb += "Cancelled By : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + "<br/>";
+                    tb += "</p>";
+                    Calendar c = Calendar.getInstance();
+                    c.add(Calendar.MONTH, 1);
 
-                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    String temId = getBill().getId() + "";
+                    temId = getSecurityController().encrypt(temId);
+                    try {
+                        temId = URLEncoder.encode(temId, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                    }
 
-                e.setSentSuccessfully(false);
+                    String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+                    ed = getSecurityController().encrypt(ed);
+                    try {
+                        ed = URLEncoder.encode(ed, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                    }
+                    String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+                    tb += "<p>"
+                            + "Your Report is attached"
+                            + "<br/>"
+                            + "Please visit "
+                            + "<a href=\""
+                            + url
+                            + "\">this link</a>"
+                            + " to view or print the bill.The link will expire in one month for privacy and confidentially issues."
+                            + "<br/>"
+                            + "</p>";
 
-                getEmailFacade().create(e);
+                    tb += "</body></html>";
+
+                    e.setMessageBody((tb));
+
+                    e.setSenderPassword(getSessionController().getLoggedUser().getInstitution().getEmailSendingPassword());
+                    e.setSenderUsername(getSessionController().getLoggedUser().getInstitution().getEmailSendingUsername());
+                    e.setSenderEmail(getSessionController().getLoggedUser().getInstitution().getEmail());
+
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+                    e.setSentSuccessfully(false);
+
+                    getEmailFacade().create(e);
+                }
+
+            } catch (Exception e) {
+                System.out.println("e = " + e);
             }
 
-        } catch (Exception e) {
-            System.out.println("e = " + e);
-        }
-            
-            
-            
             CancelledBill cb = createCancelBill();
             Calendar now = Calendar.getInstance();
             now.setTime(new Date());
@@ -2436,7 +2519,25 @@ public class BillSearch implements Serializable {
     public EmailFacade getEmailFacade() {
         return emailFacade;
     }
-    
-    
+
+    public String getEncryptedPatientReportId() {
+        return encryptedPatientReportId;
+    }
+
+    public void setEncryptedPatientReportId(String encryptedPatientReportId) {
+        this.encryptedPatientReportId = encryptedPatientReportId;
+    }
+
+    public String getEncryptedExpiary() {
+        return encryptedExpiary;
+    }
+
+    public void setEncryptedExpiary(String encryptedExpiary) {
+        this.encryptedExpiary = encryptedExpiary;
+    }
+
+    public SecurityController getSecurityController() {
+        return securityController;
+    }
 
 }

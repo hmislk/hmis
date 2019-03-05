@@ -186,6 +186,7 @@ public class PatientReport implements Serializable {
             return;
         }
         for (InvestigationItem ii : getTransInvestigation().getReportItems()) {
+            
             switch (ii.getIxItemType()) {
                 case Value:
                     containValues = true;
