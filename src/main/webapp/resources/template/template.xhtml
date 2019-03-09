@@ -711,6 +711,7 @@
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Reports"  rendered="#{webUserController.hasPrivilege('Reports')}">
+                                    <p:menuitem  ajax="false"  action="/reportInstitution/report_list" value="Lists" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/revenue_reports/index" value="Revenue Reports"  ></p:menuitem>
