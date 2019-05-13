@@ -130,9 +130,11 @@
                             <p:column headerText="Bill No" rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper' and false}" >                                
                                 <h:outputLabel   value="#{bill.deptId}"/>
                             </p:column> 
-                            <p:column headerText="Billed For"  >                                
-                                <h:outputLabel id="ins" value="#{bill.toDepartment.name}" />
-                                <p:tooltip for="ins" value="Billed for #{bill.toDepartment.name} of #{bill.toInstitution.name}." />
+                             <p:column headerText="Billed For" filterBy="#{bill.toInstitution.name}" filterMatchMode="contains" >                                
+                                <h:outputLabel id="ins" value="#{bill.toInstitution.name}" />
+                            </p:column>
+                            <p:column headerText="Billed For" filterBy="#{bill.toDepartment.name}" filterMatchMode="contains" >                                
+                                <h:outputLabel id="insDep" value="#{bill.toDepartment.name}" />
                             </p:column>
                             <p:column headerText="Collecting Centre"  >                                
                                 <h:outputLabel value="#{bill.collectingCentre.name}" />
