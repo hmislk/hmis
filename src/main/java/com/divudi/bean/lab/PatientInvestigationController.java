@@ -1170,6 +1170,16 @@ public class PatientInvestigationController implements Serializable {
                 + "TEXT 20,65,\"3\",0,0,0,\"[tests]\"\r\n"
                 + "BARCODE 20,95, \"128\",60,1,0,2,2, \"[barcode]\"\r\n"
                 + "PRINT 1\r\n";
+        
+        
+         zplTemplate = "SIZE 53 mm, 28 mm\r\n"
+                + "GAP 0,0\r\n"
+                + "DIRECTION 1\r\n"
+                + "CLS\r\n"
+                + "TEXT 20,20,\"4\",0,0,0,\"[name]\"\r\n"
+                + "TEXT 20,65,\"3\",0,0,0,\"[tests]\"\r\n"
+                + "TEXT 20,95,\"3\",0,0,0,\"[insid]\"\r\n"
+                + "PRINT 1\r\n";
 
         String ptLabel = "";
         Bill tb;
@@ -1182,6 +1192,7 @@ public class PatientInvestigationController implements Serializable {
             ptLabel = zplTemplate;
             ptLabel = ptLabel.replace("[name]", patientSamples.get(0).getBill().getPatient().getPerson().getName());
             ptLabel = ptLabel.replace("[barcode]", "" + patientSamples.get(0).getBill().getIdStr());
+            ptLabel = ptLabel.replace("[insid]", "" + patientSamples.get(0).getBill().getInsId());
             List<BillItem> tpiics = patientSamples.get(0).getBill().getBillItems();
             tbis = "";
             String temTube = "";
