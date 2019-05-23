@@ -1366,6 +1366,27 @@ public class PatientReportController implements Serializable {
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
             }
+
+            if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
+
+                if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
+                    Sms e = new Sms();
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setBill(currentPtIx.getBillItem().getBill());
+                    e.setPatientReport(currentPatientReport);
+                    e.setPatientInvestigation(currentPtIx);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
+                    e.setSendingMessage(smsBody(currentPatientReport));
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    e.setSentSuccessfully(false);
+                    getSmsFacade().create(e);
+                }
+            }
+
         }
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
