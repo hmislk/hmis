@@ -578,7 +578,7 @@ public class PatientReportController implements Serializable {
             return "";
         }
         getTransferController().setPatient(currentPatientReport.getPatientInvestigation().getPatient());
-        return "/lab_search_for_reporting_patient";
+        return "/lab/search_for_reporting_patient";
     }
 
     public String lastPatientReport(PatientInvestigation pi) {
@@ -622,7 +622,7 @@ public class PatientReportController implements Serializable {
         } else {
             getStaffController().setCurrent(null);
         }
-        return "/lab_patient_report";
+        return "/lab/patient_report";
     }
 
     public List<PatientReportItemValue> getPatientReportItemValues() {
@@ -1489,7 +1489,7 @@ public class PatientReportController implements Serializable {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         ExternalContext externalContext = facesContext.getExternalContext();
         HttpSession session = (HttpSession) externalContext.getSession(true);
-//        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
+//        String url = "http://localhost:8080/new/faces/lab/lab/patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
         String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
         try {
             ITextRenderer renderer = new ITextRenderer();
@@ -1731,7 +1731,7 @@ public class PatientReportController implements Serializable {
         currentPtIx = pi;
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        return "/lab_patient_report";
+        return "/lab/patient_report";
     }
 
     public List<PatientReport> getCustomerReports() {

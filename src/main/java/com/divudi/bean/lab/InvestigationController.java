@@ -610,7 +610,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -644,7 +644,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -819,7 +819,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public void unDeleteSelectedItems() {
@@ -841,7 +841,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public void markSelectedActive() {
@@ -862,7 +862,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
 
     }
 
@@ -884,7 +884,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public Institution getInstitution() {
@@ -910,7 +910,7 @@ public class InvestigationController implements Serializable {
     }
 
 //    public List<Investigation> completeDepartmentItem(String qry) {
-//        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
 //            String sql;
 //            Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");

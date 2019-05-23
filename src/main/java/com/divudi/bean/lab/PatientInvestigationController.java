@@ -1468,7 +1468,7 @@ public class PatientInvestigationController implements Serializable {
 //        ////System.out.println("Sql is " + temSql);
         toReceive = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/worksheets(/faces/lab_receive.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/worksheets(/faces/lab/receive.xhtml)");
     }
 
     public void markYetToReceiveOnes() {

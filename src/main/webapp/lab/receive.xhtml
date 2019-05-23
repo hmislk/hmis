@@ -29,7 +29,7 @@
                         <p:panel header="Manage Recieve" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Receving Samples and Printing Worksheets" />
-                                <p:commandButton ajax="false" value="Refresh" action="/lab_receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }" onclick="onSubmitButton();"  ></p:commandButton>
+                                <p:commandButton ajax="false" value="Refresh" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets() }" onclick="onSubmitButton();"  ></p:commandButton>
                                 <h:commandButton value="Print Worksheets"  >
                                     <f:ajax execute="@this" listener="#{patientInvestigationController.markSelectedAsReceived}" />
                                     <p:printer  target="pPrintWorksheet" />

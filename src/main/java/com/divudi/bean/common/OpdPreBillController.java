@@ -554,7 +554,7 @@ public class OpdPreBillController implements Serializable {
                 }
             }
 
-//            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                myBill.setCashPaid(cashPaid);
 //            }
 
@@ -603,7 +603,7 @@ public class OpdPreBillController implements Serializable {
             getBillFacade().edit(b);
             getBillBean().calculateBillItems(b, getLstBillEntries());
 
-//            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(cashPaid);
 //                if (cashPaid >= b.getTransSaleBillTotalMinusDiscount()) {
 //                    b.setBalance(0.0);
@@ -716,7 +716,7 @@ public class OpdPreBillController implements Serializable {
             dblT += b.getTotal();
             dblD += b.getDiscount();
 
-//            if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//            if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //                b.setCashPaid(reminingCashPaid);
 //
 //                if (reminingCashPaid > b.getTransSaleBillTotalMinusDiscount()) {
@@ -1221,7 +1221,7 @@ public class OpdPreBillController implements Serializable {
         setTotal(billGross);
         setNetTotal(billNet);
 
-//        if (getSessionController().getInstitutionPreference().isPartialPaymentOfOpdBillsAllowed()) {
+//        if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
 //            //System.out.println("cashPaid = " + cashPaid);
 //            //System.out.println("billNet = " + billNet);
 //            if (cashPaid >= billNet) {

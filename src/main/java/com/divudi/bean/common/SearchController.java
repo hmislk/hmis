@@ -284,7 +284,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPreRefundTable() {
@@ -3994,7 +3994,7 @@ public class SearchController implements Serializable {
         sql += " order by bi.id ";
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //        checkLabReportsApprovedBillItem(billItems);
-//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createBillItemTableByKeywordAll() {
@@ -4044,7 +4044,7 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTable() {
@@ -4109,7 +4109,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTableByLoggedInstitution() {
@@ -4308,7 +4308,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab/search_for_reporting_ondemand.xhtml)");
 
     }
 
@@ -6234,7 +6234,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab_inward_search_service.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab/inward_search_service.xhtml)");
 
     }
 

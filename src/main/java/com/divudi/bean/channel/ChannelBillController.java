@@ -1374,7 +1374,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 //        if (getArea() == null && !getPatientTabId().equals("tabSearchPt")
-//                && getSessionController().getInstitutionPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
+//                && getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Cooperative) {
 //            errorText = "Please Select Area.";
 //            UtilityController.addErrorMessage("Please Select Area.");
 //            return true;
@@ -1462,7 +1462,7 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
         }
-        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        //System.out.println("getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber());
         if (institution != null) {
             if (getAgentRefNo().trim().isEmpty() && !getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber()) {
                 errorText = "Please Enter Agent Ref No";
@@ -1470,7 +1470,7 @@ public class ChannelBillController implements Serializable {
                 return true;
             }
         }
-        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        //System.out.println("getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber());
         if (getSs().getMaxNo() != 0.0 && getbookingController().getSelectedServiceSession().getTransDisplayCountWithoutCancelRefund() >= getSs().getMaxNo()) {
             errorText = "No Space to Book.";
             UtilityController.addErrorMessage("No Space to Book");
@@ -1500,7 +1500,7 @@ public class ChannelBillController implements Serializable {
             return true;
         }
 
-        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        //System.out.println("getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber());
         return false;
     }
 
@@ -1538,7 +1538,7 @@ public class ChannelBillController implements Serializable {
 
         }
 
-        //System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        //System.out.println("getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getLoggedPreference().isChannelWithOutReferenceNumber());
         return false;
     }
 
