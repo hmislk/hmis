@@ -14,7 +14,7 @@
                     You are NOT authorized
                 </h:panelGroup>
 
-                <h:panelGroup rendered="true" >
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
 
                     <h:form>
 
