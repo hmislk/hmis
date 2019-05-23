@@ -27,7 +27,7 @@
                                     <h:outputLabel value="Department"/>                                
                                     <p:selectOneMenu value="#{billSearch.department}" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                        <f:selectItems value="#{departmentController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                        <f:selectItems value="#{departmentController.items}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Type"/>                                
                                     <p:selectOneMenu value="#{billSearch.billType}" >
@@ -50,7 +50,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="3" >
 
-                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillBillTypeSummery}" styleClass="noPrintButton">
+                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillBillFeeTypeSummery}" styleClass="noPrintButton">
                                     </p:commandButton>
 
 
