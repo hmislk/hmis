@@ -43,6 +43,7 @@ public enum ReportItemType {
     Nationality,
     NicNo,
     PatientAge,
+    PatientAgeOnBillDate,
     PatientName,
     PatientSex,
     Person,
@@ -127,6 +128,8 @@ public enum ReportItemType {
                 return "Nic No";
             case PatientAge:
                 return "Patient Age";
+            case PatientAgeOnBillDate:
+                return "Patient Age on the Billed Date";
             case PatientName:
                 return "Patient Name";
             case PatientSex:
