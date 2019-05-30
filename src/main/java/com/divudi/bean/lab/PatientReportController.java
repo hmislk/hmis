@@ -331,6 +331,9 @@ public class PatientReportController implements Serializable {
                                 case PatientAge:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
                                     break;
+                                    case PatientAgeOnBillDate:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAgeOnBilledDate(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+                                    break;
                                 case PatientSex:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
                                     break;
