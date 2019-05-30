@@ -160,7 +160,8 @@ public enum ReportItemType {
                 return "Speciman";
             case Surname:
                 return "Surname";
+            default: return this.toString();
         }
-        return null;
     }
+    
 }
