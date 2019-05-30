@@ -291,6 +291,74 @@ public class BillSearch implements Serializable {
         }
     }
 
+    public void fillBillFeeTypeSummery() {
+        Map m = new HashMap();
+        String j;
+        if (billClassType == null) {
+            j = "select new com.divudi.data.BillSummery(b.paymentMethod, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
+                    + " from BillFee bf inner join bf.bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        } else {
+            j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
+                    + " from BillFee bf inner join bf.bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        }
+
+        if (department == null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", sessionController.getLoggedUser().getInstitution());
+        } else {
+            j += " and b.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+        if (user != null) {
+            j += " and b.creater=:wu ";
+            m.put("wu", user);
+        }
+        if (billType != null) {
+            j += " and b.billType=:bt ";
+            m.put("bt", billType);
+        }
+        if (billClassType != null) {
+            j += " and b.billClassType=:bct ";
+            m.put("bct", billClassType);
+        }
+
+        if (billClassType == null) {
+            j += " group by b.paymentMethod,  b.billType";
+        } else {
+            j += " group by b.paymentMethod, b.billClassType, b.billType";
+        }
+        Boolean bf = false;
+        if (bf) {
+            Bill b = new Bill();
+            b.getPaymentMethod();
+            b.getTotal();
+            b.getDiscount();
+            b.getNetTotal();
+            b.getVat();
+            b.getBillType();
+            b.getBillTime();
+            b.getInstitution();
+            b.getCreater();
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<Object> objs = billFacade.findObjectBySQL(j, m, TemporalType.TIMESTAMP);
+        billSummeries = new ArrayList<>();
+        Long i = 1l;
+        for (Object o : objs) {
+            BillSummery tbs = (BillSummery) o;
+            tbs.setKey(i);
+            billSummeries.add(tbs);
+            i++;
+        }
+    }
+
     public void clearSearchFIelds() {
         department = null;
         fromDate = null;

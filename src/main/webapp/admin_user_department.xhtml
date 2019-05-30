@@ -20,7 +20,7 @@
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
 
-                <h:panelGroup  >
+                <h:panelGroup   rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
                     <h:form  >
                         <p:panel header="Allow user to log on to Departments" >
 

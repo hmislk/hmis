@@ -19,8 +19,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableByLoggedInstitution()}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableByLoggedDepartment()}" onclick="onSubmitButton();" />
                                 <p:spacer height="30"/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/> <h:outputLabel/>
@@ -41,10 +40,10 @@
 
 
 
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
+                        <p:dataTable   id="tblBills" value="#{searchController.patientInvestigations}" var="pi"  >
 
 
-                            <p:column  headerText="Bill" styleClass="alignTop" >
+                            <p:column  rendered="true"    headerText="Bill" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.refunded ? 'redtext':''}"></h:outputLabel>
@@ -78,7 +77,7 @@
                                 </p:tooltip>
                             </p:column>
 
-                            <p:column  headerText="Patient" styleClass="alignTop" >
+                            <p:column rendered="true"  headerText="Patient" styleClass="alignTop" >
                                 <h:commandLink id="colPtDetail" 
                                                value="#{pi.billItem.bill.patient.person.nameWithTitle}, #{pi.billItem.bill.patient.age}" 
                                                action="patient" 
@@ -99,13 +98,13 @@
                                 </p:tooltip>
                             </p:column>
 
-                            <p:column headerText="Investigation"  styleClass="alignTop" >
+                            <p:column  rendered="true"   headerText="Investigation"  styleClass="alignTop" >
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
                                
                             </p:column>
 
-                            <p:column  headerText="Actions"  styleClass="alignTop noBorderGrid"  >
+                            <p:column  rendered="true"   headerText="Actions"  styleClass="alignTop noBorderGrid"  >
                                 <h:panelGrid columns="4" style="border: none;" styleClass="noBorderGrid"
                                              rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
                                     <p:commandLink process="btnSample" update="tblBills"  
@@ -118,14 +117,6 @@
                                     <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                         <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
-                                    </p:commandLink>
-                                    <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet">
-                                        <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                        <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
-                                    </p:commandLink>
-                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab/patient_report"  actionListener="#{patientReportController.createNewReport(pi)}" >
-                                        <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
-                                        <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                     </p:commandLink>
                                 </h:panelGrid>
 
@@ -145,100 +136,30 @@
                                     </h:outputLabel>
                                 </p:tooltip>
 
-                                <p:tooltip for="btnNewReport" value="New Report" ></p:tooltip>
-
-                                <p:tooltip for="btnPrintWorksheets" value="Print worksheet" ></p:tooltip>
-
-                                <h:dataTable  rendered="#{!empty itemForItemController.getItemsForParentItem(pi.investigation)}"
-                                              value="#{itemForItemController.getItemsForParentItem(pi.investigation)}" var="ifi" >
-                                    <h:column >
-                                        <p:commandLink disabled="#{!pi.received}" value="New #{ifi.name}" action="#{patientReportController.enterNewReportFormat(pi, ifi)}" 
-                                                       ajax="false">
-                                        </p:commandLink>
-                                    </h:column>
-                                </h:dataTable>
-
+                                
                             </p:column>
 
-                            <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
+                            <p:column  rendered="true"   headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
                                 <h:dataTable 
                                     value="#{pi.patientReports}" 
                                     var="dpr" rendered="#{pi.patientReports.size() ne 0}"  
                                     styleClass="noBorderGrid"
                                     >
-                                    <h:column >
-
+                                    
+                                    <h:column rendered="true">
                                         <h:panelGrid columns="6" styleClass="noBorderGrid">
-
-                                            <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
-                                                           value="#{dpr.item.name}" 
-                                                           ajax="false" action="/lab/patient_report">
-                                                <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
-                                            </p:commandLink>
-
-                                            <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
+                                            <p:commandLink id="cmdOldReportEdit" ajax="false" rendered="true"
+                                                           action="/lab/patient_report">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                 <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                             </p:commandLink>
-
-                                            <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
+                                            <p:commandLink id="cmdOldReportPrint" ajax="false" rendered="true"
+                                                           action="/lab/patient_report_print">
                                                 <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
-
-                                            <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
-                                                            style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
-                                            <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
-                                                            style="height: 30px; width: 30px;#{dpr.printed ? '':'opacity: 0.1;'}" ></p:graphicImage>
-
-                                            <p:commandLink style="float: right" ajax="false" 
-                                                           id="btnRevert" 
-                                                           disabled="#{!pi.collected}"
-                                                           action="#{patientInvestigationController.revertMarkedSample()}" 
-                                                           rendered="#{webUserController.hasPrivilege('LabBillRefundSpecial')}">
-                                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                                <p:graphicImage library="image" styleClass="standedicon" name="Cancel.png" ></p:graphicImage>
-                                            </p:commandLink>
-
                                         </h:panelGrid>
-
-                                        <p:tooltip for="imgApproved" >
-                                            <h:outputLabel value="Approved" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                        <p:tooltip for="imgPrinted" >
-                                            <h:outputLabel value="Printed" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                        <p:tooltip for="cmdOldReportPrint" >
-                                            <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                        <p:tooltip for="cmdOldReport cmdOldReportEdit" >
-                                            <h:outputLabel value="To Edit, Approve or Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="#{dpr.item.name}" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Data enterd at " ></h:outputLabel>
-                                            <h:outputLabel value="#{dpr.dataEntryAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
-                                            <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
-                                            <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
-                                            </h:outputLabel>
-                                        </p:tooltip>
-                                        <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>
-
                                     </h:column>
 
                                 </h:dataTable>

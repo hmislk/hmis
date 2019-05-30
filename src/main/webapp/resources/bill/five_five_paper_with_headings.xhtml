@@ -21,23 +21,9 @@
 
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="fiveinchbill" style="page-break-after: avoid!important;">
+        <div class="fiveinchbill" style="top:3cm; page-break-after: avoid!important; font-size: 14px!important; font-family: verdana!important;">
 
-            <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
-            </div>
-            <div class="institutionContact" >
-                <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
-                </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
-                </div>
-            </div>
+           
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="RECEIPT"   />    
@@ -60,15 +46,15 @@
                         <td style="text-align: left;" >
                             <h:outputLabel value="Name" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td style="width: 10px;"></td>
+                        <td style="width: 3px;"></td>
                         <td >:</td>
-                        <td style="width: 5px;"></td>
+                        <td style="width: 3px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 50px;"></td>
+                        <td style="width: 10px;"></td>
                         <td>
                             <h:outputLabel value="Bill Date" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -88,15 +74,15 @@
                         <td style="text-align: left;" >
                             <h:outputLabel value="Age" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td style="width: 10px;"></td>
+                        <td style="width: 3px;"></td>
                         <td >:</td>
-                        <td style="width: 5px;"></td>
+                        <td style="width: 3;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.age}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 50px;"></td>
+                        <td style="width: 10px;"></td>
                         <td>
                             <h:outputLabel value="Bill Time" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -117,15 +103,15 @@
                         <td style="text-align: left;" >
                             <h:outputLabel value="Gender" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td style="width: 10px;"></td>
+                        <td style="width: 30px;"></td>
                         <td >:</td>
-                        <td style="width: 5px;"></td>
+                        <td style="width: 3px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.sex}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 50px;"></td>
+                        <td style="width: 10px;"></td>
                         <td>
                             <h:outputLabel value="Bill No" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -145,15 +131,15 @@
                         <td style="text-align: left;" >
                             <h:outputLabel value="Phone" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td style="width: 10px;"></td>
+                        <td style="width: 3px;"></td>
                         <td >:</td>
-                        <td style="width: 5px;"></td>
+                        <td style="width: 3px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 50px;"></td>
+                        <td style="width: 10px;"></td>
                         <td>
                             <h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -172,15 +158,15 @@
                         <td style="text-align: left;" >
                             <h:outputLabel value="Patient ID" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
-                        <td style="width: 10px;"></td>
+                        <td style="width: 3px;"></td>
                         <td >:</td>
-                        <td style="width: 5px;"></td>
+                        <td style="width: 3px;"></td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.bill.patient.phn}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
-                        <td style="width: 50px;"></td>
+                        <td style="width: 10px;"></td>
                         <td>
                             <h:outputLabel value="Referred By" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
@@ -199,11 +185,12 @@
             </div>
 
 
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill eq true}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                   />
+                        <h1>#{cc.attrs.bill.idStr}</h1>
+<!--                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                   />-->
                     </div>
                 </div>
             </h:panelGroup>
