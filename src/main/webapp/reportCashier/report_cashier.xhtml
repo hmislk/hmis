@@ -24,9 +24,10 @@
                                     <p:commandButton  ajax="false" value="All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                                     <p:commandButton  ajax="false" value="Bill Type Summery" action="/reportIncome/bill_type_summery.xhtml"/>
                                     <p:commandButton  ajax="false" value="Bill Fee Type Summery" action="/reportIncome/billfee_type_summery.xhtml"/>
-
                                     <p:commandButton  ajax="false"  action="/payment_staff_bill" value="Pay Staff" 
                                                       ></p:commandButton>
+                                    <p:commandButton ajax="false" action="/lab/report_by_outside_institution.xhtml" value="Outside Fees" >
+                                    </p:commandButton>
                                     <p:commandButton  ajax="false"  action="/opd_search_professional_payment_due" actionListener="#{searchController.makeListNull}" 
                                                       value="Payments-due Search"  ></p:commandButton>
                                     <p:commandButton  ajax="false"  action="/opd_search_professional_payment_done" actionListener="#{searchController.makeListNull}"
