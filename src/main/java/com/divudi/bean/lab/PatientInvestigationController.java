@@ -1231,6 +1231,7 @@ public class PatientInvestigationController implements Serializable {
             }
         }
         samplingRequestResponse += "}#";
+        System.out.println("samplingRequestResponse = " + samplingRequestResponse);
     }
 
     public void prepareSampleCollection() {

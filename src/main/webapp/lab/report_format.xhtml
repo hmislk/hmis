@@ -23,7 +23,7 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" >
                     <h:form id="form">
                         <p:defaultCommand target="btnSave" ></p:defaultCommand>
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                        <h:panelGrid columns="3" styleClass="alignTop" >
 
                             <h:panelGroup>
                                 <p:panel header="Report">
@@ -224,6 +224,31 @@
 
                             </h:panelGroup>
 
+                            <h:panelGroup >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton value="Change Name" ajax="false" action="report_format_category"
+                                                     onclick="this.form.target = '_blank'">
+                                        <f:setPropertyActionListener value="#{commonReportItemController.category}" 
+                                                                     target="#{reportFormatController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton value="List Investigation Using this Format" ajax="false" 
+                                                     action="report_format_category">
+                                        <f:setPropertyActionListener value="#{commonReportItemController.category}" 
+                                                                     target="#{investigationController.categoryForFormat}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:dataTable value="#{investigationController.investigationWithSelectedFormat}"
+                                                 var="i" rowKey="#{i.id}" >
+                                        <p:column >
+                                            <p:commandButton value="#{i.name}" ajax="false" action="investigation"
+                                                     onclick="this.form.target = '_blank'">
+                                        <f:setPropertyActionListener value="#{i}" 
+                                                                     target="#{investigationController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                </h:panelGrid>
+                            </h:panelGroup>
 
                         </h:panelGrid>
                     </h:form>
