@@ -150,13 +150,13 @@
                                                         <f:selectItem itemLabel="Not Set" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
                                                     </p:selectOneMenu>
-                                                    <p:outputLabel value="Report Format"/>
+                                                    <p:outputLabel value="Report Category"/>
                                                     <p:selectOneMenu value="#{investigationController.current.reportType}" >                               
                                                         <f:selectItem itemLabel="General" itemValue="General"/>
                                                         <f:selectItem itemLabel="Microbiology" itemValue="Microbiology"/>
                                                         <f:selectItem itemLabel="Pathology / Haematology" itemValue="PathologyOrHaematology"/>
                                                     </p:selectOneMenu>
-                                                    <h:outputText value="Report" ></h:outputText>
+                                                    <h:outputText value="Report Format" ></h:outputText>
                                                     <p:selectOneMenu id="cmbRf"  value="#{investigationController.current.reportFormat}" >
                                                         <f:selectItems value="#{reportFormatController.items}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
                                                     </p:selectOneMenu>
