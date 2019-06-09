@@ -97,9 +97,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode node142 = new PrivilageNode("Interim Bill Search", node14, Privileges.InwardBillingInterimBillSearch);
         TreeNode node143 = new PrivilageNode("Edit Patient Name After Payment Finalized", node14, Privileges.InwardFinalBillReportEdit);
         TreeNode node19 = new PrivilageNode("Pharmacy", node1);
-        TreeNode node190 = new PrivilageNode("Pharmacy Menu", node19,Privileges.InwardPharmacyMenu);
-        TreeNode node191 = new PrivilageNode("Pharmacy Issue Request", node19,Privileges.InwardPharmacyIssueRequest);
-        TreeNode node192 = new PrivilageNode("Pharmacy Issue Request Search", node19,Privileges.InwardPharmacyIssueRequestSearch);
+        TreeNode node190 = new PrivilageNode("Pharmacy Menu", node19, Privileges.InwardPharmacyMenu);
+        TreeNode node191 = new PrivilageNode("Pharmacy Issue Request", node19, Privileges.InwardPharmacyIssueRequest);
+        TreeNode node192 = new PrivilageNode("Pharmacy Issue Request Search", node19, Privileges.InwardPharmacyIssueRequestSearch);
         TreeNode node15 = new PrivilageNode("Search", node1);
         TreeNode node150 = new PrivilageNode("Serch Menu", node15, Privileges.InwardSearch);
         TreeNode node151 = new PrivilageNode("Serch Service Bill", node15, Privileges.InwardSearchServiceBill);
@@ -284,57 +284,62 @@ public class UserPrivilageController implements Serializable {
         TreeNode node64 = new PrivilageNode("Manage Items/Services", node6, Privileges.AdminItems);
         TreeNode node65 = new PrivilageNode("Manage Fees/Prices/Packages", node6, Privileges.AdminPrices);
         TreeNode node65a = new PrivilageNode("Filter Without Department", node6, Privileges.AdminFilterWithoutDepartment);
-        TreeNode node66 = new PrivilageNode("Membership", node6);
-        TreeNode node660 = new PrivilageNode("Membership Menu", node66, Privileges.MemberShip);
-        TreeNode node661 = new PrivilageNode("Membership Schemes", node66, Privileges.MembershipSchemes);
-//        TreeNode node662 = new PrivilageNode("Inward Membership", node66);
-        TreeNode node6620 = new PrivilageNode("Inward Membership Menu", node66, Privileges.MemberShipInwardMemberShip);
-        TreeNode node6621 = new PrivilageNode("Schemes Dicounts", node66, Privileges.MemberShipInwardMemberShipSchemesDicounts);
-        TreeNode node6622 = new PrivilageNode("Inward Membership Report", node66, Privileges.MemberShipInwardMemberShipInwardMemberShipReport);
-//        TreeNode node663 = new PrivilageNode("Opd MemberShip Dis", node66);
-        TreeNode node6630 = new PrivilageNode("Opd MemberShip Dis Menu", node66, Privileges.MemberShipOpdMemberShipDis);
-        TreeNode node6631 = new PrivilageNode("By Department", node66, Privileges.MemberShipOpdMemberShipDisByDepartment);
-        TreeNode node6632 = new PrivilageNode("By Category", node66, Privileges.MemberShipOpdMemberShipDisByCategory);
-        TreeNode node6633 = new PrivilageNode("Opd MemberShip Report", node66, Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport);
-        TreeNode node664 = new PrivilageNode("Re-Activate Registed Patient", node66, Privileges.MemberShipMemberReActive);
-        TreeNode node665 = new PrivilageNode("De-Activate Registed Patient", node66, Privileges.MemberShipMemberDeActive);
-        TreeNode node67 = new PrivilageNode("Only For Developers(Don't Add That)", node6, Privileges.Developers);
         TreeNode node68 = new PrivilageNode("Search All", node6, Privileges.SearchAll);
+        TreeNode node81 = new PrivilageNode("Change Professional Fee", node6, Privileges.ChangeProfessionalFee);
+        TreeNode node82 = new PrivilageNode("Change Professional Fee", node6, Privileges.ChangeCollectingCentre);
         TreeNode node69 = new PrivilageNode("Send Bulk SMS", node6, Privileges.SendBulkSMS);
+        TreeNode node67 = new PrivilageNode("Only For Developers(Don't Add That)", node6, Privileges.Developers);
+
+        TreeNode node66 = new PrivilageNode("Membership", tmproot);
+        TreeNode node660 = new PrivilageNode("Membership Menu", node66, Privileges.MemberShip);
+        TreeNode node6601 = new PrivilageNode("Add Members", node66, Privileges.MemberShipAdd);
+        TreeNode node6602 = new PrivilageNode("Edit Members", node66, Privileges.MemberShipEdit);
+        TreeNode node6603 = new PrivilageNode("Membership Reports", node66, Privileges.MembershipReports);
+        TreeNode node6604 = new PrivilageNode("Membership Discount Management", node66, Privileges.MembershipDiscountManagement);
+        TreeNode node6605 = new PrivilageNode("Membership Administration", node66, Privileges.MembershipAdministration);
+        TreeNode node6606 = new PrivilageNode("Other", node66);
+
+        TreeNode node661 = new PrivilageNode("Membership Schemes", node6606, Privileges.MembershipSchemes);
+        TreeNode node6620 = new PrivilageNode("Inward Membership Menu", node6606, Privileges.MemberShipInwardMemberShip);
+        TreeNode node6621 = new PrivilageNode("Schemes Dicounts", node6606, Privileges.MemberShipInwardMemberShipSchemesDicounts);
+        TreeNode node6622 = new PrivilageNode("Inward Membership Report", node6606, Privileges.MemberShipInwardMemberShipInwardMemberShipReport);
+        TreeNode node6630 = new PrivilageNode("Opd MemberShip Dis Menu", node6606, Privileges.MemberShipOpdMemberShipDis);
+        TreeNode node6631 = new PrivilageNode("Discount By Department", node6606, Privileges.MemberShipOpdMemberShipDisByDepartment);
+        TreeNode node6632 = new PrivilageNode("Discount By Category", node6606, Privileges.MemberShipOpdMemberShipDisByCategory);
+        TreeNode node6633 = new PrivilageNode("Opd MemberShip Report", node6606, Privileges.MemberShipOpdMemberShipDisOpdMemberShipReport);
+        TreeNode node664 = new PrivilageNode("Re-Activate Registed Patient", node6606, Privileges.MemberShipMemberReActive);
+        TreeNode node665 = new PrivilageNode("De-Activate Registed Patient", node6606, Privileges.MemberShipMemberDeActive);
 
         TreeNode node9 = new PrivilageNode("Human Resource", tmproot);
         TreeNode node91 = new PrivilageNode("HR Menu", node9, Privileges.Hr);
         TreeNode node92 = new PrivilageNode("Working Time", node9);
-        TreeNode node920 = new PrivilageNode("Working Time Menu", node92,Privileges.HrWorkingTime);
-        TreeNode node921 = new PrivilageNode("Roster Table", node92,Privileges.HrRosterTable);
-        TreeNode node922 = new PrivilageNode("Upload Attendence", node92,Privileges.HrUploadAttendance);
-        TreeNode node923 = new PrivilageNode("Analyse Attendence By Roster", node92,Privileges.HrAnalyseAttendenceByRoster);
-        TreeNode node924 = new PrivilageNode("Analyse Attendence By Staff", node92,Privileges.HrAnalyseAttendenceByStaff);
+        TreeNode node920 = new PrivilageNode("Working Time Menu", node92, Privileges.HrWorkingTime);
+        TreeNode node921 = new PrivilageNode("Roster Table", node92, Privileges.HrRosterTable);
+        TreeNode node922 = new PrivilageNode("Upload Attendence", node92, Privileges.HrUploadAttendance);
+        TreeNode node923 = new PrivilageNode("Analyse Attendence By Roster", node92, Privileges.HrAnalyseAttendenceByRoster);
+        TreeNode node924 = new PrivilageNode("Analyse Attendence By Staff", node92, Privileges.HrAnalyseAttendenceByStaff);
         TreeNode node93 = new PrivilageNode("Form", node9);
-        TreeNode node930 = new PrivilageNode("Form Menu", node93,Privileges.HrForms);
-        TreeNode node931 = new PrivilageNode("Leave Form", node93,Privileges.HrLeaveForms);
-        TreeNode node932 = new PrivilageNode("Additional Form", node93,Privileges.HrAdditionalForms);
+        TreeNode node930 = new PrivilageNode("Form Menu", node93, Privileges.HrForms);
+        TreeNode node931 = new PrivilageNode("Leave Form", node93, Privileges.HrLeaveForms);
+        TreeNode node932 = new PrivilageNode("Additional Form", node93, Privileges.HrAdditionalForms);
         TreeNode node94 = new PrivilageNode("HR Salary Advance", node9, Privileges.HrAdvanceSalary);
         TreeNode node95 = new PrivilageNode("HR Salary", node9);
         TreeNode node95a = new PrivilageNode("HR Salary Generate", node95, Privileges.HrGenerateSalary);
         TreeNode node95b = new PrivilageNode("HR Salary Generate Special", node95, Privileges.HrGenerateSalarySpecial);
         TreeNode node96 = new PrivilageNode("HR Salary Print", node9, Privileges.HrPrintSalary);
         TreeNode node97 = new PrivilageNode("HR Reports", node9);
-        TreeNode node970 = new PrivilageNode("HR Reports Menu", node97,Privileges.HrReports);
-        TreeNode node971 = new PrivilageNode("HR Reports Level 1", node97,Privileges.HrReportsLevel1);
-        TreeNode node972 = new PrivilageNode("HR Reports Level 2", node97,Privileges.HrReportsLevel2);
-        TreeNode node973 = new PrivilageNode("HR Reports Level 3", node97,Privileges.HrReportsLevel3);
+        TreeNode node970 = new PrivilageNode("HR Reports Menu", node97, Privileges.HrReports);
+        TreeNode node971 = new PrivilageNode("HR Reports Level 1", node97, Privileges.HrReportsLevel1);
+        TreeNode node972 = new PrivilageNode("HR Reports Level 2", node97, Privileges.HrReportsLevel2);
+        TreeNode node973 = new PrivilageNode("HR Reports Level 3", node97, Privileges.HrReportsLevel3);
 //        TreeNode node974 = new PrivilageNode("HR Employee History Reports", node97, Privileges.EmployeeHistoryReport);
         TreeNode node98 = new PrivilageNode("HR Administration", node9);
         TreeNode node980 = new PrivilageNode("HR Administration Menu", node98, Privileges.HrAdmin);
         TreeNode node981 = new PrivilageNode("HR Delete Late Leave", node98, Privileges.hrDeleteLateLeave);
         TreeNode node982 = new PrivilageNode("HR Edit Retied Date", node98, Privileges.HrEditRetiedDate);
         TreeNode node983 = new PrivilageNode("HR Remove Resign Date", node98, Privileges.HrRemoveResignDate);
-        
-        TreeNode node8 = new PrivilageNode("Higheist Accountability", tmproot);
-        TreeNode node81 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeProfessionalFee);
-        TreeNode node82 = new PrivilageNode("Change Professional Fee", node8, Privileges.ChangeCollectingCentre);
 
+        
         TreeNode node20 = new PrivilageNode("Store", tmproot);
         TreeNode node2000 = new PrivilageNode("Store Menu", node20, Privileges.Store);
         TreeNode node2001 = new PrivilageNode("Issue", node20);
@@ -383,7 +388,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode node21 = new PrivilageNode("Search", tmproot);
         TreeNode node2100 = new PrivilageNode("Search Menu", node21, Privileges.Search);
         TreeNode node2101 = new PrivilageNode("Grand Search", node21, Privileges.SearchGrand);
-        
+
         TreeNode node24 = new PrivilageNode("User", tmproot);
         TreeNode node240 = new PrivilageNode("Change Theme", node24, Privileges.ChangePreferece);
 
@@ -422,11 +427,11 @@ public class UserPrivilageController implements Serializable {
         TreeNode node23072 = new PrivilageNode("Payment Due Search", node2307, Privileges.ChannellingPaymentDueSearch);
         TreeNode node23073 = new PrivilageNode("Payment Done Search", node2307, Privileges.ChannellingPaymentDoneSearch);
         TreeNode node23011 = new PrivilageNode("Cashier Transaction", node23);
-        TreeNode node23011a = new PrivilageNode("Cashier Transaction Menu", node23011,Privileges.ChannelCashierTransaction);
-        TreeNode node23011b = new PrivilageNode("Income", node23011,Privileges.ChannelCashierTransactionIncome);
-        TreeNode node23011c = new PrivilageNode("Income Search", node23011,Privileges.ChannelCashierTransactionIncomeSearch);
-        TreeNode node23011d = new PrivilageNode("Expensses", node23011,Privileges.ChannelCashierTransactionExpencess);
-        TreeNode node23011e = new PrivilageNode("Expensess Search", node23011,Privileges.ChannelCashierTransactionExpencessSearch);
+        TreeNode node23011a = new PrivilageNode("Cashier Transaction Menu", node23011, Privileges.ChannelCashierTransaction);
+        TreeNode node23011b = new PrivilageNode("Income", node23011, Privileges.ChannelCashierTransactionIncome);
+        TreeNode node23011c = new PrivilageNode("Income Search", node23011, Privileges.ChannelCashierTransactionIncomeSearch);
+        TreeNode node23011d = new PrivilageNode("Expensses", node23011, Privileges.ChannelCashierTransactionExpencess);
+        TreeNode node23011e = new PrivilageNode("Expensess Search", node23011, Privileges.ChannelCashierTransactionExpencessSearch);
         TreeNode node23010 = new PrivilageNode("Administrator", node23);
         TreeNode node23010a = new PrivilageNode("Edit Appoinment Count", node23010, Privileges.ChannellingApoinmentNumberCountEdit);
         TreeNode node23010b = new PrivilageNode("Edit Appoinment Number", node23010, Privileges.ChannellingEditSerialNo);

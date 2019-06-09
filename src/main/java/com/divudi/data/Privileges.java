@@ -338,7 +338,14 @@ public enum Privileges {
     ChannelCashierTransactionExpencessSearch,
     ChannelActiveVat,
     
+    
     MemberShip,
+    MemberShipAdd,
+    MemberShipEdit,
+    MembershipReports,
+    MembershipDiscountManagement,
+    MembershipAdministration,
+    
     MembershipSchemes,
     MemberShipInwardMemberShip,
     MemberShipInwardMemberShipSchemesDicounts,

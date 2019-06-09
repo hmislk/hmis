@@ -118,6 +118,14 @@
                                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" ></p:menuitem>
                                 </p:submenu>
 
+                                <p:submenu styleClass="rightBordrOnly" label="Membership"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
+                                    <p:menuitem ajax="false" action="/memberShip/add_family" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShipAdd')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/memberShip/edit_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/memberShip/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MembershipReports')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/memberShip/discounts" value="Discount Management" rendered="#{webUserController.hasPrivilege('MembershipDiscountManagement')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/memberShip/administration" value="Membership Administration" rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
+                                </p:submenu>
+
                                 <p:submenu styleClass="rightBordrOnly" label="Inward"  rendered="#{webUserController.hasPrivilege('Inward')}">
                                     <p:submenu label="Admissions" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">                                    
                                         <p:menuitem  ajax="false"  action="/inward/inward_admission" value="Admission" actionListener="#{admissionController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" ></p:menuitem>
@@ -737,45 +745,7 @@
                                     <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/admin_items" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
-                                    <p:submenu label="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" >
-                                        <p:submenu label="Membership Sheme">
-                                            <p:menuitem action="/memberShip/membership_scheme" actionListener="#{membershipSchemeController.prepareAdd()}"  value="Membership Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>
-                                            <p:menuitem action="/memberShip/membership_scheme_payment_method_allowed" actionListener="#{membershipSchemeController.fillItems}" value="Allowed Payment Method" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:submenu label="Inward Member Ship" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShip')}">
-                                                <p:menuitem  action="/memberShip/membership_scheme_discount_inward" value="Schemes Dicounts Inward"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipSchemesDicounts')}"/>
-                                                <p:menuitem  action="/memberShip/report_inward" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
-                                            </p:submenu>
-                                            <p:submenu label="Opd MemberShip Discount" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDis')}">
-                                                <p:menuitem  action="/memberShip/membership_scheme_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
-                                                <p:menuitem  action="/memberShip/membership_scheme_discount_opd_by_category" value="By Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                                <p:menuitem  action="/memberShip/membership_scheme_discount_pharmacy_by_category" value="By Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                                <p:menuitem  action="/memberShip/report_opd" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
-                                            </p:submenu>
-                                        </p:submenu>
-                                        <p:submenu label="Payment Sheme">
-                                            <p:menuitem action="/memberShip/payment_scheme" actionListener="#{paymentSchemeController.createPaymentSchemes()}" value="Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:menuitem action="/memberShip/payment_scheme_payment_method_allowed"   value="Allowed Payment Method" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>                                       
-                                            <p:submenu label="Scheme Discount">
-                                                <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false"/>
-                                                <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_category" value="By Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false"/>
-                                                <p:menuitem  action="/memberShip/payment_scheme_discount_pharmacy_by_category" value="By Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
-                                                <p:menuitem  action="/memberShip/payment_scheme_discount_opd_by_item" value="By Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" />
-                                                <p:menuitem  action="/memberShip/report_opd" value="Opd Payment Report"  ajax="false" />
-                                            </p:submenu>
-                                            <p:menuitem action="/memberShip/payment_scheme_discount_channel"   value="Channel Discount Schemes" ajax="false" rendered="#{webUserController.hasPrivilege('MembershipSchemes')}"/>   
-                                        </p:submenu>
-
-                                        <p:submenu label="Payment Method ">                                                                                
-                                            <p:submenu label="Discount" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDis')}">
-                                                <p:menuitem  action="/memberShip/payment_method_discount_opd_by_department" value="By Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>                                            
-                                                <p:menuitem  action="/memberShip/payment_method_discount_opd_by_category" value="By Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                                <p:menuitem  action="/memberShip/payment_method_discount_pharmacy_by_category" value="By Pharmacy Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                                <p:menuitem  action="/memberShip/payment_method_discount_opd_by_item" value="By Item " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                                <p:menuitem  action="/memberShip/report_opd" value="Opd Payment Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
-                                            </p:submenu>
-                                        </p:submenu>
-
-                                    </p:submenu>
+                                    <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/admin/bill_contact_numbers.xhtml" value="Send Bulk SMS" rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" ></p:menuitem>
 
@@ -927,11 +897,11 @@
                                 </h:panelGroup>
                             </h:panelGrid>
                         </p:panel>
-                        
+
                         <h:form>
                             <p:commandButton rendered="false" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
                         </h:form>
-                        
+
                     </ui:insert>
                 </h:panelGroup>
 
