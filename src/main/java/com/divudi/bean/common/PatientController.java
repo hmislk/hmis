@@ -10,9 +10,14 @@ import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.Family;
+import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.FamilyFacade;
+import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -53,18 +58,48 @@ import org.primefaces.model.StreamedContent;
 @SessionScoped
 public class PatientController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    /**
+     * 
+     * EJBs
+     * 
+     **/
     @EJB
     private PatientFacade ejbFacade;
+@EJB
+FamilyFacade familyFacade;
+@EJB
+FamilyMemberFacade familyMemberFacade;
+    
+    /**
+     * 
+     * Controllers
+     * 
+     **/
+    
+    
+    
+    
     @Inject
     SessionController sessionController;
     @Inject
     PracticeBookingController practiceBookingController;
 
+    
+    
+    /**
+     * 
+     * Class Variables
+     * 
+     **/
+    private static final long serialVersionUID = 1L;
     private Patient current;
     private Person familyMember;
     private List<Person> familyMembers;
-    ;
+    Family currentFamily;
+    FamilyMember currentFamilyMember;
+    Patient addingPatientToFamily;
+    FamilyMember removingFamilyMember;
+
     private List<Patient> items = null;
 
     @EJB
@@ -87,6 +122,87 @@ public class PatientController implements Serializable {
 
     @EJB
     BillFacade billFacade;
+    
+    
+    
+    
+    public String toAddAFamily(){
+        currentFamily = new Family();
+        return "/memberShip/add_family";
+    }
+    
+    public void saveFamily(){
+        if(currentFamily==null){
+            JsfUtil.addErrorMessage("No user");
+            return;
+        }
+        if(currentFamily.getId()==null){
+            currentFamily.setCreatedAt(new Date());
+            currentFamily.setCreater(getSessionController().getLoggedUser());
+            getFamilyFacade().create(currentFamily);
+            JsfUtil.addSuccessMessage("User Added");
+        }else{
+            currentFamily.setEditedAt(new Date());
+            currentFamily.setEditer(getSessionController().getLoggedUser());
+            JsfUtil.addSuccessMessage("User Added");
+        }
+        
+    }
+    
+    public void removeFamily(){
+        if(currentFamily==null){
+            JsfUtil.addErrorMessage("No user");
+            return;
+        }
+        if(currentFamily.getId()==null){
+            JsfUtil.addErrorMessage("User Not yet Added to system to remove");
+        }else{
+            currentFamily.setRetired(true);
+            currentFamily.setRetiredAt(new Date());
+            currentFamily.setRetirer(getSessionController().getLoggedUser());
+            JsfUtil.addSuccessMessage("User Removed");
+        }
+        
+    }
+    
+    
+     public void removeFamilyAndMembers(){
+        if(currentFamily==null){
+            JsfUtil.addErrorMessage("No user");
+            return;
+        }
+        if(currentFamily.getId()==null){
+            JsfUtil.addErrorMessage("User Not yet Added to system to remove");
+        }else{
+            for(FamilyMember fm:currentFamily.getFamilyMembers()){
+                Patient pt = fm.getPatient();
+                pt.setRetired(true);
+                pt.setRetiredAt(new Date());
+                pt.setRetirer(getSessionController().getLoggedUser());
+                getFacade().edit(pt);
+                
+                Person p = pt.getPerson();
+                p.setRetired(true);
+                p.setRetirer(getSessionController().getLoggedUser());
+                p.setRetiredAt(new Date());
+                getPersonFacade().edit(p);
+                
+                WebUser u = p.getWebUser();
+                if(u!=null){
+                    u.setActivated(false);
+                }
+                
+                
+            }
+            currentFamily.setRetired(true);
+            currentFamily.setRetiredAt(new Date());
+            currentFamily.setRetirer(getSessionController().getLoggedUser());
+            JsfUtil.addSuccessMessage("User Removed");
+        }
+        
+    }
+    
+    
 
     public void patientSelected() {
         getPatientEncounterController().fillCurrentPatientLists(current);
@@ -422,7 +538,7 @@ public class PatientController implements Serializable {
         getPersonFacade().flush();
         getFacade().flush();
     }
-    
+
     public void saveSelectedPatient() {
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
@@ -452,12 +568,12 @@ public class PatientController implements Serializable {
         String sql;
         Map m = new HashMap();
         sql = " select p from Patient p ";
-        
+
         if (getReportKeyWord().isAdditionalDetails()) {
             sql += " where ( p.code is not null "
                     + " or p.code=:code ) ";
-            if (getReportKeyWord().getMembershipScheme()!=null) {
-                sql+=" and p.person.membershipScheme=:mem ";
+            if (getReportKeyWord().getMembershipScheme() != null) {
+                sql += " and p.person.membershipScheme=:mem ";
                 m.put("mem", getReportKeyWord().getMembershipScheme());
             }
             if (getReportKeyWord().getString().equals("0")) {
@@ -925,6 +1041,22 @@ public class PatientController implements Serializable {
         this.PatientEncounterController = PatientEncounterController;
     }
 
+    public FamilyFacade getFamilyFacade() {
+        return familyFacade;
+    }
+
+    public FamilyMemberFacade getFamilyMemberFacade() {
+        return familyMemberFacade;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    
+    
+    
+    
     @FacesConverter("patientConverter")
     public static class PatientConverter implements Converter {
 

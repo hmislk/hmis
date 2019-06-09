@@ -14,32 +14,32 @@
 
                 <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
 
-                <h:form>
 
-                    <p:panel header="Manage Patients" styleClass="alignTop"
-                             style="height: 600px;">
-                        <h:panelGrid columns="2" >
 
-                            <h:panelGroup>
+                <p:panel header="Manage Patients" styleClass="alignTop"
+                         style="height: 600px;">
+                    <h:panelGrid columns="2" >
+
+                        <h:panelGroup>
+
+                            <h:form>
 
                                 <p:panel id="panelSearch" header="Search Patients" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Search Patients" />
-                                        <p:commandButton id="btnAddPt" 
+                                        <p:commandButton id="btnAddPt" ajax="false"
                                                          style="float: right;" 
-                                                         value="Add New Patient" process="btnAddPt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                         action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" >
+                                                         value="Add New Patient" 
+                                                         action="#{patientController.prepareAddReg()}"  >
                                         </p:commandButton>
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
-                                                         value="Delete" process="btnDeletePt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
-                                                         action="#{patientController.delete()}" onclick="onSubmitButton();" 
+                                                         value="Delete" 
+                                                         action="#{patientController.delete()}"  
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
 
-                                        <!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
+                                        <!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" >
                                                                                  </p:commandButton>-->
 
                                     </f:facet>
@@ -83,100 +83,29 @@
                                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:component('panelDetails')}" 
-                                                    listener="#{patientController.patientSelected}"/>
                                         </p:autoComplete>
+
+                                        <p:commandButton ajax="false" value="View Patient Details" action="#{patientController.patientSelected}" ></p:commandButton>
 
                                     </h:panelGrid>
 
                                 </p:panel>
 
-                                <p:panel>
-                                    <p:commandButton disabled="true" id="btnAddNewDoc" type="button" value="New Membership" onclick="dlg.show();"  process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
 
-                                    <p:dialog id="panDoc" header="Membership Registration" widgetVar="dlg" resizable="false">
+                            </h:form>
 
-                                        <h:panelGrid columns="3" style="margin-bottom:7px;">
-                                            <p:selectOneRadio id="memPck">
-                                                <f:selectItem itemLabel="Individual" itemValue="1"/>
-                                                <f:selectItem itemLabel="Family" itemValue="2"/>
-                                            </p:selectOneRadio>
-                                            <p:commandButton  process="panelDetails" update="acPt" value="Save" 
-                                                              action="#{patientController.saveSelected()}"  style="left: 350px;"></p:commandButton>
-                                        </h:panelGrid>
-                                        <p:panel>
-                                            <p:panelGrid columns="2">
-                                                <h:outputLabel value="Title"/>
-                                                <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}"  >
-                                                    <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
-                                                </p:selectOneMenu>
-                                                <h:outputLabel value=" Full Name"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" style="width: 200px;text-transform:capitalize;">
-                                                </p:inputText>
-                                                <h:outputLabel value="Gender"/>
-                                                <h:outputLabel rendered="#{patientController.current.person eq null}" value=""/>
-                                                <p:selectOneMenu rendered="#{patientController.current.person ne null}" id="txtNewSex"  value="#{patientController.current.person.sex}" style="width: 200px;">
-                                                    <f:selectItem itemLabel="Select Sex"/>
-                                                    <f:selectItems value="#{patientController.sexs}"/>
-                                                </p:selectOneMenu>
-                                                <h:outputLabel value="NIC"/>
-                                                <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
-                                                <h:outputLabel value="Code"/>
-                                                <p:inputText value="#{patientController.current.code}"/>
 
-                                                <h:outputLabel value="Age"/>
-                                                <h:panelGrid columns="3">
-                                                    <p:inputText autocomplete="off"  id="year" style="width: 80px;" value="#{patientController.yearMonthDay.year}">
-                                                        <f:ajax event="keyup" execute="@this" render="calNewPtDob  "  listener="#{patientController.dateChangeListen()}"  />
-                                                    </p:inputText>
-                                                    <p:inputText autocomplete="off" id="month"   style="width: 80px;" value="#{patientController.yearMonthDay.month}">
-                                                        <f:ajax event="keyup" execute="@this"  render="calNewPtDob " listener="#{patientController.dateChangeListen()}"  />
-                                                    </p:inputText>
-                                                    <p:inputText autocomplete="off" id="day"  style="width: 80px;"  value="#{patientController.yearMonthDay.day}">
-                                                        <f:ajax event="keyup" execute="@this"  render="calNewPtDob " listener="#{patientController.dateChangeListen()}" />
-                                                    </p:inputText>
-                                                </h:panelGrid>
-                                                <h:outputLabel value="Date of Birth"/>
-                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
-                                                    <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
-                                                </p:calendar>
 
-                                                <h:outputLabel value="Phone"/>
-                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
-                                                </p:inputMask>
-                                                <h:outputLabel value="Address"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
-                                                </p:inputText>
-                                                <h:outputLabel value="Email"/>
-                                                <p:inputText autocomplete="off"  id="txtNewPtEmail" value="#{patientController.current.person.email}">
-                                                </p:inputText>
-                                                <h:outputLabel value="Membership Category"/>
-                                                <!--<h:panelGrid style="margin-bottom:7px;">-->
-                                                <p:selectOneRadio id="memPcktype" >
-                                                    <f:selectItem itemLabel="Standard"/>
-                                                    <f:selectItem itemLabel="Premium"/>
-                                                    <f:selectItem itemLabel="Platinum"/>
-                                                    <f:selectItem itemLabel="Gold"/>
-                                                </p:selectOneRadio>
-                                                <!--</h:panelGrid>-->
-                                            </p:panelGrid>
-                                            <p:dataTable  rendered="">
-                                                <p:column headerText="Name">
+                        </h:panelGroup>
 
-                                                </p:column>
-                                            </p:dataTable>
-                                        </p:panel>
-                                    </p:dialog>
-
-                                </p:panel> 
-
-                            </h:panelGroup>
+                        <h:form>
 
                             <p:panel id="panelDetails"   >
                                 <f:facet name="header" >
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
-                                    <p:commandButton  process="panelDetails" update="acPt :#{p:component('patientDetail')}" value="Save" 
+                                    <p:commandButton  process="panelDetails" ajax="false"
+                                                      value="Save" 
                                                       action="#{patientController.saveSelected()}"></p:commandButton>
 
                                 </f:facet>
@@ -194,6 +123,14 @@
                                                     <f:selectItems value="#{membershipSchemeController.items}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
                                                     <f:ajax event="change" execute="@this" render="txtCode" listener="#{patientController.membershipChangeListner}" />
                                                 </p:selectOneMenu>
+                                                
+                                                <h:outputLabel value="Membership From"/>
+                                                <p:calendar value="#{patientController.current.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                                
+                                                <h:outputLabel value="Membership To"/>
+                                                <p:calendar value="#{patientController.current.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                                
+                                                
                                                 <h:outputLabel value="Title"/>
                                                 <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}" style="width: 290px;" >
                                                     <f:selectItems value="#{patientController.titles}" var="t" itemLabel="#{t.label}" itemValue="#{t}"/>
@@ -220,7 +157,7 @@
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="dd/MM/yyyy" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
                                                 </p:calendar>
-                                                
+
                                                 <h:outputLabel value="Age"/>
                                                 <h:panelGrid columns="3">
                                                     <p:inputText autocomplete="off"  id="year" style="width: 95px;" value="#{patientController.yearMonthDay.year}">
@@ -244,7 +181,7 @@
                                                 <p:inputTextarea id="txtNewPtAddress" value="#{patientController.current.person.address}" 
                                                                  style="width: 280px; height: 75px;">
                                                 </p:inputTextarea>
-<!--                                                <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
+    <!--                                                <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
                                                 </p:inputText>-->
                                                 <p:outputLabel value="Area"></p:outputLabel>
                                                 <p:autoComplete styleClass="mediuminputnew" widgetVar="np" id="acnp" forceSelection="true" 
@@ -263,8 +200,8 @@
                                                 <p:inputText autocomplete="off" value="#{patientController.current.person.email}" style="width: 280px;"/>
                                                 <h:outputLabel value="P/F/M No "/>
                                                 <p:inputText autocomplete="off" value="#{patientController.current.person.description}" style="width: 280px;"/>
-<!--                                                <h:outputLabel value=""/>
-                                                <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>-->
+                                                <!--                                                <h:outputLabel value=""/>
+                                                                                                <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>-->
                                                 <h:outputLabel value="Comments"/>
                                                 <p:inputTextarea id="txtNewPtComments" value="#{patientController.current.comments}" 
                                                                  style="width: 280px; height: 75px;">
@@ -329,12 +266,12 @@
 
                             </p:panel>
 
+                        </h:form>
+
+                    </h:panelGrid>
+                </p:panel>
 
 
-                        </h:panelGrid>
-                    </p:panel>
-
-                </h:form>
 
             </ui:define>
 

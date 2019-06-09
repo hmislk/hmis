@@ -957,7 +957,7 @@ public class PharmacyWholeSaleController implements Serializable {
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
-        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt));
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -1502,7 +1502,7 @@ public class PharmacyWholeSaleController implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {

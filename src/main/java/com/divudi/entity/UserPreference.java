@@ -98,6 +98,11 @@ public class UserPreference implements Serializable {
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
     
+    private boolean familyMembership;
+    private boolean membershipExpires;
+    
+    
+    
     
     
     public ApplicationInstitution getApplicationInstitution() {
@@ -596,6 +601,22 @@ public class UserPreference implements Serializable {
 
     public void setPrintBarcodeInOpdBill(Boolean printBarcodeInOpdBill) {
         this.printBarcodeInOpdBill = printBarcodeInOpdBill;
+    }
+
+    public boolean isFamilyMembership() {
+        return familyMembership;
+    }
+
+    public void setFamilyMembership(boolean familyMembership) {
+        this.familyMembership = familyMembership;
+    }
+
+    public boolean isMembershipExpires() {
+        return membershipExpires;
+    }
+
+    public void setMembershipExpires(boolean membershipExpires) {
+        this.membershipExpires = membershipExpires;
     }
 
     

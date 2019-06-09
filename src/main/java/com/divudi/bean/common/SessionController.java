@@ -778,8 +778,10 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private boolean checkUsersWithoutDepartment() {
         String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name=:un)";
+        Map m = new HashMap();
+        m.put("un", userName.toLowerCase());
+        List<WebUser> allUsers = getFacede().findBySQL(temSQL, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
@@ -820,7 +822,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     UserPreference uf;
                     sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
-                    Map m = new HashMap();
+                    m = new HashMap();
                     m.put("u", u);
                     uf = getUserPreferenceFacade().findFirstBySQL(sql, m);
                     if (uf == null) {
@@ -933,7 +935,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
         applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
-        if(applicationPreference==null){
+        if (applicationPreference == null) {
             applicationPreference = new UserPreference();
             getUserPreferenceFacade().create(applicationPreference);
         }
@@ -1496,6 +1498,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     public UserPreference getApplicationPreference() {
+        if (applicationPreference == null) {
+            String sql = "";
+            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+            applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
+            if (applicationPreference == null) {
+                applicationPreference = new UserPreference();
+                getUserPreferenceFacade().create(applicationPreference);
+            }
+        }
+
         return applicationPreference;
     }
 

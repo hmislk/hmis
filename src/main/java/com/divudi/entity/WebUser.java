@@ -45,6 +45,7 @@ public class WebUser implements Serializable {
     @ManyToOne
     WebTheme userWebTheme;
     String webUserPassword;
+    
     @OneToOne
     Person webUserPerson;
     //Main Properties
