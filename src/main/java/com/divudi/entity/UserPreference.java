@@ -101,6 +101,9 @@ public class UserPreference implements Serializable {
     private boolean familyMembership;
     private boolean membershipExpires;
     
+    private boolean needAreaForPatientRegistration;
+    private boolean needNicForPatientRegistration;
+    private boolean needPhoneNumberForPatientRegistration;
     
     
     
@@ -617,6 +620,30 @@ public class UserPreference implements Serializable {
 
     public void setMembershipExpires(boolean membershipExpires) {
         this.membershipExpires = membershipExpires;
+    }
+
+    public boolean isNeedAreaForPatientRegistration() {
+        return needAreaForPatientRegistration;
+    }
+
+    public void setNeedAreaForPatientRegistration(boolean needAreaForPatientRegistration) {
+        this.needAreaForPatientRegistration = needAreaForPatientRegistration;
+    }
+
+    public boolean isNeedNicForPatientRegistration() {
+        return needNicForPatientRegistration;
+    }
+
+    public void setNeedNicForPatientRegistration(boolean needNicForPatientRegistration) {
+        this.needNicForPatientRegistration = needNicForPatientRegistration;
+    }
+
+    public boolean isNeedPhoneNumberForPatientRegistration() {
+        return needPhoneNumberForPatientRegistration;
+    }
+
+    public void setNeedPhoneNumberForPatientRegistration(boolean needPhoneNumberForPatientRegistration) {
+        this.needPhoneNumberForPatientRegistration = needPhoneNumberForPatientRegistration;
     }
 
     

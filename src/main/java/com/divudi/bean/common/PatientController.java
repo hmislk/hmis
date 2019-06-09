@@ -59,38 +59,45 @@ import org.primefaces.model.StreamedContent;
 public class PatientController implements Serializable {
 
     /**
-     * 
+     *
      * EJBs
-     * 
-     **/
+     *
+     *
+     */
     @EJB
     private PatientFacade ejbFacade;
-@EJB
-FamilyFacade familyFacade;
-@EJB
-FamilyMemberFacade familyMemberFacade;
-    
+    @EJB
+    FamilyFacade familyFacade;
+    @EJB
+    FamilyMemberFacade familyMemberFacade;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    CommonFunctions commonFunctions;
+    @EJB
+    BillFacade billFacade;
     /**
-     * 
+     *
      * Controllers
-     * 
-     **/
-    
-    
-    
-    
+     *
+     *
+     */
     @Inject
     SessionController sessionController;
     @Inject
     PracticeBookingController practiceBookingController;
-
-    
-    
+    @Inject
+    PatientEncounterController PatientEncounterController;
+    @Inject
+    CommonController commonController;
     /**
-     * 
+     *
      * Class Variables
-     * 
-     **/
+     *
+     *
+     */
     private static final long serialVersionUID = 1L;
     private Patient current;
     private Person familyMember;
@@ -102,107 +109,112 @@ FamilyMemberFacade familyMemberFacade;
 
     private List<Patient> items = null;
 
-    @EJB
-    private PersonFacade personFacade;
     private Date dob;
     private String membershipTypeListner = "1";
-
-    @Inject
-    PatientEncounterController PatientEncounterController;
-    @Inject
-    CommonController commonController;
-
-    @EJB
-    BillNumberGenerator billNumberBean;
-    @EJB
-    CommonFunctions commonFunctions;
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
 
-    @EJB
-    BillFacade billFacade;
-    
-    
-    
-    
-    public String toAddAFamily(){
+    public String toAddAFamily() {
         currentFamily = new Family();
         return "/memberShip/add_family";
     }
-    
-    public void saveFamily(){
-        if(currentFamily==null){
-            JsfUtil.addErrorMessage("No user");
+
+    public void saveFamily() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family Selected to Save or Update");
             return;
         }
-        if(currentFamily.getId()==null){
+        if (currentFamily.getId() == null) {
             currentFamily.setCreatedAt(new Date());
             currentFamily.setCreater(getSessionController().getLoggedUser());
             getFamilyFacade().create(currentFamily);
-            JsfUtil.addSuccessMessage("User Added");
-        }else{
+            JsfUtil.addSuccessMessage("Family Added");
+        } else {
             currentFamily.setEditedAt(new Date());
             currentFamily.setEditer(getSessionController().getLoggedUser());
-            JsfUtil.addSuccessMessage("User Added");
+            JsfUtil.addSuccessMessage("Family Updated");
         }
+
+    }
+
+    public void addNewMemberToFamily() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family Selected.");
+            return;
+        }
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Member is selected to add to family.");
+            return;
+        }
+        saveSelected();
+        FamilyMember tfm = new FamilyMember();
+        tfm.setPatient(current);
+        tfm.setFamily(currentFamily);
+        tfm.setCreatedAt(new Date());
+        tfm.setCreater(sessionController.getLoggedUser());
+        getFamilyMemberFacade().create(tfm);
+        currentFamily.getFamilyMembers().add(currentFamilyMember);
+        JsfUtil.addSuccessMessage("Family Member Added to Family");
+        current = new Patient();
+        Person p = new Person();
+        WebUser u = new WebUser();
         
     }
-    
-    public void removeFamily(){
-        if(currentFamily==null){
+
+    public void removeFamily() {
+        if (currentFamily == null) {
             JsfUtil.addErrorMessage("No user");
             return;
         }
-        if(currentFamily.getId()==null){
+        if (currentFamily.getId() == null) {
             JsfUtil.addErrorMessage("User Not yet Added to system to remove");
-        }else{
+        } else {
             currentFamily.setRetired(true);
             currentFamily.setRetiredAt(new Date());
             currentFamily.setRetirer(getSessionController().getLoggedUser());
-            JsfUtil.addSuccessMessage("User Removed");
+            JsfUtil.addSuccessMessage("Family Removed. But the family members remain in the system.");
         }
-        
+
     }
-    
-    
-     public void removeFamilyAndMembers(){
-        if(currentFamily==null){
+
+    public void removeFamilyAndMembers() {
+        if (currentFamily == null) {
             JsfUtil.addErrorMessage("No user");
             return;
         }
-        if(currentFamily.getId()==null){
+        if (currentFamily.getId() == null) {
             JsfUtil.addErrorMessage("User Not yet Added to system to remove");
-        }else{
-            for(FamilyMember fm:currentFamily.getFamilyMembers()){
+        } else {
+            for (FamilyMember fm : currentFamily.getFamilyMembers()) {
                 Patient pt = fm.getPatient();
                 pt.setRetired(true);
                 pt.setRetiredAt(new Date());
                 pt.setRetirer(getSessionController().getLoggedUser());
                 getFacade().edit(pt);
-                
+
                 Person p = pt.getPerson();
                 p.setRetired(true);
                 p.setRetirer(getSessionController().getLoggedUser());
                 p.setRetiredAt(new Date());
                 getPersonFacade().edit(p);
-                
+
                 WebUser u = p.getWebUser();
-                if(u!=null){
+                if (u != null) {
                     u.setActivated(false);
+                    u.setRetired(true);
+                    u.setRetiredAt(new Date());
+                    u.setRetirer(getSessionController().getLoggedUser());
                 }
-                
-                
+
             }
             currentFamily.setRetired(true);
             currentFamily.setRetiredAt(new Date());
             currentFamily.setRetirer(getSessionController().getLoggedUser());
-            JsfUtil.addSuccessMessage("User Removed");
+            JsfUtil.addSuccessMessage("Family Members and all user details removed.");
         }
-        
+
     }
-    
-    
 
     public void patientSelected() {
         getPatientEncounterController().fillCurrentPatientLists(current);
@@ -474,7 +486,12 @@ FamilyMemberFacade familyMemberFacade;
         return str;
     }
 
+    
     public void saveSelected() {
+        saveSelected(current);
+    }
+    
+    public void saveSelected(Patient p) {
         if (errorCheck()) {
             return;
         }
@@ -781,42 +798,48 @@ FamilyMemberFacade familyMemberFacade;
 
     }
 
-    private boolean errorCheck() {
-        if (getCurrent() == null) {
+    private boolean errorCheck(Patient p) {
+        if (p == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
             return true;
         }
-        if (getCurrent().getPerson() == null) {
+        if (p.getPerson() == null) {
             UtilityController.addErrorMessage("No Person. Not Saved");
             return true;
         }
-        if (getCurrent().getPerson().getName().trim().equals("")) {
+        if (p.getPerson().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please Enter a Name");
             return true;
         }
-        if (getCurrent().getPerson().getSex() == null) {
+        if (p.getPerson().getSex() == null) {
             UtilityController.addErrorMessage("Please Select Sex");
             return true;
         }
-        if (getCurrent().getPerson().getDob() == null) {
+        if (p.getPerson().getDob() == null) {
             UtilityController.addErrorMessage("Please Pic a Birth Day");
             return true;
         }
-        if (getCurrent().getPerson().getAddress() == null || getCurrent().getPerson().getAddress().equals("")) {
+        if (p.getPerson().getAddress() == null || p.getPerson().getAddress().equals("")) {
             UtilityController.addErrorMessage("Please Enter a Address");
             return true;
         }
-        if (getCurrent().getPerson().getArea() == null) {
-            UtilityController.addErrorMessage("Please Enter a Area");
-            return true;
+        if (sessionController.getApplicationPreference().isNeedAreaForPatientRegistration()) {
+            if (p.getPerson().getArea() == null) {
+                UtilityController.addErrorMessage("Please Enter a Area");
+                return true;
+            }
         }
-        if (getCurrent().getPerson().getPhone() == null || getCurrent().getPerson().getPhone().equals("")) {
-            UtilityController.addErrorMessage("Please Enter a Phone Number");
-            return true;
+        if (sessionController.getApplicationPreference().isNeedPhoneNumberForPatientRegistration()) {
+            if (p.getPerson().getPhone() == null || p.getPerson().getPhone().equals("")) {
+                UtilityController.addErrorMessage("Please Enter a Phone Number");
+                return true;
+            }
         }
-        if (getCurrent().getPerson().getNic() == null || getCurrent().getPerson().getNic().equals("")) {
-            UtilityController.addErrorMessage("Please Enter a Nic No");
-            return true;
+        if (sessionController.getApplicationPreference().isNeedNicForPatientRegistration()) {
+            if (p.getPerson().getNic() == null || p.getPerson().getNic().equals("")) {
+                UtilityController.addErrorMessage("Please Enter a Nic No");
+                return true;
+            }
         }
 //        if (getCurrent().getPhn().equals("")) {
 //            UtilityController.addErrorMessage("Please Enter PHN number");
@@ -1053,10 +1076,6 @@ FamilyMemberFacade familyMemberFacade;
         return serialVersionUID;
     }
 
-    
-    
-    
-    
     @FacesConverter("patientConverter")
     public static class PatientConverter implements Converter {
 

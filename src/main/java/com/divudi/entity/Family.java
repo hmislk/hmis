@@ -7,6 +7,7 @@ package com.divudi.entity;
 
 import com.divudi.entity.memberShip.MembershipScheme;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -158,6 +159,9 @@ public class Family implements Serializable {
     }
 
     public List<FamilyMember> getFamilyMembers() {
+        if(familyMembers==null){
+            familyMembers = new ArrayList<>();
+        }
         return familyMembers;
     }
 
