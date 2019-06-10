@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition>
+
+        <p:dialog id="RelationCreateDlg" widgetVar="RelationCreateDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle.CreateRelationTitle}">
+            <h:form id="RelationCreateForm">
+                <h:panelGroup id="display">
+                    <p:panelGrid columns="2" rendered="#{relationController.selected != null}">
+                        <p:outputLabel value="Relation" for="name" />
+                        <p:inputText id="name" value="#{relationController.selected.name}" title="Relation" />
+                        <p:outputLabel value="Comments" for="description" />
+                        <p:inputText id="description" value="#{relationController.selected.description}" 
+                                     title="Comments" />
+                        <p:outputLabel value="Order No" for="orderNo" />
+                        <p:inputText id="orderNo" value="#{relationController.selected.orderNo}" title="Order No." />
+                    </p:panelGrid>
+                    <p:commandButton actionListener="#{relationController.create}" value="Save" update="display,:RelationListForm:datalist" oncomplete="handleSubmit(args,'RelationCreateDialog');"/>
+                    <p:commandButton value="Cancel" onclick="RelationCreateDialog.hide()"/>
+                </h:panelGroup>
+            </h:form>
+        </p:dialog>
+
+    </ui:composition>
+</html>

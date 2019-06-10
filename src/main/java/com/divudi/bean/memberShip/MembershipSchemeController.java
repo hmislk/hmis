@@ -75,7 +75,9 @@ public class MembershipSchemeController implements Serializable {
                 }
             }
         } else {
-            membershipScheme = patient.getPerson().getMembershipScheme();
+            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
+                membershipScheme = patient.getPerson().getMembershipScheme();
+            }
         }
         return membershipScheme;
     }

@@ -119,8 +119,8 @@
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Membership"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
-                                    <p:menuitem ajax="false" action="/memberShip/add_family" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShipAdd')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/memberShip/edit_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShipAdd')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/memberShip/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/memberShip/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MembershipReports')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/memberShip/discounts" value="Discount Management" rendered="#{webUserController.hasPrivilege('MembershipDiscountManagement')}" ></p:menuitem>
                                     <p:menuitem ajax="false" action="/memberShip/administration" value="Membership Administration" rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>

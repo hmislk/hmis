@@ -778,7 +778,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private boolean checkUsersWithoutDepartment() {
         String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name=:un)";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findBySQL(temSQL, m);

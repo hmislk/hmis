@@ -36,6 +36,7 @@ public class Family implements Serializable {
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<FamilyMember> familyMembers;
     private Long membershipCardNo;
+    private String phoneNo;
     @ManyToOne
     private MembershipScheme membershipScheme;
     @Lob
@@ -191,6 +192,14 @@ public class Family implements Serializable {
 
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
     }
 
     

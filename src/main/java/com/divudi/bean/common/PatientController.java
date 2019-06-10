@@ -14,6 +14,7 @@ import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
+import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.FamilyFacade;
@@ -103,9 +104,11 @@ public class PatientController implements Serializable {
     private Person familyMember;
     private List<Person> familyMembers;
     Family currentFamily;
+    private List<Family> families;
     FamilyMember currentFamilyMember;
     Patient addingPatientToFamily;
     FamilyMember removingFamilyMember;
+    Relation currentRelation;
 
     private List<Patient> items = null;
 
@@ -114,12 +117,42 @@ public class PatientController implements Serializable {
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
+    
+    private String searchText;
 
     public String toAddAFamily() {
         currentFamily = new Family();
         return "/memberShip/add_family";
     }
 
+    
+    public String searchFamily(){
+        families = null;
+        String j = "Select f from Family f where f.retired=false and f.phoneNo = :pn or f.membershipCardNo = :mcn";
+        Map m = new HashMap();
+        Long mcn;
+        try{
+            mcn = Long.parseLong(searchText);
+        }catch(Exception e){
+            mcn =0L;
+        }
+        m.put("pn", searchText);
+        m.put("mcn", mcn);
+        List<Family> fs = getFamilyFacade().findBySQL(j, m);
+        if(fs==null){
+            JsfUtil.addErrorMessage("No matches");
+            return "";
+        }else if(fs.size()==1){
+            currentFamily = fs.get(0);
+            searchText = "";
+            return "/memberShip/add_family";
+        }else{
+            families = fs;
+            searchText = "";
+            return "/memberShip/search_family";
+        }
+    }
+    
     public void saveFamily() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected to Save or Update");
@@ -138,7 +171,28 @@ public class PatientController implements Serializable {
 
     }
 
+    public String saveAndClearForNewFamily() {
+        saveFamily();
+        currentFamily = new Family();
+        return toFamily();
+    }
+
+    public String toAddNewFamily() {
+        currentFamily = new Family();
+        return toFamily();
+    }
+
+    public String toFamily() {
+        return "/memberShip/add_family";
+    }
+
+    public String toNewPatient() {
+        prepareAdd();
+        return "/memberShip/patient";
+    }
+
     public void addNewMemberToFamily() {
+        saveFamily();
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected.");
             return;
@@ -147,20 +201,38 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No Member is selected to add to family.");
             return;
         }
-        saveSelected();
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);
         tfm.setFamily(currentFamily);
         tfm.setCreatedAt(new Date());
         tfm.setCreater(sessionController.getLoggedUser());
+        tfm.setRelationToChh(currentRelation);
         getFamilyMemberFacade().create(tfm);
-        currentFamily.getFamilyMembers().add(currentFamilyMember);
+        currentFamily.getFamilyMembers().add(tfm);
+        saveFamily();
         JsfUtil.addSuccessMessage("Family Member Added to Family");
-        current = new Patient();
-        Person p = new Person();
-        WebUser u = new WebUser();
-        
+        current = null;
+        currentRelation = null;
     }
+
+    public void removeFamilyMember() {
+        if (currentFamily == null) {
+            JsfUtil.addErrorMessage("No Family Selected.");
+            return;
+        }
+        if (removingFamilyMember == null) {
+            JsfUtil.addErrorMessage("No Member is selected to remove.");
+            return;
+        }
+        try {
+            currentFamily.getFamilyMembers().remove(removingFamilyMember);
+            JsfUtil.addSuccessMessage("Removed");
+        } catch (Error e) {
+            JsfUtil.addErrorMessage("Error in removing. " + e.getMessage());
+        }
+    }
+    
+    
 
     public void removeFamily() {
         if (currentFamily == null) {
@@ -486,70 +558,69 @@ public class PatientController implements Serializable {
         return str;
     }
 
-    
     public void saveSelected() {
         saveSelected(current);
     }
-    
+
     public void saveSelected(Patient p) {
-        if (errorCheck()) {
+        if (errorCheck(current)) {
             return;
         }
-        if (getCurrent().getPerson().getMembershipScheme() != null) {
-            if (checkCodeNull()) {
+        if (p.getPerson().getMembershipScheme() != null) {
+            if (checkCodeNull(p)) {
                 return;
             }
         }
-//        if (getCurrent() == null) {
+//        if (p == null) {
 //            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
 //            return;
 //        }
-//        if (getCurrent().getPerson() == null) {
+//        if (p.getPerson() == null) {
 //            UtilityController.addErrorMessage("No Person. Not Saved");
 //            return;
 //        }
-//        if (getCurrent().getPerson().getName().trim().equals("")) {
+//        if (p.getPerson().getName().trim().equals("")) {
 //            UtilityController.addErrorMessage("Please enter a name");
 //            return;
 //        }
-//        if (getCurrent().getPhn().equals("")) {
+//        if (p.getPhn().equals("")) {
 //            UtilityController.addErrorMessage("Please Enter PHN number");
 //            return;
 //        }
-        if (getCurrent().getPerson().getId() == null) {
-            getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
-            getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(getCurrent().getPerson());
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            p.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(p.getPerson());
         } else {
-            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
-            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
-            getPersonFacade().edit(getCurrent().getPerson());
+            p.getPerson().setEditedAt(Calendar.getInstance().getTime());
+            p.getPerson().setEditer(getSessionController().getLoggedUser());
+            getPersonFacade().edit(p.getPerson());
         }
-        if (getCurrent().getId() == null) {
-            System.out.println("********getCurrent().getCode() = " + getCurrent().getCode());
-            if (getCurrent().getPerson().getMembershipScheme() == null) {
-//                getCurrent().setCode(null);
+        if (p.getId() == null) {
+            System.out.println("********p.getCode() = " + p.getCode());
+            if (p.getPerson().getMembershipScheme() == null) {
+//                p.setCode(null);
 //                return;
             } else {
-                if (getCurrent().getPerson().getMembershipScheme().getCode() == null || getCurrent().getPerson().getMembershipScheme().getCode().equals("")) {
-//                    getCurrent().setCode(null);
+                if (p.getPerson().getMembershipScheme().getCode() == null || p.getPerson().getMembershipScheme().getCode().equals("")) {
+//                    p.setCode(null);
                 } else {
-                    getCurrent().setCode(getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
+                    p.setCode(getCountPatientCode(p.getPerson().getMembershipScheme().getCode()));
                 }
             }
-            getCurrent().setCreatedAt(new Date());
-            getCurrent().setCreater(getSessionController().getLoggedUser());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
-            if (getCurrent().getPerson().getMembershipScheme() != null) {
-                if (checkCodeNull()) {
+            if (p.getPerson().getMembershipScheme() != null) {
+                if (checkCodeNull(p)) {
                     return;
                 }
             }
-            getCurrent().setEditedAt(Calendar.getInstance().getTime());
-            getCurrent().setEditer(getSessionController().getLoggedUser());
-            getFacade().edit(getCurrent());
+            p.setEditedAt(Calendar.getInstance().getTime());
+            p.setEditer(getSessionController().getLoggedUser());
+            getFacade().edit(p);
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
         getPersonFacade().flush();
@@ -848,13 +919,13 @@ public class PatientController implements Serializable {
         return false;
     }
 
-    private boolean checkCodeNull() {
+    private boolean checkCodeNull(Patient pt) {
         Patient p = null;
-        if (getCurrent().getId() != null) {
-            p = getEjbFacade().find(getCurrent().getId());
+        if (pt.getId() != null) {
+            p = getEjbFacade().find(pt.getId());
         }
         if (p != null) {
-            if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+            if (pt.getCode() == null || pt.getCode().equals("")) {
                 JsfUtil.addErrorMessage("Please Enter a Code");
                 return true;
             } else {
@@ -866,12 +937,12 @@ public class PatientController implements Serializable {
                         + " and p!=:p "
                         + " and upper(p.code)=:q "
                         + " order by p.code desc ";
-                m.put("q", getCurrent().getCode().toUpperCase());
-                m.put("p", getCurrent());
+                m.put("q", pt.getCode().toUpperCase());
+                m.put("p", pt);
 
                 p = getEjbFacade().findFirstBySQL(sql, m);
                 if (p != null) {
-                    JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(getCurrent().getPerson().getMembershipScheme().getCode()));
+                    JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(pt.getPerson().getMembershipScheme().getCode()));
                     return true;
                 } else {
                     return false;
@@ -970,6 +1041,22 @@ public class PatientController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
+    }
+
+    public List<Family> getFamilies() {
+        return families;
+    }
+
+    public void setFamilies(List<Family> families) {
+        this.families = families;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
     }
 
     /**
@@ -1075,6 +1162,49 @@ public class PatientController implements Serializable {
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
+
+    public Family getCurrentFamily() {
+        return currentFamily;
+    }
+
+    public void setCurrentFamily(Family currentFamily) {
+        this.currentFamily = currentFamily;
+    }
+
+    public FamilyMember getCurrentFamilyMember() {
+        return currentFamilyMember;
+    }
+
+    public void setCurrentFamilyMember(FamilyMember currentFamilyMember) {
+        this.currentFamilyMember = currentFamilyMember;
+    }
+
+    public Patient getAddingPatientToFamily() {
+        return addingPatientToFamily;
+    }
+
+    public void setAddingPatientToFamily(Patient addingPatientToFamily) {
+        this.addingPatientToFamily = addingPatientToFamily;
+    }
+
+    public FamilyMember getRemovingFamilyMember() {
+        return removingFamilyMember;
+    }
+
+    public void setRemovingFamilyMember(FamilyMember removingFamilyMember) {
+        this.removingFamilyMember = removingFamilyMember;
+    }
+
+    public Relation getCurrentRelation() {
+        return currentRelation;
+    }
+
+    public void setCurrentRelation(Relation currentRelation) {
+        this.currentRelation = currentRelation;
+    }
+    
+    
+    
 
     @FacesConverter("patientConverter")
     public static class PatientConverter implements Converter {
