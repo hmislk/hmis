@@ -166,6 +166,7 @@ public class PatientController implements Serializable {
         } else {
             currentFamily.setEditedAt(new Date());
             currentFamily.setEditer(getSessionController().getLoggedUser());
+            getFamilyFacade().edit(currentFamily);
             JsfUtil.addSuccessMessage("Family Updated");
         }
 
@@ -200,6 +201,10 @@ public class PatientController implements Serializable {
         if (current == null) {
             JsfUtil.addErrorMessage("No Member is selected to add to family.");
             return;
+        }
+        if(current.getPerson().getMembershipScheme()==null){
+            current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
+            getPersonFacade().edit(current.getPerson());
         }
         FamilyMember tfm = new FamilyMember();
         tfm.setPatient(current);

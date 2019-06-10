@@ -20,16 +20,17 @@
                     <h:form  >
                         <p:growl />
                         <p:panel header="Search and Edit Families" >
-                            <h:form>
+                            
                                 <h:panelGrid columns="3" >
                                     <p:outputLabel value="Membership Card No / Phone No of CHH" ></p:outputLabel>
-                                    <p:inputText value="#{patientController.searchText}" ></p:inputText>
+                                    <p:inputText value="#{patientController.searchText}" autocomplete="off"></p:inputText>
                                     <p:commandButton ajax="false" action="#{patientController.searchFamily()}" value="Search" >
                                     </p:commandButton>
                                 </h:panelGrid>
-                            </h:form>
+                            
+                            
                         </p:panel>
-                        <h:form>
+                        
 
                             <p:dataTable value="#{patientController.families}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                 <p:column headerText="Membership No" >
@@ -45,7 +46,7 @@
                                 </p:column>
                             </p:dataTable>
 
-                        </h:form>
+                        
 
                     </h:form>
                 </h:panelGroup>

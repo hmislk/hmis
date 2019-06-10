@@ -1718,6 +1718,49 @@ public class BillController implements Serializable {
         patientSearchTab = 0;
     }
 
+    
+    
+    
+    private void clearBillValuesForMember() {
+        setNewPatient(null);
+        setReferredBy(null);
+        setReferredByInstitution(null);
+        setReferralId(null);
+        setSessionDate(null);
+        setCreditCompany(null);
+        setCollectingCentre(null);
+        setYearMonthDay(null);
+        setBills(null);
+        setPaymentScheme(null);
+        paymentMethod = PaymentMethod.Cash;
+        paymentMethodData = null;
+        currentBillItem = null;
+        setLstBillComponents(null);
+        setLstBillEntries(null);
+        setLstBillFees(null);
+        setStaff(null);
+        setToStaff(null);
+        setComment(null);
+        lstBillEntries = new ArrayList<>();
+        setForeigner(false);
+        setSessionDate(Calendar.getInstance().getTime());
+        calTotals();
+
+        setCashPaid(0.0);
+        setDiscount(0.0);
+        setCashBalance(0.0);
+
+        setStrTenderedValue("");
+
+        patientTabId = "tabSearchPt";
+
+        fromOpdEncounter = false;
+        opdEncounterComments = "";
+        patientSearchTab = 1;
+    }
+
+    
+    
     private void recreateBillItems() {
         //Only remove Total and BillComponenbts,Fee and Sessions. NOT bill Entries
         lstBillComponents = null;
@@ -1935,6 +1978,23 @@ public class BillController implements Serializable {
         collectingCentreBillController.setCollectingCentre(null);
     }
 
+    
+    
+    public void prepareNewBillForMember() {
+        clearBillItemValues();
+        clearBillValuesForMember();
+        setPrintPreview(true);
+        printPreview = false;
+        paymentMethodData = null;
+        paymentScheme = null;
+        paymentMethod = PaymentMethod.Cash;
+        collectingCentreBillController.setCollectingCentre(null);
+    }
+
+    
+    
+    
+    
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
