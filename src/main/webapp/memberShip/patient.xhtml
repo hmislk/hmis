@@ -20,79 +20,26 @@
                          style="height: 600px;">
                     <h:panelGrid columns="2" >
 
-                        <h:panelGroup>
-
-                            <h:form>
-
-                                <p:panel id="panelSearch" header="Search Patients" >
-                                   
-
-                                    <h:panelGrid columns="1" >
-                                        <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
-                                                                 itemLabel="Serch Only Registed Patient" >
-                                            <f:ajax execute="@this" render="acPt" />
-                                        </p:selectBooleanCheckbox>
-                                        <h:outputLabel value="Search by Name/Code/Phone/NIC/PHN" />
-                                        <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                        value="#{patientController.current}" minQueryLength="4"
-                                                        completeMethod="#{patientController.completePatientByNameOrCode}" 
-                                                        var="apt" itemLabel="#{apt.person.name}" 
-                                                        itemValue="#{apt}" size="30"  style="width: 400px;"
-                                                        >
-                                            <p:column headerText="Name">
-                                                <h:outputLabel value="#{apt.person.nameWithTitle}" />
-                                            </p:column>
-
-                                            <p:column headerText="Age">
-                                                <h:outputLabel value="#{apt.age}" />
-                                            </p:column>
-                                            <p:column headerText="NIC">
-                                                <h:outputLabel value="#{apt.person.nic}"/>
-                                            </p:column>
-                                            <p:column headerText="Code">
-                                                <h:outputLabel value="#{apt.code}" />
-                                            </p:column>
-                                            <p:column headerText="PHN">
-                                                <h:outputLabel value="#{apt.phn}"/>
-                                            </p:column>
-                                            <p:column headerText="Sex">
-                                                <h:outputLabel value="#{apt.person.sex}" />
-                                            </p:column>
-                                            <p:column headerText="Address">
-                                                <h:outputLabel value="#{apt.person.address}" />
-                                            </p:column>
-                                            <p:column headerText="Date of Birth">
-                                                <h:outputLabel value="#{apt.person.dob}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
-                                                </h:outputLabel>
-                                            </p:column>
-                                        </p:autoComplete>
-
-                                        <p:commandButton ajax="false" value="View Patient Details" action="#{patientController.patientSelected}" ></p:commandButton>
-
-                                    </h:panelGrid>
-
-                                </p:panel>
-
-
-                            </h:form>
-
-
-
-                        </h:panelGroup>
-
                         <h:form>
 
-                            <p:panel id="panelDetails"   >
-                                <f:facet name="header" >
-                                    <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
-                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
-                                    <p:commandButton  process="panelDetails" ajax="false"
+                            <p:panel id="panelDetails" header="Details"  >
+                                <p:panelGrid columns="3" >
+                                    <p:commandButton  ajax="false"
                                                       value="Save" 
                                                       action="#{patientController.saveSelected()}"></p:commandButton>
 
-                                </f:facet>
+                                    <p:commandButton  
+                                        ajax="false"
+                                        value="To Add to Family" 
+                                        action="#{patientController.saveSelected()}"></p:commandButton>
 
+                                    <p:commandButton   ajax="false"
+                                                      value="Clear For New Aptient" 
+                                                      
+                                                      action="#{patientController.prepareAddReg()}"></p:commandButton>
+
+
+                                </p:panelGrid>
 
                                 <p:tabView  style="width: 600px!important;">
 
@@ -106,13 +53,7 @@
                                                     <f:selectItems value="#{membershipSchemeController.items}" var="t" itemLabel="#{t.name}" itemValue="#{t}"/>
                                                     <f:ajax event="change" execute="@this" render="txtCode" listener="#{patientController.membershipChangeListner}" />
                                                 </p:selectOneMenu>
-                                                
-                                                <h:outputLabel value="Membership From"/>
-                                                <p:calendar value="#{patientController.current.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
-                                                
-                                                <h:outputLabel value="Membership To"/>
-                                                <p:calendar value="#{patientController.current.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
-                                                
+
                                                 
                                                 <h:outputLabel value="Title"/>
                                                 <p:selectOneMenu  rendered="#{patientController.current.person ne null}" id="cmbTitle" value="#{patientController.current.person.title}" style="width: 290px;" >

@@ -566,6 +566,12 @@ public class PatientController implements Serializable {
     public void saveSelected() {
         saveSelected(current);
     }
+    
+    
+    public String saveSelectedAndToFamily() {
+        saveSelected(current);
+        return "/memberShip/add_family";
+    }
 
     public void saveSelected(Patient p) {
         if (errorCheck(current)) {
