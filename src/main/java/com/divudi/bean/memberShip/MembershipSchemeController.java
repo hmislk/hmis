@@ -51,28 +51,34 @@ public class MembershipSchemeController implements Serializable {
     String selectText = "";
     Institution lastInstitution;
 
-    public MembershipScheme fetchPatientMembershipScheme(Patient patient) {
+    public MembershipScheme fetchPatientMembershipScheme(Patient patient, boolean hasExpiary) {
+
         MembershipScheme membershipScheme = null;
-        if (patient != null
-                && patient.getPerson() != null) {
+        if (hasExpiary) {
+            if (patient != null
+                    && patient.getPerson() != null) {
 
-            Date fromDate = patient.getFromDate();
-            Date toDate = patient.getToDate();
+                Date fromDate = patient.getFromDate();
+                Date toDate = patient.getToDate();
 
-            if (fromDate != null && toDate != null) {
-                Calendar fCalendar = Calendar.getInstance();
-                fCalendar.setTime(fromDate);
-                Calendar tCalendar = Calendar.getInstance();
-                tCalendar.setTime(toDate);
-                Calendar nCalendar = Calendar.getInstance();
+                if (fromDate != null && toDate != null) {
+                    Calendar fCalendar = Calendar.getInstance();
+                    fCalendar.setTime(fromDate);
+                    Calendar tCalendar = Calendar.getInstance();
+                    tCalendar.setTime(toDate);
+                    Calendar nCalendar = Calendar.getInstance();
 
-                if (((fromDate.before(new Date()) && toDate.after(new Date())))
-                        || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
-                    membershipScheme = patient.getPerson().getMembershipScheme();
+                    if (((fromDate.before(new Date()) && toDate.after(new Date())))
+                            || (fCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE) || tCalendar.get(Calendar.DATE) == nCalendar.get(Calendar.DATE))) {
+                        membershipScheme = patient.getPerson().getMembershipScheme();
+                    }
                 }
             }
+        } else {
+            if (patient !=null && patient.getPerson()!=null && patient.getPerson().getMembershipScheme() != null) {
+                membershipScheme = patient.getPerson().getMembershipScheme();
+            }
         }
-
         return membershipScheme;
     }
 
@@ -114,13 +120,13 @@ public class MembershipSchemeController implements Serializable {
 
     public void saveSelected() {
         getCurrent().setInstitution(getSessionController().getInstitution());
-        if (getCurrent().getCode()==null || getCurrent().getCode().equals("")) {
+        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
             JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
-            return ;
+            return;
         }
-        if (getCurrent().getCode().length()>2) {
+        if (getCurrent().getCode().length() > 2) {
             JsfUtil.addErrorMessage("Please Set Code Using 2 Charactors");
-            return ;
+            return;
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);

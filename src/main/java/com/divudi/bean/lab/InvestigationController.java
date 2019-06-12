@@ -119,6 +119,10 @@ public class InvestigationController implements Serializable {
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
+    private List<Investigation> investigationWithSelectedFormat;
+    private Category categoryForFormat;
+    
+    
 
     public String toAddManyIx() {
         current = new Investigation();
@@ -1145,6 +1149,29 @@ public class InvestigationController implements Serializable {
         m.put("ii", ii);
         dynamicLabels = getInvestigationItemValueFlagFacade().findBySQL(sql, m);
         return dynamicLabels;
+    }
+
+    public List<Investigation> getInvestigationWithSelectedFormat() {
+        if(investigationWithSelectedFormat==null){
+            String j = "select i from Investigation i where i.reportFormat=:rf order by i.name";
+            Map m = new HashMap();
+            m.put("rf", categoryForFormat);
+            investigationWithSelectedFormat = getFacade().findBySQL(j, m);
+        }
+        return investigationWithSelectedFormat;
+    }
+
+    public void setInvestigationWithSelectedFormat(List<Investigation> investigationWithSelectedFormat) {
+        this.investigationWithSelectedFormat = investigationWithSelectedFormat;
+    }
+
+    public Category getCategoryForFormat() {
+        return categoryForFormat;
+    }
+
+    public void setCategoryForFormat(Category categoryForFormat) {
+        this.categoryForFormat = categoryForFormat;
+        investigationWithSelectedFormat = null;
     }
 
     public class InvestigationWithInvestigationItems {

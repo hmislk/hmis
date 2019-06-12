@@ -204,9 +204,40 @@
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
+                
+                
+                
+                <p:tab title="Patient Registration" >
+                    <p:panel header="Patient Registration" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            
+                            <h:outputLabel value="Need Phone number for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton valueChangeListener="#{sessionController.currentPreference.needPhoneNumberForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            
+                            <h:outputLabel value="Need NIC for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton valueChangeListener="#{sessionController.currentPreference.needNicForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            
+                            
+                            <h:outputLabel value="Need area for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton valueChangeListener="#{sessionController.currentPreference.needAreaForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            
+                            
+                            
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+                
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" >
                         <h:panelGrid columns="2" styleClass="alignTop" >
+                            
+                            <h:outputLabel value="Family Membership"></h:outputLabel>
+                            <p:selectBooleanButton valueChangeListener="#{sessionController.currentPreference.familyMembership}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            
+                            <h:outputLabel value="Membership Expires"></h:outputLabel>
+                            <p:selectBooleanButton valueChangeListener="#{sessionController.currentPreference.membershipExpires}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                            
+                            
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
                                 <f:selectItem itemLabel="Select Institution" />

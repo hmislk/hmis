@@ -1,1 +1,1 @@
-select id,`PHN`,`CREATEDINSTITUTION_ID` from Patient order by id desc limit 10;
+select id,title,name,`CREATEDAT` from Person where name like '%pahandi%' ;

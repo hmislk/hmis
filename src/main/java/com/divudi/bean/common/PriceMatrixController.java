@@ -54,7 +54,7 @@ public class PriceMatrixController implements Serializable {
             category = billItem.getItem().getCategory();
         }
 
-        if (sessionController.getLoggedPreference()!=null && sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (sessionController.getLoggedPreference() != null && sessionController.getLoggedPreference().isPaymentMethodAllowedInInwardMatrix()) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
@@ -216,7 +216,6 @@ public class PriceMatrixController implements Serializable {
 
         InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
-
         if (imsd != null) {
         }
 
@@ -277,7 +276,6 @@ public class PriceMatrixController implements Serializable {
 
         InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
-
         if (imsd != null) {
         }
 
@@ -285,22 +283,31 @@ public class PriceMatrixController implements Serializable {
     }
 
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
+        System.out.println("getOpdMemberDisCount");
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
         System.err.println(paymentMethod);
-        //Get Discount From Category    
-        opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
-
+        //Get Discount From Parent Category    
+        if (opdMemberShipDiscount == null && category != null && category.getParentCategory() != null) {
+            System.out.println("Get Discount From Parent Category");
+            opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category.getParentCategory());
+            System.out.println("1 opdMemberShipDiscount = " + opdMemberShipDiscount);
+        }
         //Get Discount From Parent Category
         if (opdMemberShipDiscount == null && category != null) {
-            opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category.getParentCategory());
-
+            System.out.println("Get Discount From Category");
+            opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
+            System.out.println("2 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
 
         //Get Discount From Department
         if (opdMemberShipDiscount == null) {
+            System.out.println("Get Discount From Department");
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, department);
+            System.out.println("3 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
+
+        System.out.println("4 opdMemberShipDiscount = " + opdMemberShipDiscount);
 
         return opdMemberShipDiscount;
     }
@@ -487,7 +494,7 @@ public class PriceMatrixController implements Serializable {
         return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
     }
-    
+
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql;
         HashMap hm = new HashMap();
