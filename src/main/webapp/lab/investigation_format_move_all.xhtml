@@ -19,8 +19,6 @@
                             <h:outputText value="Investigation" ></h:outputText>
                         </f:facet>
                         <h:panelGrid columns="1" >
-
-
                             <p:panelGrid columns="1">
                                 <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true"
                                                 value="#{investigationItemController.currentInvestigation}" 
@@ -30,10 +28,33 @@
                                     <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')}"/>
                                 </p:autoComplete> 
                                 <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
-                                    <p:ajax event="change" process="@this" update="acPt" />
+                                    <p:ajax event="change" process="@this" update="acPt tbl count" />
                                 </p:selectBooleanCheckbox>
                             </p:panelGrid>
                         </h:panelGrid>
+                        <p:outputLabel id="count" value="#{investigationItemController.selectedItemsToChange.size()}" ></p:outputLabel>
+                        <p:dataTable id="tbl" 
+                                     value="#{investigationItemController.items}" var="ixi" 
+                                     selection="#{investigationItemController.selectedItemsToChange}"
+                                     rowKey="#{ixi.id}"
+
+                                     >
+                            <p:column selectionMode="multiple" >
+
+                            </p:column>
+                            <p:column headerText="Item" sortBy="#{ixi.name}" filterBy="#{ixi.name}" >
+                                <p:outputLabel value="#{ixi.name}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Type"  sortBy="#{ixi.ixItemType}" filterBy="#{ixi.ixItemType}" >
+                                <p:outputLabel value="#{ixi.ixItemType}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Top"  sortBy="#{ixi.riTop}" >
+                                <p:outputLabel value="#{ixi.riTop}" ></p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Left"  sortBy="#{ixi.riLeft}"  >
+                                <p:outputLabel value="#{ixi.riLeft}" ></p:outputLabel>
+                            </p:column>
+                        </p:dataTable>
                     </p:panel>
                     <p:panelGrid columns="2" >
                         <p:outputLabel value="Move Percent" ></p:outputLabel>

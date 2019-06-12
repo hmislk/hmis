@@ -1,3 +1,4 @@
 /build/
 /dist/
 /target/
+/src/main/webapp/WEB-INF/glassfish-resources.xml
