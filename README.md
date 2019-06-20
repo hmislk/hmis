@@ -1,9 +1,11 @@
 An Open-Source Hospital Management System Initiated by Dr M H B Ariyaratne
 
 Title
+
 Open Source Hospital Management Information System
 
 Description
+
 This is a comprehensive Hospital Information Management System that is knowingly used by more than 40 health care institutions. It has several modules that support most of the workflows of a modern hospital. Most of the differences in the requirements of different hospitals can be achieved through customization. The system has given priority to user-friendliness and speed of the system rather than the fancy decoration of the user interfaces loaded with colours and graphics. It has been tested extensively in production since 2015.
 
 The system is mainly designed using Object Oriented Principles. The system design has always followed well tested and recognized data models like dm+d of NHS, UK. The system design is so robust and optimized so that it can easily accommodate new extensions for emerging requirements.
@@ -11,14 +13,19 @@ The system is mainly designed using Object Oriented Principles. The system desig
 Java Enterprise Edition is used to develop the web application and RESTful server. The database management system can be selected on preferences of the implementing team, but MySQL or MariaDB is recommended. The technologies used with JavaEE include JSF, JPA and PrimeFaces. The lab middleware is developed with C#. The standalone applications consume RESTful services are developed using JavaSE.
 
 History
+
 Dr M H B Ariyaratne is a medical doctor who developed an Electronic Medical Record (EMR) System for his general practice in 2004 using Microsoft Visual Basic 6 and MS-Access. Doctors who have seen this EMR requested him to give the system for them to use. AS more doctors used the EMR, their requirements were discussed and incorporated into the system systematically. Some of the doctors who were using the EMR were having clinical laboratories, medical channelling centres and hospitals. Then the system was added new modules to cover new requirements. In 2012, a new JavaEE based system was initiated as an Open Source Initiative hosted in GitHub under the MIT license. The students of Sri Lanka Institute of Advanced Technical Education at Labuduwa, Galle, were allocated during their training for The Higher National Diploma in Information Technology (HNDIT) programme facilitated by Mr Mr.K.M.G.T.R. Waidyarathne, a lecturer from the Department Of Information Technology. Some of the students continued to support the project after their graduation under financial support by Dr M H B Ariyaratne. Commercial support was made available for installations, user training, maintenance, cloud hosting and troubleshooting.  
 
-Installation: The installation is very easy for testing. Clone the project using Netbeans and configure a new database. Running the project will lead to an administer page to add an institution, department and a user. Configuration of hardware, operating system and GlassFish are discussed in detail in The Installation Manual.
+Installation
+
+The installation is very easy for testing. Clone the project using Netbeans and configure a new database. Running the project will lead to an administer page to add an institution, department and a user. Configuration of hardware, operating system and GlassFish are discussed in detail in The Installation Manual.
 
 Usage
+
 The features available to different roles of the users are stated in detail in the User Manual.
 
 Contributing 
+
 Dr M H B Ariyaratne - Initiated the Project, Main System Architect
 
 Mr.K.M.G.T.R. Waidyarathne - Project Management
