@@ -76,9 +76,13 @@
                                     <h:outputLabel value="Code" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
                                     <p:inputText autocomplete="off" required="true" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:inputText>
 
-                                    <p:commandButton id="btnCreateUser" value="Create User" action="#{webUserController.saveNewUser()}" ajax="false" onclick="onSubmitButton();" >
+                                    <p:commandButton id="btnCreateUser" value="Create User" action="#{webUserController.saveNewUser()}" ajax="false" onclick="onSubmitButton();">
                                     </p:commandButton>
-                                    <p:defaultCommand target="btnCreateUser"/>
+                                    <h:form>
+                                        <p:commandButton  value="Back to Manage User" action="#{webUserController.backToAdminManageUsers()}" ajax="false" onclick="onSubmitButton();"></p:commandButton>
+                                    </h:form>
+                                    
+                                    <p:defaultCommand  target="btnCreateUser"/>
                                 </h:panelGrid>
 
                             </p:panel>

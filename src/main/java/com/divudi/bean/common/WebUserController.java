@@ -765,6 +765,10 @@ public class WebUserController implements Serializable {
         listWebUserDashboards();
         return "/admin_manage_dashboards";
     }
+    
+    public String BackToAdminManageUsers(){
+        return "/admin_manage_users";
+    }
 
     public void addWebUserDashboard() {
         if (current == null) {
@@ -822,19 +826,20 @@ public class WebUserController implements Serializable {
         return "/admin_view_user";
     }
 
-    public void changeCurrentUserPassword() {
+    public String changeCurrentUserPassword() {
         if (getCurrent() == null) {
             UtilityController.addErrorMessage("Select a User");
-            return;
+            return "";
         }
         if (!newPassword.equals(newPasswordConfirm)) {
             UtilityController.addErrorMessage("Password and Re-entered password are not maching");
-            return;
+            return "";
         }
 
         current.setWebUserPassword(getSecurityController().hash(newPassword));
         getFacade().edit(current);
         UtilityController.addSuccessMessage("Password changed");
+        return "/admin_manage_users";
     }
 
     public UserPaymentSchemeController getUserPaymentSchemeController() {
