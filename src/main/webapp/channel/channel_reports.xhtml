@@ -12,148 +12,121 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Channel Reports">
-                        <h:panelGrid columns="3" styleClass="alignTop" style="margin: auto;">  
-                            <h:panelGrid columns="1">
-                                <p:panel header="Income Reports" style="width: 400px;margin: auto;"  toggleable="true">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" value="Income With Agent Bookings" action="/channel/income_with_agent_bookings" ajax="false"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
-                                        <p:commandButton styleClass="linkButton" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc" ajax="false" actionListener="#{channelReportController.clearAll}"/>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="Bill Reports" style="width: 400px;margin: auto;"  toggleable="true">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Session" action="/channel/channel_report_bill_session_1"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees" action="/channel/channel_report_by_fee"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Summary(Special)" action="/channel/channel_report_all_booking_special" actionListener="#{channelReportController.clearAll}" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat" style="color: red;"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Card Summery Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
+                        <p:tabView orientation="left">
+                            <p:tab title="Income Reports">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" value="Income With Agent Bookings" action="/channel/income_with_agent_bookings" ajax="false"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Income By FeeType By Sessoin Date" action="/channel/channel_report_by_fee_1"/>
+                                    <p:commandButton styleClass="linkButton" value="Channel Patient Counts(34)" action="/channel/channel_report_patient_count" ajax="false" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" value="Channel Hospital Income" action="/channel/channel_report_patient_count_income" ajax="false" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" value="Channel Hospital Income With Doc Fee" action="/channel/channel_report_patient_count_income_with_doc" ajax="false" actionListener="#{channelReportController.clearAll}"/>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Bill Reports">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Session" action="/channel/channel_report_bill_session_1"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees" action="/channel/channel_report_by_fee"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Fees with Fee Types" action="/channel/report_cashier_summery_with_fee-type"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Summary()" action="/channel/channel_report_all_booking" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Summary(Special)" action="/channel/channel_report_all_booking_special" actionListener="#{channelReportController.clearAll}" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat" style="color: red;"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Card Summery Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
 
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="Cashier Reports" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summary" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Report" action="/reportCashier/report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary " action="/reportCashier/report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="Agent Reports" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent History" action="/channel/channel_report_agent_history"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent History(Credit Limit Update)" action="/channel/channel_report_agent_history_2"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Statement(27)" action="/channel/channel_report_agent_history_1"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Balance(32)" action="/channel/channel_report_agent_balance"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Deposit(36)" action="/channel/channel_report_agent_payment_bill"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Wise Channel Appoinment Total And Count(29 &amp; 30)" action="/channel/channel_report_agent_wise_channel_total"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Wise Channel Appoinment Count Summery" action="/channel/channel_report_agent_wise_channel_total_summery"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Channel Books Report()"  action="/channel/channel_report_agent_referece_book" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Channel Bills For Book"  action="/channel/channel_report_agent_referece_book_1" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Agent Details()" action="/channel/channel_report_agent_details"/>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
+                                </h:panelGrid>
 
-                            <h:panelGrid columns="1">
-                                <p:panel header="Count" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Count Report By Doctor(24)" action="/channel/channel_report_by_consultant"/>                                        
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="Consultant Reports" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report()" action="/channel/channel_report_doctor_leave"/>  
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)(New)" action="/channel/channel_report_consultant_month_count_1"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)" action="/channel/channel_report_specility_month_count"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Patient Count()" action="/channel/channel_report_staff_wise_patient_count"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="BTT" action="/channel/channel_doctor_view_today_all"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1" actionListener="#{channelReportController.clearWithDefultValue}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment count" action="/channel/channel_report_speciality_wise" />
+                            </p:tab>
+                            <p:tab title="Cashier Reports">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summary" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Report" action="/reportCashier/report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary " action="/reportCashier/report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Agent Reports"> 
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent History" action="/channel/channel_report_agent_history"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent History(Credit Limit Update)" action="/channel/channel_report_agent_history_2"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Statement(27)" action="/channel/channel_report_agent_history_1"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Balance(32)" action="/channel/channel_report_agent_balance"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Deposit(36)" action="/channel/channel_report_agent_payment_bill"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Wise Channel Appoinment Total And Count(29 &amp; 30)" action="/channel/channel_report_agent_wise_channel_total"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Wise Channel Appoinment Count Summery" action="/channel/channel_report_agent_wise_channel_total_summery"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Channel Books Report()"  action="/channel/channel_report_agent_referece_book" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Channel Bills For Book"  action="/channel/channel_report_agent_referece_book_1" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Agent Details()" action="/channel/channel_report_agent_details"/>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Count">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Count Report By Doctor(24)" action="/channel/channel_report_by_consultant"/>                                        
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Consultant Reports">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Leave Report()" action="/channel/channel_report_doctor_leave"/>  
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)" action="/channel/channel_report_consultant_month_count"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Channel Appoinment Total And Count(12)(New)" action="/channel/channel_report_consultant_month_count_1"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment Total And Count(10 &amp; 11)" action="/channel/channel_report_specility_month_count"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Channel &amp; Scan Count(41)" action="/channel/channel_report_scan_channel_count"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Wise Patient Count()" action="/channel/channel_report_staff_wise_patient_count"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="BTT" action="/channel/channel_doctor_view_today_all"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="BTT By Percentage" action="/channel/channel_doctor_view_today_all_1" actionListener="#{channelReportController.clearWithDefultValue}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Specility Wise Channel Appoinment count" action="/channel/channel_report_speciality_wise" />
 
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Payment Report">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report" action="/channel/channel_payment_report"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report By Session" action="/channel/channel_payment_report_by_session"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report By Session Date" action="/channel/channel_payment_report_by_date"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Un-Paid Report" action="/channel/channel_unpaid_report"/>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Absent Report">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Patient Absent Report" action="/channel/channel_report_absent_patients"/>                                        
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Session Report">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" 
+                                                     value="Entered Shedule Report" action="/channel/channel_report_channel_shedule" 
+                                                     actionListener="#{sheduleController.makeNull()}" />                                        
+                                    <p:commandButton styleClass="linkButton" ajax="false" 
+                                                     value="Entered Shedule Report Summery" action="/channel/channel_report_channel_shedule_sumery" 
+                                                     actionListener="#{sheduleController.makeNull()}" />                                        
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="New Channel Reports">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery" action="/channel/channel_report_cashier_summery_date"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Today All Cashier Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Channel Count By Users" action="/channel/report_cashier_vise_count" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Channel Count By Users(By Appoinment Date)" action="/channel/report_cashier_vise_count_1" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Monthly All Vat report" action="/channel/channel_report_monthly_all_vat" />
+                                    <!--<p:commandButton styleClass="linkButton" ajax="false" value="Dashboard" action="/channel/channel_report_dailyChannelAndScanCount_barChart" />-->
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Cancelled and Refund Bill report" action="/channel/daily_refund_bill_report" />
 
-                            <h:panelGrid columns="1">
-                                <p:panel header="Payment Report" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report" action="/channel/channel_payment_report"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report By Session" action="/channel/channel_payment_report_by_session"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Report By Session Date" action="/channel/channel_payment_report_by_date"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Un-Paid Report" action="/channel/channel_unpaid_report"/>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Channel Reports (Staff)">
+                                <h:panelGrid columns="1">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportController.clearAll}"/>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Summery Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportController.clearAll}"/>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
 
-
-                            <h:panelGrid columns="1">
-                                <p:panel header="Absent Report" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Patient Absent Report" action="/channel/channel_report_absent_patients"/>                                        
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-
-                            <h:panelGrid columns="1">
-                                <p:panel header="Session Report" style="width: 400px;margin: auto;"  toggleable="true">  
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" 
-                                                         value="Entered Shedule Report" action="/channel/channel_report_channel_shedule" 
-                                                         actionListener="#{sheduleController.makeNull()}" />                                        
-                                        <p:commandButton styleClass="linkButton" ajax="false" 
-                                                         value="Entered Shedule Report Summery" action="/channel/channel_report_channel_shedule_sumery" 
-                                                         actionListener="#{sheduleController.makeNull()}" />                                        
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="New Channel Reports" style="width: 400px;margin: auto;"  toggleable="true">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All My Booking Detail List" action="/channel/channel_report_by_bill_class_by_user" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Agent Booking Detail List" action="/channel/channel_report_agent_channels" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery" action="/channel/channel_report_cashier_summery_date"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Today All My Booking Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Today All Cashier Summery(Created Date)" action="/channel/channel_report_cashier_summery_date_created_summery"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Bill Detail By Payment Methord" action="/channel/channel_report_by_bill_class_by_user_by_payment_methord" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Channel Count By Users" action="/channel/report_cashier_vise_count" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Channel Count By Users(By Appoinment Date)" action="/channel/report_cashier_vise_count_1" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Monthly All Vat report" action="/channel/channel_report_monthly_all_vat" />
-                                        <!--<p:commandButton styleClass="linkButton" ajax="false" value="Dashboard" action="/channel/channel_report_dailyChannelAndScanCount_barChart" />-->
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Cancelled and Refund Bill report" action="/channel/daily_refund_bill_report" />
-
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-                            <h:panelGrid columns="1">
-                                <p:panel header="Channel Reports (Staff)" style="width: 400px;margin: auto;"  toggleable="true">
-                                    <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Detail Report" action="/channel/channel_report_staff_booking_detail" actionListener="#{channelReportController.clearAll}"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Chanel Staff Booking Summery Report" action="/channel/channel_report_staff_booking_summery" actionListener="#{channelReportController.clearAll}"/>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </h:panelGrid>
-
-
-                        </h:panelGrid>
                     </p:panel>
 
                 </h:form>
