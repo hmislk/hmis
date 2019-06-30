@@ -672,13 +672,17 @@ public class BhtSummeryController implements Serializable {
         List<BillFee> list = getInwardBean().getServiceBillFeesByInwardChargeType(inwardChargeType, getPatientEncounter());
 
         for (BillFee bf : list) {
-            double value = bf.getFeeGrossValue() + bf.getFeeMargin();
-            System.err.println("1 Fee Gross Value " + bf.getFeeGrossValue());
-            System.err.println("1 Fee Net Value " + bf.getFeeValue());
-            System.err.println("2 Fee Margin " + bf.getFeeMargin());
-            bf.setFeeDiscount(0.0);
-            bf.setFeeValue(value);
-            getBillFeeFacade().edit(bf);
+            if (bf.getFeeGrossValue() == null ) {
+                double value = bf.getFeeGrossValue() + bf.getFeeMargin();
+                bf.setFeeDiscount(0.0);
+                bf.setFeeValue(value);
+                getBillFeeFacade().edit(bf);
+            }else{
+                double value = 0.0 + bf.getFeeMargin();
+                bf.setFeeDiscount(0.0);
+                bf.setFeeValue(value);
+                getBillFeeFacade().edit(bf);
+            }
         }
 
         List<BillItem> listBillItems = getInwardBean().getServiceBillItemByInwardChargeType(inwardChargeType, getPatientEncounter());
