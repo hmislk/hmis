@@ -11,6 +11,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
@@ -82,6 +83,8 @@ public class InvestigationController implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     PatientReportController patientReportController;
+    @Inject
+    ItemForItemController itemForItemController;
     /**
      * EJBs
      */
@@ -274,6 +277,23 @@ public class InvestigationController implements Serializable {
         }
         ixCalController.setIx((Investigation) current.getReportedAs());
         return "/lab/calculation";
+    }
+    
+    
+    public String toReplaceableIxs() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        itemForItemController.setParentItem(current);
+        return "/lab/replaceable_ix";
     }
 
     public String toEditFees() {
@@ -1497,4 +1517,26 @@ public class InvestigationController implements Serializable {
         this.department = department;
     }
 
+    public InvestigationItemController getInvestigationItemController() {
+        return investigationItemController;
+    }
+
+    public IxCalController getIxCalController() {
+        return ixCalController;
+    }
+
+    public ItemFeeManager getItemFeeManager() {
+        return itemFeeManager;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    
+    
 }
