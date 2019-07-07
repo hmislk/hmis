@@ -58,10 +58,10 @@
                                     <p:column headerText="Relation to CHH">
                                         <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Action" >
-                                        <p:panelGrid columns="7" >
-                                            <p:commandButton ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
-                                                             value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
+                                    <p:column headerText="Billing">
+                                        <p:panelGrid columns="3">
+                                        <p:commandButton ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
+                                                             value="OPD" rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
                                                 <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
                                             </p:commandButton>
                                              <p:commandButton ajax="false" action="/channel/channel_booking" 
@@ -69,6 +69,15 @@
                                                              value="Channelling" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
                                                  <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                                             </p:commandButton>
+                                            <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
+                                                             actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
+                                                             value="Phamacy" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                                <f:setPropertyActionListener value="#{fm.patient}" target="#{pharmacySaleController.searchedPatient}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                        </p:panelGrid> 
+                                    </p:column>
+                                    <p:column headerText="Action" >
+                                        <p:panelGrid columns="2"> 
                                             <p:commandButton ajax="false" value="Edit" action="patient" >
                                                 <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                             </p:commandButton>

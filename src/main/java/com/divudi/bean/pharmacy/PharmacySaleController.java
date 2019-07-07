@@ -199,7 +199,11 @@ public class PharmacySaleController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    public void makeNull() {
+    public void prepareNewPharmacyBillForMembers(){
+        clearNewBillForMembers();
+    }
+    
+    public void clearForNewBill() {
         selectedAlternative = null;
         preBill = null;
         saleBill = null;
@@ -216,6 +220,36 @@ public class PharmacySaleController implements Serializable {
         searchedPatient = null;
         yearMonthDay = null;
         patientTabId = "tabNewPt";
+        strTenderedValue = "";
+        billPreview = false;
+        replaceableStocks = null;
+        itemsWithoutStocks = null;
+        paymentMethodData = null;
+        cashPaid = 0;
+        netTotal = 0;
+        balance = 0;
+        editingQty = null;
+        cashPaidStr = null;
+    }
+    
+    public void clearNewBillForMembers() {
+        selectedAlternative = null;
+        preBill = null;
+        saleBill = null;
+        printBill = null;
+        bill = null;
+        billItem = null;
+        editingBillItem = null;
+        qty = null;
+        stock = null;
+        paymentScheme = null;
+        paymentMethod = null;
+        activeIndex = 0;
+        newPatient = null;
+        searchedPatient = null;
+        yearMonthDay = null;
+        patientTabId = "tabSearchPt";
+        patientSearchTab =1;
         strTenderedValue = "";
         billPreview = false;
         replaceableStocks = null;

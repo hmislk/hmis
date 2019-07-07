@@ -166,7 +166,7 @@ public class ChannelBillController implements Serializable {
         this.newPatient = newPatient;
     }
 
-    public Patient getSearchPatient() {
+   public Patient getSearchPatient() {
         return searchPatient;
     }
 
@@ -1371,7 +1371,7 @@ public class ChannelBillController implements Serializable {
         printingBill = null;
         agentRefNo = "";
         billSession = null;
-        patientTabId = "tabNewPt";
+        patientTabId = "tabSearchPt";
         patientSearchTab = 1;
         billFee = null;
         refundBillFee = null;

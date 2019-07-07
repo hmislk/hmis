@@ -1017,7 +1017,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         setLoggedUser(null);
         setLogged(false);
         setActivated(false);
-        getPharmacySaleController().makeNull();
+        getPharmacySaleController().clearForNewBill();
 
     }
 
