@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.ws.channel;
+package com.divudi.ws.common;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
