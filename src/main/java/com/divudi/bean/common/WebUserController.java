@@ -388,23 +388,23 @@ public class WebUserController implements Serializable {
         return available;
     }
 
-    public void saveNewUser() {
+    public String saveNewUser() {
         // We Deal with a new Web ser only here
         //
 
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to save");
-            return;
+            return "";
         }
 
         if (createOnlyUserForExsistingUser && getStaff() == null) {
             UtilityController.addErrorMessage("Select Staff");
-            return;
+            return "";
         }
 
         if (userNameAvailable(getCurrent().getName())) {
             UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
-            return;
+            return "";
         }
 
         getCurrent().setActivated(true);
@@ -476,9 +476,8 @@ public class WebUserController implements Serializable {
 
         recreateModel();
         prepairAddNewUser();
-        BackToAdminManageUsers();
         selectText = "";
-
+        return BackToAdminManageUsers();
     }
 
     public void onlyAddStaffListner() {
