@@ -400,20 +400,14 @@
                                 </p:panel>
 
                                 <p:panel header="Client Detail"> 
-
-
-
                                     <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacySaleController.patientSearchTab}" >
                                         <p:ajax event="tabChange"  process="@this"
                                                 update=":#{p:component('cmbPs')} :#{p:component('cmbPs2')} :#{p:component('pBillDetails')}"
                                                 listener="#{pharmacySaleController.onTabChange}" />
-
                                         <p:tab id="tabNewPt" title="New Patient"  >
                                             <bil:newPatient controller="#{pharmacySaleController}"/>
                                         </p:tab>
-
                                         <p:tab id="tabSearchPt" title="Search Patient" >
-
                                             <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
                                                                      itemLabel="Serch Only Registed Patient" >
                                                 <f:ajax execute="@this" render="acPt" />
