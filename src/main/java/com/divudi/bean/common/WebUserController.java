@@ -476,6 +476,7 @@ public class WebUserController implements Serializable {
 
         recreateModel();
         prepairAddNewUser();
+        BackToAdminManageUsers();
         selectText = "";
 
     }
