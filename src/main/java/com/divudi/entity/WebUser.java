@@ -48,7 +48,7 @@ public class WebUser implements Serializable {
     @OneToOne
     Person webUserPerson;
     //Main Properties
-    @Column(unique = true, nullable = false)
+//    @Column(unique = true, nullable = false)
     String name;
     String description;
     //Created Properties
