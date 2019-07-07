@@ -1319,12 +1319,17 @@ public class ChannelBillController implements Serializable {
 //            getBillFeeFacade().create(bf);
 //        }
 //    }
-    public void clearAll() {
-        makeNull();
-        makeNullSearchData();
+    public void prepareForNewChannellingBill() {
+        clearForNewBill();
+        clearForNewSearch();
     }
 
-    public void makeNull() {
+    public void prepareForNewChannellingBillForMember() {
+        clearForNewBillForMembership();
+        clearForNewSearch();
+    }
+
+    public void clearForNewBill() {
 //        System.err.println("make null");
         amount = 0.0;
         foriegn = false;
@@ -1355,8 +1360,39 @@ public class ChannelBillController implements Serializable {
         commentR = "";
 
     }
+    
+    
+    public void clearForNewBillForMembership() {
+        amount = 0.0;
+        foriegn = false;
+        billFee = null;
+        refundBillFee = null;
+        newPatient = null;
+        printingBill = null;
+        agentRefNo = "";
+        billSession = null;
+        patientTabId = "tabNewPt";
+        patientSearchTab = 1;
+        billFee = null;
+        refundBillFee = null;
+        billItems = null;
+        paymentMethod = null;
+        institution = null;
+        institutionOnCallAgency = null;
+        refundableTotal = 0;
+        toStaff = null;
+        paymentScheme = null;
+        area = null;
+        doctorSpecialityController.setSelectText("");
+        bookingController.setSelectTextSpeciality("");
+        bookingController.setSelectTextConsultant("");
+        bookingController.setSelectTextSession("");
+        comment = "";
+        commentR = "";
 
-    public void makeNullSearchData() {
+    }
+
+    public void clearForNewSearch() {
         channelSearchController.setFromDate(null);
         channelSearchController.setToDate(null);
         channelSearchController.setTxtSearch("");
@@ -1789,7 +1825,6 @@ public class ChannelBillController implements Serializable {
 
         List<BillSession> lgValue = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
 
-
         if (lgValue.size() > 1) {
             return true;
         } else {
@@ -2076,7 +2111,6 @@ public class ChannelBillController implements Serializable {
 
         getBillBeanController().setPaymentMethodData(bill, paymentMethod, paymentMethodData);
 
-
         if (getPatientTabId().equals("tabNewPt")) {
             bill.setPatient(newPatient);
         } else {
@@ -2255,7 +2289,6 @@ public class ChannelBillController implements Serializable {
             insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
 
-
         return insId;
     }
 
@@ -2294,7 +2327,6 @@ public class ChannelBillController implements Serializable {
             billClassType = BillClassType.RefundBill;
             deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
-
 
         return deptId;
     }

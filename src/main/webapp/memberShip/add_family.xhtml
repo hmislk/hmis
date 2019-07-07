@@ -59,10 +59,15 @@
                                         <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action" >
-                                        <p:panelGrid columns="6" >
+                                        <p:panelGrid columns="7" >
                                             <p:commandButton ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
                                                              value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
                                                 <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
+                                             <p:commandButton ajax="false" action="/channel/channel_booking" 
+                                                              actionListener="#{channelBillController.prepareForNewChannellingBillForMember()}" 
+                                                             value="Channelling" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                                 <f:setPropertyActionListener value="#{fm.patient}" target="#{channelBillController.searchPatient}" ></f:setPropertyActionListener>
                                             </p:commandButton>
                                             <p:commandButton ajax="false" value="Edit" action="patient" >
                                                 <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>

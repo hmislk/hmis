@@ -821,7 +821,7 @@ public class BookingPastController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelCancelController().makeNull();
+        getChannelCancelController().clearForNewBill();
         getChannelCancelController().setBillSession(selectedBillSession);
     }
 

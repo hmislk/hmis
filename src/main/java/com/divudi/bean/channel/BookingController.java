@@ -330,7 +330,7 @@ public class BookingController implements Serializable {
         billSessions = null;
         sessionStartingDate = null;
         consultants = null;
-        channelBillController.makeNullSearchData();
+        channelBillController.clearForNewSearch();
     }
 
     public List<Staff> completeStaff(String query) {
@@ -1539,7 +1539,7 @@ public class BookingController implements Serializable {
         selectedServiceSession = null;
         billSessions = null;
         selectedBillSession = null;
-        getChannelCancelController().makeNull();
+        getChannelCancelController().clearForNewBill();
         getChannelBillController().setBillSession(null);
     }
 
@@ -1663,7 +1663,7 @@ public class BookingController implements Serializable {
 
     public void setSelectedBillSession(BillSession selectedBillSession) {
         this.selectedBillSession = selectedBillSession;
-        getChannelBillController().makeNull();
+        getChannelBillController().clearForNewBill();
         getChannelBillController().setBillSession(selectedBillSession);
     }
 
