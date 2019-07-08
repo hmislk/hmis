@@ -116,7 +116,6 @@
                                                 <p:inputText disabled="true"  value="Thursday" rendered="#{sheduleController.current.sessionWeekday eq 5 and sheduleController.current.sessionWeekday ne null}"/>
                                                 <p:inputText disabled="true"  value="Friday" rendered="#{sheduleController.current.sessionWeekday eq 6 and sheduleController.current.sessionWeekday ne null}"/>
                                                 <p:inputText disabled="true"  value="Sutarday" rendered="#{sheduleController.current.sessionWeekday eq 7 and sheduleController.current.sessionWeekday ne null}"/>
-
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sheduleController.current.sessionDate ne null}" >
                                                 <p:inputText disabled="true"  value="#{sheduleController.current.sessionDate}" rendered="#{sheduleController.current.sessionWeekday eq null}">
