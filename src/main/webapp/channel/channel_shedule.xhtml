@@ -13,8 +13,14 @@
             <p:panel header="Channel Schedule Management" >
 
 
+
+
                 <h:panelGrid columns="2" class="alignTop">
-                    <p:panel style="width: 500px;height: 520px;">
+
+
+
+
+                    <p:panel header="Select Session" style="width: 500px;height: 520px;">
                         <h:panelGrid columns="2">
                             <h:outputLabel  value="Speciality" ></h:outputLabel>
                             <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality" placeholder="Speciality"
@@ -36,7 +42,7 @@
 
                             <h:outputLabel  value="Sessions" ></h:outputLabel>
                             <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="width: 400px; height: 400px;"  >
+                                <p:selectOneListbox  id="lstSelect" converter="sscon"    value="#{sheduleController.current}" style="width: 400px; height: 300px;"  >
                                     <f:selectItems  value="#{sheduleController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" event="click" listener="#{sheduleController.fillFees()}" >
                                     </f:ajax>
@@ -52,21 +58,23 @@
 
 
                         <h:panelGrid id="gpSelectButtons" columns="3"  >                     
-                            <p:commandButton ajax="false" id="btnAdd" value="Add" action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" id="btnAdd" value="Add New Session" action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
                                 <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                                 </f:ajax>
                             </p:commandButton>
                             <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                    return false;" action="#{sheduleController.delete()}"  value="Delete" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
+                                        return false;" action="#{sheduleController.delete()}"  value="Delete Selected Session" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
                             </p:commandButton>
+                        </h:panelGrid>
+                        <h:panelGrid columns="1" >
+                            <p:commandLink value="Create Default Fee Set for Selected Sessions" action="#{sheduleController.createOnCallFeeOldSession()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
+                            <p:commandLink value="Manually Create Channelling Seesions For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
                         </h:panelGrid>
 
                     </p:panel>
 
                     <p:panel id="gpDetail" header="Session Details" style="width: 750px;height: 520px;">  
-                        <f:facet name="header" >
-                            <p:outputLabel value="Session Details" ></p:outputLabel>
-                            <p:spacer width="30" height="1" ></p:spacer>
+                        <h:panelGrid columns="3" >
                             <p:commandButton ajax="false" id="btnSave" value="Save"  
                                              action="#{sheduleController.saveSelected}"
                                              styleClass="buttons" onclick="onSubmitButton();">
@@ -76,14 +84,48 @@
                                              rendered="#{webUserController.hasPrivilege('Developers')}"
                                              action="/channel/channel_booking" 
                                              ajax="false" onclick="onSubmitButton();" />
-                        </f:facet>
+                        </h:panelGrid>
+
+
 
                         <h:panelGrid columns="1" > 
                             <p:tabView style="width: 700px!important;height: 410px;">
                                 <p:tab title="Details">
                                     <h:panelGrid columns="2" cellpadding="10">
+
+
                                         <p:outputLabel value="Session Name"/>
                                         <p:inputText autocomplete="off" value="#{sheduleController.current.name}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulName')}"/>
+
+
+                                        <h:panelGroup rendered="#{sheduleController.current.id ne null}" >
+                                            <h:panelGroup rendered="#{sheduleController.current.sessionDate eq null}" >
+                                                <p:outputLabel value="Weekday"></p:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sheduleController.current.sessionDate ne null}" >
+                                                <p:outputLabel value="Session Date"></p:outputLabel>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sheduleController.current.id ne null}" >
+                                            <h:panelGroup rendered="#{sheduleController.current.sessionDate eq null}" >
+                                                <p:inputText disabled="true" value="Sunday" rendered="#{sheduleController.current.sessionWeekday eq 1 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Monday" rendered="#{sheduleController.current.sessionWeekday eq 2 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Tuesday" rendered="#{sheduleController.current.sessionWeekday eq 3 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Wednesday" rendered="#{sheduleController.current.sessionWeekday eq 4 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Thursday" rendered="#{sheduleController.current.sessionWeekday eq 5 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Friday" rendered="#{sheduleController.current.sessionWeekday eq 6 and sheduleController.current.sessionWeekday ne null}"/>
+                                                <p:inputText disabled="true"  value="Sutarday" rendered="#{sheduleController.current.sessionWeekday eq 7 and sheduleController.current.sessionWeekday ne null}"/>
+
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{sheduleController.current.sessionDate ne null}" >
+                                                <p:inputText disabled="true"  value="#{sheduleController.current.sessionDate}" rendered="#{sheduleController.current.sessionWeekday eq null}">
+                                                    <f:convertDateTime pattern="yyyy MMM dd" />
+                                                </p:inputText>
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+
 
                                         <h:outputText value="Institution" ></h:outputText>
                                         <p:selectOneMenu id="cmbIns" value="#{sheduleController.current.institution}" >
@@ -143,17 +185,9 @@
                                         <p:outputLabel value="Maximum Raw Number"></p:outputLabel>
                                         <p:inputText autocomplete="off" value="#{sheduleController.current.maxTableRows}" disabled="#{sheduleController.current.id ne null and !webUserController.hasPrivilege('ChannellingChannelShedulMaxRowNo')}"></p:inputText>
 
-                                        <p:outputLabel value="Weekday or Session Date"></p:outputLabel>
-                                        <p:outputLabel value="Sunday" rendered="#{sheduleController.current.sessionWeekday eq 1 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Monday" rendered="#{sheduleController.current.sessionWeekday eq 2 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Tuesday" rendered="#{sheduleController.current.sessionWeekday eq 3 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Wednesday" rendered="#{sheduleController.current.sessionWeekday eq 4 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Thursday" rendered="#{sheduleController.current.sessionWeekday eq 5 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Friday" rendered="#{sheduleController.current.sessionWeekday eq 6 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="Sutarday" rendered="#{sheduleController.current.sessionWeekday eq 7 and sheduleController.current.sessionWeekday ne null}"/>
-                                        <p:outputLabel value="#{sheduleController.current.sessionDate}" rendered="#{sheduleController.current.sessionWeekday eq null}">
-                                            <f:convertDateTime pattern="yyyy MMM dd" />
-                                        </p:outputLabel>
+
+
+
                                     </h:panelGrid>
                                 </p:tab>
                                 <p:tab title="Date Details">
@@ -209,8 +243,6 @@
                                 </p:tab>
                                 <p:tab title="Aditional Details">
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
-                                        <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
                                         <p:outputLabel value="Displaying Count"/>
                                         <p:inputText autocomplete="off" value="#{sheduleController.current.displayCount}"/>
                                         <p:outputLabel value="Displaying Percent"/>
@@ -234,28 +266,37 @@
                                         <p:outputLabel value="Reserver Name"/>
                                         <p:inputText autocomplete="off" value="#{sheduleController.current.reserveName}"/>
 
-                                        <p:outputLabel value="creater"></p:outputLabel>
+
+                                    </h:panelGrid>
+                                </p:tab>
+
+
+                                <p:tab title="Log">
+                                    <h:panelGrid columns="2">
+                                        <p:outputLabel value="Id" rendered="#{sheduleController.current ne null}"/>
+                                        <p:outputLabel value="#{sheduleController.current.id}" rendered="#{sheduleController.current ne null}"/>
+
+
+                                        <p:outputLabel value="Created by"></p:outputLabel>
                                         <p:outputLabel value="#{sheduleController.current.creater.webUserPerson.name}"></p:outputLabel>
                                         <p:outputLabel value="created At"></p:outputLabel>
                                         <p:outputLabel value="#{sheduleController.current.createdAt}">
                                             <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                         </p:outputLabel>
-                                        <p:outputLabel value="Editor"></p:outputLabel>
+                                        <p:outputLabel value="Last Editor"></p:outputLabel>
                                         <p:outputLabel value="#{sheduleController.current.editer.webUserPerson.name}"></p:outputLabel>
-                                        <p:outputLabel value="Edited At"></p:outputLabel>
+                                        <p:outputLabel value="Last Edited At"></p:outputLabel>
                                         <p:outputLabel value="#{sheduleController.current.editedAt}">
                                             <f:convertDateTime pattern="yyyy-MM-dd hh:mm:ss a" />
                                         </p:outputLabel>
                                     </h:panelGrid>
                                 </p:tab>
+
                             </p:tabView>
                         </h:panelGrid>
                     </p:panel>
 
                 </h:panelGrid>
-                <p:commandButton value="Update Fees" action="#{sheduleController.createOnCallFeeOldSession()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
-                <p:commandButton value="Manually Create Seesion For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
-
 
             </p:panel>
 
