@@ -18,61 +18,61 @@
                         <p:tabView orientation="left" >
                             <p:tab title="Fees" >
                                 <h:panelGrid columns="1" >  
-
-
-
-
-
-
-
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Item Fees" action="/common/manage_item_fees" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton"
+                                                      ajax="false" value="Item Fees" 
+                                                      actionListener="#{viewController.makeAdminFeesAsPreviousPage()}"
+                                                      action="/common/manage_item_fees"  />
                                     <p:commandButton styleClass="linkButton"
                                                      ajax="false" 
-                                                     value="Add New Item Fees" 
+                                                     value="Item Fees List" 
                                                      action="/dataAdmin/manage_item_fees_bulk" 
-                                                     onclick="onSubmitButton();"/>
-
-                                    <p:commandButton styleClass="linkButton"
-                                                     ajax="false" 
-                                                     value="Correct Item Fees" 
-                                                     action="/dataAdmin/bulk_update_itemsFees" 
-                                                     onclick="onSubmitButton();"/>
+                                                     />
                                 </h:panelGrid>
                             </p:tab>
 
 
+
+
                             <p:tab title="Manage Price Scheme" >
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="payment_scheme" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes(MemberShip)" action="payment_scheme_member_ship" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="payment_scheme" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes(MemberShip)" action="payment_scheme_member_ship" />
                                 </h:panelGrid>
                             </p:tab>
 
                             <p:tab title="Manage Membership Scheme" >
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes" action="/memberShip/membership_scheme" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes Dicounts" action="/memberShip/membership_scheme_discount_inward" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes" action="/memberShip/membership_scheme" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes Dicounts" action="/memberShip/membership_scheme_discount_inward" />
                                 </h:panelGrid>
                             </p:tab>
 
                             <p:tab title="Manage Packages"  >
                                 <h:panelGrid columns="1" columnClasses="grid1 grid1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Package Names" action="/lab/package_name" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="/lab/package_item" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="/lab/package_item_prices" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Package Names" action="/lab/package_name" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="/lab/package_item" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="/lab/package_item_prices" />
                                 </h:panelGrid>
                             </p:tab>
 
 
                             <p:tab title="Manage Medical Packages"  >
                                 <h:panelGrid columns="1" columnClasses="grid1 grid1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Medical Package Names" action="opd_medical_package_name" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="opd_medical_package_item" onclick="onSubmitButton();"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="opd_medical_package_item_prices" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Medical Package Names" action="opd_medical_package_name" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="opd_medical_package_item" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="opd_medical_package_item_prices" />
                                 </h:panelGrid>
                             </p:tab>
                         </p:tabView>
-                        
+                        <p:tab title="Administration">
+                            <h:panelGrid columns="1" >
+                                <p:commandButton styleClass="linkButton"
+                                                 ajax="false" 
+                                                 value="Correct Item Fees" 
+                                                 action="/dataAdmin/bulk_update_itemsFees" 
+                                                 />
+                            </h:panelGrid>
+                        </p:tab>
 
                     </p:panel>
 

@@ -9,7 +9,6 @@ package com.divudi.data;
  * @author Buddhika
  */
 public enum FeeType {
-
     Staff,
     Member,
     Outpatient,
@@ -18,8 +17,6 @@ public enum FeeType {
     Chemical,
     Department,
     Tax,
-    @Deprecated
-    Matrix,
     Issue,
     Additional,
     Service,

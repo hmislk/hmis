@@ -91,7 +91,10 @@
                                             <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
 
 
-                                            <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}" ajax="false" action="#{investigationController.toEditFees()}" value="Prices" target="_blank"></p:commandLink><br/>
+                                            <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
+                                                           ajax="false" action="#{investigationController.toEditFees()}"
+                                                           actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
+                                                           value="Prices" ></p:commandLink><br/>
 
                                             <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations" target="_blank"></p:commandLink><br/>
 

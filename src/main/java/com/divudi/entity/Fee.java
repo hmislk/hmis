@@ -18,8 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
-
-
 /**
  *
  * @author buddhika
@@ -35,8 +33,8 @@ public class Fee implements Serializable {
     String name;
     String sName;
     String tName;
-    double fee=0.0;
-    double ffee=0.0;
+    double fee = 0.0;
+    double ffee = 0.0;
     @ManyToOne
     Item item; // FBC, ESR, UFR
     @ManyToOne
@@ -88,6 +86,7 @@ public class Fee implements Serializable {
     Speciality fromSpeciality;
     @ManyToOne
     Speciality toSpaciality;
+    private boolean discountAllowed;
 
     public Fee() {
     }
@@ -144,7 +143,7 @@ public class Fee implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        
+
         if (!(object instanceof Fee)) {
             return false;
         }
@@ -231,8 +230,6 @@ public class Fee implements Serializable {
     public void setEditedAt(Date editedAt) {
         this.editedAt = editedAt;
     }
-    
-    
 
     public String gettName() {
         return tName;
@@ -362,13 +359,13 @@ public class Fee implements Serializable {
         this.toSpaciality = toSpaciality;
     }
     @Transient
-     double hospitalFee;
+    double hospitalFee;
     @Transient
-     double professionalFee;
+    double professionalFee;
     @Transient
-     double hospitalFfee;
+    double hospitalFfee;
     @Transient
-     double professionalFfee;
+    double professionalFfee;
 
     public double getHospitalFee() {
         return hospitalFee;
@@ -409,4 +406,16 @@ public class Fee implements Serializable {
     public void setBooleanValue(boolean booleanValue) {
         this.booleanValue = booleanValue;
     }
+
+    public boolean isDiscountAllowed() {
+        return discountAllowed;
+    }
+
+    public void setDiscountAllowed(boolean discountAllowed) {
+        this.discountAllowed = discountAllowed;
+    }
+
+
+    
+    
 }
