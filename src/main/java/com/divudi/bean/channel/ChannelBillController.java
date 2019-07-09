@@ -34,10 +34,12 @@ import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
+import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.AgentReferenceBook;
+import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.entity.memberShip.PaymentSchemeDiscount;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.AgentReferenceBookFacade;
@@ -166,7 +168,7 @@ public class ChannelBillController implements Serializable {
         this.newPatient = newPatient;
     }
 
-   public Patient getSearchPatient() {
+    public Patient getSearchPatient() {
         return searchPatient;
     }
 
@@ -1267,59 +1269,8 @@ public class ChannelBillController implements Serializable {
         return amount;
     }
 
-//    private List<Fee> getServiceSessionFee() {
-//        List<Fee> tmp = new ArrayList<Fee>();
-//
-//        String sql = "select f From Fee f where f.retired=false and f.serviceSession.id=" + getbookingController().getSelectedServiceSession().getId();
-//        if (getbookingController().getSelectedServiceSession() != null) {
-//            tmp = getFeeFacade().findBySQL(sql);
-//        }
-//
-//        return tmp;
-//    }
-//    private void saveBilledFee(Bill b, BillItem bi) {
-//
-//        for (Fee f : getServiceSessionFee()) {
-//            if (f.getFee() == 0.0 && f.getFfee() == 0.0) {
-//                continue;
-//            }
-//
-//            if (getCurrent().getFromInstitution() == null && f.getFeeType() == FeeType.OtherInstitution) {
-//                continue;
-//            }
-//
-//            BillFee bf = new BillFee();
-//
-//            bf.setCreatedAt(Calendar.getInstance().getTime());
-//            bf.setCreater(getSessionController().getLoggedUser());
-//
-//            if (bf.getPatienEncounter() != null) {
-//                bf.setPatienEncounter(b.getPatientEncounter());
-//            }
-//
-//            bf.setPatient(b.getPatient());
-//            bf.setBill(b);
-//            bf.setBillItem(bi);
-//            bf.setFee(f);
-//
-//            if (f.getFeeType() == FeeType.Staff) {
-//                bf.setStaff(f.getStaff());
-//            }
-//
-//            if (f.getFeeType() == FeeType.OtherInstitution) {
-//                bf.setInstitution(getCurrent().getFromInstitution());
-//            }
-//
-//            if (foriegn) {
-//                bf.setFeeValue(f.getFfee());
-//            } else {
-//                bf.setFeeValue(f.getFee());
-//            }
-//
-//            getBillFeeFacade().create(bf);
-//        }
-//    }
     public void prepareForNewChannellingBill() {
+        clearForNewPatient();
         clearForNewBill();
         clearForNewSearch();
     }
@@ -1329,19 +1280,21 @@ public class ChannelBillController implements Serializable {
         clearForNewSearch();
     }
 
-    public void clearForNewBill() {
-//        System.err.println("make null");
-        amount = 0.0;
+    public void clearForNewPatient() {
         foriegn = false;
-        billFee = null;
-        refundBillFee = null;
         newPatient = null;
         searchPatient = null;
-        printingBill = null;
         agentRefNo = "";
-        billSession = null;
         patientTabId = "tabNewPt";
         patientSearchTab = 0;
+    }
+
+    public void clearForNewBill() {
+        amount = 0.0;
+        billFee = null;
+        refundBillFee = null;
+        printingBill = null;
+        billSession = null;
         billFee = null;
         refundBillFee = null;
         billItems = null;
@@ -1358,10 +1311,8 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSession("");
         comment = "";
         commentR = "";
-
     }
-    
-    
+
     public void clearForNewBillForMembership() {
         amount = 0.0;
         foriegn = false;
@@ -1634,6 +1585,9 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
+    
+    
+    
     public void add() {
         errorText = "";
         if (errorCheck()) {
@@ -1643,6 +1597,7 @@ public class ChannelBillController implements Serializable {
 
         savePatient();
         printingBill = saveBilledBill();
+
         printingBill = getBillFacade().find(printingBill.getId());
         bookingController.fillBillSessions();
         bookingController.generateSessionsOnlyIdNew();
@@ -1705,7 +1660,7 @@ public class ChannelBillController implements Serializable {
             }
             return;
         }
-        //********************retier bill,billitem,billsession***********************************************
+        
         if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
@@ -1913,7 +1868,7 @@ public class ChannelBillController implements Serializable {
         double tmpTotalVat = 0;
         double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
-        for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFees()) {
+        for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFeesActive()) {
             if (paymentMethod != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
                     continue;
@@ -1951,15 +1906,16 @@ public class ChannelBillController implements Serializable {
 
             bf.setPatient(bill.getPatient());
 
-            if (f.getFeeType() == FeeType.Staff) {
-                bf.setStaff(f.getStaff());
+            MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
+
+            PriceMatrix discountMatrix;
+
+            if (membershipScheme != null) {
+                discountMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(membershipScheme, paymentMethod, bf.getDepartment());
+            } else {
+                discountMatrix = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
             }
 
-            if (f.getFeeType() == FeeType.OwnInstitution) {
-                bf.setInstitution(sessionController.getInstitution());
-            }
-
-            PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
             double d = 0;
             if (foriegn) {
                 bf.setFeeValue(f.getFfee());
@@ -2013,8 +1969,8 @@ public class ChannelBillController implements Serializable {
             }
             //only vat for doctor fee
 
-            if (f.getFeeType() == FeeType.OwnInstitution && paymentSchemeDiscount != null) {
-                d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+            if (discountMatrix != null) {
+                d = bf.getFeeValue() * (discountMatrix.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
                 bf.setFeeGrossValue(bf.getFeeValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());

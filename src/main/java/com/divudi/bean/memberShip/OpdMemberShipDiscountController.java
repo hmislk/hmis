@@ -7,6 +7,7 @@
  * a Set of Related Tools
  */
 package com.divudi.bean.memberShip;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.BillType;
@@ -20,6 +21,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.lab.InvestigationCategory;
+import com.divudi.entity.memberShip.ChannellingMemberShipDiscount;
 import com.divudi.entity.memberShip.MembershipScheme;
 import com.divudi.entity.memberShip.OpdMemberShipDiscount;
 import com.divudi.entity.memberShip.PaymentSchemeDiscount;
@@ -118,7 +120,42 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsDepartments();
         clearInstanceVars();
     }
+
+    public void saveChannellingDiscountMatrixForDepartment() {
+        if (membershipScheme == null) {
+            UtilityController.addErrorMessage("Select a Membership Scheme");
+            return;
+        }
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+        if (paymentMethod == null) {
+            UtilityController.addErrorMessage("Please select Payment Method");
+            return;
+        }
+        PriceMatrix a = new ChannellingMemberShipDiscount();
+        a.setMembershipScheme(membershipScheme);
+        a.setPaymentScheme(paymentScheme);
+        a.setPaymentMethod(paymentMethod);
+        a.setDepartment(department);
+        if (department != null) {
+            a.setInstitution(department.getInstitution());
+        }
+        a.setDiscountPercent(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(a);
+        UtilityController.addSuccessMessage("Saved Successfully");
+
+        fillMatricesForChannellingMembershipsForItemsDepartments();
+        clearInstanceVars();
+    }
     
+    public String toManageDiscountMatrixForChannellingByDepartment(){
+        return "/memberShip/membership_scheme_discount_channelling_by_department";
+    }
+
     public void saveSelectedChannelPaymentScheme() {
         if (paymentScheme == null) {
             UtilityController.addErrorMessage("Membership Scheme or Payment Scheme");
@@ -240,8 +277,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsPaymentScheme();
         clearInstanceVars();
     }
-    
-     public void saveItemPaymentMethod() {
+
+    public void saveItemPaymentMethod() {
         PriceMatrix p = new PaymentSchemeDiscount();
         saveSelectedCategoryPaymentMethod(p);
         createItemsPaymentMethod();
@@ -479,7 +516,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         createItemsPaymentMethod();
     }
 
-    
     public void deleteCategoryPharmacy() {
         deleteCategory();
         createItemsCategoryPharmacy();
@@ -533,6 +569,16 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.membershipScheme.name,a.department.name";
         items = getFacade().findBySQL(sql);
     }
+    
+    public void fillMatricesForChannellingMembershipsForItemsDepartments() {
+        filterItems = null;
+        String sql;
+        sql = "select a from ChannellingMemberShipDiscount a "
+                + " where a.retired=false "
+                + " and a.category is null"
+                + " order by a.membershipScheme.name,a.department.name";
+        items = getFacade().findBySQL(sql);
+    }
 
     public void createItemsDepartmentsPaymentScheme() {
         filterItems = null;
@@ -546,7 +592,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         hm.put("pm", paymentScheme);
         items = getFacade().findBySQL(sql, hm);
     }
-    
+
     public void createItemsChannelPaymentScheme() {
         filterItems = null;
         String sql;
@@ -647,8 +693,8 @@ public class OpdMemberShipDiscountController implements Serializable {
         temMap.put("pm", paymentScheme);
         items = getFacade().findBySQL(sql, temMap);
     }
-    
-     public void createItemsPaymentMethod() {
+
+    public void createItemsPaymentMethod() {
         filterItems = null;
         String sql;
         HashMap temMap = new HashMap();
@@ -658,7 +704,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.paymentScheme is null "
                 + " and a.membershipScheme is null "
                 + " order by a.item.name";
-       // temMap.put("pm", paymentScheme);
+        // temMap.put("pm", paymentScheme);
         items = getFacade().findBySQL(sql, temMap);
     }
 

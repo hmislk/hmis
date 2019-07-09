@@ -116,6 +116,9 @@
                                     <p:column headerText="Relation to CHH">
                                         <p:outputLabel value="#{fm.relationToChh.name}" ></p:outputLabel>
                                     </p:column>
+                                    <p:column headerText="Membership" rendered="false">
+                                        <p:outputLabel value="#{fm.patient.person.membershipScheme.name}" ></p:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Billing">
 
                                         <p:commandButton ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
