@@ -1312,6 +1312,12 @@ public class ChannelBillController implements Serializable {
         comment = "";
         commentR = "";
     }
+    
+    public void prepareForNewBill(){
+        clearForNewBill();
+        clearForNewPatient();
+        clearForNewSearch();
+    }
 
     public void clearForNewBillForMembership() {
         amount = 0.0;

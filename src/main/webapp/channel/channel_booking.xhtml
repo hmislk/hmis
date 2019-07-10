@@ -1137,7 +1137,7 @@
 
                                     <p:dialog id="dialogChannelSettle" header="Booked" widgetVar="dlgSettle" 
                                               modal="true" height="400" width="600" closable="false">
-                                        <p:commandButton value="New Bill" action="#{channelBillController.makeNull()}" ajax="false" ></p:commandButton>
+                                        <p:commandButton value="New Bill" action="#{channelBillController.prepareForNewBill}" ajax="false" ></p:commandButton>
                                         <p:commandButton value="Back" action="#" ajax="false" oncomplete="PF('dlgAdd').hide();"
                                                          rendered="#{!channelBillController.settleSucessFully}" />
                                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{channelBillController.billSession.billItem.bill.balance ne 0.0}">
