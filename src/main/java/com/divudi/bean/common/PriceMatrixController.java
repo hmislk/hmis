@@ -513,6 +513,8 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
         return (ChannellingMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
     }
 

@@ -134,7 +134,7 @@ public class OpdMemberShipDiscountController implements Serializable {
             UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
-        PriceMatrix a = new ChannellingMemberShipDiscount();
+        ChannellingMemberShipDiscount a = new ChannellingMemberShipDiscount();
         a.setMembershipScheme(membershipScheme);
         a.setPaymentScheme(paymentScheme);
         a.setPaymentMethod(paymentMethod);

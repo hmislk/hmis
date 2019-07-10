@@ -126,6 +126,7 @@ public class SheduleController implements Serializable {
         stf.setFeeType(FeeType.Staff);
         stf.setFee(0.0);
         stf.setFfee(0.0);
+        stf.setDiscountAllowed(false);
         stf.setInstitution(getCurrent().getInstitution());
         stf.setSpeciality(speciality);
         stf.setStaff(currentStaff);
@@ -137,9 +138,11 @@ public class SheduleController implements Serializable {
         ItemFee hos = new ItemFee();
         hos.setName("Hospital Fee");
         hos.setFeeType(FeeType.OwnInstitution);
+        hos.setDiscountAllowed(true);
         hos.setFee(0.0);
         hos.setFfee(0.0);
         hos.setInstitution(getCurrent().getInstitution());
+        hos.setDepartment(current.getDepartment());
         hos.setServiceSession(current);
 
         return hos;

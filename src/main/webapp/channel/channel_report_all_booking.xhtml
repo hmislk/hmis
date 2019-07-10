@@ -78,9 +78,16 @@
                             </p:column>
                             <p:column style="text-align: right;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Patient Name" />
+                                    <p:outputLabel value="Name" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.patient.person.nameWithTitle}" >
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column  >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Phone" />
+                                </f:facet>
+                                <p:outputLabel value="#{b.patient.person.phone}" >
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >

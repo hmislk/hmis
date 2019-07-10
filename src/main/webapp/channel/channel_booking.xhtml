@@ -615,17 +615,14 @@
                             <div >
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.channelBillPaperType eq 'PosPaper'}">
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha}" > 
-                                        1
                                         <ch:channelReciptPosDouble bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha and !(sessionController.loggedPreference.applicationInstitution eq 'Cooperative')}" >
-                                        
                                         <ch:channelReciptPos bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
-                                        3
                                         <ch:channelReciptPos_coop bill="#{channelBillController.printingBill}" dup="false"/>
                                     </h:panelGroup>
 

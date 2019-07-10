@@ -1884,14 +1884,20 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(billItem);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            if (f.getFeeType() == FeeType.OwnInstitution) {
-                bf.setInstitution(f.getInstitution());
-                bf.setDepartment(f.getDepartment());
-            } else if (f.getFeeType() == FeeType.OtherInstitution) {
-                bf.setInstitution(institution);
-            } else if (f.getFeeType() == FeeType.Staff) {
-                bf.setSpeciality(f.getSpeciality());
-                bf.setStaff(f.getStaff());
+            if (null != f.getFeeType()) switch (f.getFeeType()) {
+                case OwnInstitution:
+                    bf.setInstitution(f.getInstitution());
+                    bf.setDepartment(f.getDepartment());
+                    break;
+                case OtherInstitution:
+                    bf.setInstitution(institution);
+                    break;
+                case Staff:
+                    bf.setSpeciality(f.getSpeciality());
+                    bf.setStaff(f.getStaff());
+                    break;
+                default:
+                    break;
             }
 
             bf.setFee(f);
@@ -1909,12 +1915,16 @@ public class ChannelBillController implements Serializable {
             MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
 
             PriceMatrix discountMatrix;
+            
+            System.out.println("membershipScheme = " + membershipScheme);
 
             if (membershipScheme != null) {
                 discountMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(membershipScheme, paymentMethod, bf.getDepartment());
             } else {
                 discountMatrix = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
             }
+            System.out.println("discountMatrix = " + discountMatrix);
+            
 
             double d = 0;
             if (foriegn) {
@@ -1969,7 +1979,9 @@ public class ChannelBillController implements Serializable {
             }
             //only vat for doctor fee
 
+            System.out.println("discountMatrix = " + discountMatrix);
             if (discountMatrix != null) {
+                System.out.println("discountMatrix.getDiscountPercent() = " + discountMatrix.getDiscountPercent());
                 d = bf.getFeeValue() * (discountMatrix.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
                 bf.setFeeGrossValue(bf.getFeeValue());
@@ -1998,6 +2010,7 @@ public class ChannelBillController implements Serializable {
             billFeeFacade.create(bf);
             billFeeList.add(bf);
         }
+        System.out.println("tmpDiscount = " + tmpDiscount);
         bill.setDiscount(tmpDiscount);
         bill.setNetTotal(tmpTotalNet);
         bill.setTotal(tmpTotal);

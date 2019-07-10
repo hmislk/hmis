@@ -231,7 +231,7 @@ public class PatientController implements Serializable {
         }
         try {
             currentFamily.getFamilyMembers().remove(removingFamilyMember);
-            getFamilyMemberFacade().remove(currentFamilyMember);
+            getFamilyMemberFacade().remove(removingFamilyMember);
             JsfUtil.addSuccessMessage("Removed");
         } catch (Error e) {
             JsfUtil.addErrorMessage("Error in removing. " + e.getMessage());

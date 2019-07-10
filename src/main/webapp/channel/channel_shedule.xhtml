@@ -58,7 +58,9 @@
 
 
                         <h:panelGrid id="gpSelectButtons" columns="3"  >                     
-                            <p:commandButton ajax="false" id="btnAdd" value="Add New Session" action="#{sheduleController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" id="btnAdd" value="Add New Session" 
+                                             action="#{sheduleController.prepareAdd()}" 
+                                             styleClass="buttons" onclick="onSubmitButton();" >
                                 <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                                 </f:ajax>
                             </p:commandButton>
@@ -73,7 +75,7 @@
 
                     </p:panel>
 
-                    <p:panel id="gpDetail" header="Session Details" style="width: 750px;height: 520px;">  
+                    <p:panel id="gpDetail" header="Session Details" >  
                         <h:panelGrid columns="3" >
                             <p:commandButton ajax="false" id="btnSave" value="Save"  
                                              action="#{sheduleController.saveSelected}"
@@ -230,6 +232,9 @@
                                             </p:column>                        
                                             <p:column headerText="Institution">
                                                 #{i.institution.name}
+                                            </p:column>
+                                            <p:column headerText="Department">
+                                                #{i.department.name}
                                             </p:column>
                                             <p:column headerText="Local Fee">
                                                 <p:inputText value="#{i.fee}" style="width: 50px!important;"/>

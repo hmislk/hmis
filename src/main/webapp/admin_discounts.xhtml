@@ -34,6 +34,11 @@
                                         <p:commandButton styleClass="linkButton" action="/memberShip/membership_scheme_discount_opd_by_department" value="OPD Discounts for Members by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
                                         <p:commandButton styleClass="linkButton" action="/memberShip/membership_scheme_discount_opd_by_category" value="OPD Discounts for Members by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
                                         <p:commandButton styleClass="linkButton" action="/memberShip/membership_scheme_discount_pharmacy_by_category" value="OPD Discounts for Members by Pharmaceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+
+                                        <p:commandButton ajax="false" value="Channelling Discounts" 
+                                                         action="#{opdMemberShipDiscountController.toManageDiscountMatrixForChannellingByDepartment()}"></p:commandButton>
+
+
                                     </p:panelGrid>
                                 </p:tab>
 
