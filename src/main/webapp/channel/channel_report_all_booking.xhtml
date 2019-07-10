@@ -141,12 +141,6 @@
                                 <p:outputLabel value="#{b.patient.person.area.name}" >
                                 </p:outputLabel>
                             </p:column>
-<!--                            <p:column headerText="Status" >
-                                <p:outputLabel rendered="#{b.billType eq 'ChannelOnCall'}" value="Credit" style="color: red;"/>
-                                <p:outputLabel rendered="#{b.billType eq 'ChannelAgent'}" value="Agent" style="color: green;"/>
-                                <p:outputLabel rendered="#{b.billType eq 'ChannelStaff'}" value="Staff" style="color: green;"/>
-                                <p:outputLabel rendered="#{b.billType eq 'ChannelCash'}" value="Cash"/>
-                            </p:column>-->
                             <p:column headerText="C/R" >
                                 <p:outputLabel value="Cancelled" rendered="#{b.cancelled==true}"/>
                                 <p:outputLabel value="Refunded" rendered="#{b.refunded==true}"/>                        
