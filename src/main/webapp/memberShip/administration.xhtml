@@ -22,27 +22,46 @@
 
 
 
-                            <p:panelGrid columns="1" >
-
-                                <p:commandButton ajax="false" value="Relationship" 
-                                                 action="/memberShip/relation/List"></p:commandButton>
 
 
+                            <p:tabView orientation="left" >
+                                <p:tab title="Manage Membersip Data" >
+                                    <p:panelGrid columns="1" >
+                                        <p:commandButton ajax="false" value="Change Membership" 
+                                                         action="#{patientController.toChangeMembershipOfSelectedPersons()}"></p:commandButton>
+                                    </p:panelGrid>
+                                </p:tab>
 
-                                <p:commandButton ajax="false" value="Membership Scheme Names" 
-                                                 action="/memberShip/membership_scheme"></p:commandButton>
+                                <p:tab title="Manage Metadata" >
+                                    <p:panelGrid columns="1" >
+                                        <p:commandButton ajax="false" value="Relationship" 
+                                                         action="/memberShip/relation/List"></p:commandButton>
 
 
-                                <p:commandButton  action="/memberShip/membership_scheme_discount_inward" value="Inward Discounts for Memberships"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipSchemesDicounts')}"/>
-                                <p:commandButton  action="/memberShip/membership_scheme_discount_opd_by_department" value="OPD Discounts for Members by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
-                                <p:commandButton  action="/memberShip/membership_scheme_discount_opd_by_category" value="OPD Discounts for Members by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
-                                <p:commandButton  action="/memberShip/membership_scheme_discount_pharmacy_by_category" value="OPD Discounts for Members by Pharmaceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
 
-                                <p:commandButton ajax="false" value="Channelling Discounts" 
-                                                 action="#{opdMemberShipDiscountController.toManageDiscountMatrixForChannellingByDepartment()}"></p:commandButton>
+                                        <p:commandButton ajax="false" value="Membership Scheme Names" 
+                                                         action="/memberShip/membership_scheme"></p:commandButton>
+                                    </p:panelGrid>
+                                </p:tab>
+                                <p:tab title="Manage Discounts" >
+                                    <p:commandButton  action="/memberShip/membership_scheme_discount_inward" value="Inward Discounts for Memberships"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipSchemesDicounts')}"/>
+                                    <p:commandButton  action="/memberShip/membership_scheme_discount_opd_by_department" value="OPD Discounts for Members by Department" actionListener="#{opdMemberShipDiscountController.recreateModel()}" ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByDepartment')}"/>
+                                    <p:commandButton  action="/memberShip/membership_scheme_discount_opd_by_category" value="OPD Discounts for Members by Opd Category" actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+                                    <p:commandButton  action="/memberShip/membership_scheme_discount_pharmacy_by_category" value="OPD Discounts for Members by Pharmaceutical Category " actionListener="#{opdMemberShipDiscountController.recreateModel()}"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisByCategory')}"/>
+
+                                    <p:commandButton ajax="false" value="Channelling Discounts" 
+                                                     action="#{opdMemberShipDiscountController.toManageDiscountMatrixForChannellingByDepartment()}"></p:commandButton>
 
 
-                            </p:panelGrid>
+                                </p:tab>
+
+                            </p:tabView>
+
+
+
+
+
+
 
                         </p:panel>
                     </h:form>
