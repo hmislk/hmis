@@ -6,7 +6,7 @@ Open Source Hospital Management Information System
 
 Description
 
-This is a comprehensive Hospital Information Management System that is knowingly used by more than 40 health care institutions for up to 8 years successfully. It has several modules that support most of the workflows of a modern hospital. Most of the differences in the requirements of different hospitals can be achieved through customization. The system has given priority to user-friendliness and speed of the system rather than the fancy decoration of the user interfaces loaded with colours and graphics. It has been tested extensively in production since 2015.
+This is a comprehensive Hospital Information Management System that is knowingly used by more than 40 health care institutions for up to 8 years successfully. It has several modules that support most of the workflows of a modern hospital. Most of the differences in the requirements of different hospitals can be achieved through configuration. The system has given priority to user-friendliness and speed of the system rather than the fancy decoration of the user interfaces loaded with colours and graphics. It has been tested extensively in production since 2015.
 
 The main strength of the system is the Object Oriented Design. The design is simple as it could be, yet very robust and flexible to address diverse and complex business worlflows in the healcare domain.
 
