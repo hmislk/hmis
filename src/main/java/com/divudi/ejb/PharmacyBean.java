@@ -92,7 +92,7 @@ public class PharmacyBean {
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    StockHistoryFacade stockHistoryFacade;   
+    StockHistoryFacade stockHistoryFacade;
     @EJB
     BillNumberGenerator billNumberBean;
     @EJB
@@ -106,7 +106,6 @@ public class PharmacyBean {
         this.billNumberBean = billNumberBean;
     }
 
-   
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
 
@@ -269,9 +268,6 @@ public class PharmacyBean {
         return preBill;
     }
 
-  
-
- 
     public PharmaceuticalItemCategoryFacade getPharmaceuticalItemCategoryFacade() {
         return PharmaceuticalItemCategoryFacade;
     }
@@ -403,7 +399,7 @@ public class PharmacyBean {
         sql = "Select sum(s.stock) from Stock s where s.itemBatch.item=:i and s.department=:d";
         return getItemBatchFacade().findDoubleByJpql(sql, m);
     }
-    
+
     public double getStockByPurchaseValue(Item item, Institution ins) {
         Map m = new HashMap<>();
         String sql;
@@ -448,7 +444,7 @@ public class PharmacyBean {
         } else {
 //            addToStockHistory(pharmaceuticalBillItem, s, staff);
             //            addToStockHistory(pharmaceuticalBillItem, s, staff);
-                        s.setStock(s.getStock() + qty);
+            s.setStock(s.getStock() + qty);
             getStockFacade().edit(s);
         }
         return s;
@@ -1192,11 +1188,34 @@ public class PharmacyBean {
         }
         name = name.trim();
         PharmaceuticalItemCategory cat;
-        cat = getPharmaceuticalItemCategoryFacade().findFirstBySQL("SELECT c FROM PharmaceuticalItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        Map m = new HashMap();
+
+        m.put("name", name.toUpperCase());
+        name = name.replaceAll("\'", "");
+        name = name.replaceAll("\"", "");
+        String j = "SELECT c FROM PharmaceuticalItemCategory c Where upper(c.name)=:name ";
+        
+        try {
+            cat = getPharmaceuticalItemCategoryFacade().findFirstBySQL(j, m);
+        } catch (Exception e) {
+            System.out.println("error = " + e.getMessage());
+            System.out.println("name = " + name);
+            System.out.println("j = " + j);
+            System.out.println("m = " + m);
+            return null;
+        }
+
         if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemCategory();
+            cat.setRetired(false);
             cat.setName(name);
-            getPharmaceuticalItemCategoryFacade().create(cat);
+            try {
+                getPharmaceuticalItemCategoryFacade().create(cat);
+            } catch (Exception e) {
+                System.out.println("error = " + e.getMessage());
+                System.out.println("name = " + name);
+                return null;
+            }
         } else if (cat != null) {
             cat.setRetired(false);
             cat.setName(name);
@@ -1207,15 +1226,28 @@ public class PharmacyBean {
 
     @EJB
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
-    
+
     public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name, boolean createNew) {
         if (name == null || name.trim().equals("")) {
             return null;
         }
         name = name.trim();
-        PharmaceuticalItemType cat;
-        cat = pharmaceuticalItemTypeFacade.findFirstBySQL("SELECT c FROM PharmaceuticalItemType c Where upper(c.name) = '" + name.toUpperCase() + "' ");
-        if (cat == null && createNew == true) {
+        PharmaceuticalItemType cat = null;
+        String j = "SELECT c FROM PharmaceuticalItemType c Where upper(c.name) = :n";
+        Map m = new HashMap();
+        m.put("n", name.trim().toUpperCase());
+        try{
+             cat = pharmaceuticalItemTypeFacade.findFirstBySQL(j,m);
+        
+        }catch(Exception e){
+            System.out.println("e = " + e.getMessage());
+            System.out.println("name = " + name);
+            return null;
+        }
+        
+        
+        
+       if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemType();
             cat.setName(name);
             pharmaceuticalItemTypeFacade.create(cat);
@@ -1226,12 +1258,11 @@ public class PharmacyBean {
         }
         return cat;
     }
-    
+
     public PharmaceuticalItemType getPharmaceuticalItemTypeByName(String name) {
-        return getPharmaceuticalItemTypeByName(name,true);
+        return getPharmaceuticalItemTypeByName(name, true);
     }
 
-    
     public StoreItemCategory getStoreItemCategoryByName(String name, boolean createNew) {
         if (name == null || name.trim().equals("")) {
             return null;
@@ -1255,7 +1286,6 @@ public class PharmacyBean {
         return getPharmaceuticalCategoryByName(name, true);
     }
 
-    
     public StoreItemCategory getStoreItemCategoryByName(String name) {
         return getStoreItemCategoryByName(name, true);
     }
@@ -1659,7 +1689,6 @@ public class PharmacyBean {
         this.stockHistoryFacade = stockHistoryFacade;
     }
 
-  
     public StoreItemCategoryFacade getStoreItemCategoryFacade() {
         return storeItemCategoryFacade;
     }
