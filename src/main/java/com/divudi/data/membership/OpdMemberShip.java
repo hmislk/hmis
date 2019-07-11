@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.data.memberShip;
+package com.divudi.data.membership;
 
 import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import java.util.ArrayList;
 import java.util.List;
 

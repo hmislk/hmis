@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.bean.memberShip;
+package com.divudi.bean.membership;
 
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -15,7 +15,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.RoomCategory;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.ArrayList;

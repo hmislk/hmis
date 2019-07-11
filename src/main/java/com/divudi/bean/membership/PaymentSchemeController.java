@@ -6,15 +6,15 @@
  * and
  * a Set of Related Tools
  */
-package com.divudi.bean.memberShip;
+package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.memberShip.AllowedPaymentMethod;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.AllowedPaymentMethod;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.PaymentSchemeFacade;
 import com.divudi.facade.util.JsfUtil;

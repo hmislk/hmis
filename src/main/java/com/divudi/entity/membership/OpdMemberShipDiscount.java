@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.entity.memberShip;
+package com.divudi.entity.membership;
 
 import com.divudi.entity.PriceMatrix;
 import java.io.Serializable;
@@ -17,7 +17,7 @@ import javax.persistence.InheritanceType;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class ChannellingMemberShipDiscount extends PriceMatrix implements Serializable {
+public class OpdMemberShipDiscount extends PriceMatrix implements Serializable {
     private static final long serialVersionUID = 1L;
     
 }

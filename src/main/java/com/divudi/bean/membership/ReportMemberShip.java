@@ -1,17 +1,17 @@
-package com.divudi.bean.memberShip;
+package com.divudi.bean.membership;
 
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.memberShip.IpaCreditInstitution;
-import com.divudi.data.memberShip.IpaMemberShip;
-import com.divudi.data.memberShip.IpaMemberShipCreditInstitution;
-import com.divudi.data.memberShip.IpaPaymentMethod;
-import com.divudi.data.memberShip.OpdMemberShip;
+import com.divudi.data.membership.IpaCreditInstitution;
+import com.divudi.data.membership.IpaMemberShip;
+import com.divudi.data.membership.IpaMemberShipCreditInstitution;
+import com.divudi.data.membership.IpaPaymentMethod;
+import com.divudi.data.membership.OpdMemberShip;
 import com.divudi.entity.Institution;
 import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.PriceMatrixFacade;
 import java.util.ArrayList;
 import java.util.List;

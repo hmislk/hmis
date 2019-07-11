@@ -16,7 +16,7 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
@@ -125,7 +125,7 @@ public class PatientController implements Serializable {
     private String searchText;
 
     public String toChangeMembershipOfSelectedPersons() {
-        return "/memberShip/change_membership";
+        return "/membership/change_membership";
     }
 
     public void listAllPatients() {
@@ -153,7 +153,7 @@ public class PatientController implements Serializable {
     
     public String toAddAFamily() {
         currentFamily = new Family();
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
     public String searchFamily() {
@@ -175,11 +175,11 @@ public class PatientController implements Serializable {
         } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
             searchText = "";
-            return "/memberShip/add_family";
+            return "/membership/add_family";
         } else {
             families = fs;
             searchText = "";
-            return "/memberShip/search_family";
+            return "/membership/search_family";
         }
     }
 
@@ -214,12 +214,12 @@ public class PatientController implements Serializable {
     }
 
     public String toFamily() {
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
     public String toNewPatient() {
         prepareAdd();
-        return "/memberShip/patient";
+        return "/membership/patient";
     }
 
     public void addNewMemberToFamily() {
@@ -598,7 +598,7 @@ public class PatientController implements Serializable {
 
     public String saveSelectedAndToFamily() {
         saveSelected(current);
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
     public void saveSelected(Patient p) {

@@ -6,7 +6,7 @@
  * and
  * a Set of Related Tools
  */
-package com.divudi.bean.memberShip;
+package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -21,10 +21,10 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
 import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.memberShip.ChannellingMemberShipDiscount;
-import com.divudi.entity.memberShip.MembershipScheme;
-import com.divudi.entity.memberShip.OpdMemberShipDiscount;
-import com.divudi.entity.memberShip.PaymentSchemeDiscount;
+import com.divudi.entity.membership.ChannellingMemberShipDiscount;
+import com.divudi.entity.membership.MembershipScheme;
+import com.divudi.entity.membership.OpdMemberShipDiscount;
+import com.divudi.entity.membership.PaymentSchemeDiscount;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
@@ -153,7 +153,7 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
     
     public String toManageDiscountMatrixForChannellingByDepartment(){
-        return "/memberShip/membership_scheme_discount_channelling_by_department";
+        return "/membership/membership_scheme_discount_channelling_by_department";
     }
 
     public void saveSelectedChannelPaymentScheme() {
@@ -560,6 +560,19 @@ public class OpdMemberShipDiscountController implements Serializable {
         return items;
     }
 
+    
+    public String toManagementOfOpdMembershipDiscountsByDepartments() {
+        filterItems = null;
+        String sql;
+        sql = "select a from OpdMemberShipDiscount a "
+                + " where a.retired=false "
+                + " and a.category is null"
+                + " order by a.membershipScheme.name,a.department.name";
+        items = getFacade().findBySQL(sql);
+        return "/membership/membership_scheme_discount_opd_by_department";
+        
+    }
+    
     public void createItemsDepartments() {
         filterItems = null;
         String sql;

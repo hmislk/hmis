@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.entity.memberShip;
+package com.divudi.entity.membership;
 
 import com.divudi.entity.PriceMatrix;
 import java.io.Serializable;

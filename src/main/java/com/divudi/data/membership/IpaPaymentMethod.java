@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.data.memberShip;
+package com.divudi.data.membership;
 
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.PriceMatrix;

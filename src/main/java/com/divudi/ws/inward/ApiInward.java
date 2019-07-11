@@ -10,7 +10,7 @@ import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.inward.InwardBeanController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;

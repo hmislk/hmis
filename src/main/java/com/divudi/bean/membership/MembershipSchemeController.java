@@ -6,13 +6,13 @@
  * and
  * a Set of Related Tools
  */
-package com.divudi.bean.memberShip;
+package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;

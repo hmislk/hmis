@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.data.memberShip;
+package com.divudi.data.membership;
 
-import com.divudi.entity.Institution;
+import com.divudi.entity.membership.MembershipScheme;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +13,9 @@ import java.util.List;
  *
  * @author safrin
  */
-public class IpaCreditInstitution {
+public class IpaMemberShip {
 
-    Institution institution;
+    private MembershipScheme membershipScheme;
     List<IpaPaymentMethod> ipaPaymentMethods;
 
     public List<IpaPaymentMethod> getIpaPaymentMethods() {
@@ -29,12 +29,12 @@ public class IpaCreditInstitution {
         this.ipaPaymentMethods = ipaPaymentMethods;
     }
 
-    public Institution getInstitution() {
-        return institution;
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
     }
 
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
     }
 
 }

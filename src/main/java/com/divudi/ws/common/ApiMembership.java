@@ -29,7 +29,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;

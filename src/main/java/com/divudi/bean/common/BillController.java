@@ -1,8 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
-import com.divudi.bean.memberShip.MembershipSchemeController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.MembershipSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -44,7 +44,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;

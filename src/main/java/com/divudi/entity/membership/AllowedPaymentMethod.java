@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.divudi.entity.memberShip;
+package com.divudi.entity.membership;
 
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.PaymentScheme;
@@ -153,7 +153,7 @@ public class AllowedPaymentMethod implements Serializable {
 
     @Override
     public String toString() {
-        return "com.divudi.entity.memberShip.PaymentSchemesPaymentMethod[ id=" + id + " ]";
+        return "com.divudi.entity.membership.PaymentSchemesPaymentMethod[ id=" + id + " ]";
     }
     
 }

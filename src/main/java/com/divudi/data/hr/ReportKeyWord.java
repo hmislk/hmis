@@ -28,7 +28,7 @@ import com.divudi.entity.hr.Shift;
 import com.divudi.entity.hr.StaffCategory;
 import com.divudi.entity.hr.StaffShift;
 import com.divudi.entity.inward.AdmissionType;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import java.util.Date;
 import javax.inject.Inject;
 import javax.persistence.Transient;
