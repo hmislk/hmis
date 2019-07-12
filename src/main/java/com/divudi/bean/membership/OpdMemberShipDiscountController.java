@@ -25,6 +25,7 @@ import com.divudi.entity.membership.ChannellingMemberShipDiscount;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.membership.OpdMemberShipDiscount;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
+import com.divudi.entity.membership.PharmacyMemberShipDiscount;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
@@ -151,9 +152,14 @@ public class OpdMemberShipDiscountController implements Serializable {
         fillMatricesForChannellingMembershipsForItemsDepartments();
         clearInstanceVars();
     }
-    
-    public String toManageDiscountMatrixForChannellingByDepartment(){
+
+    public String toManageDiscountMatrixForChannellingByDepartment() {
         return "/membership/membership_scheme_discount_channelling_by_department";
+    }
+    
+    public String toManageDiscountMatrixForPharmacyByDepartmentAndCategory() {
+        fillDiscountMetrixesForPharmacyForDepartmentAndCategory();
+        return "/membership/membership_scheme_discount_pharmacy_by_department_and_category";
     }
 
     public void saveSelectedChannelPaymentScheme() {
@@ -285,13 +291,61 @@ public class OpdMemberShipDiscountController implements Serializable {
         clearInstanceVars();
     }
 
-    public void savePharmacyCategory() {
-        PriceMatrix p = new OpdMemberShipDiscount();
-        saveSelectedCategory(p);
-        createItemsCategoryPharmacy();
-        clearInstanceVars();
+    public void savePharmacyDiscountMatrixForDepartmentAndCategory() {
+
+        if (membershipScheme == null) {
+            UtilityController.addErrorMessage("Membership Scheme ?");
+            return;
+        }
+
+        if (paymentMethod == null) {
+            UtilityController.addErrorMessage("Payment Method?");
+            return;
+        }
+
+        if (department == null) {
+            UtilityController.addErrorMessage("Please select a department");
+            return;
+        }
+
+        if (category == null) {
+            UtilityController.addErrorMessage("Please select Category");
+            return;
+        }
+
+        PharmacyMemberShipDiscount a = new PharmacyMemberShipDiscount();
+
+        a.setMembershipScheme(membershipScheme);
+        a.setPaymentMethod(paymentMethod);
+        a.setCategory(category);
+        a.setDepartment(department);
+        if (department != null) {
+            a.setInstitution(department.getInstitution());
+        }
+        a.setDiscountPercent(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        getFacade().create(a);
+
+        //    recreateModel();
+        fillDiscountMetrixesForPharmacyForDepartmentAndCategory();
+        UtilityController.addSuccessMessage("Saved Successfully");
     }
 
+    public void fillDiscountMetrixesForPharmacyForDepartmentAndCategory() {
+        filterItems = null;
+        String sql;
+        HashMap temMap = new HashMap();
+        sql = "select a from PharmacyMemberShipDiscount a "
+                + " where a.retired=false "
+                + " and a.membershipScheme is not null "
+                + " order by a.membershipScheme.name,a.category.name";
+        items = getFacade().findBySQL(sql);
+    }
+    
+    
+    
+    
     public void savePharmacyCategoryPaymentScheme() {
         PriceMatrix p = new PaymentSchemeDiscount();
         saveSelectedCategory(p);
@@ -560,7 +614,6 @@ public class OpdMemberShipDiscountController implements Serializable {
         return items;
     }
 
-    
     public String toManageDiscountMatrixForOpdByDepartment() {
 //        toManageDiscountMatrixForChannellingByDepartment
         filterItems = null;
@@ -571,9 +624,9 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.membershipScheme.name,a.department.name";
         items = getFacade().findBySQL(sql);
         return "/membership/membership_scheme_discount_opd_by_department";
-        
+
     }
-    
+
     public void createItemsDepartments() {
         filterItems = null;
         String sql;
@@ -583,7 +636,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.membershipScheme.name,a.department.name";
         items = getFacade().findBySQL(sql);
     }
-    
+
     public void fillMatricesForChannellingMembershipsForItemsDepartments() {
         filterItems = null;
         String sql;

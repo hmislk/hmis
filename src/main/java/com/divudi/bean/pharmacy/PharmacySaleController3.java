@@ -1617,9 +1617,13 @@ public class PharmacySaleController3 implements Serializable {
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         //MEMBERSHIPSCHEME DISCOUNT
-        if (membershipScheme != null && discountAllowed) {
-            PriceMatrix priceMatrix = getPriceMatrixController().getOpdMemberDisCount(getPaymentMethod(), membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-
+       if (membershipScheme != null && discountAllowed) {
+            PaymentMethod tpm = getPaymentMethod();
+            if(tpm==null){
+                tpm = PaymentMethod.Cash;
+            }
+            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+            System.out.println("priceMatrix = " + priceMatrix);
             if (priceMatrix == null) {
                 return 0;
             } else {

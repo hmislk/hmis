@@ -24,6 +24,7 @@ import com.divudi.entity.membership.InwardMemberShipDiscount;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.membership.OpdMemberShipDiscount;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
+import com.divudi.entity.membership.PharmacyMemberShipDiscount;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -313,6 +314,28 @@ public class PriceMatrixController implements Serializable {
         return opdMemberShipDiscount;
     }
     
+    
+    
+    public PharmacyMemberShipDiscount getPharmacyMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
+        System.out.println("getPharmacyMemberDisCount");
+        PharmacyMemberShipDiscount opdMemberShipDiscount = null;
+
+        String jpql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", membershipScheme);
+        hm.put("cat", category);
+        hm.put("dep", department);
+        jpql = "Select i from PharmacyMemberShipDiscount i"
+                + "  where i.retired=false "
+                + " and i.membershipScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.category=:cat "
+                + " and i.department=:dep ";
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + jpql);
+        return (PharmacyMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(jpql, hm);
+    }
     
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
         System.out.println("getOpdMemberDisCount");
