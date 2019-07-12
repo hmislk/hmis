@@ -125,6 +125,7 @@ public class PatientController implements Serializable {
     private String searchText;
 
     public String toChangeMembershipOfSelectedPersons() {
+        items = new ArrayList<>();
         return "/membership/change_membership";
     }
 
@@ -139,12 +140,17 @@ public class PatientController implements Serializable {
     }
 
     public void changeMembershipOfSelectedPersons(){
+        System.out.println("changeMembershipOfSelectedPersons");
        for(Patient p:getSelectedItems()){
+           System.out.println("p = " + p);
            if(p.getPerson()!=null){
+               System.out.println("p.getPerson() = " + p.getPerson());
+               System.out.println("membershipScheme = " + membershipScheme);
                p.getPerson().setMembershipScheme(membershipScheme);
                p.getPerson().setEditedAt(new Date());
                p.getPerson().setEditer(sessionController.getLoggedUser());
                getFacade().edit(p);
+               getPersonFacade().edit(p.getPerson());
            }
        }
        JsfUtil.addSuccessMessage("Membership Updated");
@@ -833,9 +839,6 @@ public class PatientController implements Serializable {
     }
 
     public List<Patient> getItems() {
-        if (items == null || items.isEmpty()) {
-            fillAllPatients();
-        }
         return items;
     }
 

@@ -561,7 +561,8 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     
-    public String toManagementOfOpdMembershipDiscountsByDepartments() {
+    public String toManageDiscountMatrixForOpdByDepartment() {
+//        toManageDiscountMatrixForChannellingByDepartment
         filterItems = null;
         String sql;
         sql = "select a from OpdMemberShipDiscount a "
