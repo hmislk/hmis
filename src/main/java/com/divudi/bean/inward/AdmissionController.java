@@ -94,6 +94,7 @@ public class AdmissionController implements Serializable {
     private String ageText = "";
     private String bhtText = "";
     private String patientTabId = "tabNewPt";
+    private int patientSearchTab;
     private Patient newPatient;
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
@@ -417,12 +418,31 @@ public class AdmissionController implements Serializable {
         ageText = null;
         patientList = null;
         patientTabId = "tabNewPt";
+        patientSearchTab = 0;
         selectText = "";
         selectedItems = null;
         newPatient = null;
         yearMonthDay = null;
         printPreview = false;
         bhtNumberCalculation();
+    }
+    
+    
+    public String toAdmitAMember() {
+        patientRoom = null;
+        items = null;
+        bhtText = "";
+        ageText = null;
+        patientList = null;
+        patientTabId = "tabSearchPt";
+        patientSearchTab = 1;
+        selectText = "";
+        selectedItems = null;
+        newPatient = null;
+        yearMonthDay = null;
+        printPreview = false;
+        bhtNumberCalculation();
+        return "/inward/inward_admission";
     }
 
     public void discharge() {
@@ -971,6 +991,16 @@ public class AdmissionController implements Serializable {
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
     }
+
+    public int getPatientSearchTab() {
+        return patientSearchTab;
+    }
+
+    public void setPatientSearchTab(int patientSearchTab) {
+        this.patientSearchTab = patientSearchTab;
+    }
+    
+    
 
     /**
      *
