@@ -13,6 +13,8 @@
     </h:head>
     <h:body>
 
+        <!--http://localhost:8080/hmis/faces/mobile/index.xhtml?username=bud1&password=b-->
+        
         <ui:composition template="./mobile_template.xhtml">
 
           
@@ -20,6 +22,8 @@
             <ui:define name="content">
 
                 <h:form>
+                    
+                    <h1>#{sessionController.loginRequestResponse}</h1>
 
                     <div class="w3-row" >
 
@@ -29,7 +33,12 @@
 
                         <div class="w3-thired  w3-center" >
 
-                            <h:commandLink value="My Test Results" class=" w3-button w3-deep-orange w3-padding-16 w3-margin w3-centere"  style="width: 80%;"></h:commandLink>
+                            <h:commandLink value="My Test Results" 
+                                           class=" w3-button w3-deep-orange w3-padding-16 w3-margin w3-centere"  
+                                           style="width: 80%;"
+                                           action="#{patientReportController.toViewMyReports()}">
+                                
+                            </h:commandLink>
 
                         </div>
 
@@ -46,7 +55,7 @@
 
                         <div class="w3-thired  w3-center" >
 
-                            <h:commandLink value="My Pharmacy Purchases" class=" w3-button w3-deep-orange  w3-padding-16 w3-margin"  style="width: 80%;"></h:commandLink>
+                            <h:commandLink value="My Pharmacy Purchases" action="#{searchController.searchMyPharmacyBills}" class=" w3-button w3-deep-orange  w3-padding-16 w3-margin"  style="width: 80%;"></h:commandLink>
 
                         </div>
 

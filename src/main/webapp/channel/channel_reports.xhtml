@@ -61,9 +61,12 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Agent Details()" action="/channel/channel_report_agent_details"/>
                                 </h:panelGrid>
                             </p:tab>
-                            <p:tab title="Count">
+                            <p:tab title="Counts">
                                 <h:panelGrid columns="1">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Count Report By Doctor(24)" action="/channel/channel_report_by_consultant"/>                                        
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Count for Doctors" action="/channel/channel_report_by_counts_for_doctors_daily"/>                                        
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Count for Doctors by Date of Week" action="/channel/channel_report_by_counts_for_doctors_ordered"/>                                        
+
                                 </h:panelGrid>
                             </p:tab>
                             <p:tab title="Consultant Reports">

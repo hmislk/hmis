@@ -488,6 +488,10 @@ public class Person implements Serializable {
     }
 
     public WebUser getWebUser() {
+        if(webUser==null){
+            webUser = new WebUser();
+            webUser.setWebUserPerson(this);
+        }
         return webUser;
     }
 

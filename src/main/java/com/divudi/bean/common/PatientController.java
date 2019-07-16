@@ -22,6 +22,7 @@ import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -80,6 +81,8 @@ public class PatientController implements Serializable {
     CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;
+    @EJB
+    private WebUserFacade webUserFacade;
     /**
      *
      * Controllers
@@ -93,7 +96,9 @@ public class PatientController implements Serializable {
     @Inject
     PatientEncounterController PatientEncounterController;
     @Inject
-    CommonController commonController;
+    private CommonController commonController;
+    @Inject
+    private SecurityController securityController;
     /**
      *
      * Class Variables
@@ -110,12 +115,13 @@ public class PatientController implements Serializable {
     Patient addingPatientToFamily;
     FamilyMember removingFamilyMember;
     Relation currentRelation;
+    private String password;
 
     private List<Patient> items = null;
     private List<Patient> selectedItems = null;
-    
+
     private MembershipScheme membershipScheme;
-    
+
     private Date dob;
     private String membershipTypeListner = "1";
 
@@ -139,24 +145,23 @@ public class PatientController implements Serializable {
         items = getFacade().findBySQL(j);
     }
 
-    public void changeMembershipOfSelectedPersons(){
+    public void changeMembershipOfSelectedPersons() {
         System.out.println("changeMembershipOfSelectedPersons");
-       for(Patient p:getSelectedItems()){
-           System.out.println("p = " + p);
-           if(p.getPerson()!=null){
-               System.out.println("p.getPerson() = " + p.getPerson());
-               System.out.println("membershipScheme = " + membershipScheme);
-               p.getPerson().setMembershipScheme(membershipScheme);
-               p.getPerson().setEditedAt(new Date());
-               p.getPerson().setEditer(sessionController.getLoggedUser());
-               getFacade().edit(p);
-               getPersonFacade().edit(p.getPerson());
-           }
-       }
-       JsfUtil.addSuccessMessage("Membership Updated");
+        for (Patient p : getSelectedItems()) {
+            System.out.println("p = " + p);
+            if (p.getPerson() != null) {
+                System.out.println("p.getPerson() = " + p.getPerson());
+                System.out.println("membershipScheme = " + membershipScheme);
+                p.getPerson().setMembershipScheme(membershipScheme);
+                p.getPerson().setEditedAt(new Date());
+                p.getPerson().setEditer(sessionController.getLoggedUser());
+                getFacade().edit(p);
+                getPersonFacade().edit(p.getPerson());
+            }
+        }
+        JsfUtil.addSuccessMessage("Membership Updated");
     }
-    
-    
+
     public String toAddAFamily() {
         currentFamily = new Family();
         return "/membership/add_family";
@@ -632,6 +637,9 @@ public class PatientController implements Serializable {
 //            UtilityController.addErrorMessage("Please Enter PHN number");
 //            return;
 //        }
+
+        
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -668,6 +676,15 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
+        
+        if (password != null) {
+            p.getPerson().getWebUser().setWebUserPassword(securityController.hash(password));
+            
+            password=null;
+        }
+        
+        getPersonFacade().edit(p.getPerson());
+        getWebUserFacade().edit(p.getPerson().getWebUser());
         getPersonFacade().flush();
         getFacade().flush();
     }
@@ -1102,7 +1119,7 @@ public class PatientController implements Serializable {
     }
 
     public List<Patient> getSelectedItems() {
-        if(selectedItems==null){
+        if (selectedItems == null) {
             selectedItems = new ArrayList<>();
         }
         return selectedItems;
@@ -1119,6 +1136,32 @@ public class PatientController implements Serializable {
     public void setMembershipScheme(MembershipScheme membershipScheme) {
         this.membershipScheme = membershipScheme;
     }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public SecurityController getSecurityController() {
+        return securityController;
+    }
+
+    public WebUserFacade getWebUserFacade() {
+        return webUserFacade;
+    }
+    
+    
 
     /**
      *
@@ -1264,8 +1307,6 @@ public class PatientController implements Serializable {
         this.currentRelation = currentRelation;
     }
 
-    
-    
     
     
     @FacesConverter("patientConverter")

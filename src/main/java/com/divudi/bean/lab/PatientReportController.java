@@ -245,6 +245,31 @@ public class PatientReportController implements Serializable {
         return getFacade().findBySQL(j, m);
     }
 
+    
+    public String toViewMyReports() {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation.billItem.bill.patient.person=:person";
+        Map m = new HashMap();
+
+if(false){
+    
+        PatientReport pr = new PatientReport();
+        pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson();
+        pr.getPatientInvestigation().getBillItem().getBill().getBillDate();
+        //Logged Person
+        getSessionController().getLoggedUser().getWebUserPerson();
+    
+    
+}
+        
+        
+        m.put("person", getSessionController().getLoggedUser().getWebUserPerson());
+        customerReports = getFacade().findBySQL(j, m);
+        return "/mobile/my_test_results";
+        
+    }
+    
+    
     @Deprecated
     public void createHtmlFile() {
         try {

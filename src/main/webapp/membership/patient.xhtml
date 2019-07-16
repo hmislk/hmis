@@ -131,6 +131,13 @@
                                                                  style="width: 280px; height: 75px;">
                                                 </p:inputTextarea>
 
+                                                <h:outputLabel value="Username"/>
+                                                <p:inputText autocomplete="off" value="#{patientController.current.person.webUser.name}" style="width: 280px;"/>
+                                               
+                                                <h:outputLabel value="Password"/>
+                                                <p:inputText autocomplete="off" value="#{patientController.password}" style="width: 280px;"/>
+                                               
+                                                
                                             </h:panelGrid>
 
                                         </h:panelGrid>

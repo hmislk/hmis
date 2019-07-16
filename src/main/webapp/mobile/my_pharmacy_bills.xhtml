@@ -2,16 +2,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
         <ui:composition template="./mobile_template.xhtml">
 
             <ui:define name="content">
-
                 <div class="w3-row" >
 
 
@@ -25,19 +24,18 @@
                         </p>
                         <h:form>
 
-                            <p:dataTable value="#{patientReportController.customerReports}" var="r"  >
+                            <p:dataTable value="#{searchController.bills}" var="b"  >
 
-                                <p:column headerText="Test" >
-                                    <p:commandLink value="#{r.item.name}" action="/mobile/my_report" ajax="false">
-                                        <f:setPropertyActionListener value="#{r}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
+                                <p:column headerText="Item" >
+                                    <p:commandLink value="#{b.insId}" action="/mobile/my_pharmacy_bill" ajax="false">
+                                        <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"></f:setPropertyActionListener>
                                     </p:commandLink>
                                 </p:column>
-                                <p:column headerText="Date">
-                                    <p:outputLabel value="#{r.patientInvestigation.billItem.bill.billDate}">
+                                <p:column headerText="Bill Date" >
+                                    <p:outputLabel value="#{b.billDate}">
                                         <f:convertDateTime pattern="dd MM yyyy"/>
                                     </p:outputLabel>
                                 </p:column>
-
                             </p:dataTable>
                             <p:commandButton value="Back" action="/mobile/index" ajax="false">
 
