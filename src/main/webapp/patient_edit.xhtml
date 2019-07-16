@@ -53,13 +53,16 @@
                                                  style="width: 50px;" value="#{patientController.yearMonthDay.day}">
                                         <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
                                     </p:inputText>
-                                    <p:calendar  value="#{patientController.current.person.dob}" 
-                                                 id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
-                                                 style="width: 100px!important;"
-                                                 styleClass="shortinput">
-                                        <f:ajax event="dateSelect" />
-                                    </p:calendar>
+
                                 </h:panelGrid>
+
+                                <h:outputLabel value="Phone"/>
+                                <p:calendar  value="#{patientController.current.person.dob}" 
+                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                             style="width: 100px!important;"
+                                             styleClass="shortinput">
+                                    <f:ajax event="dateSelect" />
+                                </p:calendar>
 
                                 <h:outputLabel value="Phone"/>
                                 <p:inputText autocomplete="off"  id="txtPhone" value="#{patientController.current.person.phone}" style="width: 200px;text-transform:capitalize;">
@@ -103,29 +106,14 @@
 
                         </p:panel>
 
-                        <p:panel header="Referral Details" >
 
-                            <h:panelGrid columns="2" >
-                                <h:outputLabel value="Refering Doctor"/>
-                                <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billController.bill.referredBy}" 
-                                                completeMethod="#{doctorController.completeDoctor}" var="ix" 
-                                                itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                    <p:column headerText="Name" >
-                                        <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Code" >
-                                        <h:outputLabel value="#{ix.code}" ></h:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>
-                            </h:panelGrid>
-
-                        </p:panel>
 
                         <p:panel>
 
-                        <p:commandButton value="Update" action="#{patientController.saveSelectedPatient()}" actionListener="#{billController.updateReferingDoctor}" ajax="false" onclick="if (!confirm('Are you sure you want to save this record?'))
-                                    return false;"></p:commandButton>
-                            
+                            <p:commandButton value="Update" action="#{patientController.saveSelectedPatient()}"
+                                             ajax="false" onclick="if (!confirm('Are you sure you want to save this record?'))
+                                                      return false;"></p:commandButton>
+
                         </p:panel>
 
                     </h:form>
