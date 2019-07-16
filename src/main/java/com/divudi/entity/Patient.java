@@ -150,9 +150,11 @@ public class Patient implements Serializable {
         ageDays = 0;
         ageYears = 0;
         if (person == null) {
+            age = "No Person";
             return;
         }
         if (person.getDob() == null) {
+            age = "Date of birth NOT recorded.";
             return;
         }
 
@@ -190,9 +192,11 @@ public class Patient implements Serializable {
         ageDaysOnBilledDate = 0;
         ageYearsonBilledDate = 0;
         if (person == null) {
+            ageOnBilledDate = "No Person";
             return;
         }
         if (person.getDob() == null) {
+            ageOnBilledDate = "Date of birth NOT recorded.";
             return;
         }
 
