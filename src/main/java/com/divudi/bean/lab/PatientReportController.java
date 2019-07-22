@@ -245,31 +245,27 @@ public class PatientReportController implements Serializable {
         return getFacade().findBySQL(j, m);
     }
 
-    
     public String toViewMyReports() {
         String j = "select r from PatientReport r "
                 + " where r.patientInvestigation.billItem.bill.patient.person=:person";
         Map m = new HashMap();
 
-if(false){
-    
-        PatientReport pr = new PatientReport();
-        pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson();
-        pr.getPatientInvestigation().getBillItem().getBill().getBillDate();
-        //Logged Person
-        getSessionController().getLoggedUser().getWebUserPerson();
-    
-    
-}
-        
-        
+        if (false) {
+
+            PatientReport pr = new PatientReport();
+            pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson();
+            pr.getPatientInvestigation().getBillItem().getBill().getBillDate();
+            //Logged Person
+            getSessionController().getLoggedUser().getWebUserPerson();
+
+        }
+
         m.put("person", getSessionController().getLoggedUser().getWebUserPerson());
         customerReports = getFacade().findBySQL(j, m);
         return "/mobile/my_test_results";
-        
+
     }
-    
-    
+
     @Deprecated
     public void createHtmlFile() {
         try {
@@ -356,7 +352,7 @@ if(false){
                                 case PatientAge:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
                                     break;
-                                    case PatientAgeOnBillDate:
+                                case PatientAgeOnBillDate:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAgeOnBilledDate(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getCreatedAt());
                                     break;
                                 case PatientSex:
@@ -1568,6 +1564,10 @@ if(false){
         FileOutputStream fop = null;
         File file;
         try {
+            try {
+                url = URLEncoder.encode(url, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+            }
             ITextRenderer renderer = new ITextRenderer();
             renderer.setDocument(new URL(url).toString());
 
