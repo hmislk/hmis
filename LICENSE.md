@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2019 Dr. M H B Ariyaratne
+Copyright (c) 2012 - 2032 Dr. M H B Ariyaratne
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
