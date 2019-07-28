@@ -139,7 +139,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
-    @Column(name = "active")
+    @Column
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -203,11 +203,11 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     String transName;
 
+    
+    
+    
     public double getVatPercentage() {
-        if (vatable && vatPercentage == 0.0) {
-            vatPercentage = 15;
-        }
-        return vatPercentage;
+        return 0;
     }
 
     public void setVatPercentage(double vatPercentage) {

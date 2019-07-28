@@ -253,12 +253,15 @@
                                                                     value="#{billController.currentBillItem.item}" 
                                                                     completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
                                                                     var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                                    size="10"  inputStyle="width: 340px;" maxResults="10" >
+                                                                    size="15"  inputStyle="width: 340px;" maxResults="15" >
                                                         <p:column style="max-width: 200px;" headerText="Name">
                                                             <p:outputLabel value="#{ix.name}" ></p:outputLabel>
                                                             <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
                                                                 <p:outputLabel value=" (#{ix.fullName})" ></p:outputLabel>
                                                             </h:panelGroup>
+                                                        </p:column>
+                                                        <p:column style="max-width: 200px;" headerText="Institution">
+                                                            <h:outputLabel value="#{ix.institution.name}"></h:outputLabel>
                                                         </p:column>
                                                         <p:column style="max-width: 200px;" headerText="Dept">
                                                             <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
@@ -693,7 +696,7 @@
 
                         <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
                             <div class="nonPrintBlock">
-                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                <p:commandButton value="Print ." ajax="false" action="#"  >
                                     <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
                                 </p:commandButton>
 
@@ -707,7 +710,6 @@
                             <h:panelGroup id="fiveFivePaperWithHeadings">
 
                                 <ui:repeat value="#{billController.bills}" var="b">
-
                                     <bi:five_five_paper_with_headings bill="#{b}"/>                        
                                 </ui:repeat>
                             </h:panelGroup>

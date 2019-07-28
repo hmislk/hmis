@@ -67,6 +67,7 @@
 
                         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" 
                                      var="bill"  
+                                     rows="10"
                                      style="min-width: 100%;"  
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
