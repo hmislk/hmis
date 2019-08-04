@@ -1792,14 +1792,14 @@ public class InvestigationItemController implements Serializable {
         return items;
     }
 
-    public List<InvestigationItem> getItems(Investigation ix) {
+    public  List<InvestigationItem> getItems(Investigation ix) {
         List<InvestigationItem> iis;
         if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
             Map m = new HashMap();
             m.put("item", ix);
-            iis = getFacade().findBySQL(temSql, m);
+            iis = ejbFacade.findBySQL(temSql, m);
         } else {
             iis = new ArrayList<>();
         }

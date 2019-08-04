@@ -677,6 +677,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loginForRequestsForDoctors(userName, passord);
     }
 
+    
+
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
@@ -697,7 +699,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("temSQL = " + temSQL);
         System.out.println("m = " + m);
         System.out.println("u = " + u);
-        
+
         if (u == null) {
             return false;
         }
@@ -711,7 +713,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
             String sql;
 
-            
             loginRequestResponse += "Login=1|";
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
