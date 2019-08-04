@@ -1758,7 +1758,7 @@ public class PatientReportController implements Serializable {
         currentPtIx = pi;
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        return "/patient_report";
+        return "/lab/patient_report";
     }
 
     public List<PatientReport> getCustomerReports() {
