@@ -12,7 +12,7 @@ import javax.ws.rs.core.Application;
  *
  * @author Archmage-Dushan
  */
-@javax.ws.rs.ApplicationPath("webresources")
+@javax.ws.rs.ApplicationPath("api")
 public class ApplicationConfig extends Application {
 
     @Override
@@ -39,6 +39,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.channel.Api.class);
         resources.add(com.divudi.ws.common.ApiMembership.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
+        resources.add(com.divudi.ws.lims.Lims.class);
     }
     
 }
