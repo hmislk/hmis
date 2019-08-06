@@ -229,11 +229,11 @@ public class BillController implements Serializable {
         return "/lab/collecting_centre";
     }
 
-    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+    public  List<Bill> validBillsOfBatchBill(Bill batchBill) {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return getFacade().findBySQL(j, m);
+        return billFacade.findBySQL(j, m);
     }
 
     public List<Bill> getSelectedBills() {
