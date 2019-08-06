@@ -1073,7 +1073,7 @@
 
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}">
                                             <div>
-                                                <ch:channelRecipt bill="#{channelBillController.printingBill}" dup="true"/>                                        
+                                                <ch:channelRecipt bill="#{channelBillController.billSession.bill}" dup="false"/>                                        
                                             </div>
                                         </h:panelGroup>
                                         <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >
