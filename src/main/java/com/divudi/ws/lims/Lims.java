@@ -70,7 +70,6 @@ public class Lims {
     public Lims() {
     }
 
-    
     @GET
     @Path("/samples/login/{username}/{password}")
     @Produces("application/json")
@@ -93,8 +92,7 @@ public class Lims {
             jSONObject.put("errorMessage", errMsg);
             jSONObject.put("errorCode", 1);
             return jSONObject.toString();
-        }
-        else{
+        } else {
             JSONObject jSONObject = new JSONObject();
             jSONObject.put("result", "success");
             jSONObject.put("error", false);
@@ -103,8 +101,7 @@ public class Lims {
             return jSONObject.toString();
         }
     }
-    
-    
+
     @GET
     @Path("/samples/{billId}/{username}/{password}")
     @Produces("application/json")
@@ -200,6 +197,61 @@ public class Lims {
         jSONObjectOut.put("Barcodes", array);
         String json = jSONObjectOut.toString();
         return json;
+    }
+
+    @GET
+    @Path("/middleware/{machine}/{message}/{username}/{password}")
+    @Produces("application/json")
+    public String requestLimsResponseForAnalyzer(
+            @PathParam("machine") String machine,
+            @PathParam("message") String message,
+            @PathParam("username") String username,
+            @PathParam("password") String password) {
+
+        System.out.println("password = " + password);
+        System.out.println("username = " + username);
+        System.out.println("machine = " + machine);
+        System.out.println("message = " + message);
+
+        boolean failed = false;
+        JSONArray array = new JSONArray();
+        JSONObject jSONObjectOut = new JSONObject();
+        String errMsg = "";
+        if (machine == null || machine.trim().equals("")) {
+            failed = true;
+            errMsg += "Machine not entered";
+        }
+        if (message == null || message.trim().equals("")) {
+            failed = true;
+            errMsg += "No Message";
+        }
+
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        if (requestSendingUser == null) {
+            errMsg += "Username / password mismatch.";
+            failed = true;
+        }
+
+        if (failed) {
+            JSONObject jSONObject = new JSONObject();
+            jSONObject.put("result", "error");
+            jSONObject.put("error", true);
+            jSONObject.put("errorMessage", errMsg);
+            jSONObject.put("errorCode", 1);
+            return jSONObject.toString();
+        }
+
+        if (!failed) {
+            JSONObject jSONObject = new JSONObject();
+            jSONObject.put("result", "success");
+            jSONObject.put("error", false);
+            jSONObject.put("successMessage", errMsg);
+            jSONObject.put("successCode", 1);
+            return jSONObject.toString();
+        }
+
+        return null;
+
     }
 
     public List<Item> testComponantsForPatientSample(PatientSample ps) {
