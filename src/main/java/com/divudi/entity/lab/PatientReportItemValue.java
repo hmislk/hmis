@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -41,6 +42,9 @@ public class PatientReportItemValue implements Serializable {
     String fileName;
     String fileType;
     Double doubleValue;
+
+    @Transient
+    private String value;
 
     public String getStrValue() {
         if (strValue != null) {
@@ -157,5 +161,23 @@ public class PatientReportItemValue implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.entity.PatientInvestigationItemValue[ id=" + id + " ]";
+    }
+
+    public String getValue() {
+        switch (this.investigationItem.ixItemValueType) {
+            case Double:
+            case Long:
+                value = Double.toString(this.doubleValue);
+                break;
+            case Varchar:
+                value = this.strValue;
+                break;
+            case Memo:
+                value = this.lobValue;
+                break;
+            default:
+                value = this.investigationItem.ixItemValueType.toString();
+        }
+        return value;
     }
 }

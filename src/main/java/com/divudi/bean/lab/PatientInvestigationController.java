@@ -41,6 +41,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
+import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
@@ -80,7 +81,7 @@ public class PatientInvestigationController implements Serializable {
      * EJBs
      */
     @EJB
-    private  PatientInvestigationFacade ejbFacade;
+    private PatientInvestigationFacade ejbFacade;
     @EJB
     PatientReportFacade prFacade;
     @EJB
@@ -92,17 +93,19 @@ public class PatientInvestigationController implements Serializable {
     @EJB
     SmsFacade smsFacade;
     @EJB
-    private  BillFacade billFacade;
+    private BillFacade billFacade;
     @EJB
     BillItemFacade billItemFacade;
     @EJB
-    private  PatientSampleFacade patientSampleFacade;
+    private PatientSampleFacade patientSampleFacade;
     @EJB
-    private  PatientSampleComponantFacade patientSampleComponantFacade;
+    private PatientSampleComponantFacade patientSampleComponantFacade;
     @EJB
-    private  ItemFacade itemFacade;
+    private ItemFacade itemFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    @EJB
+    PatientReportItemValueFacade patientReportItemValueFacade;
     /*
      * Controllers
      */
@@ -129,7 +132,9 @@ public class PatientInvestigationController implements Serializable {
     private PatientInvestigation current;
     Investigation currentInvestigation;
     private PatientSample currentPatientSample;
+    private List<PatientReportItemValue> patientReportItemValues;
     List<InvestigationItem> currentInvestigationItems;
+    private InvestigationItem currentInvestigationItem;
     private List<PatientInvestigation> items = null;
     private List<PatientInvestigation> lstToSamle = null;
     private List<PatientInvestigation> lstToReceive = null;
@@ -169,6 +174,27 @@ public class PatientInvestigationController implements Serializable {
     private String shift2;
 
     private String apiResponse = "#{success=false|msg=No Requests}";
+
+    public void listPatientReportItemValuesForASingleSelectedTest() {
+        boolean t = false;
+        if (t) {
+            PatientReportItemValue v = new PatientReportItemValue();
+            v.getInvestigationItem();
+            v.getPatientReport().isRetired();
+            v.getPatientReport().getPatientInvestigation().getBillItem().getBill().getBillDate();
+            v.getPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAgeInDaysOnBilledDate();
+        }
+        String j = "select v from PatientReportItemValue v "
+                + " where v.investigationItem=:ii "
+                + " and v.patientReport.retired=false "
+                + " and v.patientReport.patientInvestigation.billItem.bill.billDate between :fd and :td "
+                + " order by v.id";
+        Map m = new HashMap();
+        m.put("ii", currentInvestigationItem);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        patientReportItemValues = patientReportItemValueFacade.findBySQL(j, m);
+    }
 
     public void sentRequestToAnalyzer() {
         if (currentPatientSample == null) {
@@ -1208,7 +1234,7 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("samplingRequestResponse = " + samplingRequestResponse);
     }
 
-    public  List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
+    public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
         Long billId = stringToLong(strBillId);
         List<Bill> temBills;
         if (billId != null) {
@@ -1218,8 +1244,6 @@ public class PatientInvestigationController implements Serializable {
         }
         return temBills;
     }
-    
-    
 
     public void prepareSampleCollection() {
         Long billId = stringToLong(inputBillId);
@@ -1232,7 +1256,7 @@ public class PatientInvestigationController implements Serializable {
         prepareSampleCollectionByBills(temBills);
     }
 
-    public  Long stringToLong(String input) {
+    public Long stringToLong(String input) {
         try {
             return Long.parseLong(input);
         } catch (NumberFormatException e) {
@@ -1240,7 +1264,7 @@ public class PatientInvestigationController implements Serializable {
         }
     }
 
-    public  List<Bill> prepareSampleCollectionByBillId(Long bill) {
+    public List<Bill> prepareSampleCollectionByBillId(Long bill) {
         Bill b = billFacade.find(bill);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
@@ -1250,7 +1274,7 @@ public class PatientInvestigationController implements Serializable {
         return bs;
     }
 
-    public  List<Bill> prepareSampleCollectionByBillNumber(String insId) {
+    public List<Bill> prepareSampleCollectionByBillNumber(String insId) {
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
@@ -1480,10 +1504,7 @@ public class PatientInvestigationController implements Serializable {
 //        List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesSet);
 //        return rPatientSamples;
 //    }
-
-    
-    
-    public  List<Item> testComponantsForPatientSample(PatientSample ps) {
+    public List<Item> testComponantsForPatientSample(PatientSample ps) {
         if (ps == null) {
             return new ArrayList<>();
         }
@@ -1972,6 +1993,22 @@ public class PatientInvestigationController implements Serializable {
 
     public SmsController getSmsController() {
         return smsController;
+    }
+
+    public InvestigationItem getCurrentInvestigationItem() {
+        return currentInvestigationItem;
+    }
+
+    public void setCurrentInvestigationItem(InvestigationItem currentInvestigationItem) {
+        this.currentInvestigationItem = currentInvestigationItem;
+    }
+
+    public List<PatientReportItemValue> getPatientReportItemValues() {
+        return patientReportItemValues;
+    }
+
+    public void setPatientReportItemValues(List<PatientReportItemValue> patientReportItemValues) {
+        this.patientReportItemValues = patientReportItemValues;
     }
 
     /**
