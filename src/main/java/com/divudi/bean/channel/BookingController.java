@@ -1106,7 +1106,7 @@ public class BookingController implements Serializable {
 //        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
 //            System.err.println("Time stage 4.1 = " + new Date());
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate, sessionController.getInstitution());
 //            System.err.println("Time stage 4.2 = " + new Date());
         }
         if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
