@@ -114,6 +114,21 @@
                         </p:column>
 
 
+                        <p:column headerText="Patient"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Referring Doctor" />
+                            </f:facet>
+                            <h:outputLabel value="#{d.bill.patient.person.nameWithTitle}"/>
+                        </p:column>
+                        
+                         <p:column headerText="Phone No"  >
+                            <f:facet name="header">
+                                <h:outputLabel value="Phone" />
+                            </f:facet>
+                             <h:outputLabel value="#{d.bill.patient.person.phone}"/>
+                        </p:column>
+
+
                         <p:column headerText="Date/Time" 
                                   sortBy="#{d.bill.createdAt}">
                             <f:facet name="header">
