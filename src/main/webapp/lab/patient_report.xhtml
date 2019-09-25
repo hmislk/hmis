@@ -220,6 +220,7 @@
                                     </p:panel>
                                     <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                         <f:view contentType="text/html">
+                                           
                                             <table >
                                                 <ui:repeat id="tblMicVals" 
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues }"  
@@ -260,10 +261,6 @@
                                     <p:panel header="Report"    
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
 
-
-                                        AAAA
-                                        #{patientReportController.currentPatientReport.transInvestigation.reportType}
-                                        BBBB
                                         <h:panelGrid columns="4" >
                                             <p:outputLabel value="Search a Template" ></p:outputLabel>
                                             <p:autoComplete id="acTemplate" 
@@ -446,7 +443,7 @@
                                 <div id="divReportM"   class="labReport" >
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
-                                    <div style="position: absolute; top: 38%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 16px; height: 70%; vertical-align: top;" >
+                                    <div style="position: absolute; top: 28%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 16px; height: 70%; vertical-align: top;" >
                                         <div id="ixName" >
                                             <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" 
                                                            style="font-weight: bold;font-size: 18px!important; "/>

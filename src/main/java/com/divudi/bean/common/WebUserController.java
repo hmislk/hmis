@@ -223,7 +223,14 @@ public class WebUserController implements Serializable {
         }
 
         for (WebUserPrivilege w : getSessionController().getUserPrivileges()) {
-            if (w.getPrivilege() != null && w.getPrivilege().equals(Privileges.valueOf(privilege))) {
+            Privileges p = null;
+            try{
+                p=Privileges.valueOf(privilege);
+            }catch(Exception e){
+                hasPri=false;
+                return hasPri;
+            }
+            if (w.getPrivilege() != null && w.getPrivilege().equals(p)) {
 
                 hasPri = true;
                 return hasPri;
