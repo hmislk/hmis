@@ -9,7 +9,7 @@
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
 
                 <h:form>
@@ -21,7 +21,7 @@
                             </f:facet>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Detailed Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                            
+
                             <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary Detail " action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>                            
                             <p:commandButton styleClass="linkButton" ajax="false" value="Bills by Cashier" action="/opd_search_user_bills.xhtml"/>
@@ -29,18 +29,18 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="/lab/report_investigation_summery_by_regent_fee"/>
                         </h:panelGrid>                     
 
-                      
+
 
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Lab Hand Over" />
                             </f:facet>                           
                             <p:commandButton styleClass="linkButton" ajax="false" value="Handover Report" action="/reportIncome/report_income_without_credit_by_institution"/>                                
-                             <p:commandButton styleClass="linkButton" ajax="false" value="Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
 
                         </h:panelGrid>
-                        
-                        
+
+
                         <h:panelGrid columns="1" >
                             <f:facet name="header">
                                 <p:outputLabel value="Petty,Agent,OPD" />
@@ -48,8 +48,8 @@
                             <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
 
                         </h:panelGrid>
-                        
-                 
+
+
                     </h:panelGrid>
 
                 </h:form>
