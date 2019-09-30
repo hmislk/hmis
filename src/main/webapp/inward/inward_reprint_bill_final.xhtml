@@ -22,9 +22,12 @@
                                 <h:panelGrid columns="3">
 
                                     <p:panel header="Bill Reprints"
-                                             rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
+                                             rendered="true">                            
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"   >
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false"   >
+                                                <p:printer target="claimablePatientCopy2" ></p:printer>
+                                            </p:commandButton>
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false"   >
                                                 <p:printer target="professionalAndFinaBill" ></p:printer>
                                             </p:commandButton>
                                             <p:commandButton value="Final Bill &amp; Profesional Bill(Duplicate)" ajax="false"   >
@@ -41,7 +44,7 @@
                                             <p:commandButton value="Print Patient Copy" ajax="false"   >
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
                                             </p:commandButton>   
-                                            <p:commandButton value="Print Patient Copy(VAT Invoice)" ajax="false"  rendered="false" >
+                                            <p:commandButton value="Print Patient Copy(Invoice)" ajax="false"  rendered="false" >
                                                 <p:printer target="claimablePatientCopy2" ></p:printer>
                                             </p:commandButton>   
                                             <p:commandButton value="Print Patient Detailed Copy" ajax="false"   >
@@ -189,10 +192,10 @@
 
 
 
-                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
+                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="false">                  
                             <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
-                        <h:panelGroup id="claimablePatientCopy2" styleClass="noBorder" rendered="false" >                  
+                        <h:panelGroup id="claimablePatientCopy2" styleClass="noBorder" rendered="true" >                  
                             <bi:finalBill_vat   bill="#{inwardSearch.bill}"   showProfessional="true"/>
                         </h:panelGroup>
 
