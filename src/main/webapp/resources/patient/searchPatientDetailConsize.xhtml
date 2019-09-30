@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patient"  type="com.divudi.entity.Patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGrid rendered="#{cc.attrs.patient!=null}" style="width: 100%; border : 1px solid whitesmoke;"  >
+            <h:panelGrid columns="2"  style="width: 100%; border : 1px solid whitesmoke;" >
+                <p:outputLabel value="Name : " ></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" />
+            </h:panelGrid>
+            <h:panelGrid columns="5"   style="width: 100%; border : 1px solid whitesmoke;" >
+
+                <p:outputLabel value="Sex : " ></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{cc.attrs.patient.person.sex ne null}"/>
+                <h:outputLabel value="Not Recorded" rendered="#{cc.attrs.patient.person.sex eq null}"/>
+                <p:spacer height="1" width="50" ></p:spacer>
+
+                <p:outputLabel value="Age : " ></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.age}" />
+
+
+                <p:outputLabel value="Phone : " ></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.person.phone}" rendered="#{cc.attrs.patient.person.phone ne null and cc.attrs.patient.person.phone ne ''}"/>
+                <h:outputLabel value="Not Recorded" rendered="#{cc.attrs.patient.person.phone eq null  or cc.attrs.patient.person.phone eq ''}"/>
+                <p:spacer height="1" width="50" ></p:spacer>
+
+                <p:outputLabel value="Email : " rendered="#{cc.attrs.patient.phn ne ''}"></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.person.email}"  rendered="#{cc.attrs.patient.person.email ne null and cc.attrs.patient.person.email ne ''}"/>
+                <h:outputLabel value="Not Recorded"  rendered="#{cc.attrs.patient.person.email eq null or cc.attrs.patient.person.email eq ''}"/>
+
+                <p:outputLabel value="ID : " ></p:outputLabel>
+                <h:outputLabel value="#{cc.attrs.patient.person.nic}"  rendered="#{cc.attrs.patient.person.nic ne null and cc.attrs.patient.person.nic ne ''}"/>
+                <h:outputLabel value="No ID"  rendered="#{cc.attrs.patient.person.nic eq null or cc.attrs.patient.person.nic eq ''}"/>
+                <p:spacer height="1" width="50" ></p:spacer>
+
+               
+                <h:outputLabel value="Membership : "  /> 
+                <h:outputLabel value="Not a Member" rendered="#{cc.attrs.patient.person.membershipScheme eq null}" /> 
+                <h:outputLabel value="#{cc.attrs.patient.person.membershipScheme}" rendered="#{cc.attrs.patient.person.membershipScheme ne null}" /> 
+                
+            </h:panelGrid>
+            <h:panelGrid columns="3"   style="width: 100%; border : 1px solid whitesmoke;" >
+                <p:outputLabel value="Address : " ></p:outputLabel>
+                <p:spacer height="1" width="50" ></p:spacer>
+                <h:outputLabel value="#{cc.attrs.patient.person.address}" />
+            </h:panelGrid>
+        </h:panelGrid>
+        <h:panelGrid rendered="#{cc.attrs.patient==null}" >
+            <p:outputLabel value="No client selected." ></p:outputLabel>
+        </h:panelGrid>
+
+    </cc:implementation>
+</html>

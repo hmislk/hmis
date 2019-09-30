@@ -26,202 +26,166 @@
                     <h:form id="form">
                         <p:growl autoUpdate="true" id="growl" ></p:growl>
                         <p:focus id="focusIx" for="acIx" />
-                        <f:facet name="header">
-                            <h:outputLabel value="OPD"/>
-                        </f:facet>
+                      
+                        
+                        
                         <h:panelGroup rendered="#{!billController.printPreview}" styleClass="alignTop" >
 
-
-
-                            <p:panel style="min-height: 600px; position:relative;"  >
-                                <h:panelGrid columns="20"  >
-                                    <h:panelGrid columns="1">                                
-                                        <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
-                                            <f:selectItems value="#{enumController.paymentMethods}"  />
-                                            <p:ajax process="@this cmbPs" 
-                                                    update=":#{p:component('pBillDetails')}  tblBillItem creditCard cheque slip"
-                                                    event="change"
-                                                    listener="#{billController.changeListener()}"/>
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="1">                            
-                                        <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
-                                            <f:selectItem itemLabel="Select Discount Scheme"/>
-                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
-                                                           var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                            <p:ajax process="@this pay" 
-                                                    update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
-                                                    event="change" 
-                                                    listener="#{billController.changeListener()}"/>
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-                                    <p:inputText value="#{billController.comment}" id="comment"/>
-                                    <p:watermark value="Comment" for="comment"/>
-
-
-                                    <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                        <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                        <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                        <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
-                                    </h:panelGroup>
-
-                                    <p:commandButton  value="Settle" action="#{billController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
-                                    </p:commandButton>
-                                    <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
-                                    </p:commandButton>
-                                    <p:commandButton value="Mark as Foreigner" action="#{billController.markAsForeigner}" rendered="#{!billController.foreigner}" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Mark as Local" action="#{billController.markAsLocal}" rendered="#{billController.foreigner}" ajax="false" ></p:commandButton>
-                                    <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" >
-                                    </p:commandButton>
-                                </h:panelGrid>
-
-
-
+                            <p:panel header="OPD Billing" >
                                 <h:panelGrid columns="2" >
 
                                     <h:panelGrid columns="1" >
 
-                                        <h:panelGroup id="panelPatient" >
+                                        <h:panelGroup id="panelPatient"  >
 
-                                            <p:tabView id="tvPt" activeIndex="#{billController.patientSearchTab}"  >
+                                            <p:tabView id="tvPt" activeIndex="#{billController.patientSearchTab}"  
+                                                       style="width: 600px; height: 260px; " >
                                                 <p:ajax event="tabChange"   process="@this"  
                                                         update=":#{p:component('cmbPs')} :#{p:component('tblBillItem')} :#{p:component('pBillDetails')} "
                                                         listener="#{billController.onTabChange}" />
 
-                                                <p:tab id="tabNewPt" title="New Patient"   >
-                                                    <p:panel header="Enter New Patient Details" style="width: 550px;">
 
-                                                        <p:panelGrid columns="2" >
-                                                            <p:selectOneMenu  id="cmbTitle"  style="width: 100px;"
-                                                                              value="#{billController.newPatient.person.title}"  >
-                                                                <f:selectItem itemLabel="Select Title" />
-                                                                <f:selectItems value="#{billController.title}" var="i" 
-                                                                               itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                            </p:selectOneMenu>
-
-                                                            <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Enter the Name of the patient"
-                                                                         value="#{billController.newPatient.person.name}" 
-                                                                         style="min-width: 350px;text-transform:capitalize;">
-                                                            </p:inputText>
-
-                                                            <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;">
-                                                                <f:selectItem itemLabel="Select Gender"/>
-                                                                <f:selectItems value="#{billController.sex}"/>
-                                                            </p:selectOneMenu>
-
-                                                            <h:panelGrid columns="4">
-                                                                <p:inputText autocomplete="off"  id="year"  
-                                                                             value="#{billController.yearMonthDay.year}" 
-                                                                             style="width: 80px; ">
-                                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
-
-                                                                            listener="#{billController.dateChangeListen()}"  />
-                                                                </p:inputText>
-                                                                <p:inputText autocomplete="off" id="month"
-                                                                             style="width: 80px; " value="#{billController.yearMonthDay.month}">
-                                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
-                                                                </p:inputText>
-                                                                <p:inputText autocomplete="off" id="day" 
-                                                                             style="width: 80px;" value="#{billController.yearMonthDay.day}">
-                                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
-                                                                </p:inputText>
-                                                                <p:calendar  value="#{billController.newPatient.person.dob}" 
-                                                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
-                                                                             style="width: 115px!important;"
-                                                                             styleClass="shortinput">
-                                                                    <f:ajax event="dateSelect" />
-                                                                </p:calendar>
-                                                            </h:panelGrid>
-
-                                                            <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
-                                                                         autocomplete="off" maxlength="11" placeholder="Phone Number"
-                                                                         value="#{billController.newPatient.person.phone}"
-                                                                         style="width: 135;">
-                                                            </p:inputMask>
-
-                                                            <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
-                                                                         style="width: 350px;" value="#{billController.newPatient.person.email}">
-                                                                <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
-                                                            </p:inputText>
+                                                <p:tab id="tabNewPt" title="Ordering for a new client"   >
 
 
-                                                            <p:inputText style="width:135px;" placeholder="National ID No." value="#{billController.newPatient.person.nic}"/>
-                                                            <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Search &amp; Select Area"
-                                                                            completeMethod="#{areaController.completeArea}" 
-                                                                            var="pta" itemLabel="#{pta.name}" styleClass="shortinputOpd"
-                                                                            itemValue="#{pta}" forceSelection="true" 
-                                                                            value="#{billController.newPatient.person.area}" ></p:autoComplete>
+                                                    <h:panelGrid columns="2" >
+                                                        <p:selectOneMenu  id="cmbTitle"  style="width: 100px;"
+                                                                          value="#{billController.newPatient.person.title}"  >
+                                                            <f:selectItem itemLabel="Select Title" />
+                                                            <f:selectItems value="#{billController.title}" var="i" 
+                                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                        </p:selectOneMenu>
+                                                        <p:inputText autocomplete="off"  id="txtNewPtName" placeholder="Enter the Name of the patient"
+                                                                     value="#{billController.newPatient.person.name}" 
+                                                                     style="min-width: 430px;text-transform:capitalize;">
+                                                        </p:inputText>
+                                                    </h:panelGrid>
 
-                                                        </p:panelGrid>
-                                                        <p:panelGrid columns="1" >
-                                                            <p:inputText style="width:506px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
-                                                        </p:panelGrid>
-                                                        <p:watermark value="YEAR" for="year" />
-                                                        <p:watermark value="MONTH" for="month" />
-                                                        <p:watermark value="DAYS" for="day" />
-                                                        <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
-                                                        <p:tooltip for="year" >
-                                                            You can enter the age in years here. The system will calculate the approximate date of birth.
-                                                        </p:tooltip>
-                                                        <p:tooltip for="month" >
-                                                            In children below five years, you may enter the age in months here. The system will use this data to calculate the approximate date of birth.
-                                                        </p:tooltip>
-                                                        <p:tooltip for="day" >
-                                                            In children below one month, you may enter the age in days here. The system will use this to calculate the approximate date of birth.
-                                                        </p:tooltip>
-                                                        <p:tooltip for="calNewPtDob" >
-                                                            Select Gender
-                                                        </p:tooltip>
-                                                        <p:tooltip for="cmbTitle" >
-                                                            Select Title
-                                                        </p:tooltip>
-                                                        <p:tooltip for="txtNewPtName" >
-                                                            Enter Patient Name
-                                                        </p:tooltip>
-                                                        <p:tooltip for="txtNewSex" >
-                                                            Select Gender
-                                                        </p:tooltip>
-                                                        <p:tooltip for="acNewPtArea" >
-                                                            Search Area
-                                                        </p:tooltip>
-                                                        <p:tooltip for="calNewPtDob" >
-                                                            You can also enter the Date of Birth
-                                                        </p:tooltip>
-                                                        <p:tooltip for="txtEmail" >
-                                                            Enter the email
-                                                        </p:tooltip>
-                                                        <p:tooltip for="txtNewSex" >
-                                                            Select Gender
-                                                        </p:tooltip>
-                                                        <p:tooltip for="txtNewSex" >
-                                                            Select Gender
-                                                        </p:tooltip>
-                                                    </p:panel>
 
+                                                    <h:panelGrid columns="7" >
+                                                        <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;"
+                                                                         editable="false">
+                                                            <f:selectItem itemLabel="Select Sex"/>
+                                                            <f:selectItems value="#{billController.sex}"/>
+                                                        </p:selectOneMenu>
+
+                                                        <p:inputText autocomplete="off"  id="year"  
+                                                                     value="#{billController.yearMonthDay.year}" 
+                                                                     style="width: 90px; ">
+                                                            <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+
+                                                                    listener="#{billController.dateChangeListen()}"  />
+                                                        </p:inputText>
+                                                        <p:inputText autocomplete="off" id="month"
+                                                                     style="width: 90px; " value="#{billController.yearMonthDay.month}">
+                                                            <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
+                                                        </p:inputText>
+                                                        <p:inputText autocomplete="off" id="day" 
+                                                                     style="width: 90px;" value="#{billController.yearMonthDay.day}">
+                                                            <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
+                                                        </p:inputText>
+                                                        <p:calendar  value="#{billController.newPatient.person.dob}" 
+                                                                     id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                     inputStyle="width: 124px!important;"
+                                                                     styleClass="shortinput">
+                                                            <f:ajax event="dateSelect" />
+                                                        </p:calendar>
+
+                                                    </h:panelGrid>
+                                                    <h:panelGrid columns="3" >
+                                                        <p:inputText id="txtNewPtPhone" 
+                                                                     autocomplete="off" maxlength="11" placeholder="Phone Number"
+                                                                     value="#{billController.newPatient.person.phone}"
+                                                                     style="width: 240px;">
+                                                        </p:inputText>
+
+                                                        <p:spacer height="1" width="66" ></p:spacer>
+
+                                                        <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                                                     style="width: 240px;" value="#{billController.newPatient.person.email}">
+                                                            <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
+                                                        </p:inputText>
+
+
+
+
+
+                                                    </h:panelGrid>
+
+
+
+                                                    <h:panelGrid columns="3" >
+                                                        <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Select Area"
+                                                                        completeMethod="#{areaController.completeArea}" 
+                                                                        var="pta" itemLabel="#{pta.name}" inputStyle="width:240px!important;"
+                                                                        itemValue="#{pta}" forceSelection="true" 
+                                                                        value="#{billController.newPatient.person.area}" ></p:autoComplete>
+                                                        <p:spacer height="1" width="66" ></p:spacer>
+                                                        <p:inputText style="width:240px;" placeholder="Identity No" value="#{billController.newPatient.person.nic}"/>
+                                                    </h:panelGrid>
+
+                                                    <h:panelGrid columns="1" >
+                                                        <p:inputTextarea style="width:560px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
+                                                    </h:panelGrid>
+
+
+
+
+                                                    <p:watermark value="Age(Years)*" for="year" class="w3-red" />
+                                                    <p:watermark value="Age(Months)" for="month" />
+                                                    <p:watermark value="Age(Days)" for="day" />
+                                                    <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
+                                                    <p:tooltip for="year" >
+                                                        You can enter the age in years here. The system will calculate the approximate date of birth.
+                                                    </p:tooltip>
+                                                    <p:tooltip for="month" >
+                                                        In children below five years, you may enter the age in months here. The system will use this data to calculate the approximate date of birth.
+                                                    </p:tooltip>
+                                                    <p:tooltip for="day" >
+                                                        In children below one month, you may enter the age in days here. The system will use this to calculate the approximate date of birth.
+                                                    </p:tooltip>
+                                                    <p:tooltip for="calNewPtDob" >
+                                                        Select Gender
+                                                    </p:tooltip>
+                                                    <p:tooltip for="cmbTitle" >
+                                                        Select Title
+                                                    </p:tooltip>
+                                                    <p:tooltip for="txtNewPtName" >
+                                                        Enter Patient Name
+                                                    </p:tooltip>
+                                                    <p:tooltip for="txtNewSex" >
+                                                        Select Gender
+                                                    </p:tooltip>
+                                                    <p:tooltip for="acNewPtArea" >
+                                                        Search Area
+                                                    </p:tooltip>
+                                                    <p:tooltip for="calNewPtDob" >
+                                                        You can also enter the Date of Birth
+                                                    </p:tooltip>
+                                                    <p:tooltip for="txtEmail" >
+                                                        Enter the email
+                                                    </p:tooltip>
+                                                    <p:tooltip for="txtNewSex" >
+                                                        Select Gender
+                                                    </p:tooltip>
+                                                    <p:tooltip for="txtNewSex" >
+                                                        Select Gender
+                                                    </p:tooltip>
 
                                                 </p:tab>
 
-                                                <p:tab id="tabSearchPt" title="Search Patient">
+                                                <p:tab id="tabSearchPt" title="Ordering for an existing client" >
 
                                                     <h:panelGrid columns="1" >
-                                                        <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
-                                                                                 itemLabel="Serch Only Registed Patient" >
-                                                            <f:ajax execute="@this" render="acPt" />
-                                                        </p:selectBooleanCheckbox>
+
                                                         <p:autoComplete styleClass="mediuminput" converter="patientConverter"
                                                                         disabled="#{billController.fromOpdEncounter}"
                                                                         widgetVar="aPt" id="acPt" forceSelection="true" 
                                                                         value="#{billController.searchedPatient}" 
                                                                         completeMethod="#{patientController.completePatientByNameOrCode}" 
                                                                         var="apt" itemLabel="#{apt.person.name}" 
-                                                                        itemValue="#{apt}" size="30"  style="width: 400px;"
-                                                                        minQueryLength="4">
+                                                                        itemValue="#{apt}" size="30"  inputStyle="width: 540px!important;"
+                                                                        minQueryLength="4" placeholder="Type 4 letters of the name, phone number of ID to search Clients">
 
 
                                                             <p:column headerText="Name">
@@ -253,16 +217,24 @@
                                                                     listener="#{billController.calTotals()}" />
                                                         </p:autoComplete>   
 
-                                                        <h:panelGroup id="panSearch">
-                                                            <pat:searchPatientDetail patient="#{billController.searchedPatient}"  />
-                                                        </h:panelGroup>
+                                                        <p:panel id="panSearch" style="height: 160px; width: 542px;">
 
-                                                        <div style="padding: 2px; margin: 2px; border: 1px solid;">
-                                                            <p:outputLabel value="#{pharmacySaleController.opdEncounterComments}" ></p:outputLabel>
-                                                        </div>
+                                                            <h:panelGroup rendered="#{billController.searchedPatient ne null}" >
+                                                                <pat:searchPatientDetailConsize patient="#{billController.searchedPatient}"  />
+
+                                                                <h:commandLink id="colPtDetail" rendered="#{webUserController.hasPrivilege('LabEditPatient')}" 
+                                                                               value="To Edit Patient Details" 
+                                                                               action="/patient_edit" target="_blank"
+                                                                               style="text-decoration:underline; float: right;" >
+                                                                    <f:setPropertyActionListener value="#{billController.searchedPatient}" target="#{patientController.current}"/>
+                                                                </h:commandLink>
+
+                                                            </h:panelGroup>
+
+
+                                                        </p:panel>
 
                                                     </h:panelGrid>
-
 
                                                 </p:tab>
 
@@ -271,85 +243,108 @@
                                         </h:panelGroup>
 
                                         <h:panelGroup id="panelIx" >
-
-
-                                            <p:panel id='pIxAdd' header="Items / Services"
+                                            <p:panel id='pIxAdd' header="Search &amp; Add Tests or Services to order"
                                                      style="min-height: 350px;"  >
-
-
 
                                                 <p:focus  context="acIx"/>
 
-                                                <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
-                                                                value="#{billController.currentBillItem.item}" 
-                                                                completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
-                                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
-                                                                size="10"  style="width: 400px;" maxResults="10" >
-                                                    <p:column style="max-width: 200px;" headerText="Name">
-                                                        <p:outputLabel value="#{ix.name}" ></p:outputLabel>
-                                                        <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
-                                                            <p:outputLabel value=" (#{ix.fullName})" ></p:outputLabel>
-                                                        </h:panelGroup>
-                                                    </p:column>
-                                                    <p:column style="max-width: 200px;" headerText="Dept">
-                                                        <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column style="max-width: 200px;" headerText="Code">
-                                                        <h:outputLabel value="#{ix.code}"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:column style="text-align: right; max-width: 80px;" headerText="Value">
-                                                        <h:outputLabel value="#{ix.total}"></h:outputLabel>
-                                                    </p:column>
-                                                    <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
-                                                    <f:ajax event="itemSelect"  execute="@this" render="txtQty" />
-                                                </p:autoComplete>
-                                                <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
-                                                    <f:ajax execute="txtQty acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
-                                                </h:commandButton>
-
-                                                <h:panelGrid id="txtQty">
-                                                    <h:inputText autocomplete="off" 
-                                                                 rendered="#{billController.currentBillItem.item.requestForQuentity}"
-                                                                 value="#{billController.currentBillItem.qty}" >
-                                                    </h:inputText>
-                                                </h:panelGrid>
-                                                <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                                    <f:selectItem itemLabel="Filter by Department"/>
-                                                    <f:selectItems value="#{departmentController.labs}" 
-                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                    <p:ajax process="@this" update="acIx" event="change"/>
-                                                </p:selectOneMenu><br></br>
-                                                <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
-                                                <!--<p:defaultCommand target="btnAddIx" />-->
-                                                <p:panel header="Session"  >
-                                                    <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
-                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
-                                                    </p:calendar>
-                                                    <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
-                                                        <f:selectItem itemLabel="Select Department"/>
-                                                        <f:selectItems value="#{departmentController.labs}" 
-                                                                       var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
-                                                        <p:ajax process="@this" update="acIx" event="change"/>
-                                                    </p:selectOneMenu><br></br>
-                                                    <p:dataTable id="tblSs" value="#{billController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
-                                                        <f:facet name="header">
-                                                            <h:outputLabel value="#{billController.lastBillItem.item.name}" />
-
-                                                            <h:outputLabel id="lblTemS" value="#{billController.sessionDate}" >
-                                                                <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
-                                                            </h:outputLabel>
-
-
-
-                                                        </f:facet>
-                                                        <p:column headerText="No.">
-                                                            <h:outputLabel value="#{bs.serialNo}" />
+                                                <p:panelGrid columns="3" >
+                                                    <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
+                                                                    value="#{billController.currentBillItem.item}" 
+                                                                    completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                                    size="10"  inputStyle="width: 340px;" maxResults="10" >
+                                                        <p:column style="max-width: 200px;" headerText="Name">
+                                                            <p:outputLabel value="#{ix.name}" ></p:outputLabel>
+                                                            <h:panelGroup rendered="#{ix.name ne ix.fullName}" >
+                                                                <p:outputLabel value=" (#{ix.fullName})" ></p:outputLabel>
+                                                            </h:panelGroup>
                                                         </p:column>
-                                                        <p:column headerText="Client">
-                                                            <h:outputLabel value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
+                                                        <p:column style="max-width: 200px;" headerText="Dept">
+                                                            <h:outputLabel value="#{ix.department.name}"></h:outputLabel>
                                                         </p:column>
-                                                    </p:dataTable>
-                                                </p:panel>
+                                                        <p:column style="max-width: 200px;" headerText="Code">
+                                                            <h:outputLabel value="#{ix.code}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:column style="text-align: right; max-width: 80px;" headerText="Value">
+                                                            <h:outputLabel value="#{ix.total}"></h:outputLabel>
+                                                        </p:column>
+                                                        <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
+                                                        <f:ajax event="itemSelect"  execute="@this" render="txtQty" />
+                                                    </p:autoComplete>
+
+                                                    <p:commandButton id="btnAddIx" value="Add to order" action="#{billController.addToBill()}"
+                                                                     process="txtQty acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems"
+                                                                     update="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" >
+                                                    </p:commandButton>
+
+                                                    <p:commandButton value="More" type="button" onclick="PF('dlg1').show();" />
+
+                                                </p:panelGrid>
+
+
+                                                <p:dialog header="Additional Activities for Ordering Service / Test " widgetVar="dlg1" minHeight="40" height="300" width="400">
+                                                    <h:panelGroup id="txtQty" >
+                                                        <p:panel header="Qdd Quantities ofr Services / Tests " rendered="#{billController.currentBillItem.item.requestForQuentity}" >
+                                                            <h:panelGrid columns="2" >
+                                                                <p:outputLabel value="Quantity" rendered="#{billController.currentBillItem.item.requestForQuentity}"></p:outputLabel>
+                                                                <h:inputText autocomplete="off" 
+                                                                             rendered="#{billController.currentBillItem.item.requestForQuentity}"
+                                                                             value="#{billController.currentBillItem.qty}" >
+                                                                </h:inputText>
+                                                            </h:panelGrid>
+                                                        </p:panel>
+                                                    </h:panelGroup>
+                                                    <p:panel header="Reservation"  >
+                                                        <h:panelGrid id="gridSession" columns="2">
+                                                            <p:outputLabel value="Filter By Department" ></p:outputLabel>
+                                                            <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                                                <f:selectItem itemLabel="Select Department"/>
+                                                                <f:selectItems value="#{departmentController.labs}" 
+                                                                               var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                                <p:ajax process="@this" update="acIx" event="change"/>
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Date of Reservation" ></p:outputLabel>
+                                                            <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
+                                                        </h:panelGrid>
+                                                    </p:panel>
+
+                                                    <p:panel header="Current Reservations" >
+                                                        <h:panelGrid id="gridSessionList" columns="2" >
+                                                            <p:outputLabel value="Date" ></p:outputLabel>
+                                                            <p:calendar id="calS"  value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
+                                                                <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
+                                                            </p:calendar>
+                                                            <p:outputLabel value="Department" ></p:outputLabel>
+                                                            <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
+                                                                <f:selectItem itemLabel="Select Department"/>
+                                                                <f:selectItems value="#{departmentController.labs}" 
+                                                                               var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                                <p:ajax process="@this" update="acIx" event="change"/>
+                                                            </p:selectOneMenu>
+                                                        </h:panelGrid>
+
+                                                        <p:dataTable id="tblSs" value="#{billController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
+                                                            <f:facet name="header">
+                                                                <h:outputLabel value="#{billController.lastBillItem.item.name}" />
+                                                                <h:outputLabel value=" reserved on " />
+                                                                <h:outputLabel id="lblTemS" value="#{billController.sessionDate}" >
+                                                                    <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                                </h:outputLabel>
+                                                            </f:facet>
+                                                            <p:column headerText="No.">
+                                                                <h:outputLabel value="#{bs.serialNo}" />
+                                                            </p:column>
+                                                            <p:column headerText="Client">
+                                                                <h:outputLabel value="#{bs.billItem.bill.patient.person.nameWithTitle}" />
+                                                            </p:column>
+                                                        </p:dataTable>
+
+
+                                                    </p:panel>
+
+                                                </p:dialog>
+
                                             </p:panel>
 
 
@@ -361,7 +356,52 @@
 
                                     <h:panelGrid columns="1" >
 
+                                        <h:panelGrid columns="20"  >
+                                            <h:panelGrid columns="1">                                
+                                                <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
+                                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                                    <p:ajax process="@this cmbPs" 
+                                                            update=":#{p:component('pBillDetails')}  tblBillItem creditCard cheque slip"
+                                                            event="change"
+                                                            listener="#{billController.changeListener()}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGrid>
+                                            <h:panelGrid columns="1">                            
+                                                <p:selectOneMenu   id="cmbPs" value="#{billController.paymentScheme}">     
+                                                    <f:selectItem itemLabel="Select Discount Scheme"/>
+                                                    <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
+                                                                   var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
+                                                    <p:ajax process="@this pay" 
+                                                            update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
+                                                            event="change" 
+                                                            listener="#{billController.changeListener()}"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGrid>
+                                            <p:inputText value="#{billController.comment}" id="comment"/>
+                                            <p:watermark value="Comment" for="comment"/>
 
+
+                                            <h:panelGroup id="creditCard" style="display: #{billController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <pa:creditCard paymentMethodData="#{billController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="cheque" style="display: #{billController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <pa:cheque paymentMethodData="#{billController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup id="slip" style="display: #{billController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
+                                            </h:panelGroup>
+
+                                            <p:commandButton  value="Settle" action="#{billController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
+                                            </p:commandButton>
+                                            <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                            </p:commandButton>
+                                            <p:commandButton value="Mark as Foreigner" action="#{billController.markAsForeigner}" rendered="#{!billController.foreigner}" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Mark as Local" action="#{billController.markAsLocal}" rendered="#{billController.foreigner}" ajax="false" ></p:commandButton>
+                                            <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" >
+                                            </p:commandButton>
+                                        </h:panelGrid>
 
 
                                         <h:panelGroup id="panelBillReferrals" >
@@ -641,7 +681,11 @@
 
 
                                 </h:panelGrid>
+
                             </p:panel>
+
+
+
                         </h:panelGroup>
 
 
@@ -661,7 +705,7 @@
                                                              return false;"/>
                             </div>
                             <h:panelGroup id="fiveFivePaperWithHeadings">
-                                
+
                                 <ui:repeat value="#{billController.bills}" var="b">
 
                                     <bi:five_five_paper_with_headings bill="#{b}"/>                        

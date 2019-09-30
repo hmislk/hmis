@@ -327,8 +327,8 @@ public class ItemController implements Serializable {
                 itf.setInstitution(i.getInstitution());
                 itf.setDepartment(i.getDepartment());
                 itf.setFeeType(FeeType.OwnInstitution);
-                itf.setFee(100.0);
-                itf.setFfee(100.0);
+                itf.setFee(0.0);
+                itf.setFfee(0.0);
                 itemFeeManager.setItemFee(itf);
                 itemFeeManager.setItem(i);
                 itemFeeManager.addNewFee();
@@ -344,12 +344,14 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (!(i.getItemFeesAuto() == null) && !(i.getItemFeesAuto().isEmpty())) {
                 double t = 0.0;
+                double tf = 0.0;
                 for (ItemFee itf : i.getItemFeesAuto()) {
                     getItemFeeFacade().edit(itf);
                     t += itf.getFee();
-
+                    tf += itf.getFfee();
                 }
                 i.setTotal(t);
+                i.setTotalForForeigner(tf);
                 getFacade().edit(i);
             }
         }
@@ -357,6 +359,30 @@ public class ItemController implements Serializable {
         getInvestigationsAndServices();
     }
 
+    
+    public void updateSelectedFeesForDiscountAllow() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            if (!(i.getItemFeesAuto() == null) && !(i.getItemFeesAuto().isEmpty())) {
+                for (ItemFee itf : i.getItemFeesAuto()) {
+                    if(itf.getFeeType()==FeeType.OwnInstitution){
+                        itf.setDiscountAllowed(true);
+                    }else{
+                        itf.setDiscountAllowed(false);
+                    }
+                    getItemFeeFacade().edit(itf);
+                }
+                getFacade().edit(i);
+            }
+        }
+        investigationsAndServices = null;
+        getInvestigationsAndServices();
+    }
+    
+    
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
         return departments;

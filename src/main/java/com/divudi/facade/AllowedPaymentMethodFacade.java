@@ -6,7 +6,7 @@
 
 package com.divudi.facade;
 
-import com.divudi.entity.memberShip.AllowedPaymentMethod;
+import com.divudi.entity.membership.AllowedPaymentMethod;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

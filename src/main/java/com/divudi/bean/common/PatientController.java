@@ -16,11 +16,13 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -79,6 +81,8 @@ public class PatientController implements Serializable {
     CommonFunctions commonFunctions;
     @EJB
     BillFacade billFacade;
+    @EJB
+    private WebUserFacade webUserFacade;
     /**
      *
      * Controllers
@@ -92,7 +96,9 @@ public class PatientController implements Serializable {
     @Inject
     PatientEncounterController PatientEncounterController;
     @Inject
-    CommonController commonController;
+    private CommonController commonController;
+    @Inject
+    private SecurityController securityController;
     /**
      *
      * Class Variables
@@ -109,50 +115,85 @@ public class PatientController implements Serializable {
     Patient addingPatientToFamily;
     FamilyMember removingFamilyMember;
     Relation currentRelation;
+    private String password;
 
     private List<Patient> items = null;
+    private List<Patient> selectedItems = null;
+
+    private MembershipScheme membershipScheme;
 
     private Date dob;
     private String membershipTypeListner = "1";
 
     StreamedContent barcode;
     ReportKeyWord reportKeyWord;
-    
+
     private String searchText;
+
+    public String toChangeMembershipOfSelectedPersons() {
+        items = new ArrayList<>();
+        return "/membership/change_membership";
+    }
+
+    public void listAllPatients() {
+        String j = "select p from Patient p where p.retired=false order by p.person.name";
+        items = getFacade().findBySQL(j);
+    }
+
+    public void listAllMembers() {
+        String j = "select p from Patient p where p.retired=false and p.person.membershipScheme is not null order by p.person.name";
+        items = getFacade().findBySQL(j);
+    }
+
+    public void changeMembershipOfSelectedPersons() {
+        System.out.println("changeMembershipOfSelectedPersons");
+        for (Patient p : getSelectedItems()) {
+            System.out.println("p = " + p);
+            if (p.getPerson() != null) {
+                System.out.println("p.getPerson() = " + p.getPerson());
+                System.out.println("membershipScheme = " + membershipScheme);
+                p.getPerson().setMembershipScheme(membershipScheme);
+                p.getPerson().setEditedAt(new Date());
+                p.getPerson().setEditer(sessionController.getLoggedUser());
+                getFacade().edit(p);
+                getPersonFacade().edit(p.getPerson());
+            }
+        }
+        JsfUtil.addSuccessMessage("Membership Updated");
+    }
 
     public String toAddAFamily() {
         currentFamily = new Family();
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
-    
-    public String searchFamily(){
+    public String searchFamily() {
         families = null;
         String j = "Select f from Family f where f.retired=false and f.phoneNo = :pn or f.membershipCardNo = :mcn";
         Map m = new HashMap();
         Long mcn;
-        try{
+        try {
             mcn = Long.parseLong(searchText);
-        }catch(Exception e){
-            mcn =0L;
+        } catch (Exception e) {
+            mcn = 0L;
         }
         m.put("pn", searchText);
         m.put("mcn", mcn);
         List<Family> fs = getFamilyFacade().findBySQL(j, m);
-        if(fs==null){
+        if (fs == null) {
             JsfUtil.addErrorMessage("No matches");
             return "";
-        }else if(fs.size()==1){
+        } else if (fs.size() == 1) {
             currentFamily = fs.get(0);
             searchText = "";
-            return "/memberShip/add_family";
-        }else{
+            return "/membership/add_family";
+        } else {
             families = fs;
             searchText = "";
-            return "/memberShip/search_family";
+            return "/membership/search_family";
         }
     }
-    
+
     public void saveFamily() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No Family Selected to Save or Update");
@@ -184,12 +225,12 @@ public class PatientController implements Serializable {
     }
 
     public String toFamily() {
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
     public String toNewPatient() {
         prepareAdd();
-        return "/memberShip/patient";
+        return "/membership/patient";
     }
 
     public void addNewMemberToFamily() {
@@ -202,7 +243,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No Member is selected to add to family.");
             return;
         }
-        if(current.getPerson().getMembershipScheme()==null){
+        if (current.getPerson().getMembershipScheme() == null) {
             current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
             getPersonFacade().edit(current.getPerson());
         }
@@ -231,13 +272,12 @@ public class PatientController implements Serializable {
         }
         try {
             currentFamily.getFamilyMembers().remove(removingFamilyMember);
+            getFamilyMemberFacade().remove(removingFamilyMember);
             JsfUtil.addSuccessMessage("Removed");
         } catch (Error e) {
             JsfUtil.addErrorMessage("Error in removing. " + e.getMessage());
         }
     }
-    
-    
 
     public void removeFamily() {
         if (currentFamily == null) {
@@ -566,11 +606,10 @@ public class PatientController implements Serializable {
     public void saveSelected() {
         saveSelected(current);
     }
-    
-    
+
     public String saveSelectedAndToFamily() {
         saveSelected(current);
-        return "/memberShip/add_family";
+        return "/membership/add_family";
     }
 
     public void saveSelected(Patient p) {
@@ -598,6 +637,9 @@ public class PatientController implements Serializable {
 //            UtilityController.addErrorMessage("Please Enter PHN number");
 //            return;
 //        }
+
+        
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -634,6 +676,15 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
+        
+        if (password != null) {
+            p.getPerson().getWebUser().setWebUserPassword(securityController.hash(password));
+            
+            password=null;
+        }
+        
+        getPersonFacade().edit(p.getPerson());
+        getWebUserFacade().edit(p.getPerson().getWebUser());
         getPersonFacade().flush();
         getFacade().flush();
     }
@@ -805,9 +856,6 @@ public class PatientController implements Serializable {
     }
 
     public List<Patient> getItems() {
-        if (items == null || items.isEmpty()) {
-            fillAllPatients();
-        }
         return items;
     }
 
@@ -1070,6 +1118,51 @@ public class PatientController implements Serializable {
         this.searchText = searchText;
     }
 
+    public List<Patient> getSelectedItems() {
+        if (selectedItems == null) {
+            selectedItems = new ArrayList<>();
+        }
+        return selectedItems;
+    }
+
+    public void setSelectedItems(List<Patient> selectedItems) {
+        this.selectedItems = selectedItems;
+    }
+
+    public MembershipScheme getMembershipScheme() {
+        return membershipScheme;
+    }
+
+    public void setMembershipScheme(MembershipScheme membershipScheme) {
+        this.membershipScheme = membershipScheme;
+    }
+
+    public CommonController getCommonController() {
+        return commonController;
+    }
+
+    public void setCommonController(CommonController commonController) {
+        this.commonController = commonController;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public SecurityController getSecurityController() {
+        return securityController;
+    }
+
+    public WebUserFacade getWebUserFacade() {
+        return webUserFacade;
+    }
+    
+    
+
     /**
      *
      * Set all Patients to null
@@ -1213,10 +1306,9 @@ public class PatientController implements Serializable {
     public void setCurrentRelation(Relation currentRelation) {
         this.currentRelation = currentRelation;
     }
-    
-    
-    
 
+    
+    
     @FacesConverter("patientConverter")
     public static class PatientConverter implements Converter {
 

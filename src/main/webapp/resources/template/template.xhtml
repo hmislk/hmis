@@ -4,7 +4,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core">
-    <h:head>
+    <h:head class="">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
         <ui:insert name="title"   >
@@ -120,10 +120,9 @@
 
                                 <p:submenu styleClass="rightBordrOnly" label="Membership"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                                     <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShipAdd')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/memberShip/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/memberShip/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MembershipReports')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/memberShip/discounts" value="Discount Management" rendered="#{webUserController.hasPrivilege('MembershipDiscountManagement')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/memberShip/administration" value="Membership Administration" rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MembershipReports')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/administration" value="Administration" rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Inward"  rendered="#{webUserController.hasPrivilege('Inward')}">
@@ -759,14 +758,6 @@
 
 
                                 <f:facet name="options">
-                                    <p:remoteCommand name="menubarSearch" action="#{searchController.menuBarSearch()}"/>
-                                    <p:inputText style="margin-right:10px" placeholder="Search"
-                                                 id="txtMenuBar"  
-                                                 value="#{searchController.menuBarSearchText}"
-                                                 onkeypress="if (event.keyCode == 13) {
-                                                             menubarSearch();
-                                                             return false;
-                                                         }"/>
                                     <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />
                                     <p:tooltip for="btnLogout" value="df"  >
                                         <h:panelGrid columns="3" >
@@ -899,7 +890,7 @@
                         </p:panel>
 
                         <h:form>
-                            <p:commandButton rendered="false" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
+                            <p:commandButton rendered="true" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
                         </h:form>
 
                     </ui:insert>
@@ -912,9 +903,9 @@
             </div>
             <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
                 <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server"  />  
-                <p:outputLabel rendered="true" value="#{sessionController.loggedPreference.id}" ></p:outputLabel>
+                <p:outputLabel rendered="false" value="#{sessionController.loggedPreference.id}" ></p:outputLabel>
                 <p:spacer width="10" height="1" rendered="true" ></p:spacer>
-                <p:outputLabel rendered="true" value="#{sessionController.userPreference.id}" ></p:outputLabel>
+                <p:outputLabel rendered="false" value="#{sessionController.userPreference.id}" ></p:outputLabel>
             </div>
 
 

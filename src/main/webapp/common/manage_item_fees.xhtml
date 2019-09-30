@@ -47,10 +47,22 @@
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Total Fee" />
-                                <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" ></h:outputLabel>
+                                <h:outputLabel id="lblTotal" value="#{itemFeeManager.item.total}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
 
-                                <p:commandButton value="Add" process="acIx" 
+                                <h:outputLabel value="Total Fee for Foreigners" />
+                                <h:outputLabel id="lblTotalF" value="#{itemFeeManager.item.totalForForeigner}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+
+                                <p:commandButton value="Add New Fee" process="acIx" 
                                                  onclick="PF('dlg').show();">   
+                                </p:commandButton>
+                                
+                                <p:commandButton value="Back" ajax="false"
+                                                 action="#{viewController.backToPreviousPage()}">   
                                 </p:commandButton>
 
                             </p:panelGrid>
@@ -74,6 +86,10 @@
                                             <f:selectItems value="#{enumController.feeTypes}" var="ft" itemLabel="#{ft.label}" itemValue="#{ft}" />                                        
                                             <p:ajax process="@this" update="gpDetail" ></p:ajax>
                                         </p:selectOneMenu>
+
+                                        <h:outputLabel value="Discounts Allowed" ></h:outputLabel>
+                                        <p:selectBooleanButton value="#{itemFeeManager.itemFee.discountAllowed}" offLabel="Discounts NOT Allowed" onLabel="Discounts Allowed" >
+                                        </p:selectBooleanButton>
 
                                         <h:panelGroup id="gpLblIns" rendered="#{itemFeeManager.itemFee.feeType eq 'OtherInstitution' or itemFeeManager.itemFee.feeType eq 'OwnInstitution'  or itemFeeManager.itemFee.feeType eq 'Referral' }" >
                                             <h:outputLabel value="Institution" ></h:outputLabel>
@@ -140,85 +156,76 @@
 
                             <p:panel header="Current Fees" id="gpFees" >
 
+                                <p:commandButton value="Update" action="#{itemFeeManager.updateFee}" 
+                                                 process="@this tblFees" 
+                                                 update=":#{p:component('lblTotal')} :#{p:component('lblTotalF')}" ></p:commandButton>
+
+                                <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
+                                    <p:column headerText="No" width="30" >
+                                        <p:outputLabel value="#{n+1}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Name" >
+                                        <p:inputText id="txtFeeName" value="#{f.name}" >
+                                            <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Type" >
+                                        <h:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Discount Allowed" >
+                                        <p:selectBooleanButton value="#{f.discountAllowed}" offLabel="Discounts NOT Allowed" onLabel="Discounts Allowed" >
+                                            <p:ajax process="@this" listener="#{itemFeeManager.updateFee(f)}" ></p:ajax>
+                                        </p:selectBooleanButton>
+                                    </p:column>
 
 
-                                <table >
-                                    <tr>
-                                        <th>
-                                            Fee Name
-                                        </th>
-                                        <th>
-                                            Fee Type
-                                        </th>
-                                        <th>
-                                            Fee For
-                                        </th>
-                                        <th>
-                                            Local Fee
-                                        </th>
-                                        <th>
-                                            Foreigner Fee
-                                        </th>
-                                    </tr>
 
-                                    <ui:repeat value="#{itemFeeManager.itemFees}" var="f" >
-                                        <tr>
-                                            <td>
-                                                <p:inputText id="txtFeeName" value="#{f.name}" >
-                                                    <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
-                                                </p:inputText>
-                                            </td>
+                                    <p:column headerText="For" >
 
-                                            <td>
-                                                <h:outputLabel id="txtFeeType1" value="#{f.id}" >
-                                                </h:outputLabel>
-                                            </td>
-                                            <td>
-                                                <h:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
-                                                </h:outputLabel>
-                                            </td>
+                                        <h:panelGroup rendered="#{f.institution ne null}" >
+                                            <h:outputLabel value="#{f.institution.name}" >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="2" ></p:spacer>
 
-                                            <td>
-                                                <h:outputLabel value="#{f.institution.name}" >
-                                                </h:outputLabel>
-                                                <h:outputLabel value="#{f.speciality.name}" >
-                                                </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{f.speciality ne null}" >
+                                            <h:outputLabel value="#{f.speciality.name}" >
+                                            </h:outputLabel>
+                                            <p:spacer height="1" width="2" ></p:spacer>
+                                        </h:panelGroup>
 
-                                                &nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;
+                                        <h:panelGroup rendered="#{f.department ne null}" >
+                                            <p:outputLabel value=" - " ></p:outputLabel>
+                                            <h:outputLabel value="#{f.department.name}" >
+                                            </h:outputLabel>
+                                        </h:panelGroup>
 
-                                                <h:outputLabel value="#{f.department.name}" >
-                                                </h:outputLabel>
-                                                <h:outputLabel value="#{f.staff.person.nameWithTitle}" >
-                                                </h:outputLabel>
+                                        <h:panelGroup rendered="#{f.staff ne null}" >
+                                            <p:outputLabel value=" - " ></p:outputLabel>
+                                            <h:outputLabel value="#{f.staff.person.nameWithTitle}" >
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column headerText="Value" >
+                                        <p:inputText id="txtFeeVal" value="#{f.fee}" >
+                                            <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Value for Foreigners" >
+                                        <p:inputText id="txtFfeeVal" value="#{f.ffee}" >
+                                            <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:component('lblTotalF')}"></p:ajax>
+                                        </p:inputText>
+                                    </p:column>
 
-                                            </td>
 
-                                            <td>
-                                                <p:inputText id="txtFeeVal" value="#{f.fee}" >
-                                                    <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
-                                                </p:inputText>
-                                            </td>
 
-                                            <td>
-                                                <p:inputText id="txtFfeeVal" value="#{f.ffee}" >
-                                                    <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" ></p:ajax>
-                                                </p:inputText>
-                                            </td>
+                                </p:dataTable>
 
-                                            <td>
-                                                <p:commandButton value="Remove" ajax="false" action="#{itemFeeManager.removeFee()}" >
-                                                    <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
-                                                </p:commandButton>
-                                            </td>
 
-                                        </tr>
 
-                                    </ui:repeat>
 
-                                </table>
-                                
-                                
-                                
+
 
                             </p:panel>
 
@@ -227,7 +234,7 @@
 
                         </p:panelGrid>
 
-                        
+
                         <p:commandButton rendered="false" value="Issue to Referral" ajax="false" action="#{itemFeeManager.fixIssueToReferralFees()}" ></p:commandButton>
 
                     </p:panel>

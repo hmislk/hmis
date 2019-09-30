@@ -119,7 +119,9 @@ public class BarcodeController {
         Image image = null;
         try {
             image = Image.getInstance(code39.createAwtImage(Color.BLACK, Color.WHITE), null);
-        } catch (BadElementException | IOException ex) {
+        } catch (BadElementException ex) {
+            Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(BarcodeController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return image.getRawData();

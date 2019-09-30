@@ -10,7 +10,7 @@ package com.divudi.entity;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -488,6 +488,10 @@ public class Person implements Serializable {
     }
 
     public WebUser getWebUser() {
+        if(webUser==null){
+            webUser = new WebUser();
+            webUser.setWebUserPerson(this);
+        }
         return webUser;
     }
 

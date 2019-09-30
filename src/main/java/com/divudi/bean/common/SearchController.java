@@ -969,6 +969,37 @@ public class SearchController implements Serializable {
         }
     }
 
+    public String searchMyPharmacyBills() {
+        BillType billtype = BillType.PharmacyPre;
+        String sql;
+        if (false) {
+            Bill b = new Bill();
+            b.getPatient().getPerson();
+            sessionController.getLoggedUser().getWebUserPerson();
+        }
+        sql = "Select b from PreBill b where "
+                + " b.billType=:bt"
+                + " and b.billedBill is null "
+                + " and b.patient.person=:person";
+        sql += " order by b.createdAt desc  ";
+        Map m = new HashMap();
+        m.put("bt", billtype);
+        m.put("person", sessionController.getLoggedUser().getWebUserPerson());
+
+        boolean maxNum = true;
+        if (maxNum == true) {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+        } else {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        }
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
+
+        return "/mobile/my_pharmacy_bills";
+    }
+
     double netTotalValue;
 
     public void createPharmacyStaffBill() {
@@ -4160,8 +4191,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
-    
+
     public void createPatientInvestigationsTableByLoggedDepartment() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
@@ -5098,8 +5128,8 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
     }
-    
-    public void listOpdBilledBills(){
+
+    public void listOpdBilledBills() {
         listBills(BillType.OpdBill, BilledBill.class, false, false, null, null, null, null, null, null);
     }
 
@@ -5118,54 +5148,52 @@ public class SearchController implements Serializable {
             sql += " and type(b.bill)=:class ";
             temMap.put("class", billClass);
         }
-        
-        if(onlyCancelledBills==true){
+
+        if (onlyCancelledBills == true) {
             sql += " and b.cancelled=:cancelled ";
             temMap.put("cancelled", true);
         }
-        if(onlyReturnedBills==true){
+        if (onlyReturnedBills == true) {
             sql += " and b.refunded=:refunded ";
             temMap.put("refunded", true);
         }
-        if(fromInstitution!=null){
+        if (fromInstitution != null) {
             sql += " and b.fromInstitution=:fromIns ";
             temMap.put("fromIns", fromInstitution);
         }
-        if(fromDepartment!=null){
+        if (fromDepartment != null) {
             sql += " and b.fromDepartment=:fromDepartment ";
             temMap.put("fromDepartment", fromDepartment);
         }
-        if(toInstitution!=null){
+        if (toInstitution != null) {
             sql += " and b.toInstitution=:toIns ";
             temMap.put("toIns", toInstitution);
         }
-        if(toDepartment!=null){
+        if (toDepartment != null) {
             sql += " and b.toDepartment=:toDepartment ";
             temMap.put("toDepartment", toDepartment);
         }
-        if(referredDoctor!=null){
+        if (referredDoctor != null) {
             sql += " and b.referredBy=:referredDoctor ";
             temMap.put("fromIns", referredDoctor);
         }
-        if(referredInstitution!=null){
+        if (referredInstitution != null) {
             sql += " and b.referredByInstitution=:referredInstitution ";
             temMap.put("fromDepartment", referredInstitution);
         }
 
-/**
- * 
- * 
- *  
-
-        temp.setStaff(staff);
-        temp.setToStaff(toStaff);
-        temp.setReferredBy(referredBy);
-        temp.setReferralNumber(referralId);
-        temp.setReferredByInstitution(referredByInstitution);
-        temp.setCreditCompany(creditCompany);
-        temp.setCollectingCentre(collectingCentre);
- * 
- */
+        /**
+         *
+         *
+         *
+         *
+         * temp.setStaff(staff); temp.setToStaff(toStaff);
+         * temp.setReferredBy(referredBy); temp.setReferralNumber(referralId);
+         * temp.setReferredByInstitution(referredByInstitution);
+         * temp.setCreditCompany(creditCompany);
+         * temp.setCollectingCentre(collectingCentre);
+         *
+         */
         sql += " order by b.createdAt desc  ";
 
         temMap.put("billType", billType);

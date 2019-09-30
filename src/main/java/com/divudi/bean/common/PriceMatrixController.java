@@ -19,10 +19,12 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.InwardPriceAdjustment;
 import com.divudi.entity.inward.RoomCategory;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.memberShip.InwardMemberShipDiscount;
-import com.divudi.entity.memberShip.MembershipScheme;
-import com.divudi.entity.memberShip.OpdMemberShipDiscount;
-import com.divudi.entity.memberShip.PaymentSchemeDiscount;
+import com.divudi.entity.membership.ChannellingMemberShipDiscount;
+import com.divudi.entity.membership.InwardMemberShipDiscount;
+import com.divudi.entity.membership.MembershipScheme;
+import com.divudi.entity.membership.OpdMemberShipDiscount;
+import com.divudi.entity.membership.PaymentSchemeDiscount;
+import com.divudi.entity.membership.PharmacyMemberShipDiscount;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;
@@ -311,6 +313,49 @@ public class PriceMatrixController implements Serializable {
 
         return opdMemberShipDiscount;
     }
+    
+    
+    
+    public PharmacyMemberShipDiscount getPharmacyMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
+        System.out.println("getPharmacyMemberDisCount");
+        PharmacyMemberShipDiscount opdMemberShipDiscount = null;
+
+        String jpql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", membershipScheme);
+        hm.put("cat", category);
+        hm.put("dep", department);
+        jpql = "Select i from PharmacyMemberShipDiscount i"
+                + "  where i.retired=false "
+                + " and i.membershipScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.category=:cat "
+                + " and i.department=:dep ";
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + jpql);
+        return (PharmacyMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(jpql, hm);
+    }
+    
+    public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
+        System.out.println("getOpdMemberDisCount");
+        OpdMemberShipDiscount opdMemberShipDiscount = null;
+
+        System.err.println(paymentMethod);
+        //Get Discount From Parent Category    
+        
+
+        //Get Discount From Department
+        if (opdMemberShipDiscount == null) {
+            System.out.println("Get Discount From Department");
+            opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, department);
+            System.out.println("3 opdMemberShipDiscount = " + opdMemberShipDiscount);
+        }
+
+        System.out.println("4 opdMemberShipDiscount = " + opdMemberShipDiscount);
+
+        return opdMemberShipDiscount;
+    }
 
     public PaymentSchemeDiscount getPaymentSchemeDiscount(PaymentMethod paymentMethod, PaymentScheme paymentScheme, Department department, Item item) {
         PaymentSchemeDiscount paymentSchemeDiscount = null;
@@ -474,9 +519,27 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
-
+        System.out.println("hm = " + hm);
+        System.out.println("sql = " + sql);
         return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
+    }
+    
+    
+    public ChannellingMemberShipDiscount fetchChannellingMemberShipDiscount(MembershipScheme membershipScheme, PaymentMethod paymentMethod, Department department) {
+        String sql;
+        HashMap hm = new HashMap();
+        hm.put("p", paymentMethod);
+        hm.put("m", membershipScheme);
+        hm.put("dep", department);
+        sql = "Select i from ChannellingMemberShipDiscount i"
+                + "  where i.retired=false "
+                + " and i.membershipScheme=:m "
+                + " and i.paymentMethod=:p"
+                + " and i.department=:dep ";
+        System.out.println("sql = " + sql);
+        System.out.println("hm = " + hm);
+        return (ChannellingMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Department department) {

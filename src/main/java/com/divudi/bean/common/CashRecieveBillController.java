@@ -5,7 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.inward.AdmissionController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;

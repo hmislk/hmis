@@ -61,7 +61,7 @@
                                                     <p:column headerText="Fill Name" >
                                                         <h:outputLabel value="#{ix.fullName}" ></h:outputLabel>
                                                     </p:column>
-                                                     <p:column headerText="Department" >
+                                                    <p:column headerText="Department" >
                                                         <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
                                                     </p:column>
                                                 </p:autoComplete>
@@ -82,15 +82,21 @@
 
                                     <p:panel header="Links" style="white-space: nowrap;" >
                                         <h:panelGrid columns="2" >
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormat()}" value="Report Format - Single Item"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormatMoveAll()}" value="Report Format - All Items"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportCalculations()}" value="Calculations"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items"></p:commandLink><br/>
+                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormat()}" value="Report Format - Single Item" target="_blank"></p:commandLink><br/>
+                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormatMoveAll()}" value="Report Format - All Items" target="_blank"></p:commandLink><br/>
+                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportCalculations()}" value="Calculations" target="_blank"></p:commandLink><br/>
+                                            <p:commandLink ajax="false" action="#{investigationController.toReplaceableIxs()}" value="Replaceable Ix" target="_blank"></p:commandLink><br/>
 
 
-                                            <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}" ajax="false" action="#{investigationController.toEditFees()}" value="Prices"></p:commandLink><br/>
+                                            <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
 
+
+                                            <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
+                                                           ajax="false" action="#{investigationController.toEditFees()}"
+                                                           actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
+                                                           value="Prices" ></p:commandLink><br/>
+
+                                            <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations" target="_blank"></p:commandLink><br/>
 
                                         </h:panelGrid>
                                     </p:panel>

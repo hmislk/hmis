@@ -178,6 +178,15 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
+    public String toManageItemFees(){
+        if(item==null){
+            JsfUtil.addErrorMessage("Nothing Selected to Edit");
+            return "";
+        }
+        fillFees();
+        return "/common/manage_item_fees";
+    }
+    
     public List<ItemFee> fillFees(Item i) {
         String jpql;
         Map m = new HashMap();
@@ -210,15 +219,35 @@ public class ItemFeeManager implements Serializable {
         updateTotal();
     }
 
+    public void updateFee() {
+        if (item == null) {
+            return;
+        }
+        double t = 0.0;
+        double tf =0.0;
+        for (ItemFee f : itemFees) {
+            t += f.getFee();
+            tf+=f.getFfee();
+            itemFeeFacade.edit(f);
+        }
+        getItem().setTotal(t);
+        getItem().setTotalForForeigner(tf);
+        itemFacade.edit(getItem());
+    }
+    
+    
     public void updateTotal() {
         if (item == null) {
             return;
         }
         double t = 0.0;
+        double tf =0.0;
         for (ItemFee f : itemFees) {
             t += f.getFee();
+            tf+=f.getFfee();
         }
         getItem().setTotal(t);
+        getItem().setTotalForForeigner(tf);
         itemFacade.edit(item);
     }
 }

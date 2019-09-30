@@ -32,7 +32,7 @@ public class PharmacyUpdateBulkController implements Serializable {
 
     @Inject
     CommonController commonController;
-    
+
     @EJB
     AmpFacade ampFacade;
     List<Amp> amps;
@@ -75,7 +75,7 @@ public class PharmacyUpdateBulkController implements Serializable {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        
+
         String sql;
         Map m = new HashMap();
 
@@ -88,7 +88,7 @@ public class PharmacyUpdateBulkController implements Serializable {
         m.put("dep", DepartmentType.Store);
 
         amps = getAmpFacade().findBySQL(sql, m);
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk discount allowed(/faces/pharmacy/pharmacy_update_discount_allowed_bulk.xhtml)");
     }
 
@@ -142,6 +142,15 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         UtilityController.addSuccessMessage("Updated...");
 
+    }
+
+    public void makeAllPharmaceuticalsToAllowDiscount() {
+        amps = getAmpFacade().findAll();
+        for (Amp a : amps) {
+            a.setDiscountAllowed(Boolean.TRUE);
+            getAmpFacade().edit(a);
+        }
+        UtilityController.addSuccessMessage("Updated...");
     }
 
     public AmpFacade getAmpFacade() {
