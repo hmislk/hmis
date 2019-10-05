@@ -105,6 +105,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUser loggedUser = null;
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
+    private UserPreference institutionPreference;
     UserPreference userPreference;
     boolean logged = false;
     boolean activated = false;
@@ -1479,6 +1480,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setLoginRequestResponse(String loginRequestResponse) {
         this.loginRequestResponse = loginRequestResponse;
     }
+    
+    
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
@@ -1498,4 +1501,16 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationPreference = applicationPreference;
     }
 
+    public UserPreference getInstitutionPreference() {
+        institutionPreference = getApplicationPreference();
+        return institutionPreference;
+    }
+
+    public void setInstitutionPreference(UserPreference institutionPreference) {
+        this.institutionPreference = institutionPreference;
+        setApplicationPreference(institutionPreference);
+    }
+
+    
+    
 }

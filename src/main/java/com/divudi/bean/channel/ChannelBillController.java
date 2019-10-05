@@ -5,6 +5,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -21,7 +22,9 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.AppEmail;
 import com.divudi.entity.Area;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
@@ -37,7 +40,9 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.Sms;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.channel.AgentReferenceBook;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.membership.PaymentSchemeDiscount;
@@ -47,13 +52,16 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.EmailFacade;
 import com.divudi.facade.FeeFacade;
 import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -155,6 +163,12 @@ public class ChannelBillController implements Serializable {
     private ChannelBean channelBean;
     List<BillItem> billItems;
     int patientSearchTab;
+    @EJB
+    private EmailFacade emailFacade;
+    @EJB
+    SmsManagerEjb smsManager;
+    @EJB
+    SmsFacade smsFacade;
 
     public Patient getNewPatient() {
         if (newPatient == null) {
@@ -1312,8 +1326,8 @@ public class ChannelBillController implements Serializable {
         comment = "";
         commentR = "";
     }
-    
-    public void prepareForNewBill(){
+
+    public void prepareForNewBill() {
         clearForNewBill();
         clearForNewPatient();
         clearForNewSearch();
@@ -1591,9 +1605,6 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
-    
-    
-    
     public void add() {
         errorText = "";
         if (errorCheck()) {
@@ -1666,14 +1677,65 @@ public class ChannelBillController implements Serializable {
             }
             return;
         }
-        
+
         if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
         settleSucessFully = true;
         sessionController.setBill(printingBill);
-
+        sendSmsOnBooking(printingBill);
         UtilityController.addSuccessMessage("Channel Booking Added.");
+    }
+
+    public void sendSmsOnBooking(Bill smsBill) {
+        UserPreference pf;
+
+        if (getSessionController().getLoggedPreference() != null) {
+            pf = getSessionController().getLoggedPreference();
+        } else if (getSessionController().getUserPreference() != null) {
+            pf = getSessionController().getUserPreference();
+        } else {
+            pf = null;
+        }
+        if (pf != null && pf.isChannellingSendSmsOnBooking()) {
+            if (!smsBill.getPatient().getPerson().getPhone().trim().equals("")) {
+                Sms e = new Sms();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setBill(smsBill);
+
+                String datePattern = "dd-MMMM-yyyy";
+                SimpleDateFormat simpleDateFormatDate = new SimpleDateFormat(datePattern);
+                String channelDate = simpleDateFormatDate.format(smsBill.getSingleBillSession().getSessionDate());
+                
+                String pattern = "hh:mm a";
+                SimpleDateFormat simpleDateFormatTime = new SimpleDateFormat(pattern);
+                String channelTime = simpleDateFormatTime.format(smsBill.getSingleBillSession().getServiceSession().getStartingTime());
+                
+                
+                String smsmsg = "Your Booking for "
+                        + smsBill.getSingleBillSession().getStaff().getPerson().getNameWithTitle()
+                        + " confirmed on "
+                        + channelDate
+                        + " from "
+                        + channelTime
+                        + ". Number " + smsBill.getSingleBillSession().getSerialNo() + ". Call " + getSessionController().getLoggedUser().getDepartment().getTelephone1();
+
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+                e.setReceipientNumber(smsBill.getPatient().getPerson().getPhone());
+                e.setSendingMessage(smsmsg);
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                e.setSentSuccessfully(false);
+                getSmsFacade().create(e);
+            }
+
+        }
+    }
+
+    public SmsFacade getSmsFacade() {
+        return smsFacade;
     }
 
     public void removeAgencyNullBill(ServiceSession ss) {
@@ -1890,20 +1952,22 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(billItem);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            if (null != f.getFeeType()) switch (f.getFeeType()) {
-                case OwnInstitution:
-                    bf.setInstitution(f.getInstitution());
-                    bf.setDepartment(f.getDepartment());
-                    break;
-                case OtherInstitution:
-                    bf.setInstitution(institution);
-                    break;
-                case Staff:
-                    bf.setSpeciality(f.getSpeciality());
-                    bf.setStaff(f.getStaff());
-                    break;
-                default:
-                    break;
+            if (null != f.getFeeType()) {
+                switch (f.getFeeType()) {
+                    case OwnInstitution:
+                        bf.setInstitution(f.getInstitution());
+                        bf.setDepartment(f.getDepartment());
+                        break;
+                    case OtherInstitution:
+                        bf.setInstitution(institution);
+                        break;
+                    case Staff:
+                        bf.setSpeciality(f.getSpeciality());
+                        bf.setStaff(f.getStaff());
+                        break;
+                    default:
+                        break;
+                }
             }
 
             bf.setFee(f);
@@ -1921,7 +1985,7 @@ public class ChannelBillController implements Serializable {
             MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
 
             PriceMatrix discountMatrix;
-            
+
             System.out.println("membershipScheme = " + membershipScheme);
 
             if (membershipScheme != null) {
@@ -1930,7 +1994,6 @@ public class ChannelBillController implements Serializable {
                 discountMatrix = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
             }
             System.out.println("discountMatrix = " + discountMatrix);
-            
 
             double d = 0;
             if (foriegn) {
