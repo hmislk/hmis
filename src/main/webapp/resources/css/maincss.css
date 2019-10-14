@@ -544,7 +544,7 @@ body {
 {
     text-wrap:none!important;
     white-space:nowrap!important;
-    overflow:hidden!important;
+    
     text-overflow:clip!important ;
     word-wrap: break-word;
 }
