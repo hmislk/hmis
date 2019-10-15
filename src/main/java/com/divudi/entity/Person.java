@@ -14,6 +14,7 @@ import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -41,7 +42,7 @@ import org.joda.time.PeriodType;
 @XmlRootElement
 public class Person implements Serializable {
 
-    @OneToOne(mappedBy = "webUserPerson")
+    @OneToOne(mappedBy = "webUserPerson",cascade = CascadeType.ALL)
     private WebUser webUser;
 
     @OneToMany(mappedBy = "person")
