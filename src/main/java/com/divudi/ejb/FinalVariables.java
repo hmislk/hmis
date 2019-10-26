@@ -79,10 +79,10 @@ public class FinalVariables {
             if (maxRowNumber != 0) {
                 return maxRowNumber;
             } else {
-                maxRowNumber = 14;
+                maxRowNumber = 28;
             }
-        } else if (maxRowNumber < 14) {
-            maxRowNumber = 14;
+        } else if (maxRowNumber < 28) {
+            maxRowNumber = 28;
         }
 
         return maxRowNumber;
@@ -146,11 +146,11 @@ public class FinalVariables {
         //VAT 15% With Total
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 1.152;
-             return 1.15;
+             return 1;
 //            return 1;
         } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
-            return 1.15;
+            return 1;
 //            return 1;
         } else {
             return 1;
