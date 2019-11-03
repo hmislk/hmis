@@ -591,6 +591,9 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
+        if(canSettleOpdBillWithoutReferringDoctor==null){
+            canSettleOpdBillWithoutReferringDoctor = false;
+        }
         return canSettleOpdBillWithoutReferringDoctor;
     }
 
