@@ -138,10 +138,10 @@
                                             <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>-->
 
-<!--                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+<!--                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
                         <div >
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                            <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
                                 <ph:issueBill_five_five bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                             </h:panelGroup>
                         </div>
@@ -154,27 +154,27 @@
 
                         <h:panelGroup   id="gpBillPreview" > 
 
-                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                            <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">
 
                                 <div >
-                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                    <h:panelGroup rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq false}" > 
                                         <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                     </h:panelGroup>
                                 </div>
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
 
                                 <div >
-                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                    <h:panelGroup     rendered="#{sessionController.currentPreference.pharmacyBillPrabodha eq true}"> 
                                         <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
                                     </h:panelGroup>
                                 </div>
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
 
                                 <div >
                                     <h:panelGroup rendered="true" > 
