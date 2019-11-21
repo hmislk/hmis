@@ -245,6 +245,21 @@ public class InvestigationController implements Serializable {
 
         return "/lab/investigation_values";
     }
+    
+    public String toLoadParentInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() != null) {
+            current=(Investigation) current.getReportedAs();
+        }
+        return "";
+    }
 
     public String toEditReportFormatMoveAll() {
         if (current == null) {

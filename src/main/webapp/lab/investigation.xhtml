@@ -91,6 +91,10 @@
                                             <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
 
 
+                                            <p:commandLink ajax="false" action="#{investigationController.toLoadParentInvestigation()}" 
+                                                           value="Load Parent Investigation" ></p:commandLink><br/>
+
+                                            
                                             <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
                                                            ajax="false" action="#{investigationController.toEditFees()}"
                                                            actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
