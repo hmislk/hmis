@@ -60,7 +60,7 @@ public class Item implements Serializable, Comparable<Item> {
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
 
     static final long serialVersionUID = 1L;
@@ -73,6 +73,7 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     Category category;
     Double total = 0.0;
+    private Double totalForForeigner = 0.0;
     Boolean discountAllowed = false;
     @ManyToOne
     Institution institution;
@@ -138,7 +139,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
-    @Column(name = "active")
+    @Column
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -202,11 +203,11 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     String transName;
 
+    
+    
+    
     public double getVatPercentage() {
-        if (vatable && vatPercentage == 0.0) {
-            vatPercentage = 15;
-        }
-        return vatPercentage;
+        return 0;
     }
 
     public void setVatPercentage(double vatPercentage) {
@@ -365,6 +366,9 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFfee;
     @Transient
     List<ItemFee> itemFees;
+
+    @Transient
+    private List<ItemFee> itemFeesActive;
 
     public List<ItemFee> getItemFeesAuto() {
         return itemFeesAuto;
@@ -1101,8 +1105,24 @@ public class Item implements Serializable, Comparable<Item> {
         this.priority = priority;
     }
 
-    
-    
+    public Double getTotalForForeigner() {
+        return totalForForeigner;
+    }
+
+    public void setTotalForForeigner(Double totalForForeigner) {
+        this.totalForForeigner = totalForForeigner;
+    }
+
+    public List<ItemFee> getItemFeesActive() {
+        itemFeesActive = new ArrayList<>();
+        for (ItemFee tif : getItemFeesAuto()) {
+            if (!tif.retired) {
+                itemFeesActive.add(tif);
+            }
+        }
+        return itemFeesActive;
+    }
+
     static class ReportItemComparator implements Comparator<ReportItem> {
 
         @Override

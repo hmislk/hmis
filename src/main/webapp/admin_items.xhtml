@@ -13,13 +13,12 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Manage Items/Services">
-                        <h:panelGrid columns="4" styleClass="alignTop" style="margin: auto;">
-
-                            <p:panel header="Manage Items / Services" >
+                        <p:tabView orientation="left">
+                            <p:tab title="Manage Items / Services">
                                 <h:panelGrid columns="1" >
 
 
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab_investigation" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="/lab/investigation" onclick="onSubmitButton();"/>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/investigation_fee" onclick="onSubmitButton();"/>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Service Categories" action="/opd_service_category" onclick="onSubmitButton();"/>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Service Subcategories" action="/opd_service_subcategory" onclick="onSubmitButton();"/>
@@ -38,23 +37,16 @@
 
 
                                 </h:panelGrid>
-                            </p:panel>
-
-
-
-                            <p:panel header="Manage Metadata" >
+                            </p:tab>
+                            <p:tab title="Manage Metadata">
                                 <h:panelGrid columns="1" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Relationships" action="relationships" ></p:commandButton>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Forms" action="/common/form_format_category" ></p:commandButton>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Form Format" action="/common/form_format" ></p:commandButton>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="/common/metadata_super_category" ></p:commandButton>
-
-
                                 </h:panelGrid>
-                            </p:panel>
-
-
-                            <p:panel header="Bulk Transactions">
+                            </p:tab>
+                            <p:tab title="Bulk Transactions">
                                 <h:panelGrid columns="1" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete of Services" action="opd_service_list_to_remove" onclick="onSubmitButton();"/>
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Services" action="/common/item_bulk_un_delete" onclick="onSubmitButton();"/>
@@ -63,9 +55,8 @@
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Un-Delete of Investigations" action="/common/investigation_bulk_un_delete" onclick="onSubmitButton();"/>
                                     
                                 </h:panelGrid>
-                            </p:panel>
-
-                            <p:panel header="Setup">
+                            </p:tab>
+                            <p:tab title="Setup">
                                 <h:panelGrid columns="1" >
                                     <p:commandButton styleClass="linkButton"
                                                      ajax="false" 
@@ -73,9 +64,9 @@
                                                      action="/dataAdmin/create_items_for_new_institution" 
                                                      onclick="onSubmitButton();"/>
                                 </h:panelGrid>
-                            </p:panel>
-
-                        </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+                        
                     </p:panel>
                 </h:form>
             </ui:define>

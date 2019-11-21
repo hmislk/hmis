@@ -8,7 +8,7 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;

@@ -23,7 +23,7 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" >
                     <h:form id="form">
                         <p:defaultCommand target="btnSave" ></p:defaultCommand>
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                        <h:panelGrid columns="3" styleClass="alignTop" >
 
                             <h:panelGroup>
                                 <p:panel header="Report">
@@ -130,16 +130,16 @@
                                     <p:panel header="Positioning" >
                                         <h:panelGrid  columns="11">
                                             <h:outputText value="Left" />
-                                            <p:inputText style="width: 50px;"  autocomplete="off" id="txtLeft" value="#{commonReportItemController.current.riLeft}"/>
+                                            <p:inputText style="width: 80px;"  autocomplete="off" id="txtLeft" value="#{commonReportItemController.current.riLeft}"/>
                                             <div style="min-width: 20px;"></div>
                                             <h:outputText value="Top"/>
-                                            <p:inputText  style="width: 50px;"  autocomplete="off" id="txtTop" value="#{commonReportItemController.current.riTop}"/>
+                                            <p:inputText  style="width: 80px;"  autocomplete="off" id="txtTop" value="#{commonReportItemController.current.riTop}"/>
                                             <div style="min-width: 20px;"></div>
                                             <h:outputText value="Width"/>
-                                            <p:inputText  style="width: 50px;"  autocomplete="off" id="txtWidth" value="#{commonReportItemController.current.riWidth}" />
+                                            <p:inputText  style="width: 80px;"  autocomplete="off" id="txtWidth" value="#{commonReportItemController.current.riWidth}" />
                                             <div style="min-width: 20px;"></div>
                                             <h:outputText value="Height"/>
-                                            <p:inputText  style="width: 50px;"  autocomplete="off" id="txtHeight" value="#{commonReportItemController.current.riHeight}"/>
+                                            <p:inputText  style="width: 80px;"  autocomplete="off" id="txtHeight" value="#{commonReportItemController.current.riHeight}"/>
 
                                         </h:panelGrid>
                                         <h:panelGrid columns="5" >
@@ -224,6 +224,33 @@
 
                             </h:panelGroup>
 
+                            <h:panelGroup >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton value="Change Name" ajax="false" action="report_format_category"
+                                                     onclick="this.form.target = '_blank'">
+                                        <f:setPropertyActionListener value="#{commonReportItemController.category}" 
+                                                                     target="#{reportFormatController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:commandButton value="List Investigation Using this Format" ajax="false" 
+                                                     >
+                                        <f:setPropertyActionListener value="#{commonReportItemController.category}" 
+                                                                     target="#{investigationController.categoryForFormat}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                    <p:dataTable value="#{investigationController.investigationWithSelectedFormat}"
+                                                 var="i" rowKey="#{i.id}" 
+                                                 
+                                                 >
+                                        <p:column >
+                                            <p:commandLink value="#{i.name}" ajax="false" action="investigation"
+                                                           onclick="this.form.target = '_blank'">
+                                                <f:setPropertyActionListener value="#{i}" 
+                                                                             target="#{investigationController.current}" ></f:setPropertyActionListener>
+                                            </p:commandLink>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                </h:panelGrid>
+                            </h:panelGroup>
 
                         </h:panelGrid>
                     </h:form>

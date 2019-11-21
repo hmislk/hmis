@@ -25,6 +25,7 @@ import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
@@ -283,7 +284,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPreRefundTable() {
@@ -966,6 +967,37 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             netTotal += b.getNetTotal();
         }
+    }
+
+    public String searchMyPharmacyBills() {
+        BillType billtype = BillType.PharmacyPre;
+        String sql;
+        if (false) {
+            Bill b = new Bill();
+            b.getPatient().getPerson();
+            sessionController.getLoggedUser().getWebUserPerson();
+        }
+        sql = "Select b from PreBill b where "
+                + " b.billType=:bt"
+                + " and b.billedBill is null "
+                + " and b.patient.person=:person";
+        sql += " order by b.createdAt desc  ";
+        Map m = new HashMap();
+        m.put("bt", billtype);
+        m.put("person", sessionController.getLoggedUser().getWebUserPerson());
+
+        boolean maxNum = true;
+        if (maxNum == true) {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 25);
+        } else {
+            bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        }
+        netTotal = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+        }
+
+        return "/mobile/my_pharmacy_bills";
     }
 
     double netTotalValue;
@@ -3975,11 +4007,11 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD billIltem search(/opd_search_billitem_own.xhtml)");
     }
 
-    public String toCreateBillItemListForCreditCompany(){
+    public String toCreateBillItemListForCreditCompany() {
         billItems = new ArrayList<>();
         return "/reportLab/credit_company_bill_item_list";
     }
-    
+
     public void createBillItemListForCreditCompany() {
         String sql;
         Map m = new HashMap();
@@ -3993,9 +4025,9 @@ public class SearchController implements Serializable {
         sql += " order by bi.id ";
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 //        checkLabReportsApprovedBillItem(billItems);
-//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+//        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
-    
+
     public void createBillItemTableByKeywordAll() {
         Date startTime = new Date();
 
@@ -4043,7 +4075,7 @@ public class SearchController implements Serializable {
         checkLabReportsApprovedBillItem(billItems);
 
         //   searchBillItems = new LazyBillItem(tmp);
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTable() {
@@ -4108,7 +4140,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
 
     public void createPatientInvestigationsTableByLoggedInstitution() {
@@ -4159,8 +4191,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
-    
-    
+
     public void createPatientInvestigationsTableByLoggedDepartment() {
 
         String sql = "select pi from PatientInvestigation pi join pi.investigation  "
@@ -4357,7 +4388,7 @@ public class SearchController implements Serializable {
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(patientInvestigations);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab_search_for_reporting_ondemand.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/search all(/faces/lab/search_for_reporting_ondemand.xhtml)");
 
     }
 
@@ -5082,8 +5113,7 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
-    
+
     public void listOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill);
@@ -5097,6 +5127,81 @@ public class SearchController implements Serializable {
         createTableByKeyword(BillType.CollectingCentreBill);
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "Collecting Center Bill Search(/opd_search_pre_batch_bill.xhtml)");
+    }
+
+    public void listOpdBilledBills() {
+        listBills(BillType.OpdBill, BilledBill.class, false, false, null, null, null, null, null, null);
+    }
+
+    public void listBills(BillType billType, Class billClass, Boolean onlyCancelledBills, Boolean onlyReturnedBills,
+            Institution fromInstitution, Department fromDepartment,
+            Institution toInstitution, Department toDepartment,
+            Doctor referredDoctor, Institution referredInstitution) {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from Bill b where b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
+
+        if (billClass != null) {
+            sql += " and type(b.bill)=:class ";
+            temMap.put("class", billClass);
+        }
+
+        if (onlyCancelledBills == true) {
+            sql += " and b.cancelled=:cancelled ";
+            temMap.put("cancelled", true);
+        }
+        if (onlyReturnedBills == true) {
+            sql += " and b.refunded=:refunded ";
+            temMap.put("refunded", true);
+        }
+        if (fromInstitution != null) {
+            sql += " and b.fromInstitution=:fromIns ";
+            temMap.put("fromIns", fromInstitution);
+        }
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment=:fromDepartment ";
+            temMap.put("fromDepartment", fromDepartment);
+        }
+        if (toInstitution != null) {
+            sql += " and b.toInstitution=:toIns ";
+            temMap.put("toIns", toInstitution);
+        }
+        if (toDepartment != null) {
+            sql += " and b.toDepartment=:toDepartment ";
+            temMap.put("toDepartment", toDepartment);
+        }
+        if (referredDoctor != null) {
+            sql += " and b.referredBy=:referredDoctor ";
+            temMap.put("fromIns", referredDoctor);
+        }
+        if (referredInstitution != null) {
+            sql += " and b.referredByInstitution=:referredInstitution ";
+            temMap.put("fromDepartment", referredInstitution);
+        }
+
+        /**
+         *
+         *
+         *
+         *
+         * temp.setStaff(staff); temp.setToStaff(toStaff);
+         * temp.setReferredBy(referredBy); temp.setReferralNumber(referralId);
+         * temp.setReferredByInstitution(referredByInstitution);
+         * temp.setCreditCompany(creditCompany);
+         * temp.setCollectingCentre(collectingCentre);
+         *
+         */
+        sql += " order by b.createdAt desc  ";
+
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
     }
 
     public void createTableByKeyword(BillType billType) {
@@ -6207,7 +6312,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab_inward_search_service.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "lab/inward billing/search bills(/faces/lab/lab/inward_search_service.xhtml)");
 
     }
 
@@ -7828,6 +7933,4 @@ public class SearchController implements Serializable {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
     }
 
-    
-    
 }

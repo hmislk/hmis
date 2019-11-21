@@ -62,7 +62,13 @@ public class Patient implements Serializable {
     @Transient
     String age;
     @Transient
+    private String ageOnBilledDate;
+    @Transient
     Long ageInDays;
+    @Transient
+    private Long ageInDaysOnBilledDate;
+    @Transient
+    private Date billedDate;
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     @Basic(fetch = FetchType.LAZY)
@@ -79,6 +85,12 @@ public class Patient implements Serializable {
     int ageDays;
     @Transient
     int ageYears;
+    @Transient
+    private int ageMonthsOnBilledDate;
+    @Transient
+    private int ageDaysOnBilledDate;
+    @Transient
+    private int ageYearsonBilledDate;
     @Temporal(TemporalType.TIMESTAMP)
     Date fromDate;
     @Temporal(TemporalType.TIMESTAMP)
@@ -138,9 +150,11 @@ public class Patient implements Serializable {
         ageDays = 0;
         ageYears = 0;
         if (person == null) {
+            age = "No Person";
             return;
         }
         if (person.getDob() == null) {
+            age = "Date of birth NOT recorded.";
             return;
         }
 
@@ -168,6 +182,48 @@ public class Patient implements Serializable {
         }
         period = new Period(dob, date, PeriodType.days());
         ageInDays = (long) period.getDays();
+    }
+    
+    public void calAgeFromDob(Date billedDate) {
+        this.billedDate = billedDate;
+        ageOnBilledDate = "";
+        ageInDaysOnBilledDate = 0l;
+        ageMonthsOnBilledDate = 0;
+        ageDaysOnBilledDate = 0;
+        ageYearsonBilledDate = 0;
+        if (person == null) {
+            ageOnBilledDate = "No Person";
+            return;
+        }
+        if (person.getDob() == null) {
+            ageOnBilledDate = "Date of birth NOT recorded.";
+            return;
+        }
+
+        LocalDate dob = new LocalDate(person.getDob());
+        LocalDate date = new LocalDate(billedDate);
+
+        Period period = new Period(dob, date, PeriodType.yearMonthDay());
+        ageYearsonBilledDate = period.getYears();
+        ageMonthsOnBilledDate = period.getMonths();
+        ageDaysOnBilledDate = period.getDays();
+        if (ageYearsonBilledDate > 12) {
+            ageOnBilledDate = period.getYears() + " years.";
+        } else if (ageYearsonBilledDate > 0) {
+            if (period.getMonths() > 0) {
+                ageOnBilledDate = period.getYears() + " years and " + period.getMonths() + " months.";
+            } else {
+                ageOnBilledDate = period.getYears() + " years.";
+            }
+        } else {
+            if (period.getDays() > 0) {
+                ageOnBilledDate = period.getMonths() + " months and " + period.getDays() + " days.";
+            } else {
+                ageOnBilledDate = period.getMonths() + " months.";
+            }
+        }
+        period = new Period(dob, date, PeriodType.days());
+        ageInDaysOnBilledDate = (long) period.getDays();
     }
 
     public static long getSerialVersionUID() {
@@ -206,6 +262,9 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    
+    
 
     @Override
     public int hashCode() {
@@ -358,6 +417,61 @@ public class Patient implements Serializable {
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public String getAgeOnBilledDate() {
+        calAgeFromDob(billedDate);
+        return ageOnBilledDate;
+    }
+    
+    public String getAgeOnBilledDate(Date billedDate) {
+        calAgeFromDob(billedDate);
+        return ageOnBilledDate;
+    }
+    
+    public String ageOnBilledDate(Date billedDate) {
+        calAgeFromDob(billedDate);
+        return ageOnBilledDate;
+    }
+
+    public Long getAgeInDaysOnBilledDate() {
+        return ageInDaysOnBilledDate;
+    }
+
+    public void setAgeInDaysOnBilledDate(Long ageInDaysOnBilledDate) {
+        this.ageInDaysOnBilledDate = ageInDaysOnBilledDate;
+    }
+
+    public int getAgeMonthsOnBilledDate() {
+        return ageMonthsOnBilledDate;
+    }
+
+    public void setAgeMonthsOnBilledDate(int ageMonthsOnBilledDate) {
+        this.ageMonthsOnBilledDate = ageMonthsOnBilledDate;
+    }
+
+    public int getAgeDaysOnBilledDate() {
+        return ageDaysOnBilledDate;
+    }
+
+    public void setAgeDaysOnBilledDate(int ageDaysOnBilledDate) {
+        this.ageDaysOnBilledDate = ageDaysOnBilledDate;
+    }
+
+    public int getAgeYearsonBilledDate() {
+        return ageYearsonBilledDate;
+    }
+
+    public void setAgeYearsonBilledDate(int ageYearsonBilledDate) {
+        this.ageYearsonBilledDate = ageYearsonBilledDate;
+    }
+
+    public Date getBilledDate() {
+        return billedDate;
+    }
+
+    public void setBilledDate(Date billedDate) {
+        this.billedDate = billedDate;
     }
 
 }

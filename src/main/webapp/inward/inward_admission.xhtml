@@ -48,7 +48,7 @@
 
                         <p:panel>
                             <p:panel header="Patient Detail" style="width: 815px;">
-                                <p:tabView  id="tvPt"  style="height: 200px;"  >
+                                <p:tabView  id="tvPt"  style="height: 200px;" activeIndex="#{admissionController.patientSearchTab}" >
                                     <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
                                     <p:tab  title="New Patient" id="tabNewPt">
 

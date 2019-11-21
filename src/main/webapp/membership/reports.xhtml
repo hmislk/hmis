@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+
+
+    <h:head>
+
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup >
+                    <h:form  >
+                        <p:growl />
+                        <p:panel header="Membership Reports" >
+
+                            
+                                    <p:panelGrid columns="1" >
+                                        <p:commandButton  action="/membership/report_inward" value="Inward MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipInwardMemberShipInwardMemberShipReport')}"/>
+                                        <p:commandButton  action="/membership/report_opd" value="Opd MemberShip Report"  ajax="false" rendered="#{webUserController.hasPrivilege('MemberShipOpdMemberShipDisOpdMemberShipReport')}"/>
+                                    </p:panelGrid>
+
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

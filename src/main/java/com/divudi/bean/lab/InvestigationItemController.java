@@ -101,6 +101,7 @@ public class InvestigationItemController implements Serializable {
      * Properties
      */
     List<InvestigationItem> selectedItems;
+    List<InvestigationItem> selectedItemsToChange;
     private InvestigationItem current;
     private Investigation currentInvestigation;
     private List<InvestigationItem> items = null;
@@ -511,7 +512,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getItems()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiTop(ri.getRiTop() - movePercent);
             riFacade.edit(ri);
         }
@@ -525,7 +526,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getItems()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiLeft(ri.getRiLeft() - movePercent);
             riFacade.edit(ri);
         }
@@ -539,7 +540,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getItems()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiTop(ri.getRiTop() + movePercent);
             riFacade.edit(ri);
         }
@@ -553,7 +554,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getItems()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiWidth(fixWidth);
             riFacade.edit(ri);
         }
@@ -567,7 +568,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getItems()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiHeight(fixHeight);
             riFacade.edit(ri);
         }
@@ -581,7 +582,7 @@ public class InvestigationItemController implements Serializable {
             return;
         }
 
-        for (ReportItem ri : getAllReportItemList()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             ri.setRiLeft(ri.getRiLeft() + movePercent);
             riFacade.edit(ri);
         }
@@ -591,7 +592,7 @@ public class InvestigationItemController implements Serializable {
 
     public void updateAllFontValues() {
 
-        for (ReportItem ri : getAllReportItemList()) {
+        for (ReportItem ri : getSelectedItemsToChange()) {
             if (fontFamily != null) {
                 ri.setCssFontFamily(fontFamily);
                 riFacade.edit(ri);
@@ -1791,14 +1792,14 @@ public class InvestigationItemController implements Serializable {
         return items;
     }
 
-    public List<InvestigationItem> getItems(Investigation ix) {
+    public  List<InvestigationItem> getItems(Investigation ix) {
         List<InvestigationItem> iis;
         if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
             Map m = new HashMap();
             m.put("item", ix);
-            iis = getFacade().findBySQL(temSql, m);
+            iis = ejbFacade.findBySQL(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -2234,6 +2235,17 @@ public class InvestigationItemController implements Serializable {
         this.importantItems = importantItems;
     }
 
+    public List<InvestigationItem> getSelectedItemsToChange() {
+        return selectedItemsToChange;
+    }
+
+    public void setSelectedItemsToChange(List<InvestigationItem> selectedItemsToChange) {
+        this.selectedItemsToChange = selectedItemsToChange;
+    }
+
+    
+    
+    
     /**
      *
      */

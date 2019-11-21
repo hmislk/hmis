@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+
+
+    <ui:define name="content">
+
+        <h:panelGroup rendered="true" >
+            <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"></link>
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
+
+                <p:panel header="Weekday Channeling Counts" >
+
+
+                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="3"> 
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process" 
+                                         action="#{channelReportController.createDailyDoctorAnalysisDisplay()}">
+                        </p:commandButton>
+                        <p:commandButton  ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:printer target="reportPrint"  />
+                        </p:commandButton>
+                        <a download="analysis.xls" href="#" shape="rect"
+                           onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
+                           style="padding: .3em 1em;  background: #D7D0C0; " 
+                           styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Download as Excel</a>
+                    </h:panelGrid>
+
+
+
+
+                    <h:panelGroup id="reportPrint">
+
+
+                        <table  id="tbl" class="w3-table-all w3-stripped" border="1">
+                            <tr class="w3-red">
+                                <td>
+                                    Year
+                                </td>
+                                <td>
+                                    Month
+                                </td>
+                                <td>
+                                    Consultant
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                                <td>
+                                    Wednesday
+                                </td>
+                                <td>
+                                    Thursday
+                                </td>
+                                <td>
+                                    Friday
+                                </td>
+                                <td>
+                                    Saturday
+                                </td>
+                                <td>
+                                    Sunday
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                                <td>
+                                    Wednesday
+                                </td>
+                                <td>
+                                    Thursday
+                                </td>
+                                <td>
+                                    Friday
+                                </td>
+                                <td>
+                                    Saturday
+                                </td>
+                                <td>
+                                    Sunday
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                                <td>
+                                    Wednesday
+                                </td>
+                                <td>
+                                    Thursday
+                                </td>
+                                <td>
+                                    Friday
+                                </td>
+                                <td>
+                                    Saturday
+                                </td>
+                                <td>
+                                    Sunday
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                                <td>
+                                    Wednesday
+                                </td>
+                                <td>
+                                    Thursday
+                                </td>
+                                <td>
+                                    Friday
+                                </td>
+                                <td>
+                                    Saturday
+                                </td>
+                                <td>
+                                    Sunday
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                                <td>
+                                    Wednesday
+                                </td>
+                                <td>
+                                    Thursday
+                                </td>
+                                <td>
+                                    Friday
+                                </td>
+                                <td>
+                                    Saturday
+                                </td>
+                                <td>
+                                    Sunday
+                                </td>
+                                <td>
+                                    Monday
+                                </td>
+                                <td>
+                                    Tuesday
+                                </td>
+                            </tr>
+
+                            <ui:repeat value="#{channelReportController.weekdayDisplays}" var="b" id="tbl" >
+                                <tr>
+                                    <td>
+                                        <p:outputLabel value="#{b.date}" >
+                                            <f:convertDateTime pattern="yyyy" ></f:convertDateTime>
+                                        </p:outputLabel> 
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="#{b.date}" >
+                                            <f:convertDateTime pattern="MMMM" ></f:convertDateTime>
+                                        </p:outputLabel> 
+                                    </td>
+                                    <td>
+                                        <p:outputLabel value="#{b.staff.person.name}" />  
+                                    </td>
+                                    <ui:repeat value="#{b.counts}" var="d"  >
+                                        <td>
+                                            <p:outputLabel value="#{d}" />  
+                                        </td>
+                                    </ui:repeat>
+
+                                </tr>
+
+
+                            </ui:repeat>
+
+                        </table>
+
+
+                    </h:panelGroup>
+
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

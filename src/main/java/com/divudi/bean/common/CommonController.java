@@ -208,6 +208,20 @@ public class CommonController implements Serializable {
 //        System.out.println("s = " + s);
         return s;
     }
+    
+    public Double getDouble(String s) {
+        Double d =null;
+        if(s==null){
+            return d;
+        }
+        try{
+            d=Double.parseDouble(s);
+        }catch(NumberFormatException e){
+            System.out.println("e = " + e);
+            d=0.0;
+        }
+        return d;
+    }
 
     //----------Date Time Formats
     public SessionController getSessionController() {

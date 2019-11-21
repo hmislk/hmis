@@ -12,7 +12,6 @@ import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -20,10 +19,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.apache.http.Consts;
 
 /**
  *
@@ -322,6 +319,7 @@ public class Dimension {
     }
 
     private void textToByteArraySeperatedBySpace() {
+        System.out.println("textToByteArraySeperatedBySpace" );
         bytes = new ArrayList<>();
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");

@@ -63,7 +63,11 @@ public enum InwardChargeType {
     @Deprecated
     Investigations("Investigations"),
     @Deprecated
-    MedicalCare("MedicalCare");
+    MedicalCare("MedicalCare")
+    
+    
+    
+    ;
 
     private final String nameAsString;
 

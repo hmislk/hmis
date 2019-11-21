@@ -12,10 +12,12 @@ import com.divudi.bean.hr.StaffController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.DoctorDayChannelCount;
 import com.divudi.data.FeeType;
 import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PersonInstitutionType;
+import com.divudi.data.WeekdayDisplay;
 import com.divudi.data.channel.DateEnum;
 import com.divudi.data.channel.PaymentEnum;
 import com.divudi.data.dataStructure.BillsTotals;
@@ -90,6 +92,9 @@ public class ChannelReportController implements Serializable {
     List<ServiceSession> serviceSessions;
     List<ChannelReportColumnModel> channelReportColumnModels;
     private List<AvalabelChannelDoctorRow> acdrs;// created 2016.8.10
+
+    List<DoctorDayChannelCount> doctorDayChannelCounts;
+    private List<WeekdayDisplay> weekdayDisplays;
 
     double netTotal;
     double netTotalDoc;
@@ -2469,7 +2474,6 @@ public class ChannelReportController implements Serializable {
                 dpsrs.setStaffCount(staffCount);
                 //ptCount+=(cashCount + agentCount + onCallCount + staffCount);
 
-
             }
             System.out.println("dpsrs.getCashCount() = " + dpsrs.getCashCount());
             System.out.println("dpsrs.getOnCallCount() = " + dpsrs.getOnCallCount());
@@ -2651,7 +2655,6 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("st", stf);
 
-
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -2675,7 +2678,6 @@ public class ChannelReportController implements Serializable {
             } else {
                 sessions.addAll(getServiceSessions(nowDate, null, staff));
             }
-
 
             for (ServiceSession ss : sessions) {
 
@@ -2836,7 +2838,6 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("st", stf);
 
-
         return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
     }
 
@@ -2905,7 +2906,6 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("pay", pm);
         hm.put("st", stf);
-
 
         return billFacade.findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
     }
@@ -3976,7 +3976,7 @@ public class ChannelReportController implements Serializable {
 //                System.out.println("t.get(Calendar.MINUTE) = " + t.get(Calendar.MINUTE));
 //                System.out.println("t.get(Calendar.SECOND) = " + t.get(Calendar.SECOND));
 //                Calendar cal = Calendar.getInstance();
-                
+
                 t.set(Calendar.YEAR, d.get(Calendar.YEAR));
                 t.set(Calendar.MONTH, d.get(Calendar.MONTH));
                 t.set(Calendar.DATE, d.get(Calendar.DATE));
@@ -3985,7 +3985,7 @@ public class ChannelReportController implements Serializable {
 //                cal.set(Calendar.MINUTE, t.get(Calendar.MINUTE));
 //                cal.set(Calendar.SECOND, t.get(Calendar.SECOND));
 //                System.out.println("cal.getTime() = " + cal.getTime());
-                if (getFromDate().getTime() <= t.getTime().getTime() 
+                if (getFromDate().getTime() <= t.getTime().getTime()
                         && t.getTime().getTime() <= getToDate().getTime()) {
                     rangeBills.add(b);
                 }
@@ -4740,6 +4740,67 @@ public class ChannelReportController implements Serializable {
 
     }
 
+    public void createDailyDoctorAnalysis() {
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
+                + " From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :ssFromDate and :ssToDate "
+                + " group by bs.bill.staff, bs.sessionDate";
+        m.put("ssFromDate", fromDate);
+        m.put("ssToDate", toDate);
+        doctorDayChannelCounts = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+    }
+
+    public void createDailyDoctorAnalysisDisplay() {
+        HashMap m = new HashMap();
+        String sql;
+        sql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
+                + " From BillSession bs "
+                + " where bs.bill.staff is not null "
+                + " and bs.retired=false "
+                + " and bs.sessionDate between :ssFromDate and :ssToDate "
+                + " group by bs.sessionDate, bs.bill.staff";
+        m.put("ssFromDate", fromDate);
+        m.put("ssToDate", toDate);
+        List<DoctorDayChannelCount> t = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        weekdayDisplays = new ArrayList<>();
+        for (DoctorDayChannelCount c : t) {
+            boolean found = false;
+
+            WeekdayDisplay selectedDisplay = null;
+            for (WeekdayDisplay d : weekdayDisplays) {
+                if (d.getStaff().equals(c.getStaff())) {
+                    Calendar tcal = Calendar.getInstance();
+                    tcal.setTime(c.getAppointmentDate());
+                    Integer ty = tcal.get(Calendar.YEAR);
+                    Integer tm = tcal.get(Calendar.MONTH);
+                    if (ty.equals(d.getWeekdayYear()) && tm.equals(d.getWeekdayMonth())) {
+                        selectedDisplay = d;
+                    }
+                }
+            }
+            if (selectedDisplay == null) {
+                selectedDisplay = new WeekdayDisplay();
+                selectedDisplay.setDate(c.getAppointmentDate());
+                selectedDisplay.setStaff(c.getStaff());
+                weekdayDisplays.add(selectedDisplay);
+            }
+            for (int i = 0; i < 37; i++) {
+                Date[] testDates = selectedDisplay.getDates();
+                Date testDate = testDates[i];
+                if (testDate != null && c.getAppointmentDate() != null) {
+                    if (testDate.equals(c.getAppointmentDate())) {
+                        (selectedDisplay.getCounts())[i] = c.getBooked();
+                    }
+                }
+            }
+
+        }
+    }
+
     public void createTotalDoctorScan() {
 
         channelDoctors = new ArrayList<ChannelDoctor>();
@@ -4915,7 +4976,6 @@ public class ChannelReportController implements Serializable {
         BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
 
         total = 0.0;
-
 
         for (Staff s : staffs) {
             System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
@@ -5768,6 +5828,14 @@ public class ChannelReportController implements Serializable {
     }
 
     List<DocPage> listOfList = new ArrayList<>();
+
+    public List<WeekdayDisplay> getWeekdayDisplays() {
+        return weekdayDisplays;
+    }
+
+    public void setWeekdayDisplays(List<WeekdayDisplay> weekdayDisplays) {
+        this.weekdayDisplays = weekdayDisplays;
+    }
 
     public class DocPage {
 
@@ -7276,4 +7344,13 @@ public class ChannelReportController implements Serializable {
     public void setStaffWithAreaRows(List<StaffWithAreaRow> staffWithAreaRows) {
         this.staffWithAreaRows = staffWithAreaRows;
     }
+
+    public List<DoctorDayChannelCount> getDoctorDayChannelCounts() {
+        return doctorDayChannelCounts;
+    }
+
+    public void setDoctorDayChannelCounts(List<DoctorDayChannelCount> doctorDayChannelCounts) {
+        this.doctorDayChannelCounts = doctorDayChannelCounts;
+    }
+
 }

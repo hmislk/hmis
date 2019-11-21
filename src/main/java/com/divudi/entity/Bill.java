@@ -10,7 +10,7 @@ import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
 import java.lang.reflect.Field;

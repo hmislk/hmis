@@ -8,8 +8,10 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TransferController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.hr.StaffController;
+import com.divudi.data.BooleanMessage;
 import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
@@ -95,6 +97,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import net.sourceforge.barbecue.env.Environment;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
@@ -242,6 +245,27 @@ public class PatientReportController implements Serializable {
         return getFacade().findBySQL(j, m);
     }
 
+    public String toViewMyReports() {
+        String j = "select r from PatientReport r "
+                + " where r.patientInvestigation.billItem.bill.patient.person=:person";
+        Map m = new HashMap();
+
+        if (false) {
+
+            PatientReport pr = new PatientReport();
+            pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson();
+            pr.getPatientInvestigation().getBillItem().getBill().getBillDate();
+            //Logged Person
+            getSessionController().getLoggedUser().getWebUserPerson();
+
+        }
+
+        m.put("person", getSessionController().getLoggedUser().getWebUserPerson());
+        customerReports = getFacade().findBySQL(j, m);
+        return "/mobile/my_test_results";
+
+    }
+
     @Deprecated
     public void createHtmlFile() {
         try {
@@ -328,6 +352,9 @@ public class PatientReportController implements Serializable {
                                 case PatientAge:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
                                     break;
+                                case PatientAgeOnBillDate:
+                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAgeOnBilledDate(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getCreatedAt());
+                                    break;
                                 case PatientSex:
                                     ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
                                     break;
@@ -397,7 +424,6 @@ public class PatientReportController implements Serializable {
     }
 
     public void sendEmailOld() {
-
 
         final String username = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingUsername();
         final String password = getCurrentPatientReport().getPatientInvestigation().getBillItem().getItem().getDepartment().getInstitution().getEmailSendingPassword();
@@ -471,10 +497,10 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return;
         }
-//        if (currentPatientReport.getTemplateItem() == null) {
-//            JsfUtil.addErrorMessage("Error");
-//            return;
-//        }
+        if (currentPatientReport.getTemplateItem() == null) {
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
         String finalText = investigationItem.getHtmltext();
         for (Selectable s : selectables) {
 
@@ -487,7 +513,7 @@ public class PatientReportController implements Serializable {
             finalText = finalText.replace(toBeReplaced, s.getSelectedValue());
         }
 
-//        currentPatientReport.getTemplateItem().setLobValue(finalText);
+        currentPatientReport.getTemplateItem().setLobValue(finalText);
     }
 
     public String toEditTemplate() {
@@ -576,7 +602,7 @@ public class PatientReportController implements Serializable {
             return "";
         }
         getTransferController().setPatient(currentPatientReport.getPatientInvestigation().getPatient());
-        return "/lab_search_for_reporting_patient";
+        return "/lab/search_for_reporting_patient";
     }
 
     public String lastPatientReport(PatientInvestigation pi) {
@@ -620,7 +646,7 @@ public class PatientReportController implements Serializable {
         } else {
             getStaffController().setCurrent(null);
         }
-        return "/lab_patient_report";
+        return "/lab/patient_report";
     }
 
     public List<PatientReportItemValue> getPatientReportItemValues() {
@@ -1076,6 +1102,105 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    public String cancelApprovalEmailMessageBody(PatientReport r) {
+        String b = "<!DOCTYPE html>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
+                + "<head>"
+                + "<title>"
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + "</title>"
+                + "</head>"
+                + "<body>";
+        b += "<p>The Following Report's approval was cancelled. </p><br/>";
+        b += "<p>Patient Name : " + r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "</p><br/>";
+        b += "<p>Investigation Name : " + r.getPatientInvestigation().getInvestigation().getName() + " </p><br/>";
+        b += "<p>Bill Number : " + r.getPatientInvestigation().getBillItem().getBill().getInsId() + "</p><br/>";
+        b += "<p>Approved User : " + r.getPatientInvestigation().getApproveUser().getWebUserPerson().getNameWithTitle() + " </p><br/>";
+        b += "<p>Approved at : " + r.getPatientInvestigation().getApproveAt() + "</p><br/>";
+        b += "<p>Approval Reversing User : " + getSessionController().getLoggedUser().getWebUserPerson().getNameWithTitle() + " </p><br/>";
+        b += "<p>Approval Reversing Time : " + new Date() + " </p><br/>";
+        b += "<br/><br/><p>The Results before Reversing is as below. </p><br/>";
+        b += "<table>"
+                + "<tr>"
+                + "<th>"
+                + "Test"
+                + "</th>"
+                + "<th>"
+                + "Result"
+                + "</th>"
+                + "<th>"
+                + "Unit"
+                + "</th>"
+                + "<th>"
+                + "Reference"
+                + "</th>"
+                + "</tr>"
+                + "";
+        for (PatientReportItemValue v : r.getPatientReportItemValues()) {
+            if (v.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                b += "<tr><td>";
+                if (v.getInvestigationItem().getTestLabel() != null) {
+                    b += v.getInvestigationItem().getTestLabel().getName();
+                } else {
+                    b += v.getInvestigationItem().getName();
+                }
+                b += "</td><td>";
+                switch (v.getInvestigationItem().getIxItemValueType()) {
+                    case Varchar:
+                        b += v.getStrValue() + "\t";
+                        break;
+                    case Memo:
+                        b += v.getLobValue() + "\t";
+                        break;
+                    case Double:
+                        b += v.getDoubleValue() + "\t";
+                        break;
+                }
+                b += "</td><td>";
+                if (v.getInvestigationItem().getUnitLabel() != null) {
+                    b += v.getInvestigationItem().getUnitLabel().getName();
+                }
+                b += "</td><td>";
+                if (v.getInvestigationItem().getReferenceLabel() != null) {
+                    b += v.getInvestigationItem().getReferenceLabel().getName();
+                }
+                b += "</td></tr>";
+            }
+        }
+        b += "</table>";
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+
+        String temId = currentPatientReport.getId() + "";
+        temId = getSecurityController().encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        ed = getSecurityController().encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        b += "<p>"
+                + "The report before reversing approval is attached. The current report can be viewed at following link"
+                + "<br/>"
+                + "Please visit "
+                + "<a href=\""
+                + url
+                + "\">this link</a>"
+                + " to view or print the report.The link will expire in one month for privacy and confidentially issues."
+                + "<br/>"
+                + "</p>";
+
+        b += "</body></html>";
+        return b;
+    }
+
     public String smsBody(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
@@ -1099,6 +1224,91 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    public BooleanMessage canApproveThePatientReport(PatientReport prForApproval) {
+        System.out.println("canApproveThePatientReport");
+        BooleanMessage bm = new BooleanMessage();
+        boolean flag = true;
+        String appMgs = "";
+        if (prForApproval == null) {
+            bm.setFlag(flag);
+            bm.setMessage(appMgs);
+            return bm;
+        }
+        System.out.println("stage = " + 1);
+        for (PatientReportItemValue temIv : prForApproval.getPatientReportItemValues()) {
+            System.out.println("temIv = " + temIv);
+            InvestigationItem temii = temIv.getInvestigationItem();
+            if (temii.getIxItemType() == InvestigationItemType.Value || temii.getIxItemType() == InvestigationItemType.Calculation) {
+                System.out.println("stage = " + 2);
+                if (temii.isCanNotApproveIfValueIsEmpty()) {
+                    System.out.println("stage = " + 3);
+                    if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                        if (temIv.getStrValue() == null || temIv.getStrValue().trim().equals("")) {
+                            System.out.println("stage = " + 4);
+                            flag = false;
+                            appMgs += temii.getEmptyValueWarning() + "\n";
+                        }
+                    }
+                    System.out.println("stage = " + 5);
+                    if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                        System.out.println("stage = " + 6);
+                        if (temIv.getDoubleValue() == null) {
+                            System.out.println("stage = " + 7);
+                            flag = false;
+                            appMgs += temii.getEmptyValueWarning() + "\n";
+                        }
+                    }
+                    System.out.println("stage = " + 8);
+                    if (temii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                        System.out.println("stage = " + 9);
+                        if (temIv.getLobValue() == null || temIv.getLobValue().trim().equals("")) {
+                            System.out.println("stage = " + 10);
+                            flag = false;
+                            appMgs += temii.getEmptyValueWarning() + "\n";
+                        }
+                    }
+                }
+                System.out.println("stage = " + 11);
+                if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue() || temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
+                    System.out.println("stage = " + 12);
+                    Double tv = null;
+                    if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
+                        tv = temIv.getDoubleValue();
+                    }
+                    if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                        tv = commonController.getDouble(temIv.getStrValue());
+                    }
+                    System.out.println("tv = " + tv);
+                    System.out.println("stage = " + 13);
+                    if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
+                        System.out.println("stage = " + 14);
+                        if (tv > temii.getAbsoluteHighValue()) {
+                            System.out.println("stage = " + 15);
+                            flag = false;
+                            appMgs += temii.getAboveAbsoluteWarning() + "\n";
+                        }
+                    }
+                    System.out.println("stage = " + 17);
+                    if (temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
+                        System.out.println("stage = " + 18);
+                        if (tv < temii.getAbsoluteLowValue()) {
+                            System.out.println("stage = " + 19);
+                            flag = false;
+                            appMgs += temii.getBelowAbsoluteWarning() + "\n";
+                        }
+                    }
+
+                }
+
+            }
+        }
+        System.out.println("flag = " + flag);
+        bm.setFlag(flag);
+        System.out.println("appMgs = " + appMgs);
+        bm.setMessage(appMgs);
+        return bm;
+    }
+
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -1107,6 +1317,12 @@ public class PatientReportController implements Serializable {
         }
         if (currentPatientReport.getDataEntered() == false) {
             UtilityController.addErrorMessage("First Save report");
+            return;
+        }
+
+        BooleanMessage tbm = canApproveThePatientReport(currentPatientReport);
+        if (!tbm.isFlag()) {
+            UtilityController.addErrorMessage(tbm.getMessage());
             return;
         }
 
@@ -1126,15 +1342,15 @@ public class PatientReportController implements Serializable {
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
         UserPreference pf;
-        
-        if(getSessionController().getLoggedPreference()!=null){
-            pf=getSessionController().getLoggedPreference();
-        }else if(getSessionController().getUserPreference()!=null){
-            pf=getSessionController().getUserPreference();
-        }else{
+
+        if (getSessionController().getLoggedPreference() != null) {
+            pf = getSessionController().getLoggedPreference();
+        } else if (getSessionController().getUserPreference() != null) {
+            pf = getSessionController().getUserPreference();
+        } else {
             pf = null;
         }
-        if (pf!=null && pf.getSentEmailWithInvestigationReportApproval()) {
+        if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
             if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e = new AppEmail();
                 e.setCreatedAt(new Date());
@@ -1157,7 +1373,7 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
-        if (pf!=null && pf.getSentSmsWithInvestigationRequestApproval()) {
+        if (pf != null && pf.getSentSmsWithInvestigationRequestApproval()) {
             if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
                 Sms e = new Sms();
                 e.setCreatedAt(new Date());
@@ -1174,6 +1390,27 @@ public class PatientReportController implements Serializable {
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
             }
+
+            if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
+
+                if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
+                    Sms e = new Sms();
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setBill(currentPtIx.getBillItem().getBill());
+                    e.setPatientReport(currentPatientReport);
+                    e.setPatientInvestigation(currentPtIx);
+                    e.setCreatedAt(new Date());
+                    e.setCreater(sessionController.getLoggedUser());
+                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
+                    e.setSendingMessage(smsBody(currentPatientReport));
+                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+                    e.setSentSuccessfully(false);
+                    getSmsFacade().create(e);
+                }
+            }
+
         }
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
@@ -1208,7 +1445,35 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
-        UtilityController.addSuccessMessage("Approved");
+        UtilityController.addSuccessMessage("Approval Reversed");
+
+        try {
+            if (CommonController.isValidEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail())) {
+                AppEmail e = new AppEmail();
+                e.setCreatedAt(new Date());
+                e.setCreater(sessionController.getLoggedUser());
+
+                e.setReceipientEmail(getSessionController().getLoggedUser().getInstitution().getOwnerEmail());
+                e.setMessageSubject("This Report is Reversed after Athorizing");
+                e.setMessageBody(cancelApprovalEmailMessageBody(currentPatientReport));
+                e.setAttachment1(createPDFAndSaveAsaFile());
+
+                e.setSenderPassword(getCurrentPatientReport().getApproveInstitution().getEmailSendingPassword());
+                e.setSenderUsername(getCurrentPatientReport().getApproveInstitution().getEmailSendingUsername());
+                e.setSenderEmail(getCurrentPatientReport().getApproveInstitution().getEmail());
+
+                e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+                e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+                e.setSentSuccessfully(false);
+
+                getEmailFacade().create(e);
+            }
+
+        } catch (Exception e) {
+            System.out.println("e = " + e);
+        }
+
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
@@ -1245,7 +1510,6 @@ public class PatientReportController implements Serializable {
 
         String pdf_url = commonController.getBaseUrl() + "faces/lab/patient_report.xhtml";
 
-
         response.setHeader(pdf_url, "application/pdf");
         System.out.println("enter 3");
         OutputStream outputStream = response.getOutputStream();
@@ -1270,7 +1534,7 @@ public class PatientReportController implements Serializable {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         ExternalContext externalContext = facesContext.getExternalContext();
         HttpSession session = (HttpSession) externalContext.getSession(true);
-//        String url = "http://localhost:8080/new/faces/lab/lab_patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
+//        String url = "http://localhost:8080/new/faces/lab/lab/patient_report_print.xhtml:jsessionid=" + session.getId() + "?pdf=true";
         String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + securityController.encrypt(currentPatientReport.getId() + "");
         try {
             ITextRenderer renderer = new ITextRenderer();
@@ -1300,6 +1564,10 @@ public class PatientReportController implements Serializable {
         FileOutputStream fop = null;
         File file;
         try {
+            try {
+                url = URLEncoder.encode(url, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+            }
             ITextRenderer renderer = new ITextRenderer();
             renderer.setDocument(new URL(url).toString());
 
@@ -1399,7 +1667,7 @@ public class PatientReportController implements Serializable {
             r.setItem(ix);
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
-            if(r.getTransInvestigation()!=null){
+            if (r.getTransInvestigation() != null) {
                 r.setReportFormat(r.getTransInvestigation().getReportFormat());
             }
             getFacade().create(r);
@@ -1422,7 +1690,7 @@ public class PatientReportController implements Serializable {
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
             r.setItem(ix);
-            if(r.getTransInvestigation()!=null){
+            if (r.getTransInvestigation() != null) {
                 r.setReportFormat(r.getTransInvestigation().getReportFormat());
             }
             getFacade().create(r);
@@ -1512,7 +1780,7 @@ public class PatientReportController implements Serializable {
         currentPtIx = pi;
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        return "/lab_patient_report";
+        return "/lab/patient_report";
     }
 
     public List<PatientReport> getCustomerReports() {

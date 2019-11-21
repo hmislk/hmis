@@ -103,6 +103,9 @@ public enum Privileges {
     LabPrinting,
     LabReprinting,
     LabReportEdit,
+    LabReportPrint,
+    AdminReportSearch,
+    LabReportSearchByDepartment,
     LabSummeries,
     LabSummeriesLevel1,
     LabSummeriesLevel2,
@@ -335,7 +338,14 @@ public enum Privileges {
     ChannelCashierTransactionExpencessSearch,
     ChannelActiveVat,
     
+    
     MemberShip,
+    MemberShipAdd,
+    MemberShipEdit,
+    MembershipReports,
+    MembershipDiscountManagement,
+    MembershipAdministration,
+    
     MembershipSchemes,
     MemberShipInwardMemberShip,
     MemberShipInwardMemberShipSchemesDicounts,

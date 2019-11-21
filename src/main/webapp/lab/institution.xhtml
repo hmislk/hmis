@@ -19,7 +19,7 @@
 
 
 
-                <p:panel styleClass="verticalAndHorizontalCenteringLarge">
+                <p:panel >
                     <f:facet name="header" >
                         <p:outputLabel value="Manage Institutions" ></p:outputLabel>
                         <p:commandButton id="btnBack" value="Back" 
@@ -121,6 +121,10 @@
 
                                                 <h:outputText id="lblEMail" value="Email" ></h:outputText>
                                                 <p:inputText autocomplete="off" id="txtEmail" value="#{institutionController.current.email}"  ></p:inputText>
+
+                                                <h:outputText id="lblEMailOwner" value="Owner Email" ></h:outputText>
+                                                <p:inputText autocomplete="off" id="txtOwnerEmail" value="#{institutionController.current.ownerEmail}"  ></p:inputText>
+
 
                                                 <h:outputText id="lblAdress" value="Address" ></h:outputText>
                                                 <p:inputTextarea id="txtAdress" value="#{institutionController.current.address}" styleClass="longText" ></p:inputTextarea>

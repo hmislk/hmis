@@ -221,7 +221,7 @@
                                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                         <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
                                                     </p:commandLink>
-                                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab_patient_report" actionListener="#{patientReportController.createNewReport(pi)}" >
+                                                    <p:commandLink id="btnNewReport" ajax="false" disabled="#{!pi.received}" action="/lab/patient_report" actionListener="#{patientReportController.createNewReport(pi)}" >
                                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                                         <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                     </p:commandLink>
@@ -267,11 +267,11 @@
 
                                                             <p:commandLink id="cmdOldReport" style="text-decoration:underline;" 
                                                                            value="#{dpr.item.name}" 
-                                                                           ajax="false" action="/lab_patient_report">
+                                                                           ajax="false" action="/lab/patient_report">
                                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                             </p:commandLink>
 
-                                                            <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab_patient_report">
+                                                            <p:commandLink id="cmdOldReportEdit" ajax="false" action="/lab/patient_report">
                                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                                                 <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" ></p:graphicImage>
                                                             </p:commandLink>

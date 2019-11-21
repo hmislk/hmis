@@ -14,6 +14,7 @@ import com.divudi.data.dataStructure.ChannelFee;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillSession;
 import com.divudi.entity.BilledBill;
+import com.divudi.entity.Institution;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
@@ -537,7 +538,7 @@ public class ChannelBean {
         return createdSessions;
     }
 
-    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(Staff s, Date d) {
+    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(Staff s, Date d, Institution ins) {
         List<ServiceSession> createdSessions = new ArrayList<>();
         Date start = new Date();
         Date nowDate;
@@ -559,7 +560,7 @@ public class ChannelBean {
         int rowIndex = 0;
 //        System.err.println("Time 1 = " + new Date());
 
-        createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
+        createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate, ins);
 
 //        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
@@ -803,7 +804,7 @@ public class ChannelBean {
         return tmp;
     }
 
-    public List<ServiceSession> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
+    public List<ServiceSession> fetchCreatedServiceSessions(Staff s, Date fd, Date td, Institution ins) {
         String sql;
         Map m = new HashMap();
         List<ServiceSession> tmp = new ArrayList<>();
@@ -812,10 +813,12 @@ public class ChannelBean {
                 + " and s.originatingSession is not null "
                 + " and s.sessionDate between :fd and :td "
                 + " and type(s)=:class "
+                + " and s.institution=:ins "
                 + " order by s.sessionDate,s.startingTime ";
         m.put("fd", fd);
         m.put("td", td);
         m.put("staff", s);
+        m.put("ins", ins);
         m.put("class", ServiceSession.class);
         try {
             tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);

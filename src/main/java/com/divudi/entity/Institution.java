@@ -51,6 +51,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String address;
     String fax;
     String email;
+    private String ownerEmail;
     String phone;
     String mobile;
     String web;
@@ -615,6 +616,14 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
     }
 
     

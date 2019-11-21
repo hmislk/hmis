@@ -660,6 +660,7 @@ public class SysMex {
 
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
         this.inputStringBytesSpaceSeperated = inputStringBytesSpaceSeperated;
+        System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
         textToByteArraySeperatedBySpace();
     }
 

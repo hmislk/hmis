@@ -153,7 +153,7 @@ public class Api {
     @Path("/doctors")
     @Produces("application/json")
     public String getDoctors() {
-        List<Object[]> consultants = doctorsList(null, null);
+        List<Object[]> consultants = doctorsListAll();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         if (!consultants.isEmpty()) {
@@ -764,6 +764,24 @@ public class Api {
 //        System.out.println("m = " + m);
 //        System.out.println("sql = " + sql);
 //        System.out.println("consultants.size() = " + consultants.size());
+        return consultants;
+    }
+    
+    
+    public List<Object[]> doctorsListAll() {
+
+        List<Object[]> consultants = new ArrayList<>();
+        String sql;
+        Map m = new HashMap();
+
+        sql = " select pi.staff.id,"
+                + " pi.staff.person.name, "
+                + " pi.staff.speciality.name,"
+                + " pi.staff.code from PersonInstitution pi ";
+
+        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
+        
+        consultants = getStaffFacade().findAggregates(sql);
         return consultants;
     }
 

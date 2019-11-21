@@ -73,7 +73,8 @@
                                                      value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                    <p:commandButton styleClass="nonPrintBlock"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
+                                                     action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
 
                                     <!--                                    <p:commandButton styleClass="nonPrintBlock"  
@@ -168,25 +169,33 @@
                                     <p:panel header="Flags" id="tblFlags"
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
                                              >
-                                        <table >
-                                            <ui:repeat  
-                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                var="pvf" 
-                                                >
-                                                <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
-                                                    <tr>
-                                                        <td >
-                                                            <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
-                                                        </td>
-                                                        <td>
-                                                            <p:selectOneMenu id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
-                                                            </p:selectOneMenu>
-                                                        </td>
-                                                    </tr>
-                                                </h:panelGroup>
-                                            </ui:repeat>
-                                        </table>
+
+
+                                        <h:panelGroup rendered="true" >
+
+                                            <table >
+                                                <ui:repeat  
+                                                    value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                                    var="pvf" 
+                                                    >
+                                                    <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
+                                                        <tr>
+                                                            <td >
+                                                                <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
+                                                            </td>
+                                                            <td>
+                                                                <p:selectOneMenu id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                    <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
+                                                                </p:selectOneMenu>
+                                                            </td>
+                                                        </tr>
+                                                    </h:panelGroup>
+                                                </ui:repeat>
+                                            </table>
+
+
+                                        </h:panelGroup>
+
                                     </p:panel>
                                     <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                         <table >
@@ -270,53 +279,74 @@
                                             <p:commandButton value="Edit Selected Template" ajax="false" action="#{patientReportController.toEditTemplate()}" >
                                             </p:commandButton>
                                             <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true">
-
-
-                                                <p:commandButton id="btnAddTemplateToReport"
-                                                                 oncomplete="PF('dlgPath').hide();" 
-                                                                 process="@this dlgPath" update="reportEditor" 
-                                                                 value="Add To Report" 
-                                                                 actionListener="#{patientReportController.addTemplateToReport()}" ></p:commandButton>
-
-
-
-                                                <table >
-                                                    <tr>
-                                                        <th>
-                                                            <p:outputLabel value="Variable" ></p:outputLabel>
-                                                        </th>
-                                                        <th>
-                                                            <p:outputLabel value="Value" ></p:outputLabel>
-                                                        </th>
-                                                    </tr>
-
-                                                    <ui:repeat value="#{patientReportController.selectables}" var="sel" >
+                                                <h1>#{patientReportController.investigationItem}</h1>
+                                                <h:panelGroup rendered="#{patientReportController.investigationItem eq null}" >
+                                                    <p:outputLabel value="Please select a template first" ></p:outputLabel>
+                                                    <p:commandButton id="btnCloseGlg1"
+                                                                     oncomplete="PF('dlgPath').hide();" 
+                                                                     process="@this dlgPath" update="reportEditor" 
+                                                                     value="Close"></p:commandButton>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{patientReportController.investigationItem ne null}" >
+                                                    <p:commandButton id="btnAddTemplateToReport"
+                                                                     oncomplete="PF('dlgPath').hide();" 
+                                                                     process="@this dlgPath" update="reportEditor" 
+                                                                     value="Add To Report" 
+                                                                     actionListener="#{patientReportController.addTemplateToReport()}" ></p:commandButton>
+                                                    <table >
                                                         <tr>
-                                                            <td>
-                                                                <p:outputLabel value="#{sel.name}" ></p:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <h:panelGroup >
-                                                                    <p:inputText value="#{sel.selectedValue}" rendered="#{sel.inputText}" ></p:inputText>
-                                                                    <p:selectOneMenu  value="#{sel.selectedValue}" rendered="#{sel.selectOneMenu}" >
-                                                                        <f:selectItems value="#{sel.options}" ></f:selectItems>
-                                                                    </p:selectOneMenu>
-                                                                </h:panelGroup>
-                                                            </td>
+                                                            <th>
+                                                                <p:outputLabel value="Variable" ></p:outputLabel>
+                                                            </th>
+                                                            <th>
+                                                                <p:outputLabel value="Value" ></p:outputLabel>
+                                                            </th>
                                                         </tr>
-                                                    </ui:repeat>
-                                                </table>
+
+                                                        <ui:repeat value="#{patientReportController.selectables}" var="sel" >
+                                                            <tr>
+                                                                <td>
+                                                                    <p:outputLabel value="#{sel.name}" ></p:outputLabel>
+                                                                </td>
+                                                                <td>
+                                                                    <h:panelGroup >
+                                                                        <p:inputText value="#{sel.selectedValue}" rendered="#{sel.inputText}" ></p:inputText>
+                                                                        <p:selectOneMenu  value="#{sel.selectedValue}" rendered="#{sel.selectOneMenu}" >
+                                                                            <f:selectItems value="#{sel.options}" ></f:selectItems>
+                                                                        </p:selectOneMenu>
+                                                                    </h:panelGroup>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </table>
+                                                </h:panelGroup>
+
+
 
 
 
                                             </p:dialog>
 
                                         </h:panelGrid>
-                                        <h1>#{patientReportController.currentPatientReport.patientReportItemValues}</h1>
-                                        <p:editor id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
+                                        <p:panel id="reportEditor" >
+                                            <h:panelGroup rendered="false" >
+                                                <h1>A</h1>
+                                                #{patientReportController.currentPatientReport}
+                                                <h1>B</h1>
+                                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                                           var="e" >
+                                                    #{e.investigationItem.ixItemType}
+                                                </ui:repeat>
+                                                <h1>C</h1>
+                                                #{patientReportController.currentPatientReport.templateItem.lobValue}
+                                                <h1>D</h1>
+                                                <h1>E</h1>
+                                            </h:panelGroup>
+                                            <p:editor rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
+                                                      value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
 
-                                        </p:editor>
-
+                                            </p:editor>
+                                        </p:panel>
 
                                     </p:panel>
 
@@ -354,21 +384,12 @@
                                 </p:commandButton>
 
 
-                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDF()}" 
+                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDFAndSaveAsaFile()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
                             </h:panelGrid>
 
                         </div>
 
-                        <p:commandButton value="Unassigned" ajax="false" 
-                                         actionListener="#{patientReportController.printPatientReport()}"
-                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" >
-                            <p:printer target="pri1" ></p:printer>
-                        </p:commandButton>
-
-                        <h:panelGroup   id="pri1" style="display:none;" >
-
-                        </h:panelGroup  >
 
 
                         <h:panelGroup  id="divPrint" >

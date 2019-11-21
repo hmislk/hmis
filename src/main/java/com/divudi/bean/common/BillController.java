@@ -1,8 +1,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
-import com.divudi.bean.memberShip.MembershipSchemeController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.MembershipSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
@@ -44,7 +44,7 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -229,11 +229,11 @@ public class BillController implements Serializable {
         return "/lab/collecting_centre";
     }
 
-    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+    public  List<Bill> validBillsOfBatchBill(Bill batchBill) {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return getFacade().findBySQL(j, m);
+        return billFacade.findBySQL(j, m);
     }
 
     public List<Bill> getSelectedBills() {
@@ -1335,7 +1335,7 @@ public class BillController implements Serializable {
         temp.setBillTime(new Date());
         temp.setPatient(tmpPatient);
 
-        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient));
+        temp.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(tmpPatient, getSessionController().getApplicationPreference().isMembershipExpires()));
 
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
@@ -1719,6 +1719,49 @@ public class BillController implements Serializable {
         patientSearchTab = 0;
     }
 
+    
+    
+    
+    private void clearBillValuesForMember() {
+        setNewPatient(null);
+        setReferredBy(null);
+        setReferredByInstitution(null);
+        setReferralId(null);
+        setSessionDate(null);
+        setCreditCompany(null);
+        setCollectingCentre(null);
+        setYearMonthDay(null);
+        setBills(null);
+        setPaymentScheme(null);
+        paymentMethod = PaymentMethod.Cash;
+        paymentMethodData = null;
+        currentBillItem = null;
+        setLstBillComponents(null);
+        setLstBillEntries(null);
+        setLstBillFees(null);
+        setStaff(null);
+        setToStaff(null);
+        setComment(null);
+        lstBillEntries = new ArrayList<>();
+        setForeigner(false);
+        setSessionDate(Calendar.getInstance().getTime());
+        calTotals();
+
+        setCashPaid(0.0);
+        setDiscount(0.0);
+        setCashBalance(0.0);
+
+        setStrTenderedValue("");
+
+        patientTabId = "tabSearchPt";
+
+        fromOpdEncounter = false;
+        opdEncounterComments = "";
+        patientSearchTab = 1;
+    }
+
+    
+    
     private void recreateBillItems() {
         //Only remove Total and BillComponenbts,Fee and Sessions. NOT bill Entries
         lstBillComponents = null;
@@ -1758,8 +1801,11 @@ public class BillController implements Serializable {
         double billNet = 0.0;
         double billVat = 0.0;
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
+        System.out.println("membershipScheme = " + membershipScheme);
+        
+        
         for (BillEntry be : getLstBillEntries()) {
             ////System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1933,6 +1979,23 @@ public class BillController implements Serializable {
         collectingCentreBillController.setCollectingCentre(null);
     }
 
+    
+    
+    public void prepareNewBillForMember() {
+        clearBillItemValues();
+        clearBillValuesForMember();
+        setPrintPreview(true);
+        printPreview = false;
+        paymentMethodData = null;
+        paymentScheme = null;
+        paymentMethod = PaymentMethod.Cash;
+        collectingCentreBillController.setCollectingCentre(null);
+    }
+
+    
+    
+    
+    
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();

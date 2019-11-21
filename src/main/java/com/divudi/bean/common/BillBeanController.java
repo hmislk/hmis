@@ -46,8 +46,8 @@ import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.memberShip.AllowedPaymentMethod;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.AllowedPaymentMethod;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.AllowedPaymentMethodFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
@@ -2235,8 +2235,8 @@ public class BillBeanController implements Serializable {
         if (discountAllowed == false) {
             bf.setFeeValue(foreign);
         } else if (discountAllowed == true
-                && paymentMethod == PaymentMethod.Credit
-                && institution != null) {
+                && institution != null
+                && institution.getLabBillDiscount() > 0.0) {
             bf.setFeeValueForCreditCompany(foreign, institution.getLabBillDiscount());
         } else {
             bf.setFeeValue(foreign, discount);

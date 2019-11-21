@@ -12,8 +12,8 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.bean.memberShip.MembershipSchemeController;
-import com.divudi.bean.memberShip.PaymentSchemeController;
+import com.divudi.bean.membership.MembershipSchemeController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
@@ -41,7 +41,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.PreBill;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.entity.pharmacy.Stock;
@@ -199,7 +199,11 @@ public class PharmacySaleController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    public void makeNull() {
+    public void prepareNewPharmacyBillForMembers(){
+        clearNewBillForMembers();
+    }
+    
+    public void clearForNewBill() {
         selectedAlternative = null;
         preBill = null;
         saleBill = null;
@@ -216,6 +220,36 @@ public class PharmacySaleController implements Serializable {
         searchedPatient = null;
         yearMonthDay = null;
         patientTabId = "tabNewPt";
+        strTenderedValue = "";
+        billPreview = false;
+        replaceableStocks = null;
+        itemsWithoutStocks = null;
+        paymentMethodData = null;
+        cashPaid = 0;
+        netTotal = 0;
+        balance = 0;
+        editingQty = null;
+        cashPaidStr = null;
+    }
+    
+    public void clearNewBillForMembers() {
+        selectedAlternative = null;
+        preBill = null;
+        saleBill = null;
+        printBill = null;
+        bill = null;
+        billItem = null;
+        editingBillItem = null;
+        qty = null;
+        stock = null;
+        paymentScheme = null;
+        paymentMethod = null;
+        activeIndex = 0;
+        newPatient = null;
+        searchedPatient = null;
+        yearMonthDay = null;
+        patientTabId = "tabSearchPt";
+        patientSearchTab =1;
         strTenderedValue = "";
         billPreview = false;
         replaceableStocks = null;
@@ -979,7 +1013,7 @@ public class PharmacySaleController implements Serializable {
         getPreBill().setCreater(getSessionController().getLoggedUser());
 
         getPreBill().setPatient(pt);
-        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt));
+        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
 
@@ -1594,12 +1628,19 @@ public class PharmacySaleController implements Serializable {
         double tdp = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
 
-        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient());
+        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
+        System.out.println("membershipScheme = " + membershipScheme);
+        System.out.println("discountAllowed = " + discountAllowed);
+        
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
-            PriceMatrix priceMatrix = getPriceMatrixController().getOpdMemberDisCount(getPaymentMethod(), membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-
+            PaymentMethod tpm = getPaymentMethod();
+            if(tpm==null){
+                tpm = PaymentMethod.Cash;
+            }
+            PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
+            System.out.println("priceMatrix = " + priceMatrix);
             if (priceMatrix == null) {
                 return 0;
             } else {

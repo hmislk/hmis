@@ -13,7 +13,7 @@
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
         <h:panelGroup rendered="true" >
-            <h:form id="frm">
+            <h:form id="frm" >
 
 
                 <p:panel header="Investigation Counts">
@@ -63,7 +63,7 @@
                                                      facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
                                                      fontName="Courier New"  />
                                     </p:commandButton> 
-                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab_summeries_index" >
+                                    <p:commandButton value="Back" ajax="false" styleClass="noPrintButton" action="/reportLab/lab/summeries_index" >
                                     </p:commandButton> 
                                 </h:panelGrid>
                             </td>
@@ -73,6 +73,7 @@
 
 
                     <p:dataTable id="tbl"  value="#{investigationMonthSummeryOwnControllerSession.items}" var="c"
+                                 rowKey="#{c.investigation}"
                                  rowIndexVar="i">
                         <f:facet name="header" >
                             <h:outputLabel value="Investigation Counts"/>
@@ -86,24 +87,13 @@
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                             </h:outputLabel>
                         </f:facet>
-                        <p:column width="30">
+                        <p:column width="40">
                             <f:facet name="header">
                                 <h:outputLabel value="No"/>
                             </f:facet>
                             <h:outputLabel value="#{i+1}"  />
                         </p:column>
-                        <p:column headerText="Test ID" rendered="#{webUserController.hasPrivilege('Developers')}"
-                                  sortBy="#{c.investigation.id}" width="40"
-                                  filterBy="#{c.investigation.id}"
-                                  filterMatchMode="contains">
-                            <f:facet name="header">
-                                <h:outputLabel value="Test ID"/>
-                            </f:facet>
-                            <p:commandLink value="#{c.investigation.id}" ajax="false" action="/lab/investigation" >
-                                <f:setPropertyActionListener value="#{c.investigation}" target="#{investigationController.current}" ></f:setPropertyActionListener>
-                            </p:commandLink>
-                            <h:outputLabel value="#{c.investigation.id}"  />
-                        </p:column>
+
                         <p:column headerText="Test" 
                                   sortBy="#{c.investigation.name}" 
                                   filterBy="#{c.investigation.name}"
@@ -137,7 +127,19 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-
+                        <p:column exportable="false" headerText="Test ID" rendered="#{webUserController.hasPrivilege('Developers')}"
+                                  sortBy="#{c.investigation.id}" width="240"
+                                  filterBy="#{c.investigation.id}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Test ID"/>
+                            </f:facet>
+                            <p:commandButton value="Edit" ajax="false" 
+                                             action="/lab/investigation" style="width: 220px;"
+                                             onclick="this.form.target = '_blank'">
+                                <f:setPropertyActionListener value="#{c.investigation}" target="#{investigationController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
 
                     </p:dataTable>
 

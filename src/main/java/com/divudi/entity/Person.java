@@ -10,7 +10,7 @@ package com.divudi.entity;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.memberShip.MembershipScheme;
+import com.divudi.entity.membership.MembershipScheme;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +23,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,6 +40,9 @@ import org.joda.time.PeriodType;
 @Entity
 @XmlRootElement
 public class Person implements Serializable {
+
+    @OneToOne(mappedBy = "webUserPerson")
+    private WebUser webUser;
 
     @OneToMany(mappedBy = "person")
     private List<ClinicalFindingValue> clinicalFindingValues;
@@ -113,6 +117,9 @@ public class Person implements Serializable {
     long ageInDays;
     @Transient
     int serealNumber;
+    
+    
+    
     
     public boolean isForeigner() {
         return foreigner;
@@ -478,5 +485,17 @@ public class Person implements Serializable {
 
     public void setSerealNumber(int serealNumber) {
         this.serealNumber = serealNumber;
+    }
+
+    public WebUser getWebUser() {
+        if(webUser==null){
+            webUser = new WebUser();
+            webUser.setWebUserPerson(this);
+        }
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
     }
 }

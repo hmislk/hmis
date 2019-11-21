@@ -154,7 +154,7 @@ public class SmsManagerEjb {
         m.put("number", number);
         m.put("message", message);
 
-        String res = executePost("http://localhost:21599/sms/faces/index.xhtml", m);
+        String res = executePost("http://localhost:7070/sms/faces/index.xhtml", m);
         if (res == null) {
             return false;
         } else if (res.toUpperCase().contains("200")) {

@@ -8,37 +8,50 @@
 
     <ui:define name="content">
         <h:form enctype="multipart/form-data">
-            <h:outputLabel value="Import Pharmaceutical Items With Stocks" ></h:outputLabel>
-            <p>Please make sure the following order of Columns.</p>
-            <p>Leave First Row for Row Headings.</p>
-            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
-            <p:panelGrid columns="13" style="border: 1px solid blue;" >
-                <h:outputLabel value ="0. Category" ></h:outputLabel>
-                <h:outputLabel value ="1. Product " ></h:outputLabel>
-                <h:outputLabel value ="2. Code" ></h:outputLabel>
-                <h:outputLabel value ="3. Bar Code" ></h:outputLabel>
+            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+            <p:commandButton ajax="false" value="Submit" action="#{pharmacyItemExcelManager.importToExcelWithStock}"/>
+
+            <p:panel header="Import Stock from Excel" >
+                <h:outputLabel value="Instructions" ></h:outputLabel>
+                <p:panel >
+                    <p>Please make sure the following order of Columns in the uploading Excel File.</p>
+                    <p>Leave First Row for Row Headings.</p>
+
+                    <p>Please make sure all the names and categories are NOT empty.</p>
+                    <p >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+                </p:panel>
+
+            </p:panel>
+
+
+
+            <p:panelGrid columns="1" style="border: 1px solid blue;" >
+                <h:outputLabel value ="0. Serial No " ></h:outputLabel>
+                <h:outputLabel value ="1. Category" ></h:outputLabel>
+                <h:outputLabel value ="2. Product " ></h:outputLabel>
+                <h:outputLabel value ="3. Code" ></h:outputLabel>
+                <h:outputLabel value ="4. Bar Code" ></h:outputLabel>
                 <h:outputLabel value ="4. Generic Name" ></h:outputLabel>
                 <h:outputLabel value ="5. Strength" ></h:outputLabel>
-                <h:outputLabel value ="6. Strength Unit" ></h:outputLabel>
-                <h:outputLabel value ="7. Pack Size" ></h:outputLabel>
-                <h:outputLabel value ="8. Issue Unit" ></h:outputLabel>
-                <h:outputLabel value ="9. Pack Unit" ></h:outputLabel>
-                <h:outputLabel value ="10. Distributor" ></h:outputLabel>
-                <h:outputLabel value ="11. Manufacturer" ></h:outputLabel>
-                <h:outputLabel value ="12. Importer" ></h:outputLabel>
-                <h:outputLabel value ="13. Date of Expiry (M/d/yyyy)" ></h:outputLabel>
-                <h:outputLabel value ="14. Batch" ></h:outputLabel>
-                <h:outputLabel value ="15. Quentity" ></h:outputLabel>
-                <h:outputLabel value ="16. Purchase Price" ></h:outputLabel>
-                <h:outputLabel value ="17. Sale Price" ></h:outputLabel>
-                    
+                <h:outputLabel value ="7. Strength Unit" ></h:outputLabel>
+                <h:outputLabel value ="8. Pack Size" ></h:outputLabel>
+                <h:outputLabel value ="9. Issue Unit" ></h:outputLabel>
+                <h:outputLabel value ="10. Pack Unit" ></h:outputLabel>
+                <h:outputLabel value ="11. Distributor" ></h:outputLabel>
+                <h:outputLabel value ="12. Manufacturer" ></h:outputLabel>
+                <h:outputLabel value ="13. Importer" ></h:outputLabel>
+                <h:outputLabel value ="14. Date of Expiry (M/d/yyyy)" ></h:outputLabel>
+                <h:outputLabel value ="15. Batch" ></h:outputLabel>
+                <h:outputLabel value ="16. Quentity" ></h:outputLabel>
+                <h:outputLabel value ="17. Purchase Price" ></h:outputLabel>
+                <h:outputLabel value ="18. Sale Price" ></h:outputLabel>
+
             </p:panelGrid>
 
-            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
-            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importToExcelWithStock}"/>
+
         </h:form>
 
-       
+
 
     </ui:define>
 

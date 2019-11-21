@@ -1,0 +1,279 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill">
+
+
+    <f:metadata >
+        <f:viewParam name="id" value="#{billSearch.encryptedPatientReportId}" ></f:viewParam>
+        <f:viewParam name="user" value="#{billSearch.encryptedExpiary}" ></f:viewParam>
+        <f:viewAction action="#{billSearch.preparePatientReportByIdForRequests()}" ></f:viewAction>
+    </f:metadata>
+    <head>
+
+    </head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template_contents_only.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+
+                <h:panelGroup rendered="#{billSearch.bill eq null}"  >
+                    <div style="text-align: center; top: 10%;">
+                        <h1>No Such Bill Found</h1>
+                        <h2>The Report Link may have expired.</h2>
+                    </div>
+                </h:panelGroup>
+
+                <h:form>
+                    <p:panel header="Reprint" >
+                        <p:panelGrid columns="2" styleClass="alignTop" >
+                            <p:panel header="Bill" >
+                                <p:panelGrid columns="1" >
+
+                                    <p:panel rendered="#{billSearch.bill.billType ne 'CollectingCentreBill'}">
+
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                                            <div class="nonPrintBlock">
+                                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                                    <p:printer target="fiveFivePaperWithHeadings" ></p:printer>
+                                                </p:commandButton>
+                                            </div>
+                                            <h:panelGroup id="fiveFivePaperWithHeadings">
+                                                <ui:repeat value="#{billSearch.bill}" var="b">
+                                                    <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+
+                                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+                                            <div class="nonPrintBlock">
+                                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                                    <p:printer target="gpBillPreview" ></p:printer>
+                                                </p:commandButton>
+                                            </div>
+                                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+
+                                            <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                                <bi:opdBillPrintRuhunu bill="#{bill}" dup="true" />
+                                            </ui:repeat>
+                                            <ui:repeat value="#{billPackageController.bills}" var="bill">
+                                                <bi:opdBillPrintRuhunu_pack bill="#{bill}" dup="false"/>
+                                            </ui:repeat>
+
+
+
+
+
+
+
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewRmh" rendered="#{sessionController.currentPreference.institution eq 'Rmh' }">
+                                            <div class="nonPrintBlock">
+                                                <p:commandButton value="Print" ajax="false" action="#"  >
+                                                    <p:printer target="gpBillPreviewRmh" ></p:printer>
+                                                </p:commandButton>
+                                            </div>
+                                            <bi:opdBillPrintRmh bill="#{billSearch.bill}" dup="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
+                                            <h:panelGroup rendered="#{sessionController.institselectedPreferencesBillWithoutLogo eq 'false'}">
+                                                <div class="nonPrintBlock">
+                                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                                        <p:printer target="gpPosBill" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+                                                <h:panelGroup id="gpPosBill">
+                                                    <div style="page-break-after: always;">
+                                                        <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>  
+                                                    </div>
+                                                    <div></div>
+                                                    <div style="page-break-after: always;">
+                                                        <bi:posOpdBill bill="#{billSearch.bill}" duplicate="true"/>  
+                                                    </div>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+
+                                            <h:panelGroup rendered="#{sessionController.institselectedPreferencesBillWithoutLogo eq 'true'}">
+                                                <div class="nonPrintBlock">
+                                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                                        <p:printer target="gpPosBillWithoutLogo" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+                                                <h:panelGroup id="gpPosBillWithoutLogo">
+                                                    <bi:posOpdBillWithoutLogo bill="#{billSearch.bill}" duplicate="true"/>  
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+
+                                    </p:panel>
+
+                                    <p:panel rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
+                                        <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup id="gpBillPreviewCC" rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false
+                                                                                           and sessionController.currentPreference.institution eq 'Ruhuna'
+                                                                                           and sessionController.currentPreference.fiveFivePaperWithHeadings  eq false}">
+                                                <div class="nonPrintBlock">
+                                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                                        <p:printer target="gpBillPreviewCC" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+                                                <bi:opdCCBillPrintRuhunu bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+
+                                                <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                                    <bi:opdCCBillPrintRuhunu bill="#{bill}" dup="true" />
+                                                </ui:repeat>
+                                                <!--  <br/>
+                                                                        <h:panelGroup >
+                                                                            <bi:opdBillPrintRuhunu bill="#{billSearch.bill.cancelledBill}" />                        
+                                                                        </h:panelGroup>-->
+
+                                            </h:panelGroup>
+                                            <h:panelGroup id="gpBillPreviewCC2" rendered="#{sessionController.loggedPreferenceselectedPreference eq false
+                                                                                            and sessionController.loggedPreferenceselectedPreferenceon eq 'Ruhuna'
+                                                                                            and sessionController.loggedPreferenceselectedPreferencedings eq false}">
+                                                <div class="nonPrintBlock">
+                                                    <p:commandButton value="Print Patient" ajax="false" action="#"  >
+                                                        <p:printer target="gpBillPreviewCC2" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+                                                <bi:opdCCBillPrintRuhunu_1 bill="#{billSearch.bill}" dup="true" rendered="#{billSearch.bill.refundedBill eq null}"/>
+
+                                                <ui:repeat value="#{billSearch.bills}" var="bill" rendered="#{billSearch.bill.refundedBill ne null}">
+                                                    <bi:opdCCBillPrintRuhunu_1 bill="#{bill}" dup="true" />
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panelGrid columns="1" styleClass="alignTop" >
+                                <p:panel header="Patient Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.patient.person.nameWithTitle }" ></h:outputLabel>
+                                        <h:outputLabel value="Age" />
+                                        <h:outputLabel value="#{billSearch.bill.patient.age}"  />
+                                        <h:outputLabel value="Sex" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.patient.person.sex}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Phone" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.patient.person.phone}" >
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                                <p:panel header="Bill Detail">
+                                    <p:panelGrid columns="2">
+                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.insId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                        <h:panelGroup>
+                                            <h:outputLabel value="#{billSearch.bill.paymentMethod}" />
+                                            <h:outputLabel value=" : "/>
+                                            <h:outputLabel value="#{billSearch.bill.chequeRefNo}" />
+                                        </h:panelGroup>
+                                        <h:outputLabel value="Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
+                                        <h:outputLabel value="Discount :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
+                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                        <p:separator/>
+                                        <p:separator/>
+                                        <h:outputLabel value="Credit Company :" ></h:outputLabel>
+                                        <p:autoComplete value="#{billSearch.bill.creditCompany}" completeMethod="#{institutionController.completeIns}" var="i" itemLabel="#{i.name}"
+                                                        itemValue="#{i}" rendered="false"></p:autoComplete>
+                                        <h:outputLabel value="#{billSearch.bill.creditCompany.name}" rendered="true"></h:outputLabel>
+                                        <h:outputLabel value="Referred By :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.referredBy.person.nameWithTitle}" ></h:outputLabel>
+                                        <h:outputLabel value="Referring Institution :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.referenceInstitution.name}" ></h:outputLabel>
+
+                                        <h:outputLabel value="ID :" ></h:outputLabel>
+                                        <h:outputLabel value="#{billSearch.bill.id}" ></h:outputLabel>
+
+                                    </p:panelGrid>
+                                </p:panel>
+                                <p:panel header="Bill Item Detail">
+                                    <p:dataTable rowIndexVar="rowIndex"
+                                                 editable="true" value="#{billSearch.billFees2}" var="bip" >
+                                        <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
+                                        <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" />  
+                                        <p:column>
+                                            <f:facet name="header">No</f:facet>
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Item</f:facet>
+                                            <h:outputLabel value="#{bip.billItem.item.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Gross Fee Value</f:facet>
+                                            <h:outputLabel value="#{bip.feeGrossValue}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Discount Fee Value</f:facet>
+                                            <h:outputLabel value="#{bip.feeDiscount}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Net Fee Value</f:facet>
+                                            <h:outputLabel value="#{bip.feeValue}"/>
+                                        </p:column>  
+                                        <p:column>
+                                            <f:facet name="header">Fee Name</f:facet>
+                                            <h:outputLabel value="#{bip.fee.name}"/>
+                                        </p:column> 
+                                        <p:column>
+                                            <f:facet name="header">Speciality</f:facet>
+                                            <h:outputLabel value="#{bip.fee.speciality.name}"/>
+                                        </p:column> 
+                                        <p:column headerText="Payee">
+                                            <p:cellEditor>  
+                                                <f:facet name="output"> 
+                                                    <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
+                                                </f:facet>  
+                                                <f:facet name="input">  
+                                                    <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
+                                                        <f:selectItem itemLabel="Select Staff" />
+                                                        <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
+                                                    </p:selectOneMenu>
+                                                </f:facet>  
+                                            </p:cellEditor>  
+
+                                        </p:column>
+                                        <p:column style="width:6%">  
+                                            <p:rowEditor > 
+                                            </p:rowEditor>
+                                        </p:column>  
+                                    </p:dataTable>
+                                </p:panel>
+                            </p:panelGrid>
+
+                        </p:panelGrid>
+
+
+                    </p:panel>
+
+
+
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

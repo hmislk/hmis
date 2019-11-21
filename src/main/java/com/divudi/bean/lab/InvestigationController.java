@@ -11,6 +11,7 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
+import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemType;
@@ -82,6 +83,8 @@ public class InvestigationController implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     PatientReportController patientReportController;
+    @Inject
+    ItemForItemController itemForItemController;
     /**
      * EJBs
      */
@@ -119,6 +122,10 @@ public class InvestigationController implements Serializable {
     List<Investigation> ixWithoutSamples;
     List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses;
     List<ItemWithFee> itemWithFees;
+    private List<Investigation> investigationWithSelectedFormat;
+    private Category categoryForFormat;
+    
+    
 
     public String toAddManyIx() {
         current = new Investigation();
@@ -238,6 +245,21 @@ public class InvestigationController implements Serializable {
 
         return "/lab/investigation_values";
     }
+    
+    public String toLoadParentInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() != null) {
+            current=(Investigation) current.getReportedAs();
+        }
+        return "";
+    }
 
     public String toEditReportFormatMoveAll() {
         if (current == null) {
@@ -270,6 +292,23 @@ public class InvestigationController implements Serializable {
         }
         ixCalController.setIx((Investigation) current.getReportedAs());
         return "/lab/calculation";
+    }
+    
+    
+    public String toReplaceableIxs() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save investigation first.");
+            return "";
+        }
+        if (current.getReportedAs() == null) {
+            current.setReportedAs(current);
+        }
+        itemForItemController.setParentItem(current);
+        return "/lab/replaceable_ix";
     }
 
     public String toEditFees() {
@@ -610,7 +649,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -644,7 +683,7 @@ public class InvestigationController implements Serializable {
             sql += " and c.institution is null ";
         }
 
-//        if (sessionController.getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
 //            sql += " and (c.institution is null "
 //                    + " or c.institution=:ins) ";
 //            m.put("ins", sessionController.getInstitution());
@@ -819,7 +858,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public void unDeleteSelectedItems() {
@@ -841,7 +880,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Deleted");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(un_Delete selected items)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public void markSelectedActive() {
@@ -862,7 +901,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Actived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
 
     }
 
@@ -884,7 +923,7 @@ public class InvestigationController implements Serializable {
         UtilityController.addSuccessMessage("Successfully Inactived");
         selectedInvestigations = null;
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab_investigation_list.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Investigation/Investigation List(In-Active selected)(/faces/dataAdmin/lab/investigation_list.xhtml)");
     }
 
     public Institution getInstitution() {
@@ -910,7 +949,7 @@ public class InvestigationController implements Serializable {
     }
 
 //    public List<Investigation> completeDepartmentItem(String qry) {
-//        if (getSessionController().getInstitutionPreference().isInstitutionSpecificItems()) {
+//        if (getSessionController().getLoggedPreference().isInstitutionSpecificItems()) {
 //            String sql;
 //            Map m = new HashMap();
 //            m.put("qry", "'%" + qry.toUpperCase() + "%'");
@@ -1145,6 +1184,29 @@ public class InvestigationController implements Serializable {
         m.put("ii", ii);
         dynamicLabels = getInvestigationItemValueFlagFacade().findBySQL(sql, m);
         return dynamicLabels;
+    }
+
+    public List<Investigation> getInvestigationWithSelectedFormat() {
+        if(investigationWithSelectedFormat==null){
+            String j = "select i from Investigation i where i.reportFormat=:rf order by i.name";
+            Map m = new HashMap();
+            m.put("rf", categoryForFormat);
+            investigationWithSelectedFormat = getFacade().findBySQL(j, m);
+        }
+        return investigationWithSelectedFormat;
+    }
+
+    public void setInvestigationWithSelectedFormat(List<Investigation> investigationWithSelectedFormat) {
+        this.investigationWithSelectedFormat = investigationWithSelectedFormat;
+    }
+
+    public Category getCategoryForFormat() {
+        return categoryForFormat;
+    }
+
+    public void setCategoryForFormat(Category categoryForFormat) {
+        this.categoryForFormat = categoryForFormat;
+        investigationWithSelectedFormat = null;
     }
 
     public class InvestigationWithInvestigationItems {
@@ -1470,4 +1532,26 @@ public class InvestigationController implements Serializable {
         this.department = department;
     }
 
+    public InvestigationItemController getInvestigationItemController() {
+        return investigationItemController;
+    }
+
+    public IxCalController getIxCalController() {
+        return ixCalController;
+    }
+
+    public ItemFeeManager getItemFeeManager() {
+        return itemFeeManager;
+    }
+
+    public PatientReportController getPatientReportController() {
+        return patientReportController;
+    }
+
+    public ItemForItemController getItemForItemController() {
+        return itemForItemController;
+    }
+
+    
+    
 }
