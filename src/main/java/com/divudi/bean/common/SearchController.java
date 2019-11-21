@@ -7153,21 +7153,10 @@ public class SearchController implements Serializable {
     }
 
     public void sendSms() {
-
-        if (getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
-            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
-            return;
-        }
-
         smsController.sendSmsToNumberList(uniqueSmsText, getSessionController().getLoggedPreference().getApplicationInstitution(), smsText, null, MessageType.Marketing);
-
     }
 
     public void sendSmsAll() {
-        if (getSessionController().getLoggedPreference().getApplicationInstitution() != ApplicationInstitution.Ruhuna) {
-            JsfUtil.addErrorMessage("Your Institution Has't Privillage to Send sms.");
-            return;
-        }
         if (selectedTelephoneNumbers == null) {
             JsfUtil.addErrorMessage("Please Select Numbers");
             return;

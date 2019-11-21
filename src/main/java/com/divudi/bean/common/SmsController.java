@@ -167,6 +167,33 @@ public class SmsController implements Serializable {
 
     }
 
+    public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
+
+        System.out.println("number = " + number);
+        System.out.println("message = " + message);
+        System.out.println("username = " + username);
+        System.out.println("password = " + password);
+        System.out.println("sendingAlias = " + sendingAlias);
+
+        Map m = new HashMap();
+        m.put("userName", username);
+        m.put("password", password);
+        m.put("userAlias", sendingAlias);
+        m.put("number", number);
+        m.put("message", message);
+        m.put("promo", "yes");
+
+        String res = executePost("http://localhost:7070/sms/faces/index.xhtml", m);
+        if (res == null) {
+            return false;
+        } else if (res.toUpperCase().contains("200")) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
     public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, MessageType smsType) {
 
         if (sendingNo.contains("077") || sendingNo.contains("076")
@@ -178,42 +205,24 @@ public class SmsController implements Serializable {
             return;
         }
 
-        if (ai == ApplicationInstitution.Ruhuna) {
-            StringBuilder sb = new StringBuilder(sendingNo);
-            sb.deleteCharAt(3);
-            sendingNo = sb.toString();
+        Sms e = new Sms();
+        e.setSentSuccessfully(Boolean.TRUE);
 
-            String url = "https://cpsolutions.dialog.lk/index.php/cbs/sms/send?destination=94";
-            HttpResponse<String> stringResponse;
-            String pw = "&q=14488825498722";
+        boolean sent = sendSmsPromo(sendingNo, msg, getSessionController().getInstitution().getSmsSendingUsername(),
+                getSessionController().getInstitution().getSmsSendingPassword(),
+                getSessionController().getInstitution().getSmsSendingAlias());
 
-            String messageBody2 = msg;
-
-            final StringBuilder request = new StringBuilder(url);
-            request.append(sendingNo.substring(1, 10));
-            request.append(pw);
-
-            try {
-                System.out.println("pw = " + pw);
-                System.out.println("sendingNo = " + sendingNo);
-
-                stringResponse = Unirest.post(request.toString()).field("message", messageBody2).asString();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return;
-            }
-
-            Sms sms = new Sms();
-            sms.setPassword(pw);
-            sms.setCreatedAt(new Date());
-            sms.setCreater(getSessionController().getLoggedUser());
-            sms.setBill(b);
-            sms.setSmsType(smsType);
-            sms.setSendingUrl(url);
-            sms.setSendingMessage(messageBody2);
-            getSmsFacade().create(sms);
+        if (sent) {
+            e.setSentSuccessfully(true);
+            e.setSentAt(new Date());
+            e.setCreatedAt(new Date());
+            e.setCreater(getSessionController().getLoggedUser());
+            e.setBill(b);
+            e.setSmsType(smsType);
+            e.setSendingMessage(msg);
+            getSmsFacade().create(e);
         }
+
     }
 
     public void createSmsTable() {

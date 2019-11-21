@@ -169,33 +169,25 @@
                                     <p:panel header="Flags" id="tblFlags"
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" 
                                              >
-
-
-                                        <h:panelGroup rendered="true" >
-
-                                            <table >
-                                                <ui:repeat  
-                                                    value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
-                                                    var="pvf" 
-                                                    >
-                                                    <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
-                                                        <tr>
-                                                            <td >
-                                                                <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
-                                                            </td>
-                                                            <td>
-                                                                <p:selectOneMenu id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                    <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
-                                                                </p:selectOneMenu>
-                                                            </td>
-                                                        </tr>
-                                                    </h:panelGroup>
-                                                </ui:repeat>
-                                            </table>
-
-
-                                        </h:panelGroup>
-
+                                        <table >
+                                            <ui:repeat  
+                                                value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                                var="pvf" 
+                                                >
+                                                <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
+                                                    <tr>
+                                                        <td >
+                                                            <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
+                                                        </td>
+                                                        <td>
+                                                            <p:selectOneMenu id="cmbStrFlag" value="#{pvf.strValue}" editable="true" style="min-width: 200px;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                <f:selectItems value="#{testFlagController.getIxItemFlagsString(pvf.investigationItem)}" var="iivfh" itemLabel="#{iivfh}" itemValue="#{iivfh}" ></f:selectItems>
+                                                            </p:selectOneMenu>
+                                                        </td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </ui:repeat>
+                                        </table>
                                     </p:panel>
                                     <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
                                         <table >
@@ -220,7 +212,6 @@
                                     </p:panel>
                                     <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                         <f:view contentType="text/html">
-                                           
                                             <table >
                                                 <ui:repeat id="tblMicVals" 
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues }"  
@@ -260,6 +251,7 @@
                                     </p:panel>
                                     <p:panel header="Report"    
                                              rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
+
 
                                         <h:panelGrid columns="4" >
                                             <p:outputLabel value="Search a Template" ></p:outputLabel>
