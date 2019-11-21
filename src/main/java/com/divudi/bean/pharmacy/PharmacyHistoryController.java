@@ -24,7 +24,7 @@ public class PharmacyHistoryController {
     public PharmacyHistoryController() {
     }
     
-    @Schedule(dayOfWeek = "Sat",hour = "0")
+//    @Schedule(dayOfWeek = "Sat",hour = "0")
     public void createWeeklyHistory(){
         
     }
