@@ -220,6 +220,24 @@ public class AmpController implements Serializable {
         createItemList();
     }
 
+    public void createMedicineList() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+
+        Map m = new HashMap();
+        m.put("dep", DepartmentType.Pharmacy);
+        String sql = "select c from PharmaceuticalItem c "
+                + " where c.retired=false "
+                + " and (c.departmentType is null "
+                + " or c.departmentType=:dep) "
+                + " order by c.name";
+
+        items = getFacade().findBySQL(sql, m);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
+    }
+    
     public void createItemList() {
         Date startTime = new Date();
         Date fromDate = null;
