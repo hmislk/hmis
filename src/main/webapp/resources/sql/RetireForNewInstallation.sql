@@ -1,0 +1,1 @@
+select count(id) from Person order by id;
