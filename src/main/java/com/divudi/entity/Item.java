@@ -204,8 +204,11 @@ public class Item implements Serializable, Comparable<Item> {
     String transName;
 
     
+       @Transient
+    private String transCodeFromName;
     
-    
+      
+       
     public double getVatPercentage() {
         return 0;
     }
@@ -1121,6 +1124,15 @@ public class Item implements Serializable, Comparable<Item> {
             }
         }
         return itemFeesActive;
+    }
+
+    public String getTransCodeFromName() {
+        transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
+        return transCodeFromName;
+    }
+
+    public void setTransCodeFromName(String transCodeFromName) {
+        this.transCodeFromName = transCodeFromName;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
