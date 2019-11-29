@@ -314,30 +314,26 @@ public class BillFee implements Serializable {
     @Transient
     private Double tmpSettleChangedValue;
 
-    public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
+        public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
                     this.feeGrossValue = getFee().getFfee();
                     this.feeDiscount = getFee().getFfee() / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee();
                     this.feeDiscount = getFee().getFee() / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
 
             } else {
                 if (foriegn) {
                     this.feeGrossValue = getFee().getFfee();
                     this.feeValue = getFee().getFfee();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeGrossValue = getFee().getFee();
                     this.feeValue = getFee().getFee();
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             }
         } else {
@@ -346,15 +342,12 @@ public class BillFee implements Serializable {
                 if (tmpChangedValue != 0) {
                     this.feeDiscount = feeGrossValue / 100 * (discountPercent);
                     this.feeValue = feeGrossValue - feeDiscount;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 } else {
                     this.feeValue = 0;
-//                    this.feeVatPlusValue = this.feeVat + this.feeValue;
                 }
             } else {
                 this.feeGrossValue = tmpChangedValue;
                 this.feeValue = tmpChangedValue;
-//                this.feeVatPlusValue = this.feeVat + this.feeValue;
             }
         }
     }

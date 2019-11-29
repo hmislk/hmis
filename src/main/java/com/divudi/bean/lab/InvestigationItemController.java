@@ -507,7 +507,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveUpAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -521,7 +521,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveLeftAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -535,7 +535,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveDownAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -549,7 +549,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void fixWidthAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -563,7 +563,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void fixHeightAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -577,7 +577,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveRightAllReportItems() {
-        if (getAllReportItemList().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -591,7 +591,10 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void updateAllFontValues() {
-
+        if (getSelectedItemsToChange().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to update font");
+            return;
+        }
         for (ReportItem ri : getSelectedItemsToChange()) {
             if (fontFamily != null) {
                 ri.setCssFontFamily(fontFamily);

@@ -106,6 +106,11 @@ public class UserPreference implements Serializable {
     private boolean needPhoneNumberForPatientRegistration;
     
     
+    private boolean channellingSendSmsOnBooking;
+    private boolean channellingSendSmsOnCancelling;
+    private boolean channellingSendSmsOnArrival;
+    private boolean sendBulkSms;
+    
     
     
     public ApplicationInstitution getApplicationInstitution() {
@@ -649,6 +654,39 @@ public class UserPreference implements Serializable {
         this.needPhoneNumberForPatientRegistration = needPhoneNumberForPatientRegistration;
     }
 
+    public boolean isChannellingSendSmsOnBooking() {
+        return channellingSendSmsOnBooking;
+    }
+
+    public void setChannellingSendSmsOnBooking(boolean channellingSendSmsOnBooking) {
+        this.channellingSendSmsOnBooking = channellingSendSmsOnBooking;
+    }
+
+    public boolean isChannellingSendSmsOnCancelling() {
+        return channellingSendSmsOnCancelling;
+    }
+
+    public void setChannellingSendSmsOnCancelling(boolean channellingSendSmsOnCancelling) {
+        this.channellingSendSmsOnCancelling = channellingSendSmsOnCancelling;
+    }
+
+    public boolean isChannellingSendSmsOnArrival() {
+        return channellingSendSmsOnArrival;
+    }
+
+    public void setChannellingSendSmsOnArrival(boolean channellingSendSmsOnArrival) {
+        this.channellingSendSmsOnArrival = channellingSendSmsOnArrival;
+    }
+
+    public boolean isSendBulkSms() {
+        return sendBulkSms;
+    }
+
+    public void setSendBulkSms(boolean sendBulkSms) {
+        this.sendBulkSms = sendBulkSms;
+    }
+
+    
     
     
 }
