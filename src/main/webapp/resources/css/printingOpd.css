@@ -23,10 +23,10 @@ root {
         font-family: sans-serif!important; 
         font-size: 11px!important; 
         position: relative!important;  
-        margin: 0px!important; 
+        margin: 1%!important; 
         width: 95%;
         height: 95%;
-        padding: 1px;
+        padding: 1%;
         font-size: 180%;
     }
 

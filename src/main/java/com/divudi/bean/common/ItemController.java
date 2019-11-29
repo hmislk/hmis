@@ -359,7 +359,6 @@ public class ItemController implements Serializable {
         getInvestigationsAndServices();
     }
 
-    
     public void updateSelectedFeesForDiscountAllow() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -368,9 +367,9 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (!(i.getItemFeesAuto() == null) && !(i.getItemFeesAuto().isEmpty())) {
                 for (ItemFee itf : i.getItemFeesAuto()) {
-                    if(itf.getFeeType()==FeeType.OwnInstitution){
+                    if (itf.getFeeType() == FeeType.OwnInstitution) {
                         itf.setDiscountAllowed(true);
-                    }else{
+                    } else {
                         itf.setDiscountAllowed(false);
                     }
                     getItemFeeFacade().edit(itf);
@@ -381,8 +380,7 @@ public class ItemController implements Serializable {
         investigationsAndServices = null;
         getInvestigationsAndServices();
     }
-    
-    
+
     public List<Department> getDepartments() {
         departments = departmentController.getInstitutionDepatrments(instituion);
         return departments;
@@ -1117,6 +1115,32 @@ public class ItemController implements Serializable {
         }
     }
 
+    public void makeItemsAsActiveOrInactiveByRetiredStatus() {
+        String j = "select i from Item i";
+        List<Item> tis = getFacade().findBySQL(j);
+        for (Item i : tis) {
+            if (i.isRetired()) {
+                i.setInactive(true);
+            } else {
+                i.setInactive(false);
+            }
+            getFacade().edit(i);
+        }
+    }
+    
+     public void toggleItemIctiveInactiveState() {
+        String j = "select i from Item i";
+        List<Item> tis = getFacade().findBySQL(j);
+        for (Item i : tis) {
+            if (i.isInactive()) {
+                i.setInactive(false);
+            } else {
+                i.setInactive(true);
+            }
+            getFacade().edit(i);
+        }
+    }
+
     public List<Item> completeOpdItemsByNamesAndCodeInstitutionSpecificOrNotSpecific(String query, boolean spcific) {
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
@@ -1126,8 +1150,8 @@ public class ItemController implements Serializable {
         String sql;
 
         sql = "select c from Item c "
-                + " where c.retired=false "
-                + " and (c.inactive=false or c.inactive is null) "
+                + " where c.retired<>true "
+                + " and (c.inactive<>true) "
                 + " and type(c)!=:pac "
                 + " and type(c)!=:inw "
                 + " and (type(c)=:ser "
@@ -1395,15 +1419,22 @@ public class ItemController implements Serializable {
      * @return
      */
     public List<Item> getItems() {
+        if(items==null){
+            fillItemsWithInvestigationsAndServices();
+        }
+        return items;
+    }
+
+    
+    public void fillItemsWithInvestigationsAndServices(){
         String temSql;
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
         items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
-        return items;
     }
-
+    
     public List<Item> getInwardItems() {
         String temSql;
         HashMap h = new HashMap();
