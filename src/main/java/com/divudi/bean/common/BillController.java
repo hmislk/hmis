@@ -1457,17 +1457,18 @@ public class BillController implements Serializable {
             }
 
         }
-
-        if (!sessionController.getApplicationPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
-            for (BillEntry be : getLstBillEntries()) {
-                if (be.getBillItem().getItem() instanceof Investigation) {
-                    if (referredBy == null && referredByInstitution == null) {
-                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
-                        return true;
-                    }
-                }
-            }
-        }
+        
+//
+//        if (!sessionController.getApplicationPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
+//            for (BillEntry be : getLstBillEntries()) {
+//                if (be.getBillItem().getItem() instanceof Investigation) {
+//                    if (referredBy == null && referredByInstitution == null) {
+//                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
 
 //            if (getStrTenderedValue() == null) {
 //                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
