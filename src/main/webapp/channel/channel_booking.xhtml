@@ -85,7 +85,9 @@
 
                 <h:panelGroup  >
                     <p:inputText autocomplete="off" id="txtSearch3" value="#{bookingController.selectTextSession}" style="width: 176px;margin-left: 2px;" placeholder="Session" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerSessionRowSelect}"/> 
+                        <f:ajax  event="keyup" execute="@this" 
+                                 render=":#{p:component('tblSessionsOfSelectedConsultant')}" 
+                                 listener="#{bookingController.listnerSessionRowSelect}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch3')).keypress(function (event) {

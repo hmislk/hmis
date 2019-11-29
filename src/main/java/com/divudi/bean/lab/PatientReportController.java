@@ -1776,6 +1776,9 @@ public class PatientReportController implements Serializable {
     }
 
     public String enterNewReportFormat(PatientInvestigation pi, Investigation ix) {
+        System.out.println("enterNewReportFormat");
+        System.out.println("pi = " + pi);
+        System.out.println("ix = " + ix);
         currentReportInvestigation = ix;
         currentPtIx = pi;
         createNewPatientReport(pi, ix);

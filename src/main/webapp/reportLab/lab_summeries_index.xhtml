@@ -28,6 +28,12 @@
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
                                 </p:panelGrid>
                             </p:tab>
+                            <p:tab title="Institutions" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution"/>
+                                    
+                                </p:panelGrid>
+                            </p:tab>
                             <p:tab title="Collecting Centres" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre.xhtml"/>

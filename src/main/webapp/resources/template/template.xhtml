@@ -119,10 +119,10 @@
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Membership"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
-                                    <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShipAdd')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/membership/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShipEdit')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/membership/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MembershipReports')}" ></p:menuitem>
-                                    <p:menuitem ajax="false" action="/membership/administration" value="Administration" rendered="#{webUserController.hasPrivilege('MembershipAdministration')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                                    <p:menuitem ajax="false" action="/membership/administration" value="Administration" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                                 </p:submenu>
 
                                 <p:submenu styleClass="rightBordrOnly" label="Inward"  rendered="#{webUserController.hasPrivilege('Inward')}">
@@ -890,7 +890,7 @@
                         </p:panel>
 
                         <h:form>
-                            <p:commandButton rendered="true" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
+                            <p:commandButton rendered="false" value="Desrypt User Names" action="#{sessionController.decryptAllUsers()}" ajax="false" ></p:commandButton>
                         </h:form>
 
                     </ui:insert>

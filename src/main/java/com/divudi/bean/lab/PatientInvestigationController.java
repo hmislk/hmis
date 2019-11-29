@@ -1135,7 +1135,8 @@ public class PatientInvestigationController implements Serializable {
 
     }
 
-    public void prepareSampleCollectionByRequest() {
+ 
+   public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
         if (inputBillId == null || inputBillId.trim().equals("")) {
             samplingRequestResponse += "Login=0|Message=Bill Number not entered.}#";
@@ -1154,33 +1155,13 @@ public class PatientInvestigationController implements Serializable {
 
         samplingRequestResponse += "Login=1";
         String zplTemplate = "^XA\r\n"
-                + "^LH100,10\r\n"
+                + "^LH150,10\r\n"
                 + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
-                + "^LH100,30\r\n"
+                + "^LH150,30\r\n"
                 + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
-                + "^LH100,155\r\n"
+                + "^LH150,155\r\n"
                 + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
                 + "^XZ\r\n";
-
-        zplTemplate = "SIZE 53 mm, 28 mm\r\n"
-                + "GAP 0,0\r\n"
-                + "DIRECTION 1\r\n"
-                + "CLS\r\n"
-                + "TEXT 20,20,\"4\",0,0,0,\"[name]\"\r\n"
-                + "TEXT 20,65,\"3\",0,0,0,\"[tests]\"\r\n"
-                + "BARCODE 20,95, \"128\",60,1,0,2,2, \"[barcode]\"\r\n"
-                + "PRINT 1\r\n";
-        
-        
-         zplTemplate = "SIZE 53 mm, 28 mm\r\n"
-                + "GAP 0,0\r\n"
-                + "DIRECTION 1\r\n"
-                + "CLS\r\n"
-                + "TEXT 20,20,\"4\",0,0,0,\"[name]\"\r\n"
-                + "TEXT 20,65,\"3\",0,0,0,\"[tests]\"\r\n"
-                + "TEXT 20,95,\"3\",0,0,0,\"[insid]\"\r\n"
-                + "PRINT 1\r\n";
-
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
@@ -1190,50 +1171,42 @@ public class PatientInvestigationController implements Serializable {
 
         if (patientSamplesSet.isEmpty()) {
             ptLabel = zplTemplate;
-            ptLabel = ptLabel.replace("[name]", patientSamples.get(0).getBill().getPatient().getPerson().getName());
-            ptLabel = ptLabel.replace("[barcode]", "" + patientSamples.get(0).getBill().getIdStr());
-            ptLabel = ptLabel.replace("[insid]", "" + patientSamples.get(0).getBill().getInsId());
+            ptLabel = ptLabel.replace("#{header}", commonController.shortDate(patientSamples.get(0).getBill().getBillDate())
+                    + " "
+                    + patientSamples.get(0).getBill().getPatient().getPerson().getName());
+            ptLabel = ptLabel.replace("#{barcode}", "" + patientSamples.get(0).getBill().getIdStr());
             List<BillItem> tpiics = patientSamples.get(0).getBill().getBillItems();
             tbis = "";
-            String temTube = "";
             for (BillItem i : tpiics) {
                 tbis += i.getItem().getName() + ", ";
-                if (i.getItem() instanceof Investigation) {
-                    Investigation temIx = (Investigation) i.getItem();
-                    temTube = temIx.getInvestigationTube().getName();
-                }
             }
             tbis = tbis.substring(0, tbis.length() - 2);
-            tbis += " - " + temTube;
-            ptLabel = ptLabel.replace("[tests]", tbis);
+            ptLabel = ptLabel.replace("#{footer}", tbis);
             samplingRequestResponse += ptLabel;
         } else {
             for (PatientSample ps : patientSamplesSet) {
                 ptLabel = zplTemplate;
-                ptLabel = ptLabel.replace("[name]", ps.getPatient().getPerson().getName());
-                ptLabel = ptLabel.replace("[barcode]", "" + ps.getIdStr());
+                ptLabel = ptLabel.replace("#{header}", commonController.shortDate(ps.getBill().getBillDate())
+                        + " "
+                        + ps.getPatient().getPerson().getName());
+                ptLabel = ptLabel.replace("#{barcode}", "" + ps.getIdStr());
                 List<Item> tpiics = testComponantsForPatientSample(ps);
                 tbis = "";
-                String temTube = "";
                 for (Item i : tpiics) {
                     tbis += i.getName() + ", ";
-                    if (i instanceof Investigation) {
-                        Investigation temIx = (Investigation) i;
-                        temTube = temIx.getInvestigationTube().getName();
-                    }
                 }
                 if (tbis.length() > 2) {
                     tbis = tbis.substring(0, tbis.length() - 2);
-                    tbis += " - " + temTube;
-                    ptLabel = ptLabel.replace("[tests]", tbis);
+                    ptLabel = ptLabel.replace("#{footer}", tbis);
                     samplingRequestResponse += ptLabel;
                 }
             }
         }
         samplingRequestResponse += "}#";
-        System.out.println("samplingRequestResponse = " + samplingRequestResponse);
     }
 
+    
+    
     public void prepareSampleCollection() {
         Long billId = stringToLong(inputBillId);
         List<Bill> temBills;
