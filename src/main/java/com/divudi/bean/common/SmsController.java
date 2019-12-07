@@ -67,7 +67,8 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    private void sendSmsAwaitingToSendInDatabase() {
+    public void sendSmsAwaitingToSendInDatabase() {
+        System.out.println("sendSmsAwaitingToSendInDatabase");
         String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
         List<Sms> smses = getSmsFacade().findBySQL(j);
 //        if (false) {
@@ -76,14 +77,15 @@ public class SmsController implements Serializable {
 //            e.getInstitution();
 //        }
         for (Sms e : smses) {
+            System.out.println("e.getReceipientNumber() = " + e.getReceipientNumber());
             e.setSentSuccessfully(Boolean.TRUE);
             getSmsFacade().edit(e);
 
-            sendSms(e.getReceipientNumber(), e.getSendingMessage(),
+            boolean sentSuccessfully = sendSms(e.getReceipientNumber(), e.getSendingMessage(),
                     e.getInstitution().getSmsSendingUsername(),
                     e.getInstitution().getSmsSendingPassword(),
                     e.getInstitution().getSmsSendingAlias());
-            e.setSentSuccessfully(true);
+            e.setSentSuccessfully(sentSuccessfully);
             e.setSentAt(new Date());
             getSmsFacade().edit(e);
         }

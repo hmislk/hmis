@@ -10,7 +10,9 @@ import com.divudi.facade.EmailFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -48,8 +50,11 @@ public class EmailManagerEjb {
     }
 
     private void sendReportApprovalEmails() {
-        String j = "Select e from AppEmail e where e.sentSuccessfully=false and e.retired=false";
-        List<AppEmail> emails = getEmailFacade().findBySQL(j);
+        System.out.println("sendReportApprovalEmails = " + this);
+        String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<AppEmail> emails = getEmailFacade().findBySQL(j,m);
 //        if (false) {
 //            AppEmail e = new AppEmail();
 //            e.getSentSuccessfully();
