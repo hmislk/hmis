@@ -748,11 +748,11 @@ public class PharmacySaleController1 implements Serializable {
             return;
         }
 
-        if (checkItemBatch()) {
-            errorMessage = "This batch is already there in the bill.";
-            UtilityController.addErrorMessage("Already added this item batch");
-            return;
-        }
+//        if (checkItemBatch()) {
+//            errorMessage = "This batch is already there in the bill.";
+//            UtilityController.addErrorMessage("Already added this item batch");
+//            return;
+//        }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");

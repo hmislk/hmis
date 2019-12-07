@@ -1411,6 +1411,7 @@ public class PharmacyBean {
     }
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
+        System.out.println("getVmp");
         String sql;
         if (strength == 0 || strengthUnit == null || cat == null) {
             return null;

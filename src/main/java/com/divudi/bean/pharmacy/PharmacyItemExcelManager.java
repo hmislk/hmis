@@ -1264,6 +1264,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
                 cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
                 if (cat == null) {
+                    System.out.println("Cat is Null");
                     continue;
                 }
                 System.out.println("cat = " + cat.getName());
@@ -1276,6 +1277,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("strStrengthUnit is " + strengthUnitCol);
                 strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
                 if (strengthUnit == null) {
+                    System.out.println("Strength Unit is NULL");
                     continue;
                 }
                 System.out.println("strengthUnit = " + strengthUnit.getName());
@@ -1285,6 +1287,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("strPackUnit = " + strPackUnit);
                 packUnit = getPharmacyBean().getUnitByName(strPackUnit);
                 if (packUnit == null) {
+                    System.out.println("Pack Unit is Null");
                     continue;
                 }
                 System.out.println("packUnit = " + packUnit.getName());
@@ -1294,6 +1297,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("strIssueUnit is " + strIssueUnit);
                 issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
                 if (issueUnit == null) {
+                    System.out.println("Issue Unit is Null");
                     continue;
                 }
                 //StrengthOfAnMeasurementUnit

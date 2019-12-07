@@ -793,16 +793,16 @@ public class PharmacySaleController implements Serializable {
             return;
         }
 
-        if (checkItemBatch()) {
-            errorMessage = "This batch is already there in the bill.";
-            UtilityController.addErrorMessage("Already added this item batch");
-            return;
-        }
-        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-            errorMessage = "This batch is Expire With in 31 Days.";
-            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
-            return;
-        }
+//        if (checkItemBatch()) {
+//            errorMessage = "This batch is already there in the bill.";
+//            UtilityController.addErrorMessage("Already added this item batch");
+//            return;
+//        }
+//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+//            errorMessage = "This batch is Expire With in 31 Days.";
+//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            return;
+//        }
         //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
             UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");

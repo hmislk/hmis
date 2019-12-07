@@ -966,11 +966,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         
-        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-            errorMessage = "This batch is Expire With in 31 Days.";
-            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
-            return;
-        }
+//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
+//            errorMessage = "This batch is Expire With in 31 Days.";
+//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
+//            return;
+//        }
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
