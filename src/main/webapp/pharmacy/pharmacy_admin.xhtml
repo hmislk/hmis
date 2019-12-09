@@ -110,7 +110,7 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="06. Purchase Openning Stock" action="/pharmacy/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="07. Purchase Openning Stock For Wholesale" action="/pharmacy_wholesale/pharmacy_purchase_openning_stock" rendered="#{webUserController.hasPrivilege('PharmacyPurchase')}" actionListener="#{pharmacyPurchaseController.makeNull()}" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="08. Fix Categories from Excel" action="pharmacy_importer_category" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="09. Fix Barcodes" action="pharmacy_item_import_barcode" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="09. Fix Codes and Barcodes" action="pharmacy_item_import_barcode" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="10. Error Correction" action="pharmacy_error_correction" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="11. Transfer Request All" action="pharmacy_transfer_request_all" />
 

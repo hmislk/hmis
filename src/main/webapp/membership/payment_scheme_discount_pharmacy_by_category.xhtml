@@ -24,8 +24,16 @@
                                                 var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
                                 </p:autoComplete>
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
+                                <p:selectOneMenu value="#{opdMemberShipDiscountController.category}" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
+                                                   var="c"
+                                                   itemLabel="#{c.name}"
+                                                   itemValue="#{c}"
+                                                   ></f:selectItems>
+                                </p:selectOneMenu>
                                 <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
-                                                forceSelection="true"
+                                                forceSelection="true" rendered="false"
                                                 completeMethod="#{categoryController.completeCategoryPharmacy}"
                                                 converter="categoryConverter"
                                                 var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >

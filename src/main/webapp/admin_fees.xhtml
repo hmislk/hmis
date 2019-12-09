@@ -33,14 +33,14 @@
 
 
 
-                            <p:tab title="Manage Price Scheme" >
+                            <p:tab title="Manage Discount Schemes" >
                                 <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="payment_scheme" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes(MemberShip)" action="payment_scheme_member_ship" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="/membership/payment_scheme" />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Pharmacy Discounts" action="/membership/payment_scheme_discount_pharmacy_by_category" />
                                 </h:panelGrid>
                             </p:tab>
 
-                            <p:tab title="Manage Membership Scheme" >
+                            <p:tab title="Manage Membership Schemes" >
                                 <h:panelGrid columns="1" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes" action="/membership/membership_scheme" />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes Dicounts" action="/membership/membership_scheme_discount_inward" />
