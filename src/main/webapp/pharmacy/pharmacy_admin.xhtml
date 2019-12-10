@@ -74,31 +74,31 @@
                             <p:tab title="7) Issue To Unit">
                                 <h:panelGrid columns="1">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
-                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
+                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="2) Correction of Issue To Unit (Reset Gross Net Value )" 
-                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
+                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit2()}" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="3) Correction of Issue To Unit (Reset Gross Net Value To Old only Cost Issue )" 
-                                                    action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
+                                                     action="#{pharmacyItemExcelManager.correctIssueToUnit3()}" />
 
                                 </h:panelGrid>
                             </p:tab>
                             <p:tab title="8) Major Stock Adjustment">
                                 <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="1)Stock Variant Report (Before)" 
-                                                action="pharmacy_variant_category_stock_by_item" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="2)Stock Variant Adjustment(After)" 
-                                                action="pharmacy_variant_ajustment_pre_list" />
-                                    </h:panelGrid>
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="1)Stock Variant Report (Before)" 
+                                                     action="pharmacy_variant_category_stock_by_item" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="2)Stock Variant Adjustment(After)" 
+                                                     action="pharmacy_variant_ajustment_pre_list" />
+                                </h:panelGrid>
                             </p:tab>
                             <p:tab title="9) Bulk Update">
                                 <h:panelGrid columns="1">
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Update Bulk Categery" 
-                                                action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Update Bulk Discount Allowed" 
-                                                        action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Stock Item List" 
-                                                        action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
-                                    </h:panelGrid> 
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Bulk Categery" 
+                                                     action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Bulk Discount Allowed" 
+                                                     action="pharmacy_update_discount_allowed_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Stock Item List" 
+                                                     action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
+                                </h:panelGrid> 
                             </p:tab>
                             <p:tab title="10) Set up">
                                 <h:panelGrid columns="1" >
@@ -113,11 +113,12 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="09. Fix Codes and Barcodes" action="pharmacy_item_import_barcode" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="10. Error Correction" action="pharmacy_error_correction" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="11. Transfer Request All" action="pharmacy_transfer_request_all" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="12. Import Item Distributors" action="pharmacy_transfer_request_all" />
 
                                 </h:panelGrid>
                             </p:tab> 
                         </p:tabView>
-                        
+
 
                     </p:panel>
 

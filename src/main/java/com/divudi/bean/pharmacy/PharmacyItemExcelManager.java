@@ -1754,6 +1754,85 @@ public class PharmacyItemExcelManager implements Serializable {
         }
     }
 
+    public String importItemDistributors() {
+        System.out.println("importing to excel");
+        String strAmp;
+        String strDistributor;
+        Amp amp;
+        Institution distributor;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            String error = "";
+            
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                //Amp
+                cell = sheet.getCell(0, i);
+                strAmp = cell.getContents();
+                System.out.println("strAmp = " + strAmp);
+                m = new HashMap();
+                m.put("n", strAmp.trim().toUpperCase());
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n ");
+
+                if (amp == null) {
+                    error += strAmp + " is NOT found.\n";
+                    continue;
+                }
+
+//Distributor
+                cell = sheet.getCell(1, i);
+                strDistributor = cell.getContents();
+                distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
+                if (distributor != null) {
+                    System.out.println("distributor = " + distributor.getName());
+                    ItemsDistributors id = new ItemsDistributors();
+                    id.setInstitution(distributor);
+                    id.setItem(amp);
+                    id.setOrderNo(0);
+                    getItemsDistributorsFacade().create(id);
+                } else {
+                    System.out.println("distributor is null");
+                }
+            }
+
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        } catch (BiffException e) {
+            UtilityController.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
     public String importToExcel() {
         System.out.println("importing to excel");
         String strCat;
