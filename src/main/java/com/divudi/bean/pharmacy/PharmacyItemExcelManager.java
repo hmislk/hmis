@@ -197,6 +197,8 @@ public class PharmacyItemExcelManager implements Serializable {
      */
     private UploadedFile file;
 
+    private String message;
+
     /**
      * Creates a new instance of DemographyExcelManager
      */
@@ -1788,7 +1790,7 @@ public class PharmacyItemExcelManager implements Serializable {
             Sheet sheet = w.getSheet(0);
 
             String error = "";
-            
+
             for (int i = startRow; i < sheet.getRows(); i++) {
 
                 Map m = new HashMap();
@@ -1799,7 +1801,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.trim().toUpperCase());
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n ");
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n ", m);
 
                 if (amp == null) {
                     error += strAmp + " is NOT found.\n";
@@ -1809,7 +1811,9 @@ public class PharmacyItemExcelManager implements Serializable {
 //Distributor
                 cell = sheet.getCell(1, i);
                 strDistributor = cell.getContents();
+                System.out.println("strDistributor = " + strDistributor);
                 distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
+                System.out.println("distributor = " + distributor);
                 if (distributor != null) {
                     System.out.println("distributor = " + distributor.getName());
                     ItemsDistributors id = new ItemsDistributors();
@@ -1820,6 +1824,276 @@ public class PharmacyItemExcelManager implements Serializable {
                 } else {
                     System.out.println("distributor is null");
                 }
+            }
+
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        } catch (BiffException e) {
+            UtilityController.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+    
+    public void tnametoName() {
+        List<Amp> amps = getAmpFacade().findAll();
+        for(Amp a:amps){
+            if(a.getSname()!=null && !a.getSname().trim().equals("")){
+                a.setTname(a.getName());
+                a.setName(a.getSname());
+                getAmpFacade().edit(a);
+            }
+        }
+    }
+
+    public String importCorrectNameByBarcode() {
+        System.out.println("importing to excel");
+        String strBarcode;
+        String strName;
+        Amp amp;
+        Institution distributor;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            String error = "";
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                //Amp
+                cell = sheet.getCell(0, i);
+                strBarcode = cell.getContents();
+                System.out.println("strBarcode = " + strBarcode);
+                m = new HashMap();
+                m.put("n", strBarcode);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.barcode=:n", m);
+                cell = sheet.getCell(1, i);
+                strName = cell.getContents();
+
+                if (amp == null) {
+                    error += strBarcode + " is NOT found.\n";
+                    continue;
+                } else {
+                    System.out.println("amp.getBarcode() = " + amp.getBarcode());
+                    System.out.println("AMP Found");
+                    System.out.println("Corrected Name = " + amp.getName());
+                    System.out.println("Old Name = " + strName);
+                    amp.setTname(amp.getName());
+                    amp.setName(strName);
+                    getAmpFacade().edit(amp);
+
+                }
+
+            }
+
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        } catch (BiffException e) {
+            UtilityController.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    
+    private List<Amp> updatingAmps;
+    private List<Amp> allAmps;
+    
+    public String importCorrectNameFromSnapshot() {
+        System.out.println("importing to excel");
+        String strId;
+        Long id;
+        String name;
+        String code;
+        String barcode;
+        Amp amp;
+        Institution distributor;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            message = "";
+
+            allAmps = new ArrayList<>();
+            updatingAmps = new ArrayList<>();
+            
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                cell = sheet.getCell(0, i);
+                strId = cell.getContents();
+                try{
+                    id = Long.parseLong(strId);
+                }catch(Exception e){
+                    id = 0l;
+                }
+                
+                cell = sheet.getCell(1, i);
+                name = cell.getContents();
+
+                cell = sheet.getCell(2, i);
+                code = cell.getContents();
+
+                cell = sheet.getCell(3, i);
+                barcode = cell.getContents();
+
+                m = new HashMap();
+                m.put("n", id);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.id=:n", m);
+                
+
+                if (amp == null) {
+                    message += "ID NOT FOUND IN" + id + "\t" +  name + "\t" + code + "\t" + barcode + "\n";
+                    continue;
+                } else if(amp.getName().equals(name)){
+                    message += "ID AND NAME MATCH FOUND IN" + id + "\t" +  name + "\t" + code + "\t" + barcode + "\n";
+                }
+                else {
+                    amp.setSnapShotName(name);
+                    amp.setSnapShotBarcode(barcode);
+                    amp.setSnapShotCode(code);
+                    allAmps.add(amp);
+                }
+
+            }
+
+            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
+            return "";
+        } catch (IOException ex) {
+            UtilityController.addErrorMessage(ex.getMessage());
+            return "";
+        } catch (BiffException e) {
+            UtilityController.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+    
+    
+    public void updateNamesOfSelectedAmps(){
+        for(Amp a:updatingAmps){
+            a.setName(a.getSnapShotName());
+            getAmpFacade().edit(a);
+        }
+    }
+    
+    public String importFindMissingNames() {
+        System.out.println("importing to excel");
+        String name;
+        String code;
+        String barcode;
+        Amp amp;
+        Institution distributor;
+
+        File inputWorkbook;
+        Workbook w;
+        Cell cell;
+        InputStream in;
+        UtilityController.addSuccessMessage(file.getFileName());
+        try {
+            UtilityController.addSuccessMessage(file.getFileName());
+            in = file.getInputstream();
+            File f;
+            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
+            FileOutputStream out = new FileOutputStream(f);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            while ((read = in.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            inputWorkbook = new File(f.getAbsolutePath());
+
+            UtilityController.addSuccessMessage("Excel File Opened");
+            w = Workbook.getWorkbook(inputWorkbook);
+            Sheet sheet = w.getSheet(0);
+
+            message = "";
+
+            for (int i = startRow; i < sheet.getRows(); i++) {
+
+                Map m = new HashMap();
+
+                cell = sheet.getCell(0, i);
+                name = cell.getContents();
+
+                cell = sheet.getCell(1, i);
+                code = cell.getContents();
+
+                cell = sheet.getCell(2, i);
+                barcode = cell.getContents();
+
+                m = new HashMap();
+                m.put("n", name);
+                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.name=:n", m);
+                cell = sheet.getCell(1, i);
+
+                if (amp == null) {
+                    message += name + "\t" + code + "\t" + barcode + "\n";
+                    continue;
+                } else {
+                    if (amp.getBarcode().equals(amp.getCode())) {
+                        amp.setTname(amp.getCode());
+                        amp.setCode(code);
+                        getAmpFacade().edit(amp);
+                    }
+                }
+
             }
 
             UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
@@ -2844,4 +3118,30 @@ public class PharmacyItemExcelManager implements Serializable {
         this.pharmacyPurchaseController = pharmacyPurchaseController;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public List<Amp> getUpdatingAmps() {
+        return updatingAmps;
+    }
+
+    public void setUpdatingAmps(List<Amp> updatingAmps) {
+        this.updatingAmps = updatingAmps;
+    }
+
+    public List<Amp> getAllAmps() {
+        return allAmps;
+    }
+
+    public void setAllAmps(List<Amp> allAmps) {
+        this.allAmps = allAmps;
+    }
+
+    
+    
 }

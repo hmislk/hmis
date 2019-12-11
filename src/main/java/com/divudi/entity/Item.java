@@ -202,6 +202,19 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     String transName;
+    
+    
+     @Transient
+     private String snapShotName;
+     
+     @Transient
+     private String snapShotCode;
+     
+     @Transient
+     private String snapShotBarcode;
+     
+     
+     
 
     public double getVatPercentage() {
         if (vatable && vatPercentage == 0.0) {
@@ -1121,6 +1134,30 @@ public class Item implements Serializable, Comparable<Item> {
             }
         }
         return itemFeesActive;
+    }
+
+    public String getSnapShotName() {
+        return snapShotName;
+    }
+
+    public void setSnapShotName(String snapShotName) {
+        this.snapShotName = snapShotName;
+    }
+
+    public String getSnapShotCode() {
+        return snapShotCode;
+    }
+
+    public void setSnapShotCode(String snapShotCode) {
+        this.snapShotCode = snapShotCode;
+    }
+
+    public String getSnapShotBarcode() {
+        return snapShotBarcode;
+    }
+
+    public void setSnapShotBarcode(String snapShotBarcode) {
+        this.snapShotBarcode = snapShotBarcode;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {
