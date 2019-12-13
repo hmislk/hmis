@@ -113,8 +113,15 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="09. Fix Codes and Barcodes" action="pharmacy_item_import_barcode" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="10. Error Correction" action="pharmacy_error_correction" />
                                     <p:commandButton styleClass="linkButton" ajax="false" value="11. Transfer Request All" action="pharmacy_transfer_request_all" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="12. Import Item Distributors" action="pharmacy_transfer_request_all" />
-
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="12. Import Item Distributors" action="/pharmacy/pharmacy_item_distributor_import" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="13. Correct Name by Barcode" action="/pharmacy/pharmacy_item_name_from_barcode" />
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="13. Correct Name by Barcode" action="/pharmacy/pharmacy_item_names_missing" />
+                                
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="13. Correct Name by Snapshot" 
+                                                     action="/pharmacy/pharmacy_item_names_correction_by_snapshot" />
+                                
+                                
+                                
                                 </h:panelGrid>
                             </p:tab> 
                         </p:tabView>

@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+
+        <h:form enctype="multipart/form-data">
+            <h:outputLabel value="Import Item Distributors" ></h:outputLabel>
+            <p>Please make sure the following order of Columns.</p>
+            <p>Leave First Row for Row Headings.</p>
+            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+            <p:panelGrid columns="14" style="border: 1px solid blue;" >
+                <h:outputLabel value ="0. ID" ></h:outputLabel>
+                <h:outputLabel value ="1. Name" ></h:outputLabel>
+                <h:outputLabel value ="2. Code"></h:outputLabel>
+                <h:outputLabel value ="3. Barcode"></h:outputLabel>
+            </p:panelGrid>
+
+            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importCorrectNameFromSnapshot()}"/>
+
+
+            <p:inputTextarea value="#{pharmacyItemExcelManager.message}" style="width: 98vw; height: 90vh; margin: auto;">
+            </p:inputTextarea>
+
+        </h:form>
+
+
+        <h:form>
+
+            <p:commandButton ajax="false" value="Update Names of Selected" 
+                             action="#{pharmacyItemExcelManager.updateNamesOfSelectedAmps()}">
+            </p:commandButton>
+
+            <p:dataTable id="tblItem" value="#{pharmacyItemExcelManager.allAmps}" var="i"
+                         rowIndexVar="n"
+                         rowKey="#{i.id}" selection="#{pharmacyItemExcelManager.updatingAmps}"
+                         rows="10"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="20,50,100,1000,5000"
+                         >
+                <p:column selectionMode="multiple" ></p:column>
+                <p:column id="colSelect"  >
+                    <f:facet name="header" >
+                        <h:outputText value="No" />
+                    </f:facet>
+                    <p:outputLabel value="#{n+1}"></p:outputLabel>
+                </p:column>
+                <p:column headerText="Current Name" 
+                          sortBy="#{i.name}" 
+                          filterBy="#{i.name}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Current Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{i.name}"></p:outputLabel>
+                </p:column>
+                <p:column 
+                    sortBy="#{i.snapShotName}"
+                    filterBy="#{i.snapShotName}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Snapshot Name" />
+                    </f:facet>
+                    <p:outputLabel value="#{i.snapShotName}"></p:outputLabel>
+                </p:column>
+                
+                <p:column headerText="Current Code" 
+                          sortBy="#{i.code}" 
+                          filterBy="#{i.code}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Current Code " />
+                    </f:facet>
+                    <p:outputLabel value="#{i.code}"></p:outputLabel>
+                </p:column>
+                <p:column 
+                    sortBy="#{i.snapShotCode}"
+                    filterBy="#{i.snapShotCode}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Snapshot Code" />
+                    </f:facet>
+                    <p:outputLabel value="#{i.snapShotCode}"></p:outputLabel>
+                </p:column>
+
+
+                 <p:column headerText="Altered barcode" 
+                          sortBy="#{i.code}" 
+                          filterBy="#{i.code}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Altered barcode " />
+                    </f:facet>
+                     <p:outputLabel value="#{i.barcode}"></p:outputLabel>
+                </p:column>
+                <p:column 
+                    sortBy="#{i.snapShotBarcode}"
+                    filterBy="#{i.snapShotBarcode}" >
+                    <f:facet name="header" >
+                        <h:outputText value="Original barcode" />
+                    </f:facet>
+                    <p:outputLabel value="#{i.snapShotBarcode}"></p:outputLabel>
+                </p:column>
+
+
+
+
+            </p:dataTable>
+        </h:form>
+
+
+    </ui:define>
+
+
+</ui:composition>
