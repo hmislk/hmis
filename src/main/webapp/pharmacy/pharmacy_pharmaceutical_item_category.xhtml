@@ -52,10 +52,19 @@
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{pharmaceuticalItemCategoryController.current.name}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{pharmaceuticalItemCategoryController.current.name}" required="true" ></h:inputText>
                                     <h:outputText id="lblCode" value="Code" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtCode" value="#{pharmaceuticalItemCategoryController.current.description}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtCode" value="#{pharmaceuticalItemCategoryController.current.description}"  required="true"></h:inputText>
 
+                                     <h:outputText value="Created By" ></h:outputText>
+                                     <h:outputText value="#{pharmaceuticalItemCategoryController.current.creater.webUserPerson.nameWithTitle}" ></h:outputText>
+
+                                     <h:outputText value="Created At" ></h:outputText>
+                                     <h:outputText value="#{pharmaceuticalItemCategoryController.current.createdAt}" >
+                                         <f:convertDateTime pattern="dd MMMM yyyy mm:hh:ss" ></f:convertDateTime>
+                                     </h:outputText>
+
+                                     
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{pharmaceuticalItemCategoryController.saveSelected()}" styleClass="buttons">

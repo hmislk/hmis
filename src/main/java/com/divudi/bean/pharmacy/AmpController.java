@@ -437,9 +437,7 @@ public class AmpController implements Serializable {
 
     public void listnerCategorySelect() {
         if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().equals("")) {
-            JsfUtil.addErrorMessage("Please Select Category Code");
-            getCurrent().setCode("");
-            return;
+            getCurrent().getCategory().setDescription(getCurrent().getName());
         }
 
         Map m = new HashMap();
@@ -503,6 +501,7 @@ public class AmpController implements Serializable {
 
         listnerCategorySelect();
         if (current.getCategory() == null) {
+            listnerCategorySelect();
             UtilityController.addErrorMessage("Please Select Category");
             return true;
         }
