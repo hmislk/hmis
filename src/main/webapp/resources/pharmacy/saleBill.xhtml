@@ -353,6 +353,18 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+                    
+                    
+                    <tr>
+                        <td  class="totalsItemBlock" style="text-align: left;">
+                            <h:outputLabel   value="Cashier" />
+                        </td>
+                        <td  class="totalsItemBlock">
+                            <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
 
                 </table>

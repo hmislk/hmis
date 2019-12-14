@@ -66,17 +66,8 @@
                                                                    #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                      commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
                                                 </p:column>
-                                                 <p:column headerText="Name">
-                                                    <h:outputLabel value="#{i.itemBatch.item.sname}" style="width: 50px!important;"></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Name">
-                                                    <h:outputLabel value="#{i.itemBatch.item.tname}" style="width: 50px!important;"></h:outputLabel>
-                                                </p:column>
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
-                                                </p:column>
-                                                <p:column headerText="Generic">
-                                                    <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
                                                 </p:column>
                                                 <p:column headerText="Rate">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  style="width: 50px!important;">
