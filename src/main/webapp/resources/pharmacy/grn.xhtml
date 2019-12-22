@@ -14,7 +14,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
-        <div class="posbill noBorder summeryBorder">
+        <div  style="width: 100%;border:">
 
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}"/>
@@ -86,62 +86,57 @@
             </h:panelGrid>
 
 
-            <div >
-                <p:spacer height="15px"/>
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
+            <div style="width: 100%; " >
+                
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" 
+                             value="#{cc.attrs.bill.billItems}" var="bip" style="text-align: center;width: 100%;">                                     
                     <p:column style="text-align: left!important;"  >
                         <f:facet name="header">
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    <p:column style="text-align: left!important;"  >
-                        <f:facet name="header">
-                            <h:outputLabel value="Code" style="font-weight: bold!important; " />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.item.code}"/>
-                    </p:column>
                     <p:column style="width: 8px;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="d/M/yy"/>
                         </h:outputLabel>
                     </p:column>                                  
-                    <p:column style="text-align: right!important;">
+                    <p:column style="text-align: right!important; width: 10em;" >
                         <f:facet name="header">
-                            <h:outputLabel value="Ord" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Ordered" style="font-weight: bold!important;" />
                             <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Qty" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.referanceBillItem.pharmaceuticalBillItem.qty}">
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;"> 
+                    <p:column style="text-align: right!important;width: 10em;"> 
                         <f:facet name="header">
-                            <h:outputLabel value="Rcv" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Received" style="font-weight: bold!important;" />
                             <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Qty" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>                  
-                    <p:column style="text-align: right!important;">
+                    <p:column style="text-align: right!important;width: 10em;">
                         <f:facet name="header">
-                            <h:outputLabel value="Fr" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Free" style="font-weight: bold!important;" />
                             <br/>
-                            <h:outputLabel value="QTY" style="font-weight: bold!important;" >
+                            <h:outputLabel value="Qty" style="font-weight: bold!important;" >
 
                             </h:outputLabel>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}"/>
                     </p:column>
-                    <p:column style="text-align: right!important;">
+                    <p:column style="text-align: right!important;width: 10em;">
                         <f:facet name="header">
-                            <h:outputLabel value="Cur" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Purchase" style="font-weight: bold!important;" />
                             <br/>
                             <h:outputLabel value="Price" style="font-weight: bold!important;" />
                         </f:facet>
@@ -149,19 +144,9 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;">
+                    <p:column style="text-align: right!important;width: 10em;">
                         <f:facet name="header">
-                            <h:outputLabel value="Last" style="font-weight: bold!important;" />
-                            <br/>
-                            <h:outputLabel value="Price" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-                    <p:column style="text-align: right!important;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Amount" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Value" style="font-weight: bold!important;" />
                             <br/>
                             <h:outputLabel value=" " style="font-weight: bold!important;" />
                         </f:facet>
@@ -169,7 +154,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;">
+                    <p:column style="text-align: right!important;width: 10em;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale" style="font-weight: bold!important;" />
                             <br/>
@@ -183,7 +168,7 @@
                     <p:columnGroup type="footer">
 
                          <p:row>
-                            <p:column colspan="8" footerText="Sale Value" style="font-weight: bold!important;"/>
+                            <p:column colspan="6" footerText="Sale Value" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -196,7 +181,7 @@
                         </p:row>
                         
                         <p:row>
-                            <p:column colspan="8" footerText="Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="6" footerText="Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -209,7 +194,7 @@
                         </p:row>
 
                         <p:row>
-                            <p:column colspan="8" footerText="Expenses" style="font-weight: bold!important;"/>
+                            <p:column colspan="6" footerText="Expenses" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.total}">
                                 <f:facet name="footer">
                                     <br></br>
@@ -222,7 +207,7 @@
                         </p:row>
 
                         <p:row >
-                            <p:column colspan="8" footerText="Tax"/>
+                            <p:column colspan="6" footerText="Tax"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.tax}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{cc.attrs.bill.tax}">
@@ -233,7 +218,7 @@
                             <p:column ></p:column>
                         </p:row>
                         <p:row >
-                            <p:column colspan="8" footerText="Discount"/>
+                            <p:column colspan="6" footerText="Discount"/>
                             <p:column style="text-align: right;" footerText="#{0-cc.attrs.bill.discount}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.discount}" style="text-decoration: underline;">
@@ -244,7 +229,7 @@
                             <p:column ></p:column>
                         </p:row>
                         <p:row >
-                            <p:column colspan="8" footerText="Net Total" style="font-weight: bold!important;"/>
+                            <p:column colspan="6" footerText="Net Total" style="font-weight: bold!important;"/>
                             <p:column style="text-align: right;" footerText="#{cc.attrs.bill.netTotal}">
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{0-cc.attrs.bill.netTotal}" style="font-weight: bold!important; text-decoration: underline;">
