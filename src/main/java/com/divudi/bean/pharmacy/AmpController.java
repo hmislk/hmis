@@ -499,9 +499,9 @@ public class AmpController implements Serializable {
 //            return true;
 //        }
 
-        listnerCategorySelect();
+//        listnerCategorySelect();
         if (current.getCategory() == null) {
-            listnerCategorySelect();
+//            listnerCategorySelect();
             UtilityController.addErrorMessage("Please Select Category");
             return true;
         }
