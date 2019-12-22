@@ -69,6 +69,9 @@
                                                 <p:column headerText="Code">
                                                     <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
                                                 </p:column>
+                                                <p:column headerText="Generic">
+                                                    <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                                </p:column>
                                                 <p:column headerText="Rate">
                                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  style="width: 50px!important;">
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
@@ -529,7 +532,7 @@
 
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />  
+                        <!--<p:defaultCommand  target="btnPrint" />-->  
 
                         <div class="nonPrintBlock" >
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
