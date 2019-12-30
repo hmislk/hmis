@@ -33,11 +33,11 @@
 
                             <h:panelGroup id="gpBillPreview" >
 
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                <h:panelGroup  >
                                     <ph:grn bill="#{pharmacyBillSearch.bill}"/>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+<!--                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                                     <ph:grn_detail bill="#{pharmacyBillSearch.bill}"/>
                                 </h:panelGroup>
 
@@ -47,7 +47,7 @@
 
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                                     <ph:grn_detail_wh bill="#{pharmacyBillSearch.bill}"/>
-                                </h:panelGroup>
+                                </h:panelGroup>-->
 
                             </h:panelGroup>
 

@@ -89,14 +89,14 @@
             <div style="width: 100%; " >
                 
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" 
-                             value="#{cc.attrs.bill.billItems}" var="bip" style="text-align: center;width: 100%;">                                     
-                    <p:column style="text-align: left!important;"  >
+                             value="#{cc.attrs.bill.billItems}" var="bip" style="font-size: 1em; text-align: center;width: 100%;">                                     
+                    <p:column style="text-align: left!important;min-width: 10em;"  >
                         <f:facet name="header">
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
-                    <p:column style="width: 8px;text-align: right!important;" >
+                    <p:column style="width: 9em;text-align: right!important;" >
                         <f:facet name="header">
                             <h:outputLabel value="Expiry" style="font-weight: bold!important;" />
                         </f:facet>
@@ -104,7 +104,7 @@
                             <f:convertDateTime pattern="d/M/yy"/>
                         </h:outputLabel>
                     </p:column>                                  
-                    <p:column style="text-align: right!important; width: 10em;" >
+                    <p:column style="text-align: right!important; width: 7em;" >
                         <f:facet name="header">
                             <h:outputLabel value="Ordered" style="font-weight: bold!important;" />
                             <br/>
@@ -114,7 +114,7 @@
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;width: 10em;"> 
+                    <p:column style="text-align: right!important;width: 5em;"> 
                         <f:facet name="header">
                             <h:outputLabel value="Received" style="font-weight: bold!important;" />
                             <br/>
@@ -124,7 +124,7 @@
                             <f:convertNumber integerOnly="true"/>
                         </h:outputLabel>
                     </p:column>                  
-                    <p:column style="text-align: right!important;width: 10em;">
+                    <p:column style="text-align: right!important;width: 5em;">
                         <f:facet name="header">
                             <h:outputLabel value="Free" style="font-weight: bold!important;" />
                             <br/>
@@ -134,7 +134,7 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}"/>
                     </p:column>
-                    <p:column style="text-align: right!important;width: 10em;">
+                    <p:column style="text-align: right!important;width: 5em;">
                         <f:facet name="header">
                             <h:outputLabel value="Purchase" style="font-weight: bold!important;" />
                             <br/>
@@ -144,7 +144,7 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;width: 10em;">
+                    <p:column style="text-align: right!important;width: 5em;">
                         <f:facet name="header">
                             <h:outputLabel value="Value" style="font-weight: bold!important;" />
                             <br/>
@@ -154,7 +154,7 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-                    <p:column style="text-align: right!important;width: 10em;">
+                    <p:column style="text-align: right!important;width: 6em;">
                         <f:facet name="header">
                             <h:outputLabel value="Sale" style="font-weight: bold!important;" />
                             <br/>
